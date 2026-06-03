@@ -4,18 +4,21 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.NewContact
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.getOrNull
-import com.erfangholami.androidsolidservices.api.auth.Authenticator
-import com.erfangholami.androidsolidservices.api.datamodule.contacts.SolidContactsDataModule
+import com.erfangholami.androidsolidservices.di.IoDispatcher
+import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
+import com.erfangholami.androidsolidservices.domain.repository.ContactsRepository
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchDataModule
+import com.erfangholami.androidsolidservices.services.dispatch.handle
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactModuleAddressBookCallback
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactModuleAddressBookListCallback
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactModuleFullContactCallback
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactModuleFullGroupCallback
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactsModuleInterface
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookCallback
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookListCallback
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullContactCallback
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullGroupCallback
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactsModuleInterface
+import com.erfangholami.androidsolidservices.shared.model.contacts.NewContact
+import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,31 +26,31 @@ import javax.inject.Inject
 class SolidDataModulesService : LifecycleService() {
 
     @Inject
-    lateinit var solidContactsDataModule: SolidContactsDataModule
+    lateinit var contactsRepository: ContactsRepository
 
     @Inject
-    lateinit var auth: Authenticator
+    lateinit var authRepository: AuthRepository
+
+    @Inject
+    @IoDispatcher
+    lateinit var ioDispatcher: CoroutineDispatcher
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
         return binder
     }
 
-    //One service for all data modules
     private val binder = object : IASSDataModulesService.Stub() {
         override fun getContactsDataModuleInterface(): IASSContactsModuleInterface {
             return contactsModuleInterface
         }
-
     }
 
     private val contactsModuleInterface = object : IASSContactsModuleInterface.Stub() {
 
         override fun getAddressBooks(webId: String, callback: IASSContactModuleAddressBookListCallback) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.getAddressBooks(webId).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.getAddressBooks(webId)
             }
         }
 
@@ -60,17 +63,24 @@ class SolidDataModulesService : LifecycleService() {
             ownerWebId: String?,
             container: String?
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                val profile = auth.getProfile(webId)
-                callback.valueChanged(
-                    solidContactsDataModule.createAddressBook(
-                        ownerWebId ?: webId,
-                        title,
-                        isPrivate,
-                        storage ?: profile.webId!!.getStorages()[0].toString(),
-                        container
-                    ).getOrNull()
-                )
+            lifecycleScope.launch(ioDispatcher) {
+                val profile = authRepository.getProfile(webId)
+                val resolvedStorage = storage
+                    ?: profile.webId?.getStorages()?.firstOrNull()?.toString()
+                if (resolvedStorage == null) {
+                    callback.onError(
+                        ExceptionsErrorCode.NULL_WEBID,
+                        "No storage available for $webId.",
+                    )
+                    return@launch
+                }
+                contactsRepository.createAddressBook(
+                    ownerWebId ?: webId,
+                    title,
+                    isPrivate,
+                    resolvedStorage,
+                    container,
+                ).handle(callback::onResult, callback::onError)
             }
         }
 
@@ -79,10 +89,8 @@ class SolidDataModulesService : LifecycleService() {
             uri: String,
             callback: IASSContactModuleAddressBookCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.getAddressBook(webId, uri).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.getAddressBook(webId, uri)
             }
         }
 
@@ -92,10 +100,8 @@ class SolidDataModulesService : LifecycleService() {
             ownerWebId: String?,
             callback: IASSContactModuleAddressBookCallback
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.deleteAddressBook(ownerWebId ?: webId, uri).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.deleteAddressBook(ownerWebId ?: webId, uri)
             }
         }
 
@@ -106,10 +112,8 @@ class SolidDataModulesService : LifecycleService() {
             groupUris: List<String>,
             callback: IASSContactModuleFullContactCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.createNewContact(webId, addressBookUri, newContact, groupUris).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.createNewContact(webId, addressBookUri, newContact, groupUris)
             }
         }
 
@@ -118,10 +122,8 @@ class SolidDataModulesService : LifecycleService() {
             contactUri: String,
             callback: IASSContactModuleFullContactCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.getContact(webId, contactUri).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.getContact(webId, contactUri)
             }
         }
 
@@ -131,10 +133,8 @@ class SolidDataModulesService : LifecycleService() {
             newName: String,
             callback: IASSContactModuleFullContactCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.renameContact(webId, contactUri, newName).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.renameContact(webId, contactUri, newName)
             }
         }
 
@@ -144,10 +144,8 @@ class SolidDataModulesService : LifecycleService() {
             newPhoneNumber: String,
             callback: IASSContactModuleFullContactCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.addNewPhoneNumber(webId, contactUri, newPhoneNumber).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.addNewPhoneNumber(webId, contactUri, newPhoneNumber)
             }
         }
 
@@ -157,10 +155,8 @@ class SolidDataModulesService : LifecycleService() {
             newEmailAddress: String,
             callback: IASSContactModuleFullContactCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.addNewEmailAddress(webId, contactUri, newEmailAddress).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.addNewEmailAddress(webId, contactUri, newEmailAddress)
             }
         }
 
@@ -170,10 +166,8 @@ class SolidDataModulesService : LifecycleService() {
             phoneNumber: String,
             callback: IASSContactModuleFullContactCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.removePhoneNumber(webId, contactUri, phoneNumber).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.removePhoneNumber(webId, contactUri, phoneNumber)
             }
         }
 
@@ -183,10 +177,8 @@ class SolidDataModulesService : LifecycleService() {
             emailAddress: String,
             callback: IASSContactModuleFullContactCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.removeEmailAddress(webId, contactUri, emailAddress).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.removeEmailAddress(webId, contactUri, emailAddress)
             }
         }
 
@@ -196,10 +188,8 @@ class SolidDataModulesService : LifecycleService() {
             contactUri: String,
             callback: IASSContactModuleFullContactCallback
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.deleteContact(webId, addressBookUri, contactUri).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.deleteContact(webId, addressBookUri, contactUri)
             }
         }
 
@@ -210,10 +200,8 @@ class SolidDataModulesService : LifecycleService() {
             contactUris: List<String>,
             callback: IASSContactModuleFullGroupCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.createNewGroup(webId, addressBookUri, title, contactUris).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.createNewGroup(webId, addressBookUri, title, contactUris)
             }
         }
 
@@ -222,10 +210,8 @@ class SolidDataModulesService : LifecycleService() {
             groupUri: String,
             callback: IASSContactModuleFullGroupCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.getGroup(webId, groupUri).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.getGroup(webId, groupUri)
             }
         }
 
@@ -235,10 +221,8 @@ class SolidDataModulesService : LifecycleService() {
             groupUri: String,
             callback: IASSContactModuleFullGroupCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.deleteGroup(webId, addressBookUri, groupUri).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.deleteGroup(webId, addressBookUri, groupUri)
             }
         }
 
@@ -248,10 +232,8 @@ class SolidDataModulesService : LifecycleService() {
             groupUri: String,
             callback: IASSContactModuleFullGroupCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.addContactToGroup(webId, contactUri, groupUri).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.addContactToGroup(webId, contactUri, groupUri)
             }
         }
 
@@ -261,10 +243,8 @@ class SolidDataModulesService : LifecycleService() {
             groupUri: String,
             callback: IASSContactModuleFullGroupCallback,
         ) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                callback.valueChanged(
-                    solidContactsDataModule.removeContactFromGroup(webId, contactUri, groupUri).getOrNull()
-                )
+            lifecycleScope.dispatchDataModule(ioDispatcher, callback::onError, callback::onResult) {
+                contactsRepository.removeContactFromGroup(webId, contactUri, groupUri)
             }
         }
     }
