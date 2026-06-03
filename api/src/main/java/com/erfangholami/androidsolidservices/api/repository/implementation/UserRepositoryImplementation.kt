@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -40,12 +41,21 @@ internal class UserRepositoryImplementation private constructor(
                 get() = ProfileList()
 
             override suspend fun readFrom(input: InputStream): ProfileList {
-                try {
-                    return Json.decodeFromString<ProfileList>(
-                        input.readBytes().decodeToString()
-                    )
+                val bytes = input.readBytes()
+                if (bytes.isEmpty()) return ProfileList()
+                val json = try {
+                    KeystoreCipher.decrypt(bytes).decodeToString()
+                } catch (_: Exception) {
+                    // Installs from before encryption stored this file as plaintext JSON. Read it
+                    // once so the session survives the upgrade; the next write re-persists it
+                    // encrypted. (GCM authentication makes a false-positive decrypt impossible, so
+                    // genuine ciphertext never reaches this branch.)
+                    bytes.decodeToString()
+                }
+                return try {
+                    Json.decodeFromString<ProfileList>(json)
                 } catch (serialization: SerializationException) {
-                    throw CorruptionException("Unable to read Settings", serialization)
+                    throw CorruptionException("Unable to read profiles", serialization)
                 }
             }
 
@@ -55,8 +65,7 @@ internal class UserRepositoryImplementation private constructor(
             ) {
                 withContext(Dispatchers.IO) {
                     output.write(
-                        Json.encodeToString(t)
-                            .encodeToByteArray()
+                        KeystoreCipher.encrypt(Json.encodeToString(t).encodeToByteArray())
                     )
                 }
             }
@@ -74,6 +83,9 @@ internal class UserRepositoryImplementation private constructor(
     private val Context.profilesDataStore: DataStore<ProfileList> by dataStore(
         fileName = PROFILES_FILE_NAME,
         serializer = ProfileListSerializer,
+        // If the store can't be read (e.g. the Keystore key is gone after a restore to a new
+        // device), drop it and start empty — the user re-authenticates — rather than crashing.
+        corruptionHandler = ReplaceFileCorruptionHandler { ProfileList() },
     )
 
     private val Context.preferencesDataStore by preferencesDataStore(
