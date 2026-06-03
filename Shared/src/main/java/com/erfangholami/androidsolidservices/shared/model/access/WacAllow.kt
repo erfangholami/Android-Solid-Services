@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.shared.domain.access
+package com.erfangholami.androidsolidservices.shared.model.access
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -11,11 +11,19 @@ import android.os.Parcelable
  * Spec: https://solidproject.org/TR/wac — WAC-Allow header
  */
 public data class WacAllow(
+    /** Modes the currently authenticated user is granted, lower-cased (e.g. `read`, `write`). */
     val userModes: Set<String>,
+    /** Modes granted to unauthenticated/public agents, lower-cased. */
     val publicModes: Set<String>
 ) : Parcelable {
     public fun canRead(): Boolean = userModes.contains("read")
     public fun canWrite(): Boolean = userModes.contains("write")
+
+    /**
+     * `true` if the user may append. Folds in `write`, since a user who may
+     * write may also append even when the server does not list `append`
+     * separately.
+     */
     public fun canAppend(): Boolean = userModes.contains("append") || canWrite()
     public fun canControl(): Boolean = userModes.contains("control")
 
@@ -37,6 +45,13 @@ public data class WacAllow(
             override fun newArray(size: Int): Array<WacAllow?> = arrayOfNulls(size)
         }
 
+        /**
+         * Parses a raw `WAC-Allow` header value into a [WacAllow].
+         *
+         * Returns `null` when [headerValue] is `null` (header absent).
+         * Unrecognised groups are ignored; the `user` and `public` groups
+         * default to empty sets when not present in the header.
+         */
         public fun parse(headerValue: String?): WacAllow? {
             headerValue ?: return null
             val groups = mutableMapOf<String, Set<String>>()

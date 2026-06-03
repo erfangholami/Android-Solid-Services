@@ -1,11 +1,12 @@
-package com.erfangholami.androidsolidservices.shared.domain.access
+package com.erfangholami.androidsolidservices.shared.model.access
 
 import com.apicatalog.jsonld.http.media.MediaType
-import com.erfangholami.androidsolidservices.shared.domain.resource.RdfQuad
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.util.tryParseUri
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
 /**
@@ -23,15 +24,15 @@ public class SolidACLResource : SolidRDFResource {
 
     public constructor(identifier: URI) : this(identifier, null, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: Headers?) :
-            this(identifier, MediaType.JSON_LD, quads, headers)
+    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+            this(identifier, "application/ld+json", quads, headers)
 
     public constructor(
         identifier: URI,
-        mediaType: MediaType,
+        contentType: String,
         quads: List<RdfQuad>?,
-        headers: Headers?
-    ) : super(identifier, mediaType, quads, headers)
+        headers: SolidHeaders?
+    ) : super(identifier, contentType, quads, headers)
 
     /**
      * Returns all `acl:Authorization` instances in this ACL document.
@@ -50,11 +51,11 @@ public class SolidACLResource : SolidRDFResource {
 
                 accessTo = forSubject
                     .filter { it.predicate == ACL.ACCESS_TO }
-                    .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.accessTo") },
 
                 default = forSubject
                     .filter { it.predicate == ACL.DEFAULT }
-                    .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.default") },
 
                 modes = forSubject
                     .filter { it.predicate == ACL.MODE }
@@ -63,19 +64,19 @@ public class SolidACLResource : SolidRDFResource {
 
                 agents = forSubject
                     .filter { it.predicate == ACL.AGENT }
-                    .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agents") },
 
                 agentClasses = forSubject
                     .filter { it.predicate == ACL.AGENT_CLASS }
-                    .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agentClasses") },
 
                 agentGroups = forSubject
                     .filter { it.predicate == ACL.AGENT_GROUP }
-                    .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agentGroups") },
 
                 origins = forSubject
                     .filter { it.predicate == ACL.ORIGIN }
-                    .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.origins") },
             )
         }
     }

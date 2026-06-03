@@ -1,11 +1,12 @@
-package com.erfangholami.androidsolidservices.shared.domain.access
+package com.erfangholami.androidsolidservices.shared.model.access
 
 import com.apicatalog.jsonld.http.media.MediaType
-import com.erfangholami.androidsolidservices.shared.domain.resource.RdfQuad
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.util.tryParseUri
 import com.erfangholami.androidsolidservices.shared.vocab.ACP
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
 /**
@@ -21,15 +22,15 @@ public class SolidACR : SolidRDFResource {
 
     public constructor(identifier: URI) : this(identifier, null, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: Headers?) :
-            this(identifier, MediaType.JSON_LD, quads, headers)
+    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+            this(identifier, "application/ld+json", quads, headers)
 
     public constructor(
         identifier: URI,
-        mediaType: MediaType,
+        contentType: String,
         quads: List<RdfQuad>?,
-        headers: Headers?
-    ) : super(identifier, mediaType, quads, headers)
+        headers: SolidHeaders?
+    ) : super(identifier, contentType, quads, headers)
 
     /** Returns `true` if the quad store declares `rdf:type acp:AccessControlResource`. */
     public fun isACR(): Boolean =
@@ -42,7 +43,7 @@ public class SolidACR : SolidRDFResource {
     public fun getAccessControls(): List<URI> =
         quads
             .filter { it.predicate == ACP.ACCESS_CONTROL }
-            .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() }
+            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getAccessControls") }
 
     /**
      * Returns all `acp:AccessControl` IRIs that apply transitively to
@@ -51,7 +52,7 @@ public class SolidACR : SolidRDFResource {
     public fun getMemberAccessControls(): List<URI> =
         quads
             .filter { it.predicate == ACP.MEMBER_ACCESS_CONTROL }
-            .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() }
+            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getMemberAccessControls") }
 
     /**
      * Returns all `acp:Policy` IRIs referenced by any access control in
@@ -60,7 +61,7 @@ public class SolidACR : SolidRDFResource {
     public fun getPolicies(): List<URI> =
         quads
             .filter { it.predicate == ACP.APPLY }
-            .mapNotNull { runCatching { URI.create(it.`object`) }.getOrNull() }
+            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getPolicies") }
 
     /**
      * Returns the access modes granted by a policy identified by [policyIri].

@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.shared.domain.access
+package com.erfangholami.androidsolidservices.shared.model.access
 
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
@@ -54,6 +54,12 @@ public data class AclAuthorization(
 ) {
     public fun allowsRead(): Boolean = modes.contains(ACL.READ)
     public fun allowsWrite(): Boolean = modes.contains(ACL.WRITE)
+
+    /**
+     * `true` if this authorization permits appending. Folds in `acl:Write`
+     * for convenience, since a write grant subsumes the ability to append
+     * even though WAC asserts the modes independently.
+     */
     public fun allowsAppend(): Boolean = modes.contains(ACL.APPEND) || allowsWrite()
     public fun allowsControl(): Boolean = modes.contains(ACL.CONTROL)
 
