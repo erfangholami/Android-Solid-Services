@@ -65,13 +65,11 @@ kotlin {
 dependencies {
 
     implementation(libs.androidx.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.android.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
 
-    api(libs.io.jsonwebtoken.api)
+    implementation(libs.io.jsonwebtoken.api)
     runtimeOnly(libs.io.jsonwebtoken.impl)
     runtimeOnly(libs.io.jsonwebtoken.orgjson) {
         exclude(group = "org.json:json", module = "json") //provided by Android natively
@@ -81,6 +79,12 @@ dependencies {
     implementation(libs.jetbrains.kotlinx.serialization.json)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.datastore.preferences)
+
+    // Direct Solid server communication (okhttp) + JSON-LD codec (titanium). These used to arrive
+    // transitively via Shared, but Shared no longer exposes them on its public API, so api — the
+    // HTTP/RDF layer that genuinely uses them — now declares them itself.
+    implementation(libs.okhttp)
+    implementation(libs.titanium.json.ld.jre8)
 
     api(project(":Shared"))
 }

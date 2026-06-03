@@ -1,5 +1,5 @@
 [versions]
-android = "9.2.0"
+android = "9.2.1"
 appauth = "0.11.1"
 okhttp = "5.3.2"
 ktx = "1.18.0"

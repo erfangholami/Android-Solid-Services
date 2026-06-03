@@ -48,7 +48,7 @@ android {
 }
 
 kotlin {
-    explicitApiWarning()
+    explicitApi()
     compilerOptions {
         jvmTarget = JvmTarget.JVM_17
     }
@@ -57,18 +57,17 @@ kotlin {
 
 dependencies {
 
-    implementation(libs.androidx.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.android.material)
     implementation(libs.jetbrains.kotlinx.serialization.json)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
 
     api(libs.openid.appauth)
-    api(libs.okhttp)
-    api(libs.titanium.json.ld.jre8)
-    api(libs.glassfish.jakarta.json)
+
+    // Internal RDF (JSON-LD) codec only — NOT exposed on the public API (resource models use
+    // String content-type + SolidHeaders), so these stay off consumers' compile classpath.
+    implementation(libs.titanium.json.ld.jre8)
+    implementation(libs.glassfish.jakarta.json)
 }
 
 mavenPublishing {
