@@ -1,60 +1,61 @@
-package com.erfangholami.androidsolidservices.shared.domain.util
+package com.erfangholami.androidsolidservices.shared.util
 
-import com.erfangholami.androidsolidservices.shared.domain.access.WacAllow
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPHeaderName
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPLinkRelation
+import com.erfangholami.androidsolidservices.shared.model.access.WacAllow
+import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
+import com.erfangholami.androidsolidservices.shared.http.HTTPLinkRelation
+import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.PIM
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
 /**
- * Extension functions for parsing Solid-specific HTTP headers from OkHttp [Headers].
+ * Extension functions for parsing Solid-specific HTTP headers from OkHttp [SolidHeaders].
  * All functions return `null` / empty when the header is absent.
  *
  * Spec: https://solidproject.org/TR/protocol
  */
 
-public fun Headers.getContentLength(): Long {
+public fun SolidHeaders.getContentLength(): Long {
     return this["content-length"]?.toLongOrNull() ?: -1L
 }
 
-public fun Headers.getContentType(): String? = get(HTTPHeaderName.CONTENT_TYPE)
+public fun SolidHeaders.getContentType(): String? = get(HTTPHeaderName.CONTENT_TYPE)
 
-public fun Headers.getAcceptPatch(): List<String> =
+public fun SolidHeaders.getAcceptPatch(): List<String> =
     get(HTTPHeaderName.ACCEPT_PATCH)
         ?.split(",")
         ?.map { it.trim() }
         ?.filter { it.isNotEmpty() }
         ?: emptyList()
 
-public fun Headers.getAcceptPost(): List<String> =
+public fun SolidHeaders.getAcceptPost(): List<String> =
     get(HTTPHeaderName.ACCEPT_POST)
         ?.split(",")
         ?.map { it.trim() }
         ?.filter { it.isNotEmpty() }
         ?: emptyList()
 
-public fun Headers.getAcceptPut(): List<String> =
+public fun SolidHeaders.getAcceptPut(): List<String> =
     get(HTTPHeaderName.ACCEPT_PUT)
         ?.split(",")
         ?.map { it.trim() }
         ?.filter { it.isNotEmpty() }
         ?: emptyList()
 
-public fun Headers.getWwwAuthenticate(): String? = get(HTTPHeaderName.WWW_AUTHENTICATE)
+public fun SolidHeaders.getWwwAuthenticate(): String? = get(HTTPHeaderName.WWW_AUTHENTICATE)
 
 /**
  * Returns the URI of the WAC / ACP access-control resource advertised by
  * `Link: <...>; rel="acl"`, or `null` if absent.
  */
-public fun Headers.getAclUri(): URI? =
+public fun SolidHeaders.getAclUri(): URI? =
     parseLinkRelation(this, HTTPLinkRelation.ACL)
 
 /**
  * Returns the URI of the description resource advertised by
  * `Link: <...>; rel="describedby"`, or `null` if absent.
  */
-public fun Headers.getDescribedByUri(): URI? =
+public fun SolidHeaders.getDescribedByUri(): URI? =
     parseLinkRelation(this, HTTPLinkRelation.DESCRIBED_BY)
 
 /**
@@ -62,7 +63,7 @@ public fun Headers.getDescribedByUri(): URI? =
  * `Link: <...>; rel="http://www.w3.org/ns/solid/terms#storageDescription"`,
  * or `null` if absent.
  */
-public fun Headers.getStorageDescriptionUri(): URI? =
+public fun SolidHeaders.getStorageDescriptionUri(): URI? =
     parseLinkRelation(this, HTTPLinkRelation.STORAGE_DESCRIPTION)
 
 /**
@@ -70,8 +71,17 @@ public fun Headers.getStorageDescriptionUri(): URI? =
  * `Link: <...>; rel="http://www.w3.org/ns/solid/terms#owner"`,
  * or `null` if absent.
  */
-public fun Headers.getOwnerUri(): URI? =
+public fun SolidHeaders.getOwnerUri(): URI? =
     parseLinkRelation(this, HTTPLinkRelation.OWNER)
+
+/**
+ * Returns the URI of the LDN inbox advertised by
+ * `Link: <...>; rel="http://www.w3.org/ns/ldp#inbox"`, or `null` if absent.
+ * Solid Protocol §4.1.1 allows this on storage roots and on WebID URLs;
+ * agents may also expose it via an `ldp:inbox` triple in their profile.
+ */
+public fun SolidHeaders.getInboxUri(): URI? =
+    parseLinkRelation(this, LDP.INBOX)
 
 /**
  * Returns the OIDC issuer URI advertised by
@@ -80,7 +90,7 @@ public fun Headers.getOwnerUri(): URI? =
  *
  * Spec: https://solidproject.org/TR/oidc — Solid-OIDC issuer discovery
  */
-public fun Headers.getOidcIssuerUri(): URI? =
+public fun SolidHeaders.getOidcIssuerUri(): URI? =
     parseLinkRelation(this, HTTPLinkRelation.OIDC_ISSUER)
 
 /**
@@ -88,9 +98,8 @@ public fun Headers.getOidcIssuerUri(): URI? =
  * `rel="type" <http://www.w3.org/ns/pim/space#Storage>`,
  * indicating this resource is a Solid pod storage root.
  */
-public fun Headers.isStorage(): Boolean {
+public fun SolidHeaders.isStorage(): Boolean {
     return values(HTTPHeaderName.LINK).any { headerValue ->
-        // The type value may appear as the full URI or a shortened form
         headerValue.contains(PIM.STORAGE_TYPE) &&
                 headerValue.contains("""rel="${HTTPLinkRelation.TYPE}"""")
                     .or(headerValue.contains("rel=${HTTPLinkRelation.TYPE}"))
@@ -98,29 +107,41 @@ public fun Headers.isStorage(): Boolean {
 }
 
 /**
- * Returns the bare ETag value from the `ETag` response header, with surrounding quotes stripped.
- * Returns `null` if the header is absent.
+ * Returns the bare ETag value from the `ETag` response header, with surrounding
+ * quotes stripped, suitable for use as an `If-Match` validator.
+ *
+ * Returns `null` if the header is absent **or carries a weak validator**
+ * (`W/"..."`). The only consumers of this value in the codebase feed it to
+ * `If-Match`, which requires the strong comparison function (RFC 7232 §3.1):
+ * a weak validator can never match, so sending it guarantees a `412 Precondition
+ * Failed`. Some servers (e.g. Node Solid Server / solidcommunity.net) emit only
+ * weak ETags for RDF resources; reporting `null` here makes those writes fall
+ * back to unconditional, which is the correct behaviour for a weak validator.
  */
-public fun Headers.getETag(): String? = get(HTTPHeaderName.ETAG)?.removeSurrounding("\"")
+public fun SolidHeaders.getETag(): String? {
+    val raw = get(HTTPHeaderName.ETAG)?.trim() ?: return null
+    if (raw.startsWith("W/", ignoreCase = true)) return null
+    return raw.removeSurrounding("\"")
+}
 
 /**
  * Returns the `Last-Modified` header value, or `null` if absent.
  */
-public fun Headers.getLastModified(): String? = get(HTTPHeaderName.LAST_MODIFIED)
+public fun SolidHeaders.getLastModified(): String? = get(HTTPHeaderName.LAST_MODIFIED)
 
 /**
  * Returns the `Location` header value as a [URI], or `null` if absent.
  * This is set on 201 Created responses.
  */
-public fun Headers.getLocation(): URI? =
-    get(HTTPHeaderName.LOCATION)?.let { runCatching { URI.create(it) }.getOrNull() }
+public fun SolidHeaders.getLocation(): URI? =
+    get(HTTPHeaderName.LOCATION)?.let { tryParseUri(it, "SolidHeaders.getLocation") }
 
 /**
  * Returns the set of HTTP methods listed in the `Allow` response header,
  * or an empty set if the header is absent.
  * Example: `Allow: GET, HEAD, OPTIONS, PUT, PATCH, DELETE`
  */
-public fun Headers.getAllowedMethods(): Set<String> =
+public fun SolidHeaders.getAllowedMethods(): Set<String> =
     get(HTTPHeaderName.ALLOW)
         ?.split(",")
         ?.map { it.trim() }
@@ -132,13 +153,13 @@ public fun Headers.getAllowedMethods(): Set<String> =
  * Returns the parsed [WacAllow] from the `WAC-Allow` response header,
  * or `null` if the header is absent or malformed.
  */
-public fun Headers.getWacAllow(): WacAllow? =
+public fun SolidHeaders.getWacAllow(): WacAllow? =
     WacAllow.parse(get(HTTPHeaderName.WAC_ALLOW))
 
 /**
  * Returns all `rel` values listed in `Link` headers as a flat list of strings.
  */
-public fun Headers.getLinkRelTypes(): List<String> {
+public fun SolidHeaders.getLinkRelTypes(): List<String> {
     val results = mutableListOf<String>()
     values(HTTPHeaderName.LINK).forEach { headerValue ->
         val relRegex = Regex("""rel="?([^";,\s]+)"?""")
@@ -151,14 +172,14 @@ public fun Headers.getLinkRelTypes(): List<String> {
  * Returns the set of type URIs advertised via `Link: <uri>; rel="type"` headers.
  * Used to identify resource types such as `ldp:BasicContainer` or `pim:Storage`.
  */
-public fun Headers.getLinkTypeUris(): Set<URI> {
+public fun SolidHeaders.getLinkTypeUris(): Set<URI> {
     val results = mutableSetOf<URI>()
     values(HTTPHeaderName.LINK).forEach { headerValue ->
         headerValue.split(Regex(",(?=\\s*<)")).forEach { segment ->
             val relMatch = Regex("""rel="?([^";,\s]+)"?""").find(segment) ?: return@forEach
             if (relMatch.groupValues[1] == HTTPLinkRelation.TYPE) {
                 val uriMatch = Regex("""<([^>]+)>""").find(segment) ?: return@forEach
-                runCatching { URI.create(uriMatch.groupValues[1]) }.getOrNull()
+                tryParseUri(uriMatch.groupValues[1], "SolidHeaders.getLinkTypeUris")
                     ?.let { results.add(it) }
             }
         }
@@ -166,14 +187,13 @@ public fun Headers.getLinkTypeUris(): Set<URI> {
     return results
 }
 
-private fun parseLinkRelation(headers: Headers, rel: String): URI? {
+private fun parseLinkRelation(headers: SolidHeaders, rel: String): URI? {
     headers.values(HTTPHeaderName.LINK).forEach { headerValue ->
-        // Split on commas that are not inside angle brackets or quotes
         headerValue.split(Regex(",(?=\\s*<)")).forEach { segment ->
             val uriMatch = Regex("""<([^>]+)>""").find(segment) ?: return@forEach
             val relMatch = Regex("""rel="?([^";,\s]+)"?""").find(segment) ?: return@forEach
             if (relMatch.groupValues[1] == rel) {
-                return runCatching { URI.create(uriMatch.groupValues[1]) }.getOrNull()
+                return tryParseUri(uriMatch.groupValues[1], "SolidHeaders.parseLinkRelation(rel=$rel)")
             }
         }
     }

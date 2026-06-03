@@ -1,5 +1,6 @@
-package com.erfangholami.androidsolidservices.shared.domain.util
+package com.erfangholami.androidsolidservices.shared.util
 
+import com.erfangholami.androidsolidservices.shared.util.IriUtils.canonical
 import java.net.URI
 import java.net.URISyntaxException
 
@@ -92,4 +93,58 @@ public object IriUtils {
      */
     public fun resolve(base: String, reference: String): String =
         URI.create(base).resolve(reference).toString()
+
+    /**
+     * Returns the canonical form of [iri] for equivalence comparison:
+     * lower-cases the scheme and host, removes `.`/`..` dot-segments, and
+     * normalizes percent-encoding via [URI]. **Path case, the trailing slash,
+     * and any fragment are preserved** — a file `x` and a container `x/`, or
+     * two different `#fragment`s, are genuinely distinct resources/agents and
+     * must NOT be unified. Falls back to the raw string if [iri] doesn't parse.
+     */
+    public fun canonical(iri: String): String =
+        runCatching {
+            val u = URI(iri).normalize()
+            val scheme = u.scheme?.lowercase()
+            val host = u.host?.lowercase()
+            if (scheme != null && host != null) {
+                URI(scheme, u.userInfo, host, u.port, u.path, u.query, u.fragment).toString()
+            } else {
+                u.toString()
+            }
+        }.getOrDefault(iri)
+
+    /**
+     * Returns `true` if [a] and [b] denote the same IRI once [canonical]-ized.
+     *
+     * Use this when comparing WebIDs, agent URIs, or resource URIs that may differ
+     * only in scheme/host case, dot-segments, or percent-encoding.
+     */
+    public fun sameIri(a: String, b: String): Boolean =
+        a == b || canonical(a) == canonical(b)
+
+    /** Characters an IRIREF may not contain unescaped (N-Triples/Turtle grammar). */
+    private const val IRI_FORBIDDEN = "<>\"{}|^`\\"
+
+    /**
+     * Escapes [iri] for safe emission inside `<...>` angle brackets in
+     * N-Triples / Turtle / N3. The IRIREF production forbids
+     * control characters (U+0000–U+0020) and `< > " { } | ^ ` \` unescaped; we
+     * replace each with a `\\uXXXX` UCHAR so a hostile or merely unusual IRI
+     * can't break out of the term and corrupt the serialized document. Returns
+     * the input unchanged when it contains none of those characters.
+     */
+    public fun escapeIri(iri: String): String {
+        if (iri.none { it.code <= 0x20 || it in IRI_FORBIDDEN }) return iri
+        return buildString(iri.length + 8) {
+            iri.forEach { c ->
+                if (c.code <= 0x20 || c in IRI_FORBIDDEN) {
+                    append("\\u")
+                    append(c.code.toString(16).uppercase().padStart(4, '0'))
+                } else {
+                    append(c)
+                }
+            }
+        }
+    }
 }

@@ -1,8 +1,13 @@
-package com.erfangholami.androidsolidservices.shared.domain.util
+package com.erfangholami.androidsolidservices.shared.util
 
 import java.net.URI
 import java.net.URL
 
+/**
+ * Re-encodes [uri] by round-tripping through the multi-argument [URI] constructor,
+ * which percent-encodes any characters that are illegal in the relevant URI component.
+ * Returns [uri] unchanged if re-encoding fails.
+ */
 public fun encodeUri(uri: URI): URI {
     return try {
         URI(
@@ -19,6 +24,12 @@ public fun encodeUri(uri: URI): URI {
     }
 }
 
+/**
+ * Parses [raw] into a [URI], applying percent-encoding to any illegal characters.
+ *
+ * Tries `encodeUri(URI(raw))` first, then falls back to parsing via [URL] (which
+ * handles some non-standard inputs), and finally `URI.create(raw)` as a last resort.
+ */
 public fun encodeUriString(raw: String): URI {
     return try {
         encodeUri(URI(raw))

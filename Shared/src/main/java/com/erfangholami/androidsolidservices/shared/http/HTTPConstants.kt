@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.shared.domain.network
+package com.erfangholami.androidsolidservices.shared.http
 
 /**
  * HTTP header name constants.
@@ -29,8 +29,8 @@ public object HTTPHeaderName {
     //CORS headers
     public const val ACCESS_CONTROL_ALLOW_ORIGIN: String = "Access-Control-Allow-Origin"
     public const val ACCESS_CONTROL_ALLOW_METHODS: String = "Access-Control-Allow-Methods"
-    public const val ACCESS_CONTROL_ALLOW_HEADERS: String = "Access-Control-Allow-Headers"
-    public const val ACCESS_CONTROL_EXPOSE_HEADERS: String = "Access-Control-Expose-Headers"
+    public const val ACCESS_CONTROL_ALLOW_HEADERS: String = "Access-Control-Allow-SolidHeaders"
+    public const val ACCESS_CONTROL_EXPOSE_HEADERS: String = "Access-Control-Expose-SolidHeaders"
     public const val ACCESS_CONTROL_MAX_AGE: String = "Access-Control-Max-Age"
 
     //Content negotiation
@@ -60,6 +60,10 @@ public object HTTPAcceptType {
     public const val TRIG: String = "application/trig"
     public const val RDF_XML: String = "application/rdf+xml"
     public const val JSON_RDF: String = "application/rdf+json"
+
+    //PATCH formats
+    /** SPARQL 1.1 Update — accepted by every major Solid server for PATCH. */
+    public const val SPARQL_UPDATE: String = "application/sparql-update"
 
     //General
     public const val JSON: String = "application/json"
