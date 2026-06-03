@@ -1,7 +1,9 @@
 package com.erfangholami.androidsolidservices.services
 
-import com.erfangholami.androidsolidservices.shared.domain.auth.IASSLoginCallback
+import com.erfangholami.androidsolidservices.shared.model.auth.IASSLoginCallback
 import java.util.concurrent.ConcurrentHashMap
+import javax.inject.Inject
+import javax.inject.Singleton
 
 data class PendingLoginRequest(
     val callerPackage: String,
@@ -9,14 +11,16 @@ data class PendingLoginRequest(
     val callback: IASSLoginCallback,
 )
 
-object PendingLoginRequests {
-    private val map = ConcurrentHashMap<String, PendingLoginRequest>()
+@Singleton
+class PendingLoginRequests @Inject constructor() {
+
+    private val requests = ConcurrentHashMap<String, PendingLoginRequest>()
 
     fun put(id: String, request: PendingLoginRequest) {
-        map[id] = request
+        requests[id] = request
     }
 
-    fun get(id: String): PendingLoginRequest? = map[id]
+    fun get(id: String): PendingLoginRequest? = requests[id]
 
-    fun remove(id: String): PendingLoginRequest? = map.remove(id)
+    fun remove(id: String): PendingLoginRequest? = requests.remove(id)
 }

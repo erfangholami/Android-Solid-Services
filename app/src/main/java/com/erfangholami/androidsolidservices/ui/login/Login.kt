@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.erfangholami.androidsolidservices.R
 import com.erfangholami.androidsolidservices.ui.navigation.MainPage
@@ -45,6 +46,8 @@ fun Login(
     navController: NavHostController,
     viewModel: LoginViewModel,
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     val doAuthenticationInBrowser =
         rememberLauncherForActivityResult(object : ActivityResultContract<Intent, Intent?>() {
             override fun createIntent(context: Context, input: Intent): Intent = input
@@ -58,33 +61,23 @@ fun Login(
         }
 
     LaunchedEffect(Unit) {
-        if (!viewModel.isAddingAccount && viewModel.isLoggedIn()) {
-            navController.navigate(MainPage) {
-                popUpTo(navController.graph.id) { inclusive = true }
-            }
-        }
+        viewModel.onStart()
     }
 
-    LaunchedEffect(viewModel.loginBrowserIntent.value) {
-        viewModel.loginBrowserIntent.value?.let { intent ->
-            doAuthenticationInBrowser.launch(intent)
-            viewModel.loginBrowserIntent.value = null
-        }
-    }
-
-    LaunchedEffect(viewModel.loginResult.value) {
-        if (viewModel.loginResult.value) {
-            if (viewModel.isAddingAccount) {
-                navController.popBackStack()
-            } else {
-                navController.navigate(MainPage) {
+    LaunchedEffect(Unit) {
+        viewModel.eventsFlow.collect { event ->
+            when (event) {
+                is LoginEvent.LaunchBrowser -> doAuthenticationInBrowser.launch(event.intent)
+                LoginEvent.NavigateToMain -> navController.navigate(MainPage) {
                     popUpTo(navController.graph.id) { inclusive = true }
                 }
+
+                LoginEvent.NavigateBack -> navController.popBackStack()
             }
         }
     }
 
-    if (viewModel.loginLoading.value) {
+    if (uiState.loading) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -94,7 +87,7 @@ fun Login(
         }
     } else {
         LoginContent(
-            errorMessage = viewModel.loginBrowserIntentErrorMessage.value,
+            errorMessage = uiState.errorMessage,
             onLoginInrupt = { viewModel.loginWithInruptCom() },
             onLoginSolidCommunity = { viewModel.loginWithSolidCommunity() },
             onLoginCustomUrl = { viewModel.loginWithCustomIssuer(it) },
@@ -144,7 +137,6 @@ private fun LoginContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Known providers
         Button(
             onClick = onLoginInrupt,
             modifier = Modifier.fillMaxWidth(),

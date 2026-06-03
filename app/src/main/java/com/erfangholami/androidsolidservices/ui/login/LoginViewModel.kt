@@ -1,26 +1,51 @@
 package com.erfangholami.androidsolidservices.ui.login
 
 import android.content.Intent
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.erfangholami.androidsolidservices.base.BaseViewModel
+import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
+import com.erfangholami.androidsolidservices.domain.usecase.SubmitAuthorizationUseCase
 import com.erfangholami.androidsolidservices.ui.navigation.Login
-import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.openid.appauth.AuthorizationException
 import net.openid.appauth.AuthorizationResponse
 import javax.inject.Inject
 
+data class LoginUiState(
+    val loading: Boolean = false,
+    val errorMessage: String? = null,
+    val isAddingAccount: Boolean = false,
+)
+
+sealed interface LoginEvent {
+    data class LaunchBrowser(val intent: Intent) : LoginEvent
+    data object NavigateToMain : LoginEvent
+    data object NavigateBack : LoginEvent
+}
+
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    val authenticator: Authenticator,
+    private val authRepository: AuthRepository,
+    private val submitAuthorization: SubmitAuthorizationUseCase,
     savedStateHandle: SavedStateHandle,
-) : BaseViewModel() {
+) : ViewModel() {
 
-    val isAddingAccount: Boolean = savedStateHandle.toRoute<Login>().isAddingAccount
+    private val isAddingAccount: Boolean = savedStateHandle.toRoute<Login>().isAddingAccount
+
+    private val _uiState = MutableStateFlow(LoginUiState(isAddingAccount = isAddingAccount))
+    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+
+    private val events = Channel<LoginEvent>(Channel.BUFFERED)
+    val eventsFlow = events.receiveAsFlow()
 
     companion object {
         private const val APP_NAME = "Android Solid Service"
@@ -30,98 +55,79 @@ class LoginViewModel @Inject constructor(
         private const val OIDC_ISSUER_SOLID_COMMUNITY = "https://solidcommunity.net"
     }
 
-    val loginBrowserIntent = mutableStateOf<Intent?>(null)
-    val loginBrowserIntentErrorMessage = mutableStateOf<String?>(null)
-    val loginLoading = mutableStateOf(false)
-    val loginResult = mutableStateOf(false)
-
-    private fun launchLogin(block: suspend () -> Pair<Intent?, String?>) {
-        viewModelScope.launch {
-            loginLoading.value = true
-            try {
-                val intentRes = block()
-                loginBrowserIntentErrorMessage.value = intentRes.second
-                loginBrowserIntent.value = intentRes.first
-                if (intentRes.first == null) {
-                    loginLoading.value = false
-                }
-            } catch (e: Exception) {
-                loginBrowserIntentErrorMessage.value = e.message ?: "Login failed"
-                loginLoading.value = false
-            }
+    fun onStart() {
+        if (!isAddingAccount && authRepository.isUserAuthorized()) {
+            viewModelScope.launch { events.send(LoginEvent.NavigateToMain) }
         }
     }
 
-    fun loginWithWebId(webId: String) {
-        launchLogin {
-            authenticator.createAuthenticationIntent(
-                webId = webId,
-                appName = APP_NAME,
-                redirectUri = AUTH_APP_REDIRECT_URL
-            )
-        }
+    fun loginWithWebId(webId: String) = launchLogin {
+        authRepository.createAuthenticationIntent(
+            webId = webId,
+            appName = APP_NAME,
+            redirectUri = AUTH_APP_REDIRECT_URL,
+        )
     }
 
-    fun loginWithInruptCom() {
-        launchLogin {
-            authenticator.createAuthenticationIntent(
-                oidcIssuer = OIDC_ISSUER_INRUPT_COM,
-                appName = APP_NAME,
-                redirectUri = AUTH_APP_REDIRECT_URL
-            )
-        }
+    fun loginWithInruptCom() = launchLogin {
+        authRepository.createAuthenticationIntent(
+            oidcIssuer = OIDC_ISSUER_INRUPT_COM,
+            appName = APP_NAME,
+            redirectUri = AUTH_APP_REDIRECT_URL,
+        )
     }
 
-    fun loginWithSolidCommunity() {
-        launchLogin {
-            authenticator.createAuthenticationIntent(
-                oidcIssuer = OIDC_ISSUER_SOLID_COMMUNITY,
-                appName = APP_NAME,
-                redirectUri = AUTH_APP_REDIRECT_URL
-            )
-        }
+    fun loginWithSolidCommunity() = launchLogin {
+        authRepository.createAuthenticationIntent(
+            oidcIssuer = OIDC_ISSUER_SOLID_COMMUNITY,
+            appName = APP_NAME,
+            redirectUri = AUTH_APP_REDIRECT_URL,
+        )
     }
 
-    fun loginWithCustomIssuer(issuerUrl: String) {
-        launchLogin {
-            authenticator.createAuthenticationIntent(
-                oidcIssuer = issuerUrl,
-                appName = APP_NAME,
-                redirectUri = AUTH_APP_REDIRECT_URL
-            )
-        }
+    fun loginWithCustomIssuer(issuerUrl: String) = launchLogin {
+        authRepository.createAuthenticationIntent(
+            oidcIssuer = issuerUrl,
+            appName = APP_NAME,
+            redirectUri = AUTH_APP_REDIRECT_URL,
+        )
     }
 
     fun submitAuthorizationResponse(
-        authorizationResponse: AuthorizationResponse?,
-        authorizationException: AuthorizationException?
+        authResponse: AuthorizationResponse?,
+        authException: AuthorizationException?,
     ) {
         viewModelScope.launch {
-            try {
-                authenticator.submitAuthorizationResponse(
-                    authorizationResponse,
-                    authorizationException
-                )
-            } catch (_: Exception) {
-                //Fall through to the isLoggedIn() check.
-            }
-            loginLoading.value = false
-            loginBrowserIntent.value = null
-            if (isLoggedIn()) {
-                loginBrowserIntentErrorMessage.value = null
-                loginResult.value = true
+            val authorized = submitAuthorization(authResponse, authException)
+            _uiState.update { it.copy(loading = false) }
+            if (authorized) {
+                _uiState.update { it.copy(errorMessage = null) }
+                events.send(if (isAddingAccount) LoginEvent.NavigateBack else LoginEvent.NavigateToMain)
             } else {
-                loginResult.value = false
-                if (authorizationException != null) {
-                    loginBrowserIntentErrorMessage.value = authorizationException.errorDescription
-                } else {
-                    loginBrowserIntentErrorMessage.value = "A problem during login occurred!"
-                }
+                val message = authException?.errorDescription ?: "A problem during login occurred!"
+                _uiState.update { it.copy(errorMessage = message) }
             }
         }
     }
 
-    fun isLoggedIn(): Boolean {
-        return authenticator.isUserAuthorized()
+    private fun launchLogin(block: suspend () -> Pair<Intent?, String?>) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(loading = true, errorMessage = null) }
+            try {
+                val (intent, error) = block()
+                if (intent != null) {
+                    events.send(LoginEvent.LaunchBrowser(intent))
+                } else {
+                    _uiState.update { it.copy(loading = false, errorMessage = error) }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        loading = false,
+                        errorMessage = e.message ?: "Login failed"
+                    )
+                }
+            }
+        }
     }
 }

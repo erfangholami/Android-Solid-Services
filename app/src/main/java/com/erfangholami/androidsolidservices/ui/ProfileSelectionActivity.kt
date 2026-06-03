@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,9 +34,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,14 +46,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.erfangholami.androidsolidservices.R
-import com.erfangholami.androidsolidservices.repository.AccessGrantRepository
 import com.erfangholami.androidsolidservices.services.PendingLoginRequests
+import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import com.erfangholami.androidsolidservices.ui.theme.ASSAppTheme
-import com.erfangholami.androidsolidservices.shared.domain.profile.Profile
-import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -64,17 +61,16 @@ class ProfileSelectionActivity : ComponentActivity() {
         const val EXTRA_REQUEST_ID = "request_id"
     }
 
-    @Inject
-    lateinit var authenticator: Authenticator
+    private val viewModel: ProfileSelectionViewModel by viewModels()
 
     @Inject
-    lateinit var accessGrantRepository: AccessGrantRepository
+    lateinit var pendingLoginRequests: PendingLoginRequests
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val requestId = intent.getStringExtra(EXTRA_REQUEST_ID)
-        val request = requestId?.let { PendingLoginRequests.get(it) }
+        val request = requestId?.let { pendingLoginRequests.get(it) }
 
         if (request == null) {
             finish()
@@ -84,7 +80,7 @@ class ProfileSelectionActivity : ComponentActivity() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 request.callback.onResult(false, "")
-                PendingLoginRequests.remove(requestId)
+                pendingLoginRequests.remove(requestId)
                 finish()
             }
         })
@@ -98,28 +94,21 @@ class ProfileSelectionActivity : ComponentActivity() {
 
         setContent {
             ASSAppTheme {
-                val scope = rememberCoroutineScope()
-                val profiles by authenticator.loggedInProfilesFlow.collectAsState()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
                 ProfileSelectionScreen(
                     callerName = request.callerName,
                     callerIcon = callerIcon,
-                    profiles = profiles,
+                    profiles = uiState.profiles,
                     onProfileSelected = { selectedWebId ->
-                        scope.launch {
-                            accessGrantRepository.addAccessGrant(
-                                request.callerPackage,
-                                request.callerName,
-                                selectedWebId,
-                            )
-                        }
+                        viewModel.grant(request.callerPackage, request.callerName, selectedWebId)
                         request.callback.onResult(true, selectedWebId)
-                        PendingLoginRequests.remove(requestId)
+                        pendingLoginRequests.remove(requestId)
                         finish()
                     },
                     onDismiss = {
                         request.callback.onResult(false, "")
-                        PendingLoginRequests.remove(requestId)
+                        pendingLoginRequests.remove(requestId)
                         finish()
                     }
                 )
