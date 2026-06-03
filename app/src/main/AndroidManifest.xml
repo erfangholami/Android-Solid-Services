@@ -44,6 +44,9 @@
         <service
             android:name=".services.ASSSharingService"
             android:exported="true" />
+        <service
+            android:name=".services.ASSNotificationsService"
+            android:exported="true" />
 
         <activity
             android:name=".ui.ProfileSelectionActivity"
