@@ -471,18 +471,14 @@ internal class AuthenticatorImplementation internal constructor(
                 val token = runCatching {
                     TokenResponse.Builder(refreshRequest).fromResponseJson(result.json).build()
                 }.getOrNull()
-                if (token != null) {
-                    Pair(token, null)
-                } else {
-                    Pair(
-                        null,
-                        AuthorizationException.fromOAuthTemplate(
-                            AuthorizationException.TokenRequestErrors.OTHER,
-                            "invalid_token_response",
-                            null,
-                            null,
-                        ),
-                    )
+                val refreshedIdToken = token?.idToken
+                when {
+                    token == null ->
+                        Pair(null, tokenError("invalid_token_response", null))
+                    refreshedIdToken != null &&
+                        !isRefreshedIdTokenValid(refreshedIdToken, profile, discoveryDoc) ->
+                        Pair(null, tokenError("invalid_id_token", "Refreshed ID token failed validation"))
+                    else -> Pair(token, null)
                 }
             }
             is DPoPTokenResult.Failure -> {
@@ -493,6 +489,31 @@ internal class AuthenticatorImplementation internal constructor(
                     AuthorizationException.fromOAuthTemplate(base, result.error, result.errorDescription, null),
                 )
             }
+        }
+    }
+
+    private fun tokenError(error: String, description: String?): AuthorizationException =
+        AuthorizationException.fromOAuthTemplate(
+            AuthorizationException.TokenRequestErrors.OTHER, error, description, null,
+        )
+
+    /**
+     * Validates an ID token returned by a refresh: its signature against the issuer's JWKS, that its
+     * issuer matches discovery, and — critically — that the identity has not changed (a refresh must
+     * never switch the account it belongs to). A returned `false` rejects the refresh.
+     */
+    private suspend fun isRefreshedIdTokenValid(
+        idToken: String,
+        profile: Profile,
+        discoveryDoc: AuthorizationServiceDiscovery,
+    ): Boolean {
+        return try {
+            IdTokenVerifier.verify(idToken, URI.create(discoveryDoc.jwksUri.toString())) &&
+                IdTokenClaims.issuer(idToken)?.trimEnd('/') == discoveryDoc.issuer.trimEnd('/') &&
+                (profile.userInfo?.webId?.let { IdTokenClaims.webId(idToken) == it } ?: true)
+        } catch (e: Exception) {
+            Log.w(AUTH_LOG_TAG, "Refreshed ID token validation failed for ${profile.userInfo?.webId}", e)
+            false
         }
     }
 
