@@ -1,6 +1,6 @@
-package com.erfangholami.androidsolidservices.repository
+package com.erfangholami.androidsolidservices.domain.repository
 
-import com.erfangholami.androidsolidservices.model.GrantedApp
+import com.erfangholami.androidsolidservices.domain.model.GrantedApp
 import kotlinx.coroutines.flow.Flow
 
 interface AccessGrantRepository {

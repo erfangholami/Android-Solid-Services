@@ -2,11 +2,12 @@ package com.erfangholami.androidsolidservices.di
 
 import android.accounts.AccountManager
 import android.content.Context
-import com.erfangholami.androidsolidservices.base.Constants
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
-import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.SolidContactsDataModule
+import com.erfangholami.androidsolidservices.api.notifications.NotificationsManager
+import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.SharingManager
+import com.erfangholami.androidsolidservices.base.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,7 +18,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class LocalModule {
+object ManagerModule {
 
     @Provides
     @Singleton
@@ -29,39 +30,35 @@ class LocalModule {
     @Singleton
     fun provideAccountManager(
         @ApplicationContext context: Context
-    ): AccountManager {
-        return AccountManager.get(context)
-    }
+    ): AccountManager = AccountManager.get(context)
 
     @Provides
     @Singleton
     fun provideAuthenticator(
         @ApplicationContext context: Context,
-    ): Authenticator {
-        return Authenticator.getInstance(context)
-    }
+    ): Authenticator = Authenticator.getInstance(context)
 
     @Provides
     @Singleton
     fun provideSolidResourceManager(
         authenticator: Authenticator,
-    ): SolidResourceManager {
-        return SolidResourceManager.getInstance(authenticator)
-    }
+    ): SolidResourceManager = SolidResourceManager.getInstance(authenticator)
 
     @Provides
     @Singleton
     fun provideSolidContactsDataModule(
         authenticator: Authenticator,
-    ): SolidContactsDataModule {
-        return SolidContactsDataModule.getInstance(authenticator)
-    }
+    ): SolidContactsDataModule = SolidContactsDataModule.getInstance(authenticator)
 
     @Provides
     @Singleton
     fun provideSharingManager(
         resourceManager: SolidResourceManager,
-    ): SharingManager {
-        return SharingManager.getInstance(resourceManager)
-    }
+    ): SharingManager = SharingManager.getInstance(resourceManager)
+
+    @Provides
+    @Singleton
+    fun provideNotificationsManager(
+        resourceManager: SolidResourceManager,
+    ): NotificationsManager = NotificationsManager.getInstance(resourceManager)
 }

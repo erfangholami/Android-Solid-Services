@@ -1,10 +1,14 @@
-package com.erfangholami.androidsolidservices.repository
+package com.erfangholami.androidsolidservices.data.repository
 
-import com.erfangholami.androidsolidservices.model.GrantedApp
-import com.erfangholami.androidsolidservices.repository.datasource.local.accessgrant.AccessGrantLocalDataSource
+import com.erfangholami.androidsolidservices.data.local.AccessGrantLocalDataSource
+import com.erfangholami.androidsolidservices.domain.model.GrantedApp
+import com.erfangholami.androidsolidservices.domain.repository.AccessGrantRepository
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 
-class AccessGrantRepositoryImplementation(
+@Singleton
+class AccessGrantRepositoryImplementation @Inject constructor(
     private val accessGrantLocalDataSource: AccessGrantLocalDataSource,
 ) : AccessGrantRepository {
 

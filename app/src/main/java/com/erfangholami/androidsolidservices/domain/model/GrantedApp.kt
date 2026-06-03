@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.model
+package com.erfangholami.androidsolidservices.domain.model
 
 import kotlinx.serialization.Serializable
 

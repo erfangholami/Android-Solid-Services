@@ -1,6 +1,6 @@
-package com.erfangholami.androidsolidservices.repository.datasource.local.accessgrant
+package com.erfangholami.androidsolidservices.data.local
 
-import com.erfangholami.androidsolidservices.model.GrantedApp
+import com.erfangholami.androidsolidservices.domain.model.GrantedApp
 import kotlinx.coroutines.flow.Flow
 
 interface AccessGrantLocalDataSource {

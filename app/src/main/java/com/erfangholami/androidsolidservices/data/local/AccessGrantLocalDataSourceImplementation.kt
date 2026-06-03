@@ -1,11 +1,13 @@
-package com.erfangholami.androidsolidservices.repository.datasource.local.accessgrant
+package com.erfangholami.androidsolidservices.data.local
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.erfangholami.androidsolidservices.model.GrantedApp
-import com.erfangholami.androidsolidservices.repository.datasource.local.accessgrant.AccessGrantLocalDataSourceImplementation.PreferencesKeys.APP_LIST_KEY
+import com.erfangholami.androidsolidservices.data.local.AccessGrantLocalDataSourceImplementation.PreferencesKeys.APP_LIST_KEY
+import com.erfangholami.androidsolidservices.domain.model.GrantedApp
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -14,7 +16,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
-class AccessGrantLocalDataSourceImplementation(
+@Singleton
+class AccessGrantLocalDataSourceImplementation @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) : AccessGrantLocalDataSource {
 
