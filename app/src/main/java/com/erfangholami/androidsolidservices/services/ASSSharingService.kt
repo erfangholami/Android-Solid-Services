@@ -4,31 +4,35 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import com.erfangholami.androidsolidservices.di.IoDispatcher
+import com.erfangholami.androidsolidservices.domain.repository.SharingRepository
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
 import com.erfangholami.androidsolidservices.shared.IASSharingService
-import com.erfangholami.androidsolidservices.shared.domain.IASSUnitCallback
-import com.erfangholami.androidsolidservices.shared.domain.error.ExceptionsErrorCode
-import com.erfangholami.androidsolidservices.shared.domain.network.SolidNetworkResponse
-import com.erfangholami.androidsolidservices.shared.domain.sharing.GivenShare
-import com.erfangholami.androidsolidservices.shared.domain.sharing.IASSGivenShareCallback
-import com.erfangholami.androidsolidservices.shared.domain.sharing.IASSGivenShareListCallback
-import com.erfangholami.androidsolidservices.shared.domain.sharing.IASSReceivedShareCallback
-import com.erfangholami.androidsolidservices.shared.domain.sharing.IASSReceivedShareListCallback
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ProfileField
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ProfileShareConfig
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ReceivedShare
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ShareMode
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ShareReceiver
-import com.erfangholami.androidsolidservices.api.sharing.SharingManager
+import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSAccessGrantListCallback
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSCatalogEntryListCallback
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareCallback
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ASSSharingService : LifecycleService() {
 
     @Inject
-    lateinit var sharingManager: SharingManager
+    lateinit var sharingRepository: SharingRepository
+
+    @Inject
+    @IoDispatcher
+    lateinit var ioDispatcher: CoroutineDispatcher
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -40,19 +44,29 @@ class ASSSharingService : LifecycleService() {
         override fun getStoredGivenShares(
             webId: String,
             callback: IASSGivenShareListCallback,
-        ) = launchGivenList(callback) { sharingManager.getStoredGivenShares(webId) }
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.getStoredGivenShares(webId)
+            }
+        }
 
         override fun refreshGivenShares(
             webId: String,
             callback: IASSGivenShareListCallback,
-        ) = launchGivenList(callback) { sharingManager.refreshGivenShares(webId) }
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.refreshGivenShares(webId)
+            }
+        }
 
         override fun getGivenSharesForResource(
             webId: String,
             resourceUri: String,
             callback: IASSGivenShareListCallback,
-        ) = launchGivenList(callback) {
-            sharingManager.getGivenSharesForResource(webId, resourceUri)
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.getGivenSharesForResource(webId, resourceUri)
+            }
         }
 
         override fun createShare(
@@ -61,14 +75,18 @@ class ASSSharingService : LifecycleService() {
             mode: Int,
             receiverKind: Int,
             receiverValue: String?,
+            notifyReceiver: Boolean,
             callback: IASSGivenShareCallback,
-        ) = launchGiven(callback) {
-            sharingManager.createShare(
-                webId = webId,
-                resourceUri = resourceUri,
-                mode = ShareMode.entries[mode],
-                receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
-            )
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.createShare(
+                    webId = webId,
+                    resourceUri = resourceUri,
+                    mode = ShareMode.entries[mode],
+                    receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
+                    notifyReceiver = notifyReceiver,
+                )
+            }
         }
 
         override fun updateShare(
@@ -78,13 +96,15 @@ class ASSSharingService : LifecycleService() {
             receiverKind: Int,
             receiverValue: String?,
             callback: IASSGivenShareCallback,
-        ) = launchGiven(callback) {
-            sharingManager.updateShare(
-                webId = webId,
-                resourceUri = resourceUri,
-                mode = ShareMode.entries[mode],
-                receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
-            )
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.updateShare(
+                    webId = webId,
+                    resourceUri = resourceUri,
+                    mode = ShareMode.entries[mode],
+                    receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
+                )
+            }
         }
 
         override fun revokeShare(
@@ -93,51 +113,42 @@ class ASSSharingService : LifecycleService() {
             receiverKind: Int,
             receiverValue: String?,
             callback: IASSUnitCallback,
-        ) = launchUnit(callback) {
-            sharingManager.revokeShare(
-                webId = webId,
-                resourceUri = resourceUri,
-                receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
-            )
-        }
-
-        override fun createProfileShare(
-            webId: String,
-            selectedFieldPredicates: List<String>,
-            mode: Int,
-            receiverKind: Int,
-            receiverValue: String?,
-            callback: IASSGivenShareCallback,
-        ) = launchGiven(callback) {
-            val fields = selectedFieldPredicates
-                .mapNotNull { ProfileField.fromPredicate(it) }
-                .toSet()
-            sharingManager.createProfileShare(
-                webId = webId,
-                config = ProfileShareConfig(
-                    selectedFields = fields,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.revokeShare(
+                    webId = webId,
+                    resourceUri = resourceUri,
                     receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
-                ),
-                mode = ShareMode.entries[mode],
-            )
+                )
+            }
         }
 
         override fun getStoredReceivedShares(
             webId: String,
             callback: IASSReceivedShareListCallback,
-        ) = launchReceivedList(callback) { sharingManager.getStoredReceivedShares(webId) }
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.getStoredReceivedShares(webId)
+            }
+        }
 
         override fun refreshReceivedShares(
             webId: String,
             callback: IASSReceivedShareListCallback,
-        ) = launchReceivedList(callback) { sharingManager.refreshReceivedShares(webId) }
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.refreshReceivedShares(webId)
+            }
+        }
 
         override fun addReceivedShare(
             webId: String,
             resourceUri: String,
             callback: IASSReceivedShareCallback,
-        ) = launchReceived(callback) {
-            sharingManager.addReceivedShare(webId, resourceUri)
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.addReceivedShare(webId, resourceUri)
+            }
         }
 
         override fun removeReceivedShare(
@@ -145,84 +156,78 @@ class ASSSharingService : LifecycleService() {
             resourceUri: String,
             ownerWebId: String,
             callback: IASSUnitCallback,
-        ) = launchUnit(callback) {
-            sharingManager.removeReceivedShare(webId, resourceUri, ownerWebId)
-        }
-    }
-
-    // ── Dispatch helpers ────────────────────────────────────────────────────
-
-    private inline fun launchGivenList(
-        callback: IASSGivenShareListCallback,
-        crossinline block: suspend () -> SolidNetworkResponse<List<GivenShare>>,
-    ) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            when (val r = block()) {
-                is SolidNetworkResponse.Success -> callback.onResult(r.data)
-                is SolidNetworkResponse.Error -> callback.onError(r.errorCode, r.errorMessage)
-                is SolidNetworkResponse.Exception -> callback.onError(
-                    ExceptionsErrorCode.UNKNOWN, r.exception.message ?: "Unknown error",
-                )
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.removeReceivedShare(webId, resourceUri, ownerWebId)
             }
         }
-    }
 
-    private inline fun launchReceivedList(
-        callback: IASSReceivedShareListCallback,
-        crossinline block: suspend () -> SolidNetworkResponse<List<ReceivedShare>>,
-    ) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            when (val r = block()) {
-                is SolidNetworkResponse.Success -> callback.onResult(r.data)
-                is SolidNetworkResponse.Error -> callback.onError(r.errorCode, r.errorMessage)
-                is SolidNetworkResponse.Exception -> callback.onError(
-                    ExceptionsErrorCode.UNKNOWN, r.exception.message ?: "Unknown error",
-                )
+        override fun getAccessGrants(
+            webId: String,
+            callback: IASSAccessGrantListCallback,
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.getAccessGrants(webId)
             }
         }
-    }
 
-    private inline fun launchGiven(
-        callback: IASSGivenShareCallback,
-        crossinline block: suspend () -> SolidNetworkResponse<GivenShare>,
-    ) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            when (val r = block()) {
-                is SolidNetworkResponse.Success -> callback.onResult(r.data)
-                is SolidNetworkResponse.Error -> callback.onError(r.errorCode, r.errorMessage)
-                is SolidNetworkResponse.Exception -> callback.onError(
-                    ExceptionsErrorCode.UNKNOWN, r.exception.message ?: "Unknown error",
-                )
+        override fun acceptShareRequest(
+            webId: String,
+            request: ShareRequest,
+            callback: IASSGivenShareCallback,
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.acceptShareRequest(webId, request)
             }
         }
-    }
 
-    private inline fun launchReceived(
-        callback: IASSReceivedShareCallback,
-        crossinline block: suspend () -> SolidNetworkResponse<ReceivedShare>,
-    ) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            when (val r = block()) {
-                is SolidNetworkResponse.Success -> callback.onResult(r.data)
-                is SolidNetworkResponse.Error -> callback.onError(r.errorCode, r.errorMessage)
-                is SolidNetworkResponse.Exception -> callback.onError(
-                    ExceptionsErrorCode.UNKNOWN, r.exception.message ?: "Unknown error",
-                )
+        override fun rejectShareRequest(
+            webId: String,
+            request: ShareRequest,
+            reason: String?,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.rejectShareRequest(webId, request, reason)
             }
         }
-    }
 
-    private inline fun launchUnit(
-        callback: IASSUnitCallback,
-        crossinline block: suspend () -> SolidNetworkResponse<Unit>,
-    ) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            when (val r = block()) {
-                is SolidNetworkResponse.Success -> callback.onResult()
-                is SolidNetworkResponse.Error -> callback.onError(r.errorCode, r.errorMessage)
-                is SolidNetworkResponse.Exception -> callback.onError(
-                    ExceptionsErrorCode.UNKNOWN, r.exception.message ?: "Unknown error",
-                )
+        override fun rebuildGivenIndex(
+            webId: String,
+            callback: IASSGivenShareListCallback,
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.rebuildGivenIndex(webId)
+            }
+        }
+
+        override fun publishCatalogEntry(
+            webId: String,
+            entry: CatalogEntry,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.publishCatalogEntry(webId, entry)
+            }
+        }
+
+        override fun removeCatalogEntry(
+            webId: String,
+            resourceUri: String,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.removeCatalogEntry(webId, resourceUri)
+            }
+        }
+
+        override fun getOwnerCatalog(
+            viewerWebId: String,
+            ownerWebId: String,
+            callback: IASSCatalogEntryListCallback,
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingRepository.getOwnerCatalog(viewerWebId, ownerWebId)
             }
         }
     }
