@@ -1,11 +1,19 @@
-package com.erfangholami.androidsolidservices.shared.domain.resource
+package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Parcel
 import android.os.Parcelable
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.io.InputStream
 import java.net.URI
 
+/**
+ * A [NonRDFResource] (binary) retrieved from a Solid server.
+ *
+ * Adds server-supplied [SolidMetadata] (parsed from the response headers — content type
+ * and length, ACL URI, `WAC-Allow`, ETag, and so on) on top of the opaque byte stream
+ * inherited from [NonRDFResource]. This is the type returned for binary resources read
+ * from a pod.
+ */
 public open class SolidNonRDFResource : NonRDFResource, SolidResource {
 
     public companion object {
@@ -32,7 +40,7 @@ public open class SolidNonRDFResource : NonRDFResource, SolidResource {
         identifier: URI,
         contentType: String,
         entity: InputStream,
-        headers: Headers?,
+        headers: SolidHeaders?,
     ) : super(identifier, contentType, headers, entity)
 
     override fun getMetadata(): SolidMetadata = metadata

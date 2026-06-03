@@ -1,42 +1,44 @@
-package com.erfangholami.androidsolidservices.shared.domain.resource
+package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
-import com.erfangholami.androidsolidservices.shared.domain.access.WacAllow
-import com.erfangholami.androidsolidservices.shared.domain.util.getAcceptPatch
-import com.erfangholami.androidsolidservices.shared.domain.util.getAcceptPost
-import com.erfangholami.androidsolidservices.shared.domain.util.getAcceptPut
-import com.erfangholami.androidsolidservices.shared.domain.util.getAclUri
-import com.erfangholami.androidsolidservices.shared.domain.util.getAllowedMethods
-import com.erfangholami.androidsolidservices.shared.domain.util.getContentLength
-import com.erfangholami.androidsolidservices.shared.domain.util.getContentType
-import com.erfangholami.androidsolidservices.shared.domain.util.getDescribedByUri
-import com.erfangholami.androidsolidservices.shared.domain.util.getETag
-import com.erfangholami.androidsolidservices.shared.domain.util.getLastModified
-import com.erfangholami.androidsolidservices.shared.domain.util.getLinkTypeUris
-import com.erfangholami.androidsolidservices.shared.domain.util.getLocation
-import com.erfangholami.androidsolidservices.shared.domain.util.getOidcIssuerUri
-import com.erfangholami.androidsolidservices.shared.domain.util.getOwnerUri
-import com.erfangholami.androidsolidservices.shared.domain.util.getStorageDescriptionUri
-import com.erfangholami.androidsolidservices.shared.domain.util.getWacAllow
-import com.erfangholami.androidsolidservices.shared.domain.util.getWwwAuthenticate
-import com.erfangholami.androidsolidservices.shared.domain.util.isStorage
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.shared.model.access.WacAllow
+import com.erfangholami.androidsolidservices.shared.util.getAcceptPatch
+import com.erfangholami.androidsolidservices.shared.util.getAcceptPost
+import com.erfangholami.androidsolidservices.shared.util.getAcceptPut
+import com.erfangholami.androidsolidservices.shared.util.getAclUri
+import com.erfangholami.androidsolidservices.shared.util.getAllowedMethods
+import com.erfangholami.androidsolidservices.shared.util.getContentLength
+import com.erfangholami.androidsolidservices.shared.util.getContentType
+import com.erfangholami.androidsolidservices.shared.util.getDescribedByUri
+import com.erfangholami.androidsolidservices.shared.util.getETag
+import com.erfangholami.androidsolidservices.shared.util.getInboxUri
+import com.erfangholami.androidsolidservices.shared.util.getLastModified
+import com.erfangholami.androidsolidservices.shared.util.getLinkTypeUris
+import com.erfangholami.androidsolidservices.shared.util.getLocation
+import com.erfangholami.androidsolidservices.shared.util.getOidcIssuerUri
+import com.erfangholami.androidsolidservices.shared.util.getOwnerUri
+import com.erfangholami.androidsolidservices.shared.util.getStorageDescriptionUri
+import com.erfangholami.androidsolidservices.shared.util.getWacAllow
+import com.erfangholami.androidsolidservices.shared.util.getWwwAuthenticate
+import com.erfangholami.androidsolidservices.shared.util.isStorage
+import com.erfangholami.androidsolidservices.shared.util.tryParseUri
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
 /**
  * Solid-specific metadata extracted from HTTP response headers for a resource
  * retrieved from a Solid server.
  *
- * The fields in this class are mandated by various Solid Protocol specifications:
- * - [aclUri] — Solid Protocol §4.1.1 (Auxiliary Resources): `Link: rel="acl"`
- * - [storageDescriptionUri] — Solid Protocol §4.1.1: `Link: rel="storageDescription"`
- * - [ownerUri] — Solid Protocol §4.1.1: `Link: rel="solid:owner"`
- * - [wacAllow] — WAC spec §7: `WAC-Allow` header
- * - [allowedMethods] — HTTP spec + Solid Protocol: `Allow` header
+ * Each field corresponds to a header defined by the Solid Protocol or a spec it builds on:
+ * - [aclUri] — Solid Protocol auxiliary resources: `Link: rel="acl"`
+ * - [storageDescriptionUri] — Solid Protocol: `Link: rel="storageDescription"`
+ * - [ownerUri] — Solid Protocol: `Link: rel="solid:owner"`
+ * - [wacAllow] — Web Access Control: `WAC-Allow` header
+ * - [allowedMethods] — HTTP + Solid Protocol: `Allow` header
  * - [linkTypes] — LDP + Solid Protocol: `Link: rel="type"` header
- * - [etag] — HTTP spec: `ETag` header
+ * - [etag] — HTTP: `ETag` header
  * - [oidcIssuerUri] — Solid-OIDC: `Link: rel="solid:oidcIssuer"`
  * - [isStorage] — Solid Protocol: derived from `Link: rel="type" <pim:Storage>`
  *
@@ -107,6 +109,13 @@ public data class SolidMetadata(
      * True when `Link: rel="type" <http://www.w3.org/ns/pim/space#Storage>` is present.
      */
     val isStorage: Boolean,
+
+    /**
+     * URI of the LDN inbox advertised by `Link: rel="http://www.w3.org/ns/ldp#inbox"`.
+     * Used as a fallback when a WebID's profile body doesn't carry an
+     * `ldp:inbox` predicate, since the inbox may be exposed either way.
+     */
+    val inboxUri: URI? = null,
 ) : Parcelable {
 
     override fun describeContents(): Int = 0
@@ -130,16 +139,17 @@ public data class SolidMetadata(
         dest.writeString(wwwAuthenticate)
         dest.writeString(oidcIssuerUri?.toString())
         dest.writeByte(if (isStorage) 1 else 0)
+        dest.writeString(inboxUri?.toString())
     }
 
     public companion object {
         @JvmField
         public val CREATOR: Parcelable.Creator<SolidMetadata> = object : Parcelable.Creator<SolidMetadata> {
             override fun createFromParcel(parcel: Parcel): SolidMetadata = SolidMetadata(
-                aclUri = parcel.readString()?.let { runCatching { URI.create(it) }.getOrNull() },
+                aclUri = parcel.readString()?.let { tryParseUri(it, "SolidMetadata.aclUri") },
                 storageDescriptionUri = parcel.readString()
-                    ?.let { runCatching { URI.create(it) }.getOrNull() },
-                ownerUri = parcel.readString()?.let { runCatching { URI.create(it) }.getOrNull() },
+                    ?.let { tryParseUri(it, "SolidMetadata.storageDescriptionUri") },
+                ownerUri = parcel.readString()?.let { tryParseUri(it, "SolidMetadata.ownerUri") },
                 wacAllow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     parcel.readParcelable(WacAllow::class.java.classLoader, WacAllow::class.java)
                 } else {
@@ -148,28 +158,31 @@ public data class SolidMetadata(
                 },
                 allowedMethods = parcel.createStringArrayList()!!.toSet(),
                 linkTypes = parcel.createStringArrayList()!!
-                    .mapNotNull { runCatching { URI.create(it) }.getOrNull() }
+                    .mapNotNull { tryParseUri(it, "SolidMetadata.linkTypes") }
                     .toSet(),
                 etag = parcel.readString(),
                 lastModified = parcel.readString(),
-                location = parcel.readString()?.let { runCatching { URI.create(it) }.getOrNull() },
+                location = parcel.readString()?.let { tryParseUri(it, "SolidMetadata.location") },
                 contentType = parcel.readString(),
                 contentLength = parcel.readLong(),
                 describeByUri = parcel.readString()
-                    ?.let { runCatching { URI.create(it) }.getOrNull() },
+                    ?.let { tryParseUri(it, "SolidMetadata.describeByUri") },
                 acceptPatch = parcel.createStringArrayList()!!,
                 acceptPost = parcel.createStringArrayList()!!,
                 acceptPut = parcel.createStringArrayList()!!,
                 wwwAuthenticate = parcel.readString(),
                 oidcIssuerUri = parcel.readString()
-                    ?.let { runCatching { URI.create(it) }.getOrNull() },
+                    ?.let { tryParseUri(it, "SolidMetadata.oidcIssuerUri") },
                 isStorage = parcel.readByte() != 0.toByte(),
+                inboxUri = parcel.readString()
+                    ?.let { tryParseUri(it, "SolidMetadata.inboxUri") },
             )
 
             override fun newArray(size: Int): Array<SolidMetadata?> = arrayOfNulls(size)
         }
 
-        public fun from(headers: Headers): SolidMetadata = SolidMetadata(
+        /** Builds a [SolidMetadata] by extracting the relevant fields from HTTP response [headers]. */
+        public fun from(headers: SolidHeaders): SolidMetadata = SolidMetadata(
             aclUri = headers.getAclUri(),
             storageDescriptionUri = headers.getStorageDescriptionUri(),
             ownerUri = headers.getOwnerUri(),
@@ -188,8 +201,10 @@ public data class SolidMetadata(
             wwwAuthenticate = headers.getWwwAuthenticate(),
             oidcIssuerUri = headers.getOidcIssuerUri(),
             isStorage = headers.isStorage(),
+            inboxUri = headers.getInboxUri(),
         )
 
+        /** A metadata instance with every field absent; useful as a default or placeholder. */
         public val EMPTY: SolidMetadata = SolidMetadata(
             aclUri = null,
             storageDescriptionUri = null,
@@ -209,6 +224,7 @@ public data class SolidMetadata(
             wwwAuthenticate = null,
             oidcIssuerUri = null,
             isStorage = false,
+            inboxUri = null,
         )
     }
 }

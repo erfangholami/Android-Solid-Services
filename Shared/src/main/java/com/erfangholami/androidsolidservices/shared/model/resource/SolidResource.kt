@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.shared.domain.resource
+package com.erfangholami.androidsolidservices.shared.model.resource
 
 /**
  * Marker interface for resources retrieved from a Solid server.

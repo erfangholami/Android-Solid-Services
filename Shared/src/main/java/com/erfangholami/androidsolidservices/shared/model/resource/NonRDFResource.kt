@@ -1,21 +1,38 @@
-package com.erfangholami.androidsolidservices.shared.domain.resource
+package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.erfangholami.androidsolidservices.shared.domain.util.encodeUri
-import com.erfangholami.androidsolidservices.shared.domain.util.encodeUriString
+import com.erfangholami.androidsolidservices.shared.util.encodeUri
+import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import kotlinx.serialization.json.Json
-import okhttp3.Headers
-import okio.IOException
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
+import java.io.IOException
 import java.io.InputStream
 import java.io.UncheckedIOException
 import java.net.URI
 
+/**
+ * A non-RDF source: a "binary" resource handled as an opaque byte stream.
+ *
+ * Use this for content that is not RDF — images, PDFs, plain text, and so on. Unlike
+ * [RDFResource], it carries no triple model; its body is exposed verbatim through
+ * [getEntity] and described only by its [getContentType].
+ *
+ * For resources fetched from a Solid server, prefer the [SolidNonRDFResource] subtype,
+ * which also exposes the response [SolidMetadata]. Use this base type for binary content
+ * you construct locally before writing it to a pod.
+ *
+ * The backing stream is consumed when the body is read or the resource is parcelled, so
+ * an instance is single-use; close it (or read it) exactly once.
+ *
+ * See the Solid Protocol (https://solidproject.org/TR/protocol) and LDP
+ * (http://www.w3.org/TR/ldp/) for the non-RDF source model.
+ */
 public open class NonRDFResource : Resource {
 
     private val identifier: URI
     private val contentType: String
-    private val headers: Headers
+    private val headers: SolidHeaders
     private val entity: InputStream
 
     public companion object {
@@ -35,22 +52,19 @@ public open class NonRDFResource : Resource {
     protected constructor(inParcel: Parcel) {
         this.identifier = encodeUriString(inParcel.readString()!!)
         this.contentType = inParcel.readString()!!
-        val headersMap = Json.decodeFromString<Map<String, List<String>>>(inParcel.readString()!!)
-        this.headers = Headers.Builder()
-            .apply { headersMap.forEach { (name, values) -> values.forEach { add(name, it) } } }
-            .build()
+        this.headers = SolidHeaders(Json.decodeFromString<Map<String, List<String>>>(inParcel.readString()!!))
         this.entity = inParcel.readString()!!.byteInputStream()
     }
 
     public constructor(
         identifier: URI,
         contentType: String,
-        headers: Headers?,
+        headers: SolidHeaders?,
         entity: InputStream
     ) {
         this.identifier = encodeUri(identifier)
         this.contentType = contentType
-        this.headers = headers ?: Headers.Builder().build()
+        this.headers = headers ?: SolidHeaders.EMPTY
         this.entity = entity
     }
 
@@ -68,7 +82,7 @@ public open class NonRDFResource : Resource {
         return contentType
     }
 
-    override fun getHeaders(): Headers {
+    override fun getHeaders(): SolidHeaders {
         return headers
     }
 

@@ -1,17 +1,21 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidContainer
-import com.erfangholami.androidsolidservices.shared.domain.crud.N3Patch
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPAcceptType
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPHeaderName
-import com.erfangholami.androidsolidservices.shared.domain.network.SolidNetworkResponse
-import com.erfangholami.androidsolidservices.shared.domain.resource.RDFResource
-import com.erfangholami.androidsolidservices.shared.domain.resource.Resource
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidMetadata
-import com.erfangholami.androidsolidservices.shared.domain.util.encodeUri
-import com.erfangholami.androidsolidservices.shared.vocab.LDP
+import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
-import com.erfangholami.androidsolidservices.api.domain.SolidRawResponse
+import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
+import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient.Companion.DEBUG_TRACE
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
+import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
+import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.model.profile.WebId
+import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
+import com.erfangholami.androidsolidservices.shared.model.resource.Resource
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.util.encodeUri
+import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -21,11 +25,17 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.URI
 
-internal class SolidHttpClient(private val auth: Authenticator? = null) {
-
-    private val httpClient = OkHttpClient.Builder()
+private fun defaultHttpClient(): OkHttpClient =
+    OkHttpClient.Builder()
         .followRedirects(true)
         .build()
+
+internal class SolidHttpClient(
+    private val auth: Authenticator? = null,
+    private val httpClient: OkHttpClient = defaultHttpClient(),
+) {
+
+    private val cache = SolidResponseCache()
 
     suspend fun send(
         method: String,
@@ -36,6 +46,7 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
         body: ByteArray? = null,
         headers: Map<String, String> = emptyMap(),
     ): SolidRawResponse = withContext(Dispatchers.IO) {
+        if (DEBUG_TRACE) Log.d(TAG, "→ $method $uri")
         val mediaType = contentType?.toMediaTypeOrNull()
         val requestBody: RequestBody? = when {
             body != null -> body.toRequestBody(mediaType)
@@ -63,6 +74,11 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
         val statusCode = response.code
         val responseHeaders = response.headers
         response.close()
+        if (DEBUG_TRACE) {
+            val excerpt = if (statusCode in 200..299) ""
+            else " — ${bodyBytes.decodeToString(throwOnInvalidSequence = false).take(BODY_EXCERPT)}"
+            Log.d(TAG, "← $statusCode $method $uri$excerpt")
+        }
         SolidRawResponse(statusCode, responseHeaders, bodyBytes, effectiveUri)
     }
 
@@ -74,7 +90,9 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
         return try {
             val accept =
                 if (RDFResource::class.java.isAssignableFrom(clazz)) HTTPAcceptType.JSON_LD else HTTPAcceptType.ANY
-            val response = executeAuthenticated("GET", webId, uri, accept = accept)
+            val response = readCached(webId, "GET", uri, accept, ttlFor(uri, clazz)) { cond ->
+                executeAuthenticated("GET", webId, uri, accept = accept, additionalHeaders = cond)
+            }
             if (response.isSuccessful()) {
                 SolidNetworkResponse.Success(SolidResourceParser.parse(response, clazz))
             } else {
@@ -110,6 +128,7 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
                 ifNoneMatchStar = ifNoneMatchStar,
             )
             if (response.isSuccessful()) {
+                invalidate(resource.getIdentifier())
                 SolidNetworkResponse.Success(resource)
             } else {
                 SolidNetworkResponse.Error(response.statusCode, response.body)
@@ -125,7 +144,24 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
         patch: N3Patch,
         ifMatch: String? = null
     ): SolidNetworkResponse<Unit> {
-        return patchRaw(webId, uri, patch.toN3String(), ifMatch)
+        return try {
+            val response = executeAuthenticated(
+                method = "PATCH",
+                webId = webId,
+                uri = uri,
+                contentType = HTTPAcceptType.SPARQL_UPDATE,
+                body = patch.toSparqlUpdate().toByteArray(Charsets.UTF_8),
+                ifMatch = ifMatch,
+            )
+            if (response.isSuccessful()) {
+                invalidate(uri)
+                SolidNetworkResponse.Success(Unit)
+            } else {
+                SolidNetworkResponse.Error(response.statusCode, response.body)
+            }
+        } catch (e: Exception) {
+            SolidNetworkResponse.Exception(e)
+        }
     }
 
     suspend fun patchRaw(
@@ -144,6 +180,7 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
                 ifMatch = ifMatch,
             )
             if (response.isSuccessful()) {
+                invalidate(uri)
                 SolidNetworkResponse.Success(Unit)
             } else {
                 SolidNetworkResponse.Error(response.statusCode, response.body)
@@ -155,11 +192,121 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
 
     suspend fun head(webId: String, uri: URI): SolidNetworkResponse<SolidMetadata> {
         return try {
-            val response = executeAuthenticated("HEAD", webId, uri)
+            val response = readCached(
+                webId,
+                "HEAD",
+                uri,
+                accept = null,
+                ttlMillis = ttlFor(uri, null)
+            ) { cond ->
+                executeAuthenticated("HEAD", webId, uri, additionalHeaders = cond)
+            }
             if (response.isSuccessful()) {
-                SolidNetworkResponse.Success(SolidMetadata.from(response.headers))
+                SolidNetworkResponse.Success(SolidMetadata.from(SolidHeaders(response.headers.toMultimap())))
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.statusCode.toString())
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+            }
+        } catch (e: Exception) {
+            SolidNetworkResponse.Exception(e)
+        }
+    }
+
+    suspend fun <T : Resource> getPublic(
+        uri: URI,
+        clazz: Class<T>,
+    ): SolidNetworkResponse<T> {
+        return try {
+            val accept =
+                if (RDFResource::class.java.isAssignableFrom(clazz)) HTTPAcceptType.JSON_LD else HTTPAcceptType.ANY
+            val response = readCached(
+                SolidResponseCache.PUBLIC_PRINCIPAL, "GET", uri, accept, ttlFor(uri, clazz)
+            ) { cond ->
+                send(method = "GET", uri = uri, accept = accept, headers = cond)
+            }
+            if (response.isSuccessful()) {
+                SolidNetworkResponse.Success(SolidResourceParser.parse(response, clazz))
+            } else {
+                SolidNetworkResponse.Error(response.statusCode, response.body)
+            }
+        } catch (e: Exception) {
+            SolidNetworkResponse.Exception(e)
+        }
+    }
+
+    suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> {
+        return try {
+            val response = readCached(
+                SolidResponseCache.PUBLIC_PRINCIPAL,
+                "HEAD",
+                uri,
+                accept = null,
+                ttlMillis = ttlFor(uri, null)
+            ) { cond ->
+                send(method = "HEAD", uri = uri, headers = cond)
+            }
+            if (response.isSuccessful()) {
+                SolidNetworkResponse.Success(SolidMetadata.from(SolidHeaders(response.headers.toMultimap())))
+            } else {
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+            }
+        } catch (e: Exception) {
+            SolidNetworkResponse.Exception(e)
+        }
+    }
+
+    suspend fun putRaw(
+        webId: String,
+        uri: URI,
+        contentType: String,
+        body: ByteArray,
+        ifMatch: String? = null,
+        linkHeader: String? = null,
+    ): SolidNetworkResponse<Unit> {
+        return try {
+            val response = executeAuthenticated(
+                method = "PUT",
+                webId = webId,
+                uri = uri,
+                contentType = contentType,
+                accept = contentType,
+                linkHeader = linkHeader,
+                body = body,
+                ifMatch = ifMatch,
+            )
+            if (response.isSuccessful()) {
+                invalidate(uri)
+                SolidNetworkResponse.Success(Unit)
+            } else {
+                SolidNetworkResponse.Error(response.statusCode, response.body)
+            }
+        } catch (e: Exception) {
+            SolidNetworkResponse.Exception(e)
+        }
+    }
+
+    suspend fun post(
+        webId: String,
+        uri: URI,
+        contentType: String,
+        body: ByteArray,
+        additionalHeaders: Map<String, String> = emptyMap(),
+    ): SolidNetworkResponse<URI?> {
+        return try {
+            val response = executeAuthenticated(
+                method = "POST",
+                webId = webId,
+                uri = uri,
+                contentType = contentType,
+                body = body,
+                additionalHeaders = additionalHeaders,
+            )
+            if (response.isSuccessful()) {
+                invalidate(uri)
+                val location = response.headers[HTTPHeaderName.LOCATION]
+                    ?.let { runCatching { URI.create(it) }.getOrNull() }
+                SolidNetworkResponse.Success(location)
+            } else {
+                SolidNetworkResponse.Error(response.statusCode, response.body)
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -174,6 +321,7 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
         return try {
             val response = executeAuthenticated("DELETE", webId, uri, ifMatch = ifMatch)
             if (response.isSuccessful()) {
+                invalidate(uri)
                 SolidNetworkResponse.Success(true)
             } else {
                 SolidNetworkResponse.Error(response.statusCode, response.body)
@@ -196,6 +344,7 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
                 additionalHeaders = mapOf("Destination" to destinationUri.toString()),
             )
             if (response.isSuccessful()) {
+                invalidate(destinationUri)
                 SolidNetworkResponse.Success(true)
             } else {
                 SolidNetworkResponse.Error(response.statusCode, response.body)
@@ -203,6 +352,29 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
         }
+    }
+
+    private suspend fun readCached(
+        principal: String,
+        method: String,
+        uri: URI,
+        accept: String?,
+        ttlMillis: Long,
+        fetch: suspend (conditionalHeaders: Map<String, String>) -> SolidRawResponse,
+    ): SolidRawResponse {
+        if (!cacheEnabled) return fetch(emptyMap())
+        val key = SolidResponseCache.Key(principal, method, uri.toString(), accept ?: "")
+        return cache.cachedRead(key, ttlMillis, uri, fetch)
+    }
+
+    private fun ttlFor(uri: URI, clazz: Class<*>?): Long {
+        if (clazz != null && WebId::class.java.isAssignableFrom(clazz)) return TTL_STABLE_MS
+        val path = uri.path.orEmpty()
+        return if (path.endsWith(".acl") || path.endsWith(".acr")) TTL_STABLE_MS else TTL_DATA_MS
+    }
+
+    private fun invalidate(uri: URI) {
+        if (cacheEnabled) cache.invalidateWithParent(uri.toString())
     }
 
     private suspend fun executeAuthenticated(
@@ -217,9 +389,6 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
         ifNoneMatchStar: Boolean = false,
         additionalHeaders: Map<String, String> = emptyMap(),
     ): SolidRawResponse {
-        // Up to 3 attempts so a single call can absorb a token-refresh AND a follow-up
-        // DPoP-nonce rotation. Force-refresh the access token at most once per call: if a
-        // refreshed token still gets a non-nonce 401, surface it.
         var lastResponse: SolidRawResponse? = null
         var didForceRefresh = false
 
@@ -256,8 +425,31 @@ internal class SolidHttpClient(private val auth: Authenticator? = null) {
         return lastResponse!!
     }
 
-    private companion object {
+    internal companion object {
         const val MAX_AUTH_ATTEMPTS = 3
+
+        /** Freshness window for ordinary data resources — served from memory without a network call. */
+        const val TTL_DATA_MS = 5_000L
+
+        /** Longer freshness window for rarely-changing documents (WebID profiles, ACL/ACR resources). */
+        const val TTL_STABLE_MS = 60_000L
+
+        /**
+         * Master switch for the in-memory [SolidResponseCache]. On by default; flip off
+         * (in code or via reflection in a test) to force every read back to the network.
+         */
+        @JvmStatic
+        var cacheEnabled: Boolean = true
+
+        /** Tag used by the optional HTTP-trace log emitted when [DEBUG_TRACE] is on. */
+        const val TAG = "SolidHttp"
+
+        /** Max characters of the response body to include in error log lines. */
+        const val BODY_EXCERPT = 512
+
+        /** When `true`, logs every HTTP request/response pair. Off by default. */
+        @JvmStatic
+        var DEBUG_TRACE: Boolean = false
     }
 
     private suspend fun buildAuthHeaders(

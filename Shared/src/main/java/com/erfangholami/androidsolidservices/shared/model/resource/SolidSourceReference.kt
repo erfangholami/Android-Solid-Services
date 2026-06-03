@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.shared.domain.resource
+package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Build
 import android.os.Parcel
@@ -29,6 +29,11 @@ public data class SolidSourceReference(
     val headMetadata: SolidMetadata? = null,
 ) : Parcelable {
 
+    /**
+     * Returns `true` if [types] includes any LDP container type. This is the reliable
+     * check, but only works when the container listing enriched this reference with the
+     * child's `rdf:type`; use [isContainerByUri] as a fallback when [types] is empty.
+     */
     public fun isContainer(): Boolean =
         types.any {
             it == LDP.BASIC_CONTAINER ||
@@ -37,6 +42,10 @@ public data class SolidSourceReference(
                     it == LDP.INDIRECT_CONTAINER
         }
 
+    /**
+     * Returns `true` if the [identifier] ends with `/`, the Solid convention for a
+     * container URI. A cheap heuristic for when [types] is unavailable.
+     */
     public fun isContainerByUri(): Boolean = identifier.endsWith("/")
 
     override fun describeContents(): Int = 0

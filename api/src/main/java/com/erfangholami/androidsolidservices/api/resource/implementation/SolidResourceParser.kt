@@ -1,18 +1,30 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
-import com.apicatalog.jsonld.JsonLdOptions
-import com.apicatalog.jsonld.JsonLdVersion
-import com.apicatalog.jsonld.document.JsonDocument
-import com.apicatalog.jsonld.http.media.MediaType
-import com.apicatalog.jsonld.uri.UriValidationPolicy
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPAcceptType
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPHeaderName
-import com.erfangholami.androidsolidservices.shared.domain.resource.RDFResource
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidContainer
-import com.erfangholami.androidsolidservices.api.domain.SolidRawResponse
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.api.access.InruptAcrJson
+import com.erfangholami.androidsolidservices.api.access.NTriples
+import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
+import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
+import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
+import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
+import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import java.io.InputStream
 import java.net.URI
+
+/**
+ * Thrown when a Solid pod returns an RDF resource in a serialization this
+ * library cannot parse (e.g. `text/turtle`, `application/rdf+xml`), so callers
+ * can distinguish "the server spoke a dialect we don't read" from a genuine
+ * empty/absent resource.
+ */
+internal class UnsupportedRdfContentTypeException(
+    val contentType: String,
+    val uri: String,
+) : RuntimeException(
+    "Cannot parse RDF resource $uri served as '$contentType' — only " +
+            "${HTTPAcceptType.JSON_LD} and ${HTTPAcceptType.N_TRIPLES} are supported.",
+)
 
 /**
  * Parses HTTP responses from a Solid pod into strongly-typed resource objects.
@@ -58,42 +70,68 @@ internal object SolidResourceParser {
         clazz: Class<T>,
         contentType: String
     ): T {
-        val options = JsonLdOptions()
-        options.base = response.uri
-        options.processingMode = JsonLdVersion.V1_1
-        options.isProduceGeneralizedRdf = true
-        options.uriValidation = UriValidationPolicy.SchemeOnly
-
-        val quads =
-            RDFResource.parseJsonLd(JsonDocument.of(response.bodyBytes.inputStream()), options)
+        val quads = rdfQuads(response, contentType, i18nDirection = false)
         return clazz
             .getConstructor(
                 URI::class.java,
-                MediaType::class.java,
+                String::class.java,
                 List::class.java,
-                Headers::class.java
+                SolidHeaders::class.java
             )
-            .newInstance(response.uri, MediaType.of(contentType), quads, response.headers)
+            .newInstance(
+                response.uri,
+                contentType,
+                quads,
+                SolidHeaders(response.headers.toMultimap()),
+            )
     }
 
     private fun <T> parseRdf(response: SolidRawResponse, clazz: Class<T>, contentType: String): T {
-        val options = JsonLdOptions()
-        options.base = response.uri
-        options.rdfDirection = JsonLdOptions.RdfDirection.I18N_DATATYPE
-        options.processingMode = JsonLdVersion.V1_1
-        options.isProduceGeneralizedRdf = true
-        options.uriValidation = UriValidationPolicy.SchemeOnly
-
-        val quads =
-            RDFResource.parseJsonLd(JsonDocument.of(response.bodyBytes.inputStream()), options)
+        val quads = rdfQuads(response, contentType, i18nDirection = true)
         return clazz
             .getConstructor(
                 URI::class.java,
-                MediaType::class.java,
+                String::class.java,
                 List::class.java,
-                Headers::class.java
+                SolidHeaders::class.java
             )
-            .newInstance(response.uri, MediaType.of(contentType), quads, response.headers)
+            .newInstance(
+                response.uri,
+                contentType,
+                quads,
+                SolidHeaders(response.headers.toMultimap()),
+            )
+    }
+
+    private fun rdfQuads(
+        response: SolidRawResponse,
+        contentType: String,
+        i18nDirection: Boolean,
+    ): List<RdfQuad> {
+        val ct = contentType.substringBefore(';').trim().lowercase()
+        return when (ct) {
+            HTTPAcceptType.N_TRIPLES, HTTPAcceptType.N_QUADS ->
+                NTriples.parse(String(response.bodyBytes, Charsets.UTF_8), response.uri)
+
+            HTTPAcceptType.TURTLE,
+            HTTPAcceptType.N3,
+            HTTPAcceptType.TRIG,
+            HTTPAcceptType.RDF_XML,
+            HTTPAcceptType.JSON_RDF ->
+                throw UnsupportedRdfContentTypeException(ct, response.uri.toString())
+
+            else -> {
+                InruptAcrJson.parseOrNull(
+                    String(response.bodyBytes, Charsets.UTF_8), response.uri,
+                )?.let { return it }
+
+                RDFResource.parseJsonLd(
+                    String(response.bodyBytes, Charsets.UTF_8),
+                    baseUri = response.uri.toString(),
+                    i18nDirection = i18nDirection,
+                )
+            }
+        }
     }
 
     private fun <T> parseNonRdf(

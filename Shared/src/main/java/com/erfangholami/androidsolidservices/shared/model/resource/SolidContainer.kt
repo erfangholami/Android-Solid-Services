@@ -1,15 +1,15 @@
-package com.erfangholami.androidsolidservices.shared.domain.resource
+package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Parcel
 import android.os.Parcelable
 import com.apicatalog.jsonld.http.media.MediaType
-import com.erfangholami.androidsolidservices.shared.domain.util.encodeUriString
+import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.RDFS
 import com.erfangholami.androidsolidservices.shared.vocab.STAT
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
 /**
@@ -28,18 +28,18 @@ public open class SolidContainer : SolidRDFResource {
     public constructor(identifier: URI, quads: List<RdfQuad>?) :
             this(identifier, quads, null)
 
-    public constructor(identifier: URI, mediaType: MediaType, quads: List<RdfQuad>?) :
-            this(identifier, mediaType, quads, null)
+    public constructor(identifier: URI, contentType: String, quads: List<RdfQuad>?) :
+            this(identifier, contentType, quads, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: Headers?) :
-            this(identifier, MediaType.JSON_LD, quads, headers)
+    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+            this(identifier, "application/ld+json", quads, headers)
 
     public constructor(
         identifier: URI,
-        mediaType: MediaType,
+        contentType: String,
         quads: List<RdfQuad>?,
-        headers: Headers?
-    ) : super(identifier, mediaType, quads, headers) {
+        headers: SolidHeaders?
+    ) : super(identifier, contentType, quads, headers) {
         parseContainedResources()
     }
 
@@ -108,15 +108,27 @@ public open class SolidContainer : SolidRDFResource {
             encodeUriString(iri).toString()
     }
 
+    /**
+     * Returns references to the resources directly contained in this container,
+     * parsed from its `ldp:contains` triples and any server-supplied stat metadata.
+     */
     public fun getContained(): List<SolidSourceReference> = containerRes
 
+    /**
+     * Replaces the contained-resource references with [refs].
+     *
+     * Useful for attaching richer per-child metadata (for example results of follow-up
+     * HEAD requests) that the container listing alone does not provide.
+     */
     public fun enrichContained(refs: List<SolidSourceReference>) {
         containerRes.clear()
         containerRes.addAll(refs)
     }
 
+    /** Returns `true` if this container carries an `rdfs:label`. */
     public fun hasLabel(): Boolean = getLabel() != null
 
+    /** Returns this container's `rdfs:label`, or `null` if it has none. */
     public fun getLabel(): String? =
         quads.find {
             it.subject == getIdentifier().toString() && it.predicate == RDFS.LABEL
