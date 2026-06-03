@@ -1,7 +1,7 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
 import android.util.Log
-import com.erfangholami.androidsolidservices.api.auth.Authenticator
+import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
 import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient.Companion.DEBUG_TRACE
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
@@ -31,7 +31,7 @@ private fun defaultHttpClient(): OkHttpClient =
         .build()
 
 internal class SolidHttpClient(
-    private val auth: Authenticator? = null,
+    private val auth: AuthSession? = null,
     private val httpClient: OkHttpClient = defaultHttpClient(),
 ) {
 
@@ -402,7 +402,7 @@ internal class SolidHttpClient(
 
             val response = send(method, uri, contentType, accept, linkHeader, body, attemptHeaders)
             response.headers[HTTPHeaderName.DPOP_NONCE]?.let { nonce ->
-                requireAuth().updateDPoPNonce(webId, nonce)
+                requireAuth().updateDPoPNonce(webId, uri.toString(), nonce)
             }
             lastResponse = response
 
@@ -463,9 +463,9 @@ internal class SolidHttpClient(
         return authenticator.getAuthHeaders(webId, method, uri)
     }
 
-    private fun requireAuth(): Authenticator =
+    private fun requireAuth(): AuthSession =
         auth ?: throw IllegalStateException(
-            "An Authenticator is required for CRUD operations. " +
-                    "Construct SolidHttpClient with an Authenticator instance."
+            "An authenticated session is required for CRUD operations. " +
+                    "Construct SolidHttpClient with an AuthSession instance."
         )
 }

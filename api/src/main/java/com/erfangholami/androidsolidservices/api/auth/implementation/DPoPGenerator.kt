@@ -20,6 +20,7 @@ import java.security.PublicKey
 import java.security.spec.ECGenParameterSpec
 import java.util.Date
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import javax.security.auth.x500.X500Principal
 
 internal class DPoPGenerator private constructor(
@@ -40,8 +41,12 @@ internal class DPoPGenerator private constructor(
 
     private val selectedAlgo: DPopSupportedAlgo = selectCategory()
 
-    @Volatile
-    private var nonce: String? = null
+    /**
+     * Server-issued DPoP nonces, keyed by origin (`scheme://authority`). RFC 9449 §9: the
+     * authorization server and each resource server issue distinct nonces that are only accepted
+     * by the server that issued them, so they must be tracked per-origin and never shared.
+     */
+    private val nonces = ConcurrentHashMap<String, String>()
 
     private val keyholder: KeyHolder = KeyPairHolderFactory.getKeyHolder(
         KEYSTORE_PROVIDER,
@@ -49,8 +54,9 @@ internal class DPoPGenerator private constructor(
         selectedAlgo
     )
 
-    fun updateNonce(newNonce: String) {
-        nonce = newNonce
+    /** Records the `DPoP-Nonce` returned by the server at [forUri] for use in subsequent proofs. */
+    fun updateNonce(forUri: String, newNonce: String) {
+        nonces[originOf(forUri)] = newNonce
     }
 
     fun generateProof(httpMethod: String, httpUri: String, accessToken: String? = null): String {
@@ -68,7 +74,7 @@ internal class DPoPGenerator private constructor(
             "htu" to htu,
             "iat" to Date().time / 1000,
         )
-        nonce?.let { claims["nonce"] = it }
+        nonces[originOf(httpUri)]?.let { claims["nonce"] = it }
         if (!accessToken.isNullOrEmpty()) {
             claims["ath"] = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
                 MessageDigest.getInstance("SHA-256").digest(accessToken.toByteArray(Charsets.US_ASCII))
@@ -100,6 +106,8 @@ internal class DPoPGenerator private constructor(
         ).firstOrNull { algos.contains(it.toString()) }
             ?: throw IllegalArgumentException("Server advertises no supported DPoP algorithms. Supported: $algos")
     }
+
+    private fun originOf(uri: String): String = URI(uri).let { "${it.scheme}://${it.authority}" }
 }
 
 internal enum class DPopSupportedAlgo {

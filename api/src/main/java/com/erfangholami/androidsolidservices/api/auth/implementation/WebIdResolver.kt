@@ -26,7 +26,7 @@ internal class WebIdResolver {
         webIdUri: String,
         tokenProvider: suspend () -> TokenResponse?,
         authHeadersProvider: suspend (httpMethod: String, uri: String) -> Map<String, String>,
-        nonceSink: (String) -> Unit,
+        nonceSink: (forUri: String, nonce: String) -> Unit,
     ): WebId {
         val uri = URI.create(webIdUri)
         val hasToken = tokenProvider() != null
@@ -41,7 +41,7 @@ internal class WebIdResolver {
 
         val nonce = response.headers[HTTPHeaderName.DPOP_NONCE]
         if (nonce != null && hasToken) {
-            nonceSink(nonce)
+            nonceSink(webIdUri, nonce)
             if (response.statusCode == 401) {
                 val retryHeaders = authHeadersProvider("GET", webIdUri)
                 response = solidHttpClient.send(
