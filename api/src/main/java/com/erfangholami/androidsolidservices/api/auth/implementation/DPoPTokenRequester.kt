@@ -27,8 +27,9 @@ internal class DPoPTokenRequester(
         bodyParams: Map<String, String>,
         basicAuthHeader: String?,
         discoveryDoc: AuthorizationServiceDiscovery,
+        keyId: String?,
     ): DPoPTokenResult {
-        val dpop = DPoPGenerator.getInstance(discoveryDoc)
+        val dpop = DPoPGenerator.getInstance(discoveryDoc, keyId)
         val body = formEncode(bodyParams).toByteArray(Charsets.UTF_8)
         var lastFailure: DPoPTokenResult.Failure? = null
 

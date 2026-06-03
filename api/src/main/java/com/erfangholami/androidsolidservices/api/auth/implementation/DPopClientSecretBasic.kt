@@ -10,6 +10,7 @@ import net.openid.appauth.internal.UriUtil
 internal class DPopClientSecretBasic(
     private val clientSecret: String,
     private val configuration: AuthorizationServiceConfiguration,
+    private val keyId: String?,
 ) : ClientAuthentication {
 
     override fun getRequestHeaders(clientId: String): Map<String?, String?> {
@@ -17,7 +18,7 @@ internal class DPopClientSecretBasic(
         val encodedClientSecret = UriUtil.formUrlEncodeValue(clientSecret)
         val credentials = "$encodedClientId:$encodedClientSecret"
         val basicAuth = Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
-        val dpop = DPoPGenerator.getInstance(configuration.discoveryDoc!!)
+        val dpop = DPoPGenerator.getInstance(configuration.discoveryDoc!!, keyId)
             .generateProof("POST", configuration.tokenEndpoint.toString())
         return mapOf(
             HTTPHeaderName.AUTHORIZATION to "Basic $basicAuth",
@@ -32,10 +33,11 @@ internal class DPopClientSecretBasic(
 
 internal class DPopNoClientAuth(
     private val configuration: AuthorizationServiceConfiguration,
+    private val keyId: String?,
 ) : ClientAuthentication {
 
     override fun getRequestHeaders(clientId: String): Map<String?, String?> {
-        val dpop = DPoPGenerator.getInstance(configuration.discoveryDoc!!)
+        val dpop = DPoPGenerator.getInstance(configuration.discoveryDoc!!, keyId)
             .generateProof("POST", configuration.tokenEndpoint.toString())
         return mapOf(HTTPHeaderName.DPOP to dpop)
     }

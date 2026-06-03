@@ -45,12 +45,15 @@ public fun ProfileList.getProfileOrNull(webId: String): Profile? {
  * @property authState The AppAuth [AuthState] holding the OIDC token set for this account.
  * @property userInfo  The OIDC `userinfo` response for this account, or `null` if not yet fetched.
  * @property webId     The parsed WebID profile document, or `null` if not yet fetched.
+ * @property dpopKeyId Identifier of this account's own DPoP key in the Android Keystore. `null` for
+ *   profiles created before per-account keys existed; those fall back to the shared legacy key.
  */
 @Serializable(with = ProfileSerializer::class)
 public data class Profile(
     val authState: AuthState = AuthState(),
     val userInfo: UserInfo? = null,
-    val webId: WebId? = null
+    val webId: WebId? = null,
+    val dpopKeyId: String? = null,
 )
 
 /**
@@ -90,6 +93,7 @@ public class ProfileSerializer : KSerializer<Profile> {
         element<String>("authState")
         element<String>("userInfo")
         element<String>("webId")
+        element<String>("dpopKeyId")
     }
 
     override fun serialize(encoder: Encoder, value: Profile) {
@@ -101,6 +105,7 @@ public class ProfileSerializer : KSerializer<Profile> {
                 if (value.userInfo != null) Json.encodeToString(value.userInfo) else ""
             )
             encodeStringElement(descriptor, 2, WebId.Companion.writeToString(value.webId) ?: "")
+            encodeStringElement(descriptor, 3, value.dpopKeyId ?: "")
         }
     }
 
@@ -108,6 +113,7 @@ public class ProfileSerializer : KSerializer<Profile> {
         var stateString = ""
         var userInfoString = ""
         var webIdString = ""
+        var dpopKeyIdString = ""
 
         decoder.decodeStructure(descriptor) {
             while (true) {
@@ -115,6 +121,7 @@ public class ProfileSerializer : KSerializer<Profile> {
                     0 -> stateString = decodeStringElement(descriptor, 0)
                     1 -> userInfoString = decodeStringElement(descriptor, 1)
                     2 -> webIdString = decodeStringElement(descriptor, 2)
+                    3 -> dpopKeyIdString = decodeStringElement(descriptor, 3)
                     CompositeDecoder.DECODE_DONE -> break
                     else -> error("Unexpected index: $index")
                 }
@@ -127,6 +134,7 @@ public class ProfileSerializer : KSerializer<Profile> {
                 userInfoString
             ) else null,
             webId = if (webIdString.isNotEmpty()) readFromString(webIdString) else null,
+            dpopKeyId = dpopKeyIdString.takeIf { it.isNotEmpty() },
         )
     }
 }

@@ -25,17 +25,36 @@ import javax.security.auth.x500.X500Principal
 
 internal class DPoPGenerator private constructor(
     val authDiscovery: AuthorizationServiceDiscovery,
+    private val keyId: String?,
 ) {
     companion object {
         private val instances: MutableMap<String, DPoPGenerator> = mutableMapOf()
         private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
         private const val KEYSTORE_ALIAS_PREFIX = BuildConfig.KEY_GENERATOR_ALIAS
 
-        fun getInstance(authDiscovery: AuthorizationServiceDiscovery): DPoPGenerator {
-            val issuer = authDiscovery.issuer
+        /**
+         * Returns the generator for a DPoP key. [keyId] scopes the key to a single account; a `null`
+         * [keyId] (legacy profiles) shares one key per algorithm, keyed per issuer as before.
+         */
+        fun getInstance(
+            authDiscovery: AuthorizationServiceDiscovery,
+            keyId: String? = null,
+        ): DPoPGenerator {
+            val instanceKey = keyId ?: "issuer:${authDiscovery.issuer}"
             return synchronized(instances) {
-                instances.getOrPut(issuer) { DPoPGenerator(authDiscovery) }
+                instances.getOrPut(instanceKey) { DPoPGenerator(authDiscovery, keyId) }
             }
+        }
+
+        /** Deletes the Keystore key(s) for [keyId] (all algorithms) and drops the cached generator. */
+        fun deleteKeys(keyId: String) {
+            runCatching {
+                val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
+                keyStore.aliases().toList()
+                    .filter { it.startsWith("${KEYSTORE_ALIAS_PREFIX}_${keyId}_") }
+                    .forEach { alias -> runCatching { keyStore.deleteEntry(alias) } }
+            }
+            synchronized(instances) { instances.remove(keyId) }
         }
     }
 
@@ -50,7 +69,8 @@ internal class DPoPGenerator private constructor(
 
     private val keyholder: KeyHolder = KeyPairHolderFactory.getKeyHolder(
         KEYSTORE_PROVIDER,
-        "${KEYSTORE_ALIAS_PREFIX}_${selectedAlgo.name}",
+        if (keyId != null) "${KEYSTORE_ALIAS_PREFIX}_${keyId}_${selectedAlgo.name}"
+        else "${KEYSTORE_ALIAS_PREFIX}_${selectedAlgo.name}",
         selectedAlgo
     )
 

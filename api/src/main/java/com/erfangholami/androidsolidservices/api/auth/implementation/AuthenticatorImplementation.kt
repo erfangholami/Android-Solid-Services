@@ -42,6 +42,7 @@ import net.openid.appauth.TokenRequest
 import net.openid.appauth.TokenResponse
 import net.openid.appauth.internal.UriUtil
 import java.net.URI
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 
@@ -140,7 +141,9 @@ internal class AuthenticatorImplementation internal constructor(
 
         val authState = AuthState(conf)
         authState.update(regResponse)
-        inProgressAuth.set(Profile(authState = authState))
+        // Mint a fresh DPoP key id for this login so the issued tokens bind to a key unique to the
+        // resulting account; it is carried through the code exchange and persisted with the profile.
+        inProgressAuth.set(Profile(authState = authState, dpopKeyId = UUID.randomUUID().toString().replace("-", "")))
 
         val existingProfile = if (webId != null) profileManager.getProfileOrNull(webId) else null
         val sameProvider = existingProfile?.authState?.authorizationServiceConfiguration
@@ -225,9 +228,14 @@ internal class AuthenticatorImplementation internal constructor(
         )
 
         val realWebId = userInfo.webId
+        val previousKeyId = profileManager.getProfileOrNull(realWebId)?.dpopKeyId
         profileManager.writeProfile(realWebId, finalProfile)
         profileManager.setActiveWebId(realWebId)
         inProgressAuth.clear()
+        // A re-login replaces this account's DPoP key; discard the superseded one.
+        if (previousKeyId != null && previousKeyId != finalProfile.dpopKeyId) {
+            DPoPGenerator.deleteKeys(previousKeyId)
+        }
         return realWebId
     }
 
@@ -280,7 +288,7 @@ internal class AuthenticatorImplementation internal constructor(
             "${tokenResponse.tokenType} ${tokenResponse.accessToken}"
         if (tokenResponse.tokenType?.equals(HTTPHeaderName.DPOP, true) == true) {
             headers[HTTPHeaderName.DPOP] = DPoPGenerator
-                .getInstance(profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!)
+                .getInstance(profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!, profile.dpopKeyId)
                 .generateProof(httpMethod, uri, tokenResponse.accessToken)
         }
         return headers
@@ -290,7 +298,7 @@ internal class AuthenticatorImplementation internal constructor(
         val profile = profileManager.getProfileOrNull(webId) ?: return
         val discoveryDoc = profile.authState.authorizationServiceConfiguration?.discoveryDoc
         if (discoveryDoc != null && discoveryDoc.supportsDPop()) {
-            DPoPGenerator.getInstance(discoveryDoc).updateNonce(resourceUri, nonce)
+            DPoPGenerator.getInstance(discoveryDoc, profile.dpopKeyId).updateNonce(resourceUri, nonce)
         }
     }
 
@@ -326,8 +334,10 @@ internal class AuthenticatorImplementation internal constructor(
 
     override suspend fun removeProfile(webId: String) {
         profileManager.awaitInit()
+        val keyId = profileManager.getProfileOrNull(webId)?.dpopKeyId
         recentRefresh.remove(webId)
         profileManager.removeProfile(webId)
+        keyId?.let { DPoPGenerator.deleteKeys(it) }
     }
 
     override suspend fun removeAllProfiles() {
@@ -406,9 +416,9 @@ internal class AuthenticatorImplementation internal constructor(
         val clientSecret = profile.authState.lastRegistrationResponse?.clientSecret
         val clientAuthentication = when {
             discoveryDoc.supportsDPop() && authMethod == TOKEN_ENDPOINT_AUTH_METHOD_CLIENT_SECRET_BASIC && clientSecret != null ->
-                DPopClientSecretBasic(clientSecret, tokenRequest.configuration)
+                DPopClientSecretBasic(clientSecret, tokenRequest.configuration, profile.dpopKeyId)
             discoveryDoc.supportsDPop() ->
-                DPopNoClientAuth(tokenRequest.configuration)
+                DPopNoClientAuth(tokenRequest.configuration, profile.dpopKeyId)
             authMethod == TOKEN_ENDPOINT_AUTH_METHOD_CLIENT_SECRET_BASIC && clientSecret != null ->
                 ClientSecretBasic(clientSecret)
             else ->
@@ -456,7 +466,7 @@ internal class AuthenticatorImplementation internal constructor(
             null
         }
 
-        return when (val result = dpopTokenRequester.request(tokenEndpoint, params, basicAuth, discoveryDoc)) {
+        return when (val result = dpopTokenRequester.request(tokenEndpoint, params, basicAuth, discoveryDoc, profile.dpopKeyId)) {
             is DPoPTokenResult.Success -> {
                 val token = runCatching {
                     TokenResponse.Builder(refreshRequest).fromResponseJson(result.json).build()
@@ -573,7 +583,7 @@ internal class AuthenticatorImplementation internal constructor(
             "${tokenResponse.tokenType} ${tokenResponse.accessToken}"
         if (tokenResponse.tokenType?.equals(HTTPHeaderName.DPOP) == true) {
             headers[HTTPHeaderName.DPOP] = DPoPGenerator
-                .getInstance(profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!)
+                .getInstance(profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!, profile.dpopKeyId)
                 .generateProof(httpMethod, uri, tokenResponse.accessToken)
         }
         return headers
@@ -587,7 +597,7 @@ internal class AuthenticatorImplementation internal constructor(
         val profile = inProgressAuth.get() ?: return
         val discoveryDoc = profile.authState.authorizationServiceConfiguration?.discoveryDoc
         if (discoveryDoc != null && discoveryDoc.supportsDPop()) {
-            DPoPGenerator.getInstance(discoveryDoc).updateNonce(resourceUri, nonce)
+            DPoPGenerator.getInstance(discoveryDoc, profile.dpopKeyId).updateNonce(resourceUri, nonce)
         }
     }
 
