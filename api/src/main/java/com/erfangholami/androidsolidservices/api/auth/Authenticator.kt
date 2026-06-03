@@ -7,7 +7,6 @@ import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import kotlinx.coroutines.flow.StateFlow
 import net.openid.appauth.AuthorizationException
 import net.openid.appauth.AuthorizationResponse
-import net.openid.appauth.TokenResponse
 
 /**
  * Manages OpenID Connect authentication with Solid pods on behalf of one or more users.
@@ -77,39 +76,6 @@ public interface Authenticator {
         webId: String,
         logoutRedirectUrl: String,
     ): Pair<Intent?, String?>
-
-    /**
-     * Returns the most recent [TokenResponse] for [webId], refreshing the token if expired.
-     *
-     * @param forceRefresh If `true`, forces a token refresh even if the current token is valid.
-     * @return The token response, or `null` if no session exists for [webId].
-     */
-    public suspend fun getLastTokenResponse(
-        webId: String,
-        forceRefresh: Boolean = false,
-    ): TokenResponse?
-
-    /**
-     * Returns HTTP authorization headers (Bearer token + DPoP proof) for a request.
-     *
-     * @param webId The WebID of the user making the request.
-     * @param httpMethod The HTTP method of the request (e.g. "GET", "PUT").
-     * @param uri The full URI of the target resource.
-     * @return A map of header name → value to add to the outgoing request.
-     */
-    public suspend fun getAuthHeaders(
-        webId: String,
-        httpMethod: String,
-        uri: String,
-    ): Map<String, String>
-
-    /**
-     * Updates the DPoP nonce for [webId] after receiving a `DPoP-Nonce` response header.
-     *
-     * Pods may rotate the nonce on every response; callers must update it before the next
-     * authenticated request, otherwise the server will reject the DPoP proof.
-     */
-    public fun updateDPoPNonce(webId: String, nonce: String)
 
     /** Returns `true` if at least one user is fully authorized. */
     public fun isUserAuthorized(): Boolean

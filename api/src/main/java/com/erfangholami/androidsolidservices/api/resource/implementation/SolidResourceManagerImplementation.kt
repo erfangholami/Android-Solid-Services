@@ -2,6 +2,7 @@ package com.erfangholami.androidsolidservices.api.resource.implementation
 
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
+import com.erfangholami.androidsolidservices.api.auth.implementation.asSession
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
@@ -39,7 +40,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     private val solidHttpClient: SolidHttpClient
 
     private constructor(authenticator: Authenticator) {
-        solidHttpClient = SolidHttpClient(authenticator)
+        solidHttpClient = SolidHttpClient(authenticator.asSession())
     }
 
     override suspend fun head(
