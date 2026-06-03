@@ -29,16 +29,24 @@ import androidx.compose.ui.unit.sp
 import com.erfangholami.androidsolidservices.client.R
 
 /**
+ * A ready-made "Sign in with Solid" button styled after Solid's branding.
+ *
+ * Wire [onClick] to start the sign-in flow, typically via
+ * [SolidSignInClient.requestLogin]:
  * ```kotlin
- * SignInButton(onClick = { solid.getSignInClient(context).requestLogin { webId, _ -> ... } })
+ * SignInButton(onClick = { Solid.getSignInClient(context).requestLogin { webId, _ -> ... } })
  * ```
+ *
+ * @param onClick Invoked when the button is tapped.
+ * @param enabled When `false`, the button is dimmed and non-interactive.
+ * @param text The button label; defaults to the localized "Sign in with Solid".
  */
 @Composable
 public fun SignInButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    text: String = stringResource(R.string.sign_in_with_solid),
+    text: String = stringResource(R.string.ass_sign_in_with_solid),
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -63,7 +71,7 @@ public fun SignInButton(
             modifier = Modifier.padding(horizontal = 20.dp),
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_solid_logo),
+                painter = painterResource(R.drawable.ass_ic_solid_logo),
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
             )

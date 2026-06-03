@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Android 11+ (API 30) package visibility: without this, bindService() and the
+      installed-app check cannot see the Android Solid Services app. Merged into every
+      consuming app's manifest.
+    -->
+    <queries>
+        <package android:name="com.erfangholami.androidsolidservices" />
+    </queries>
 
 </manifest>
