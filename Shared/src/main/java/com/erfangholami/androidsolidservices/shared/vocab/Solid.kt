@@ -1,8 +1,16 @@
 package com.erfangholami.androidsolidservices.shared.vocab
 
+import com.erfangholami.androidsolidservices.shared.vocab.Solid.OIDC_ISSUER
+import com.erfangholami.androidsolidservices.shared.vocab.Solid.STORAGE_DESCRIPTION
+
+
 /**
  * Solid Terms vocabulary constants.
  * http://www.w3.org/ns/solid/terms#
+ *
+ * Core Solid-specific terms covering authentication discovery ([OIDC_ISSUER]),
+ * storage description ([STORAGE_DESCRIPTION]), type indexes, N3 Patch documents,
+ * and access-control agent classes.
  */
 public object Solid {
     public const val NAMESPACE: String = "http://www.w3.org/ns/solid/terms#"
@@ -22,14 +30,31 @@ public object Solid {
     public const val OWNER: String = "${NAMESPACE}owner"
 
     //Type Index
+    /** Links a WebID to a non-public type index (access-controlled). */
     public const val PRIVATE_TYPE_INDEX: String = "${NAMESPACE}privateTypeIndex"
+
+    /** Links a WebID to a publicly readable type index. */
     public const val PUBLIC_TYPE_INDEX: String = "${NAMESPACE}publicTypeIndex"
+
+    /** An entry in a type index that maps a class to one or more instances or containers. */
     public const val TYPE_REGISTRATION: String = "${NAMESPACE}TypeRegistration"
+
+    /** The RDF class this registration entry applies to. */
     public const val FOR_CLASS: String = "${NAMESPACE}forClass"
+
+    /** A specific resource instance that holds data of the registered class. */
     public const val INSTANCE: String = "${NAMESPACE}instance"
+
+    /** A container whose members are instances of the registered class. */
     public const val INSTANCE_CONTAINER: String = "${NAMESPACE}instanceContainer"
+
+    /** The type of a type index document itself. */
     public const val TYPE_INDEX: String = "${NAMESPACE}TypeIndex"
+
+    /** A type index that is not listed in the public profile. */
     public const val UNLISTED_DOCUMENT: String = "${NAMESPACE}UnlistedDocument"
+
+    /** A type index that is discoverable from the public profile. */
     public const val LISTED_DOCUMENT: String = "${NAMESPACE}ListedDocument"
 
     //N3 Patch
@@ -53,5 +78,6 @@ public object Solid {
     public const val AUTHENTICATED_AGENT: String = "${NAMESPACE}AuthenticatedAgent"
 
     // Notifications
+    /** Links a storage description to an available notification channel. */
     public const val NOTIFICATION_CHANNEL: String = "${NAMESPACE}notificationChannel"
 }

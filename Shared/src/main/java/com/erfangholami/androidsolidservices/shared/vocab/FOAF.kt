@@ -1,8 +1,15 @@
 package com.erfangholami.androidsolidservices.shared.vocab
 
+import com.erfangholami.androidsolidservices.shared.vocab.FOAF.AGENT
+
+
 /**
  * Friend of a Friend (FOAF) vocabulary constants.
  * http://xmlns.com/foaf/0.1/
+ *
+ * Used in Solid WebID profiles to describe people, organizations, and social
+ * relationships. [AGENT] is also the value of [ACL.AGENT_PUBLIC] for public
+ * access rules in WAC.
  */
 public object FOAF {
     public const val NAMESPACE: String = "http://xmlns.com/foaf/0.1/"

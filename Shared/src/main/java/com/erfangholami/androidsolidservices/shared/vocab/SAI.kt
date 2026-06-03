@@ -158,6 +158,9 @@ public object SAI {
     /** Links a social agent registration or access grant to an access grant. */
     public const val HAS_ACCESS_GRANT: String = "${NAMESPACE}hasAccessGrant"
 
+    /** Links an access grant to one of its constituent data grants. */
+    public const val HAS_DATA_GRANT: String = "${NAMESPACE}hasDataGrant"
+
     /** The social agent who granted the authorization. */
     public const val GRANTED_BY: String = "${NAMESPACE}grantedBy"
 

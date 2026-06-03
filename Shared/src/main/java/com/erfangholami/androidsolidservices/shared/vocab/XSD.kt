@@ -1,8 +1,15 @@
 package com.erfangholami.androidsolidservices.shared.vocab
 
+import com.erfangholami.androidsolidservices.shared.vocab.XSD.LANG_STRING
+
+
 /**
  * XML Schema Datatypes (XSD) vocabulary constants.
  * http://www.w3.org/2001/XMLSchema#
+ *
+ * Used to specify literal datatypes in RDF/Turtle documents on Solid pods
+ * (e.g. `"2024-01-01"^^xsd:date`). [LANG_STRING] is an exception: it lives
+ * in the RDF namespace but is grouped here for convenience.
  */
 public object XSD {
     public const val NAMESPACE: String = "http://www.w3.org/2001/XMLSchema#"
@@ -13,6 +20,8 @@ public object XSD {
     public const val TOKEN: String = "${NAMESPACE}token"
     public const val LANGUAGE: String = "${NAMESPACE}language"
     public const val ANY_URI: String = "${NAMESPACE}anyURI"
+
+    /** Language-tagged string — uses the RDF namespace, not XSD, but grouped here for convenience. */
     public const val LANG_STRING: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
 
     //Numeric types

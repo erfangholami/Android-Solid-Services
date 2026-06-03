@@ -1,5 +1,19 @@
 package com.erfangholami.androidsolidservices.shared.vocab
 
+import com.erfangholami.androidsolidservices.shared.vocab.DC.ELEMENT_NAMESPACE
+import com.erfangholami.androidsolidservices.shared.vocab.DC.NAMESPACE
+import com.erfangholami.androidsolidservices.shared.vocab.DC.TITLE
+
+
+/**
+ * Dublin Core Metadata Terms vocabulary constants.
+ * http://purl.org/dc/terms/  (dcterms — preferred)
+ * http://purl.org/dc/elements/1.1/  (dc — legacy elements namespace)
+ *
+ * Used for descriptive metadata on Solid resources: titles, dates, creators,
+ * and relationships. Prefer dcterms (the [NAMESPACE] prefix) over the legacy
+ * dc elements namespace ([ELEMENT_NAMESPACE]).
+ */
 public object DC {
     public const val NAMESPACE: String = "http://purl.org/dc/terms/"
     public const val ELEMENT_NAMESPACE: String = "http://purl.org/dc/elements/1.1/"
@@ -12,6 +26,8 @@ public object DC {
 
     // Descriptive
     public const val TITLE: String = "${NAMESPACE}title"
+
+    /** https variant of [TITLE] — present on some older documents; prefer [TITLE]. */
     public const val TITLE_LEGACY: String = "https://purl.org/dc/terms/title"
     public const val DESCRIPTION: String = "${NAMESPACE}description"
     public const val SUBJECT: String = "${NAMESPACE}subject"

@@ -9,7 +9,7 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object AS {
     public const val NAMESPACE: String = "https://www.w3.org/ns/activitystreams#"
 
-    //Activity types (notification event types) 
+    //Activity types (notification event types)
     public const val CREATE: String = "${NAMESPACE}Create"
     public const val UPDATE: String = "${NAMESPACE}Update"
     public const val DELETE: String = "${NAMESPACE}Delete"
@@ -17,6 +17,18 @@ public object AS {
     public const val REMOVE: String = "${NAMESPACE}Remove"
     public const val MOVE: String = "${NAMESPACE}Move"
     public const val ANNOUNCE: String = "${NAMESPACE}Announce"
+
+    /** Offer activity — used by SolidShare to deliver a share via LDN inbox. */
+    public const val OFFER: String = "${NAMESPACE}Offer"
+
+    /** Undo activity — used to retract a previous Offer on revoke. */
+    public const val UNDO: String = "${NAMESPACE}Undo"
+
+    /** Reject activity — used by an owner to decline a received AccessRequest. */
+    public const val REJECT: String = "${NAMESPACE}Reject"
+
+    /** Accept activity — sent to a requester when their AccessRequest is granted. */
+    public const val ACCEPT: String = "${NAMESPACE}Accept"
 
     //Object types
     public const val OBJECT_TYPE: String = "${NAMESPACE}Object"
@@ -43,6 +55,9 @@ public object AS {
 
     /** Summary of the activity. */
     public const val SUMMARY: String = "${NAMESPACE}summary"
+
+    /** Links an Accept/Reject back to the AccessRequest it answers. */
+    public const val IN_REPLY_TO: String = "${NAMESPACE}inReplyTo"
 
     public const val ITEMS: String = "${NAMESPACE}items"
     public const val ORDERED_ITEMS: String = "${NAMESPACE}orderedItems"

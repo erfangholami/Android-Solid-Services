@@ -16,6 +16,9 @@ public object Notify {
     public const val LDN_CHANNEL_2023: String = "${NAMESPACE}LDNChannel2023"
 
     //Subscription predicates
+    /** Storage advertises one or more subscription endpoints via this predicate. */
+    public const val SUBSCRIPTION: String = "${NAMESPACE}subscription"
+
     /** The resource being subscribed to. */
     public const val TOPIC: String = "${NAMESPACE}topic"
 
