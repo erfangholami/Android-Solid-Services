@@ -1,12 +1,11 @@
 package com.erfangholami.androidsolidservices.api.resource
 
-import android.content.Context
-import com.erfangholami.androidsolidservices.shared.domain.crud.N3Patch
-import com.erfangholami.androidsolidservices.shared.domain.network.SolidNetworkResponse
-import com.erfangholami.androidsolidservices.shared.domain.resource.Resource
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidResourceManagerImplementation
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.model.resource.Resource
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import java.net.URI
 
 /**
@@ -27,6 +26,21 @@ public interface SolidResourceManager {
          */
         public fun getInstance(authenticator: Authenticator): SolidResourceManager =
             SolidResourceManagerImplementation.getInstance(authenticator)
+
+        /**
+         * Turns HTTP request/response tracing on or off on the shared
+         * [okhttp3.OkHttpClient]-backed client used by every CRUD method on
+         * this interface. Off by default.
+         *
+         * When on, every Solid HTTP call logs to `android.util.Log` with tag
+         * `SolidHttp`: `→ METHOD URI` for the request and `← STATUS METHOD
+         * URI [— body excerpt]` for the response (body excerpt included for
+         * non-2xx only). Intended for diagnosing sharing-pipeline failures
+         * where the user only sees a bare 401/403/404; should be left off
+         * in production builds.
+         */
+        public fun setHttpTrace(enabled: Boolean): Unit =
+            SolidResourceManagerImplementation.setHttpTrace(enabled)
     }
 
     /**
@@ -52,7 +66,7 @@ public interface SolidResourceManager {
      * Reads a resource from the pod.
      * @param webid The WebID of the authenticated user making the request.
      * @param resource The URI of the resource to read.
-     * @param clazz The expected resource type (e.g. [com.erfangholami.androidsolidservices.shared.domain.resource.RDFResource]).
+     * @param clazz The expected resource type (e.g. [com.erfangholami.androidsolidservices.shared.model.resource.RDFResource]).
      * @return [SolidNetworkResponse.Success] with the resource, or an error/exception variant.
      */
     public suspend fun <T : Resource> read(
@@ -76,19 +90,28 @@ public interface SolidResourceManager {
     ): SolidNetworkResponse<T>
 
     /**
-     * Replaces an existing resource on the pod via HTTP PUT.
+     * Writes a resource via HTTP PUT.
      *
      * For RDF resources, prefer [patch] when only a subset of triples changes — it is
      * atomic and avoids a full read-modify-write cycle. Use [update] when you have the
-     * complete new representation (e.g. uploading a new photo or rewriting a full document).
+     * complete new representation.
      *
-     * When [ifMatch] is null, a conditional `If-Match: *` is used to ensure the resource
-     * exists before writing. Pass the ETag from a previous [read] or [head] call to get
-     * full optimistic-concurrency protection (412 Precondition Failed on version mismatch).
+     * The [ifMatch] argument controls the precondition header (RFC 7232) sent with the
+     * PUT, and unlike [create], `update` does **not** require the resource to already
+     * exist:
+     *  - `null`  → no precondition; the PUT overwrites if present, creates if not. Use
+     *    this for "upsert" semantics, and for endpoints (e.g. Inrupt's ACR endpoint)
+     *    that reject bootstrap PUTs carrying `If-None-Match: *`.
+     *  - `"*"`   → `If-Match: *`; the PUT only succeeds if the resource already exists.
+     *    Use this for pure updates where you want to fail fast if it was deleted.
+     *  - an ETag string → `If-Match: "<etag>"`; full optimistic concurrency, fails with
+     *    `412 Precondition Failed` if the resource was modified since you read it.
+     *
+     * A 412 response is surfaced as-is on the result (no longer masked to 404).
      *
      * @param webid    The WebID of the authenticated user making the request.
      * @param newResource The updated resource; its identifier determines the target URI.
-     * @param ifMatch  Optional ETag for a conditional PUT (prevents lost-update races).
+     * @param ifMatch  See above. Defaults to `null` (unconditional PUT).
      * @return [SolidNetworkResponse.Success] with the updated resource.
      */
     public suspend fun <T : Resource> update(
@@ -104,7 +127,7 @@ public interface SolidResourceManager {
      * and does not require reading the full resource first. Use [N3Patch.build] or
      * [N3Patch.fromDiff] to construct the patch without writing raw N3 strings.
      *
-     * Not applicable to [com.erfangholami.androidsolidservices.shared.domain.resource.SolidNonRDFSource] —
+     * Not applicable to [com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFSource] —
      * use [update] for binary resources.
      *
      * Pass [ifMatch] (the ETag from a previous [read] or [head] call) to issue a conditional
@@ -175,4 +198,86 @@ public interface SolidResourceManager {
         webid: String,
         resourceUri: URI,
     ): SolidNetworkResponse<Boolean>
+
+    /**
+     * Reads a **public** resource without any authentication. Use this for
+     * documents that are world-readable by the Solid spec — most notably
+     * foreign WebID profile documents — where sending an Authorization /
+     * DPoP header would be at best ignored and at worst rejected by the
+     * target server (e.g. Inrupt PodSpaces returns 401 for foreign-issuer
+     * tokens against `/erfangh`).
+     *
+     * For accessing the current user's *own* WebID or any access-controlled
+     * resource, use [read] instead.
+     *
+     * @param uri   The URI of the resource to read.
+     * @param clazz The expected resource type.
+     */
+    public suspend fun <T : Resource> readPublic(
+        uri: URI,
+        clazz: Class<T>,
+    ): SolidNetworkResponse<T>
+
+    /**
+     * HEADs a **public** resource without any authentication. Used as a
+     * fallback when [readPublic] can't recover the value of interest from
+     * the body (e.g. when the inbox link is only advertised in a
+     * `Link: rel="http://www.w3.org/ns/ldp#inbox"` header).
+     *
+     * @param uri The URI of the resource to HEAD.
+     */
+    public suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata>
+
+    /**
+     * PUTs an opaque body to [uri] as a DPoP-authenticated user.
+     *
+     * The high-level [update] is the right entry point most of the time, but
+     * some servers (notably Inrupt PodSpaces' ACR endpoint) reject the
+     * compacted JSON-LD that [update] produces with a `400 "invalid ACR
+     * format"`. For those endpoints the safest cross-server format is
+     * `application/n-triples`: no remote contexts, no compaction, no aliases
+     * — just `<s> <p> <o> .` lines a Solid server can validate directly.
+     *
+     * @param webid       The WebID of the authenticated user.
+     * @param uri         Target resource URI.
+     * @param contentType Media type sent on `Content-Type`.
+     * @param body        Bytes to send as the request body.
+     * @param ifMatch     `null` → unconditional; `"*"` → require existence;
+     *                    ETag → optimistic concurrency. Same semantics as
+     *                    [update].
+     * @param linkHeader  Optional `Link:` header (e.g. for typed PUTs).
+     */
+    public suspend fun putRaw(
+        webid: String,
+        uri: URI,
+        contentType: String,
+        body: ByteArray,
+        ifMatch: String? = null,
+        linkHeader: String? = null,
+    ): SolidNetworkResponse<Unit>
+
+    /**
+     * POSTs an opaque body to [uri] as a DPoP-authenticated user.
+     *
+     * Used primarily for LDN inbox writes (`as:Offer`, `as:Undo`,
+     * `solidshare:AccessRequest`, `as:Reject`) where the target is a
+     * container rather than a specific resource, and the server allocates
+     * the new resource's URI.
+     *
+     * @param webid The WebID of the authenticated user making the request.
+     * @param uri The container URI to POST to.
+     * @param contentType The media type of [body].
+     * @param body The bytes to send.
+     * @param additionalHeaders Extra HTTP headers (e.g. `Slug`).
+     * @return [SolidNetworkResponse.Success] with the server-allocated
+     *   resource's `Location` URI on 2xx (may be null if the server didn't
+     *   return one), or an error/exception variant.
+     */
+    public suspend fun post(
+        webid: String,
+        uri: URI,
+        contentType: String,
+        body: ByteArray,
+        additionalHeaders: Map<String, String> = emptyMap(),
+    ): SolidNetworkResponse<URI?>
 }

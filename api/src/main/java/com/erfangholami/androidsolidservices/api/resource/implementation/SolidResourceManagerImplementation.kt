@@ -1,22 +1,27 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
-import com.erfangholami.androidsolidservices.shared.domain.crud.N3Patch
-import com.erfangholami.androidsolidservices.shared.domain.network.SolidNetworkResponse
-import com.erfangholami.androidsolidservices.shared.domain.resource.Resource
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidContainer
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidMetadata
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidNonRDFResource
-import com.erfangholami.androidsolidservices.shared.vocab.LDP
+import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.model.resource.Resource
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
+import com.erfangholami.androidsolidservices.shared.vocab.LDP
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import java.net.URI
 
 internal class SolidResourceManagerImplementation : SolidResourceManager {
 
     companion object {
+        private const val RESOURCE_LOG_TAG = "SolidResourceManager"
+
         @Volatile
         private var INSTANCE: SolidResourceManager? = null
 
@@ -24,6 +29,10 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: SolidResourceManagerImplementation(authenticator).also { INSTANCE = it }
             }
+        }
+
+        internal fun setHttpTrace(enabled: Boolean) {
+            SolidHttpClient.DEBUG_TRACE = enabled
         }
     }
 
@@ -36,13 +45,15 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     override suspend fun head(
         webid: String,
         uri: URI,
-    ): SolidNetworkResponse<SolidMetadata> = solidHttpClient.head(webid, uri)
+    ): SolidNetworkResponse<SolidMetadata> = withContext(Dispatchers.IO) {
+        solidHttpClient.head(webid, uri)
+    }
 
     override suspend fun <T : Resource> read(
         webid: String,
         resource: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> {
+    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
         val result = solidHttpClient.get(webid, resource, clazz)
         if (result is SolidNetworkResponse.Success && result.data is SolidContainer) {
             val container = result.data as SolidContainer
@@ -52,21 +63,39 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
                         when (val headResult =
                             solidHttpClient.head(webid, URI.create(ref.identifier))) {
                             is SolidNetworkResponse.Success -> ref.copy(headMetadata = headResult.data)
-                            else -> ref
+                            is SolidNetworkResponse.Error -> {
+                                Log.w(
+                                    RESOURCE_LOG_TAG,
+                                    "read: HEAD failed for ${ref.identifier} " +
+                                            "(${headResult.errorCode}: ${headResult.errorMessage}); " +
+                                            "returning ref without metadata.",
+                                )
+                                ref
+                            }
+
+                            is SolidNetworkResponse.Exception -> {
+                                Log.w(
+                                    RESOURCE_LOG_TAG,
+                                    "read: HEAD threw for ${ref.identifier}; " +
+                                            "returning ref without metadata.",
+                                    headResult.exception,
+                                )
+                                ref
+                            }
                         }
                     }
                 }.awaitAll()
             }
             container.enrichContained(enriched)
         }
-        return result
+        result
     }
 
     override suspend fun <T : Resource> create(
         webid: String,
         resource: T,
-    ): SolidNetworkResponse<T> {
-        return try {
+    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+        try {
             val response = solidHttpClient.put(webid, resource, ifNoneMatchStar = true)
             if (response is SolidNetworkResponse.Error && response.errorCode == 412) {
                 SolidNetworkResponse.Error(409, "Resource already exists")
@@ -82,14 +111,9 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         webid: String,
         newResource: T,
         ifMatch: String?,
-    ): SolidNetworkResponse<T> {
-        return try {
-            val response = solidHttpClient.put(webid, newResource, ifMatch = ifMatch ?: "*")
-            if (response is SolidNetworkResponse.Error && response.errorCode == 412) {
-                SolidNetworkResponse.Error(404, "Resource not found")
-            } else {
-                response
-            }
+    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+        try {
+            solidHttpClient.put(webid, newResource, ifMatch = ifMatch)
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
         }
@@ -100,20 +124,24 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = solidHttpClient.patch(webid, uri, patch, ifMatch)
+    ): SolidNetworkResponse<Unit> = withContext(Dispatchers.IO) {
+        solidHttpClient.patch(webid, uri, patch, ifMatch)
+    }
 
     override suspend fun patchRaw(
         webid: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = solidHttpClient.patchRaw(webid, uri, n3Body, ifMatch)
+    ): SolidNetworkResponse<Unit> = withContext(Dispatchers.IO) {
+        solidHttpClient.patchRaw(webid, uri, n3Body, ifMatch)
+    }
 
     override suspend fun <T : Resource> delete(
         webid: String,
         resource: T,
-    ): SolidNetworkResponse<T> {
-        return try {
+    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+        try {
             val uri = resource.getIdentifier()
             val deleteResult = if (resource is SolidContainer || uri.toString().endsWith("/")) {
                 deleteRecursive(webid, uri)
@@ -137,8 +165,8 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     override suspend fun delete(
         webid: String,
         resourceUri: URI,
-    ): SolidNetworkResponse<Boolean> {
-        return try {
+    ): SolidNetworkResponse<Boolean> = withContext(Dispatchers.IO) {
+        try {
             if (resourceUri.toString().endsWith("/")) {
                 deleteRecursive(webid, resourceUri)
             } else {
@@ -149,124 +177,36 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         }
     }
 
-    private suspend fun <T : Resource> move(
+    override suspend fun post(
         webid: String,
-        resource: T,
-        destinationUri: URI,
-    ): SolidNetworkResponse<T> {
-        val sourceUri = resource.getIdentifier()
-        if (sourceUri == destinationUri) return SolidNetworkResponse.Success(resource)
-        return try {
-            val moveResult = move(webid, sourceUri, destinationUri)
-            @Suppress("UNCHECKED_CAST")
-            when (moveResult) {
-                is SolidNetworkResponse.Success -> solidHttpClient.get(webid, destinationUri, resource.javaClass) as SolidNetworkResponse<T>
-                is SolidNetworkResponse.Error -> SolidNetworkResponse.Error(moveResult.errorCode, moveResult.errorMessage)
-                is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(moveResult.exception)
-            }
-        } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
-        }
+        uri: URI,
+        contentType: String,
+        body: ByteArray,
+        additionalHeaders: Map<String, String>,
+    ): SolidNetworkResponse<URI?> = withContext(Dispatchers.IO) {
+        solidHttpClient.post(webid, uri, contentType, body, additionalHeaders)
     }
 
-    private suspend fun move(
+    override suspend fun putRaw(
         webid: String,
-        resourceUri: URI,
-        destinationUri: URI,
-    ): SolidNetworkResponse<Boolean> {
-        if (resourceUri == destinationUri) return SolidNetworkResponse.Success(true)
-        return try {
-            val copyResult = if (resourceUri.toString().endsWith("/")) {
-                copyContainerRecursive(webid, resourceUri, destinationUri)
-            } else {
-                copyResource(webid, resourceUri, destinationUri)
-            }
-            if (copyResult !is SolidNetworkResponse.Success) return copyResult
-
-            if (resourceUri.toString().endsWith("/")) {
-                deleteRecursive(webid, resourceUri)
-            } else {
-                solidHttpClient.delete(webid, resourceUri)
-            }
-        } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
-        }
+        uri: URI,
+        contentType: String,
+        body: ByteArray,
+        ifMatch: String?,
+        linkHeader: String?,
+    ): SolidNetworkResponse<Unit> = withContext(Dispatchers.IO) {
+        solidHttpClient.putRaw(webid, uri, contentType, body, ifMatch, linkHeader)
     }
 
-    private suspend fun copyResource(
-        webid: String,
-        sourceUri: URI,
-        destinationUri: URI,
-    ): SolidNetworkResponse<Boolean> {
-        val copyResult = solidHttpClient.copy(webid, sourceUri, destinationUri)
-        if (copyResult is SolidNetworkResponse.Success) return copyResult
-        if (copyResult is SolidNetworkResponse.Error && copyResult.errorCode != 405) return copyResult
-
-        val getResult = solidHttpClient.get(webid, sourceUri, SolidNonRDFResource::class.java)
-        if (getResult !is SolidNetworkResponse.Success) {
-            return when (getResult) {
-                is SolidNetworkResponse.Error -> SolidNetworkResponse.Error(getResult.errorCode, getResult.errorMessage)
-                is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(getResult.exception)
-            }
-        }
-        val source = getResult.data
-        val destResource = SolidNonRDFResource(destinationUri, source.getContentType(), source.getEntity(), null)
-        val putResult = solidHttpClient.put(webid, destResource, ifNoneMatchStar = true)
-        return when (putResult) {
-            is SolidNetworkResponse.Success -> SolidNetworkResponse.Success(true)
-            is SolidNetworkResponse.Error -> {
-                val code = if (putResult.errorCode == 412) 409 else putResult.errorCode
-                SolidNetworkResponse.Error(code, putResult.errorMessage)
-            }
-            is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(putResult.exception)
-        }
+    override suspend fun <T : Resource> readPublic(
+        uri: URI,
+        clazz: Class<T>,
+    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+        solidHttpClient.getPublic(uri, clazz)
     }
 
-    private suspend fun copyContainerRecursive(
-        webid: String,
-        sourceUri: URI,
-        destinationUri: URI,
-    ): SolidNetworkResponse<Boolean> {
-        val copyResult = solidHttpClient.copy(webid, sourceUri, destinationUri)
-        if (copyResult is SolidNetworkResponse.Success) return copyResult
-        if (copyResult is SolidNetworkResponse.Error && copyResult.errorCode != 405) return copyResult
-
-        val putResult = solidHttpClient.put(webid, SolidContainer(destinationUri), ifNoneMatchStar = true)
-        if (putResult is SolidNetworkResponse.Error && putResult.errorCode != 412) {
-            return SolidNetworkResponse.Error(putResult.errorCode, putResult.errorMessage)
-        }
-        if (putResult is SolidNetworkResponse.Exception) return SolidNetworkResponse.Exception(putResult.exception)
-
-        val containerResult = solidHttpClient.get(webid, sourceUri, SolidContainer::class.java)
-        if (containerResult !is SolidNetworkResponse.Success) {
-            return when (containerResult) {
-                is SolidNetworkResponse.Error -> SolidNetworkResponse.Error(containerResult.errorCode, containerResult.errorMessage)
-                is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(containerResult.exception)
-            }
-        }
-
-        coroutineScope {
-            containerResult.data.getContained().map { ref ->
-                async {
-                    val childUri = URI.create(ref.identifier)
-                    val relativePath = ref.identifier.removePrefix(sourceUri.toString())
-                    val childDest = URI.create(destinationUri.toString() + relativePath)
-                    val isChildContainer = ref.isContainerByUri() ||
-                            ref.types.contains(LDP.BASIC_CONTAINER) ||
-                            ref.types.contains(LDP.CONTAINER) ||
-                            ref.types.contains(LDP.DIRECT_CONTAINER) ||
-                            ref.types.contains(LDP.INDIRECT_CONTAINER)
-                    if (isChildContainer) {
-                        copyContainerRecursive(webid, childUri, childDest).getOrThrow()
-                    } else {
-                        copyResource(webid, childUri, childDest).getOrThrow()
-                    }
-                }
-            }.awaitAll()
-        }
-
-        return SolidNetworkResponse.Success(true)
-    }
+    override suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> =
+        withContext(Dispatchers.IO) { solidHttpClient.headPublic(uri) }
 
     private suspend fun deleteRecursive(
         webid: String,

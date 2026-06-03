@@ -4,28 +4,25 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.erfangholami.androidsolidservices.model.PermissionType
-import com.erfangholami.androidsolidservices.repository.AccessGrantRepository
-import com.erfangholami.androidsolidservices.repository.ResourcePermissionRepository
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidContainer
-import com.erfangholami.androidsolidservices.shared.domain.error.ExceptionsErrorCode.NOT_PERMISSION
-import com.erfangholami.androidsolidservices.shared.domain.error.ExceptionsErrorCode.NULL_WEBID
-import com.erfangholami.androidsolidservices.shared.domain.error.ExceptionsErrorCode.SOLID_NOT_LOGGED_IN
-import com.erfangholami.androidsolidservices.shared.domain.error.ExceptionsErrorCode.UNKNOWN
-import com.erfangholami.androidsolidservices.shared.domain.network.SolidNetworkResponse
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidNonRDFResource
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidRDFResource
-import com.erfangholami.androidsolidservices.api.auth.Authenticator
-import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.di.IoDispatcher
+import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
+import com.erfangholami.androidsolidservices.domain.repository.SolidResourceRepository
+import com.erfangholami.androidsolidservices.domain.usecase.AccessCheck
+import com.erfangholami.androidsolidservices.domain.usecase.CheckResourceAccessUseCase
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
 import com.erfangholami.androidsolidservices.shared.IASSResourceService
-import com.erfangholami.androidsolidservices.shared.domain.IASSUnitCallback
-import com.erfangholami.androidsolidservices.shared.domain.resource.IASSContainerCallback
-import com.erfangholami.androidsolidservices.shared.domain.resource.IASSSolidMetadataCallback
-import com.erfangholami.androidsolidservices.shared.domain.resource.IASSSolidNonRdfResourceCallback
-import com.erfangholami.androidsolidservices.shared.domain.resource.IASSSolidRdfResourceCallback
+import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.NULL_WEBID
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSContainerCallback
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidMetadataCallback
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidNonRdfResourceCallback
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidRdfResourceCallback
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineDispatcher
 import java.net.URI
 import javax.inject.Inject
 
@@ -33,16 +30,17 @@ import javax.inject.Inject
 class ASSResourceService : LifecycleService() {
 
     @Inject
-    lateinit var authenticator: Authenticator
+    lateinit var authRepository: AuthRepository
 
     @Inject
-    lateinit var solidResourceManager: SolidResourceManager
+    lateinit var solidResourceRepository: SolidResourceRepository
 
     @Inject
-    lateinit var resourcePermissionRepository: ResourcePermissionRepository
+    lateinit var checkResourceAccess: CheckResourceAccessUseCase
 
     @Inject
-    lateinit var accessGrantRepository: AccessGrantRepository
+    @IoDispatcher
+    lateinit var ioDispatcher: CoroutineDispatcher
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -51,39 +49,21 @@ class ASSResourceService : LifecycleService() {
 
     private val binder = object : IASSResourceService.Stub() {
 
-        private fun handleBasicExceptions(
+        private fun guard(
             webId: String,
-            resourceUrl: String,
-            callerPackage: String,
-            permissionType: PermissionType,
-            errorCallback: (Int, String) -> Unit,
-            enterFunction: () -> Unit,
+            onError: (Int, String) -> Unit,
+            onAllowed: () -> Unit,
         ) {
-            if (!authenticator.isUserAuthorized()) {
-                errorCallback(SOLID_NOT_LOGGED_IN, "Solid app has not logged in.")
-                return
+            val callerPackage = packageManager.getNameForUid(getCallingUid())
+            when (val check = checkResourceAccess(callerPackage, webId)) {
+                AccessCheck.Allowed -> onAllowed()
+                is AccessCheck.Denied -> onError(check.code, check.message)
             }
-            if (!accessGrantRepository.hasAccessGrant(callerPackage, webId)) {
-                errorCallback(NOT_PERMISSION, "App is not authorized for this account.")
-                return
-            }
-            if (!resourcePermissionRepository.hasAccess(webId, callerPackage, resourceUrl, permissionType)) {
-                errorCallback(NOT_PERMISSION, "App does not have permission to access the resource.")
-                return
-            }
-            enterFunction()
         }
 
         override fun getWebId(webId: String, callback: IASSSolidRdfResourceCallback) {
-            handleBasicExceptions(
-                webId,
-                "",
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.READ,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                val profile = authenticator.getProfile(webId)
-                val profileWebId = profile.webId
+            guard(webId, callback::onError) {
+                val profileWebId = authRepository.getProfile(webId).webId
                 if (profileWebId != null) {
                     callback.onResult(profileWebId)
                 } else {
@@ -93,41 +73,29 @@ class ASSResourceService : LifecycleService() {
         }
 
         override fun head(webId: String, resourceUrl: String, callback: IASSSolidMetadataCallback) {
-            handleBasicExceptions(
-                webId,
-                resourceUrl,
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.READ,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.head(webId, URI.create(resourceUrl))) {
-                        is SolidNetworkResponse.Success -> callback.onResult(result.data)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    callback::onResult
+                ) {
+                    solidResourceRepository.head(webId, URI.create(resourceUrl))
                 }
             }
         }
 
         override fun readContainer(webId: String, containerUrl: String, callback: IASSContainerCallback) {
-            handleBasicExceptions(
-                webId,
-                containerUrl,
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.READ,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.read(
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    callback::onResult
+                ) {
+                    solidResourceRepository.read(
                         webId,
                         URI.create(containerUrl),
-                        SolidContainer::class.java,
-                    )) {
-                        is SolidNetworkResponse.Success -> callback.onResult(result.data)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+                        SolidContainer::class.java
+                    )
                 }
             }
         }
@@ -137,81 +105,55 @@ class ASSResourceService : LifecycleService() {
             resource: SolidNonRDFResource,
             callback: IASSSolidNonRdfResourceCallback
         ) {
-            handleBasicExceptions(
-                webId,
-                resource.getIdentifier().toString(),
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.CREATE,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.create(webId, resource)) {
-                        is SolidNetworkResponse.Success -> callback.onResult(resource)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    { callback.onResult(resource) }) {
+                    solidResourceRepository.create(webId, resource)
                 }
             }
         }
 
         override fun createRdf(webId: String, resource: SolidRDFResource, callback: IASSSolidRdfResourceCallback) {
-            handleBasicExceptions(
-                webId,
-                resource.getIdentifier().toString(),
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.CREATE,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.create(webId, resource)) {
-                        is SolidNetworkResponse.Success -> callback.onResult(resource)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    { callback.onResult(resource) }) {
+                    solidResourceRepository.create(webId, resource)
                 }
             }
         }
 
         override fun read(webId: String, resourceUrl: String, callback: IASSSolidNonRdfResourceCallback) {
-            handleBasicExceptions(
-                webId,
-                resourceUrl,
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.READ,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.read(
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    callback::onResult
+                ) {
+                    solidResourceRepository.read(
                         webId,
                         URI.create(resourceUrl),
-                        SolidNonRDFResource::class.java,
-                    )) {
-                        is SolidNetworkResponse.Success -> callback.onResult(result.data)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+                        SolidNonRDFResource::class.java
+                    )
                 }
             }
         }
 
         override fun readRdf(webId: String, resourceUrl: String, callback: IASSSolidRdfResourceCallback) {
-            handleBasicExceptions(
-                webId,
-                resourceUrl,
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.READ,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.read(
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    callback::onResult
+                ) {
+                    solidResourceRepository.read(
                         webId,
                         URI.create(resourceUrl),
-                        SolidRDFResource::class.java,
-                    )) {
-                        is SolidNetworkResponse.Success -> callback.onResult(result.data)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+                        SolidRDFResource::class.java
+                    )
                 }
             }
         }
@@ -222,19 +164,12 @@ class ASSResourceService : LifecycleService() {
             ifMatch: String?,
             callback: IASSSolidNonRdfResourceCallback,
         ) {
-            handleBasicExceptions(
-                webId,
-                resource.getIdentifier().toString(),
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.UPDATE,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.update(webId, resource, ifMatch)) {
-                        is SolidNetworkResponse.Success -> callback.onResult(resource)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    { callback.onResult(resource) }) {
+                    solidResourceRepository.update(webId, resource, ifMatch)
                 }
             }
         }
@@ -245,37 +180,20 @@ class ASSResourceService : LifecycleService() {
             ifMatch: String?,
             callback: IASSSolidRdfResourceCallback,
         ) {
-            handleBasicExceptions(
-                webId,
-                resource.getIdentifier().toString(),
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.UPDATE,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.update(webId, resource, ifMatch)) {
-                        is SolidNetworkResponse.Success -> callback.onResult(resource)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    { callback.onResult(resource) }) {
+                    solidResourceRepository.update(webId, resource, ifMatch)
                 }
             }
         }
 
         override fun patch(webId: String, resourceUrl: String, patchBody: String, callback: IASSUnitCallback) {
-            handleBasicExceptions(
-                webId,
-                resourceUrl,
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.UPDATE,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.patchRaw(webId, URI.create(resourceUrl), patchBody)) {
-                        is SolidNetworkResponse.Success -> callback.onResult()
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+                    solidResourceRepository.patchRaw(webId, URI.create(resourceUrl), patchBody)
                 }
             }
         }
@@ -285,55 +203,34 @@ class ASSResourceService : LifecycleService() {
             resource: SolidNonRDFResource,
             callback: IASSSolidNonRdfResourceCallback
         ) {
-            handleBasicExceptions(
-                webId,
-                resource.getIdentifier().toString(),
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.DELETE,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.delete(webId, resource)) {
-                        is SolidNetworkResponse.Success -> callback.onResult(resource)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    { callback.onResult(resource) }) {
+                    solidResourceRepository.delete(webId, resource)
                 }
             }
         }
 
         override fun deleteRdf(webId: String, resource: SolidRDFResource, callback: IASSSolidRdfResourceCallback) {
-            handleBasicExceptions(
-                webId,
-                resource.getIdentifier().toString(),
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.DELETE,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.delete(webId, resource)) {
-                        is SolidNetworkResponse.Success -> callback.onResult(resource)
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    { callback.onResult(resource) }) {
+                    solidResourceRepository.delete(webId, resource)
                 }
             }
         }
 
         override fun deleteContainer(webId: String, containerUrl: String, callback: IASSUnitCallback) {
-            handleBasicExceptions(
-                webId,
-                containerUrl,
-                packageManager.getNameForUid(getCallingUid())!!,
-                PermissionType.DELETE,
-                { code, message -> callback.onError(code, message) }
-            ) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    when (val result = solidResourceManager.delete(webId, URI.create(containerUrl))) {
-                        is SolidNetworkResponse.Success -> callback.onResult()
-                        is SolidNetworkResponse.Error -> callback.onError(UNKNOWN, result.errorMessage)
-                        is SolidNetworkResponse.Exception -> callback.onError(UNKNOWN, result.exception.message ?: "")
-                    }
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(
+                    ioDispatcher,
+                    callback::onError,
+                    { callback.onResult() }) {
+                    solidResourceRepository.delete(webId, URI.create(containerUrl))
                 }
             }
         }
