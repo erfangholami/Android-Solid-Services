@@ -1,6 +1,6 @@
-package com.erfangholami.androidsolidservices.shared.domain.profile
+package com.erfangholami.androidsolidservices.shared.model.profile
 
-import com.erfangholami.androidsolidservices.shared.domain.profile.WebId.Companion.readFromString
+import com.erfangholami.androidsolidservices.shared.model.profile.WebId.Companion.readFromString
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -17,20 +17,35 @@ import kotlinx.serialization.encoding.encodeStructure
 import kotlinx.serialization.json.Json
 import net.openid.appauth.AuthState
 
+/**
+ * The set of all signed-in Solid profiles, keyed by WebID string.
+ *
+ * Persisted locally via DataStore. Use [contains] or [getProfileOrNull] to look up
+ * a specific account before issuing pod operations.
+ */
 @Serializable
 public data class ProfileList(
     @Serializable(with = ProfileMapSerializer::class)
     val profiles: Map<String, Profile> = mapOf()
 )
 
+/** Returns `true` if [webId] has an active profile in this list. */
 public fun ProfileList.contains(webId: String): Boolean {
     return profiles.containsKey(webId)
 }
 
+/** Returns the [Profile] for [webId], or `null` if not signed in. */
 public fun ProfileList.getProfileOrNull(webId: String): Profile? {
     return profiles[webId]
 }
 
+/**
+ * The local state for a single signed-in Solid account.
+ *
+ * @property authState The AppAuth [AuthState] holding the OIDC token set for this account.
+ * @property userInfo  The OIDC `userinfo` response for this account, or `null` if not yet fetched.
+ * @property webId     The parsed WebID profile document, or `null` if not yet fetched.
+ */
 @Serializable(with = ProfileSerializer::class)
 public data class Profile(
     val authState: AuthState = AuthState(),
@@ -38,6 +53,12 @@ public data class Profile(
     val webId: WebId? = null
 )
 
+/**
+ * `kotlinx.serialization` serializer for `Map<String, Profile>`.
+ *
+ * Delegates to [MapSerializer] using the provided key and value serializers, allowing
+ * [ProfileList.profiles] to be stored as a JSON object keyed by WebID string.
+ */
 @OptIn(ExperimentalSerializationApi::class)
 @Serializer(forClass = Map::class)
 public class ProfileMapSerializer(
@@ -55,6 +76,14 @@ public class ProfileMapSerializer(
     }
 }
 
+/**
+ * `kotlinx.serialization` serializer for [Profile].
+ *
+ * Each field is stored as a JSON string element: [Profile.authState] is serialized via
+ * AppAuth's own JSON serialization, [Profile.userInfo] via `kotlinx.serialization`, and
+ * [Profile.webId] via [WebId.writeToString]. Empty string is used as the absent sentinel
+ * for nullable fields so the format remains a flat JSON object with three string fields.
+ */
 public class ProfileSerializer : KSerializer<Profile> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Profile") {

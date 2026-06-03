@@ -2,8 +2,8 @@ package com.erfangholami.androidsolidservices.api.auth
 
 import android.content.Context
 import android.content.Intent
-import com.erfangholami.androidsolidservices.shared.domain.profile.Profile
 import com.erfangholami.androidsolidservices.api.auth.implementation.AuthenticatorImplementation
+import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import kotlinx.coroutines.flow.StateFlow
 import net.openid.appauth.AuthorizationException
 import net.openid.appauth.AuthorizationResponse
@@ -119,6 +119,21 @@ public interface Authenticator {
     public fun getProfile(webId: String): Profile
     /** Returns the currently active profile. Throws if no user is active. */
     public fun getActiveProfile(): Profile
+
+    /**
+     * Re-fetches the WebID profile document for [webId] from the pod and
+     * persists the refreshed [com.erfangholami.androidsolidservices.shared.model.profile.WebId]
+     * into the stored [Profile], leaving its auth state and user info untouched.
+     *
+     * Use this after writing changes to a user's own WebID document (e.g. an
+     * in-app profile edit) so the cached profile — and every flow derived from
+     * it ([activeProfileFlow], [loggedInProfilesFlow]) — reflects the new data
+     * without requiring the user to sign out and back in.
+     *
+     * @param webId The WebID of an authorized, signed-in user.
+     * @return The updated [Profile].
+     */
+    public suspend fun reloadProfile(webId: String): Profile
 
     /** Returns the WebID of the active user, or `null` if no user is active. */
     public suspend fun getActiveWebId(): String?

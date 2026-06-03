@@ -1,8 +1,8 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.content.Context
-import com.erfangholami.androidsolidservices.shared.domain.profile.Profile
-import com.erfangholami.androidsolidservices.shared.domain.profile.ProfileList
+import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.ProfileList
 import com.erfangholami.androidsolidservices.api.repository.UserRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope

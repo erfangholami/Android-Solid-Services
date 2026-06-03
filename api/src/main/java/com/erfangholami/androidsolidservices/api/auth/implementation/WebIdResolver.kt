@@ -1,10 +1,10 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPAcceptType
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPHeaderName
-import com.erfangholami.androidsolidservices.shared.domain.profile.WebId
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidResourceParser
+import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
+import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
+import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import net.openid.appauth.TokenResponse
 import java.net.URI
 
@@ -39,8 +39,6 @@ internal class WebIdResolver {
             headers = headers,
         )
 
-        // Handle DPoP-Nonce challenge per Solid-OIDC spec:
-        // store the server-issued nonce and retry once so the DPoP proof includes it.
         val nonce = response.headers[HTTPHeaderName.DPOP_NONCE]
         if (nonce != null && hasToken) {
             nonceSink(nonce)

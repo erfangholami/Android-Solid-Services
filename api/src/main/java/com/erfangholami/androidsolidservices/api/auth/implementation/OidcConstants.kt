@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
-internal object OpenIDConstants {
+internal object OidcConstants {
     internal const val DPOP_SIGNING_ALG_VALUES_SUPPORTED : String = "dpop_signing_alg_values_supported"
     internal const val REGISTRATION_REQUEST_ID_TOKEN_SIGNED_RESPONSE_ALG : String = "id_token_signed_response_alg"
     internal const val ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED : String = "id_token_signing_alg_values_supported"

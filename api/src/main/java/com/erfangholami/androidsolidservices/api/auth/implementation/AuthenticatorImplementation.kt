@@ -2,27 +2,25 @@ package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.content.Context
 import android.content.Intent
-import android.util.Base64
 import android.util.Log
 import androidx.core.net.toUri
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPHeaderName
-import com.erfangholami.androidsolidservices.shared.domain.profile.Profile
-import com.erfangholami.androidsolidservices.shared.domain.profile.UserInfo
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.AUTHORIZATION_REQUEST_PROMPT_CONSENT
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.AUTHORIZATION_REQUEST_PROMPT_LOGIN
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.AUTHORIZATION_REQUEST_SCOPE_OFFLINE_ACCESS
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.AUTHORIZATION_REQUEST_SCOPE_OPENID
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.AUTHORIZATION_REQUEST_SCOPE_WEBID
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.REGISTRATION_REQUEST_CLIENT_NAME
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.REGISTRATION_REQUEST_GRANT_TYPE_AUTHORIZATION_CODE
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.REGISTRATION_REQUEST_GRANT_TYPE_REFRESH_TOKEN
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.REGISTRATION_REQUEST_ID_TOKEN_SIGNED_RESPONSE_ALG
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.REGISTRATION_REQUEST_SUBJECT_TYPE_PUBLIC
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.TOKEN_ENDPOINT_AUTH_METHOD_CLIENT_SECRET_BASIC
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.AUTHORIZATION_REQUEST_PROMPT_CONSENT
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.AUTHORIZATION_REQUEST_PROMPT_LOGIN
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.AUTHORIZATION_REQUEST_SCOPE_OFFLINE_ACCESS
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.AUTHORIZATION_REQUEST_SCOPE_OPENID
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.AUTHORIZATION_REQUEST_SCOPE_WEBID
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.REGISTRATION_REQUEST_CLIENT_NAME
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.REGISTRATION_REQUEST_GRANT_TYPE_AUTHORIZATION_CODE
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.REGISTRATION_REQUEST_GRANT_TYPE_REFRESH_TOKEN
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.REGISTRATION_REQUEST_ID_TOKEN_SIGNED_RESPONSE_ALG
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.REGISTRATION_REQUEST_SUBJECT_TYPE_PUBLIC
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.TOKEN_ENDPOINT_AUTH_METHOD_CLIENT_SECRET_BASIC
 import com.erfangholami.androidsolidservices.api.auth.preferredIdTokenAlgorithm
 import com.erfangholami.androidsolidservices.api.auth.preferredTokenEndpointAuthMethod
 import com.erfangholami.androidsolidservices.api.auth.supportsDPop
+import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
+import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
@@ -40,7 +38,6 @@ import net.openid.appauth.RegistrationResponse
 import net.openid.appauth.ResponseTypeValues
 import net.openid.appauth.TokenRequest
 import net.openid.appauth.TokenResponse
-import org.json.JSONObject
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
@@ -48,8 +45,9 @@ import kotlin.coroutines.resume
 
 private const val AUTH_LOG_TAG = "Authenticator"
 
-internal class AuthenticatorImplementation private constructor(
+internal class AuthenticatorImplementation internal constructor(
     context: Context,
+    private val now: () -> Long = { System.currentTimeMillis() },
 ) : Authenticator {
 
     companion object {
@@ -176,7 +174,7 @@ internal class AuthenticatorImplementation private constructor(
             return ""
         }
 
-        val userInfo = getUserInfoFromIdToken(idToken)
+        val userInfo = IdTokenClaims.userInfo(idToken)
 
         val webIdProfile = webIdResolver.resolve(
             webIdUri = userInfo.webId,
@@ -187,7 +185,7 @@ internal class AuthenticatorImplementation private constructor(
 
         val issuers = webIdProfile.getOidcIssuers()
         if (issuers.isNotEmpty()) {
-            val tokenIss = extractIssFromIdToken(idToken)?.trimEnd('/')
+            val tokenIss = IdTokenClaims.issuer(idToken)?.trimEnd('/')
             val issuerUris = issuers.map { it.toString().trimEnd('/') }
             if (tokenIss != null && !issuerUris.contains(tokenIss)) {
                 inProgressAuth.clear()
@@ -238,11 +236,6 @@ internal class AuthenticatorImplementation private constructor(
         val profile = profileManager.getProfileOrNull(webId) ?: return null
         checkTokenAndRefresh(webId, profile, forceRefresh)
         val updated = profileManager.getProfileOrNull(webId) ?: return null
-        // AppAuth's AuthState.update(null, exception) does not clear lastTokenResponse, so a
-        // failed refresh leaves the old (now-expired) access token in place. Returning it would
-        // let callers attach a dead bearer to the next request, yielding the 401 the user sees
-        // after long inactivity. Refuse to hand back a token that is either marked unauthorized
-        // (AppAuth recorded an OAuth token error) or has already passed its expiration.
         if (!updated.authState.isAuthorized) return null
         if (isAccessTokenHardExpired(updated)) return null
         return updated.authState.lastTokenResponse
@@ -280,6 +273,21 @@ internal class AuthenticatorImplementation private constructor(
     override fun getAllLoggedInProfiles(): List<Profile> = profileManager.getAllLoggedInProfiles()
     override fun getProfile(webId: String): Profile = profileManager.getProfile(webId)
     override fun getActiveProfile(): Profile = profileManager.getActiveProfile()
+
+    override suspend fun reloadProfile(webId: String): Profile {
+        profileManager.awaitInit()
+        val profile = profileManager.getProfile(webId)
+        getLastTokenResponse(webId)
+        val refreshedWebId = webIdResolver.resolve(
+            webIdUri = webId,
+            tokenProvider = { profileManager.getProfileOrNull(webId)?.authState?.lastTokenResponse },
+            authHeadersProvider = { method, uri -> getAuthHeaders(webId, method, uri) },
+            nonceSink = { nonce -> updateDPoPNonce(webId, nonce) },
+        )
+        val updated = profileManager.getProfile(webId).copy(webId = refreshedWebId)
+        profileManager.writeProfile(webId, updated)
+        return updated
+    }
 
     override suspend fun getActiveWebId(): String? {
         profileManager.awaitInit()
@@ -410,45 +418,13 @@ internal class AuthenticatorImplementation private constructor(
     private fun needsTokenRefresh(profile: Profile): Boolean {
         val expirationTime =
             profile.authState.lastTokenResponse?.accessTokenExpirationTime ?: return true
-        return (System.currentTimeMillis() + 280_000L) > expirationTime
+        return (now() + 280_000L) > expirationTime
     }
 
     private fun isAccessTokenHardExpired(profile: Profile): Boolean {
         val expirationTime =
             profile.authState.lastTokenResponse?.accessTokenExpirationTime ?: return true
-        return System.currentTimeMillis() >= expirationTime
-    }
-
-    private fun getUserInfoFromIdToken(idToken: String): UserInfo {
-        val webId = getWebIdFromToken(idToken)
-        return UserInfo(webId)
-    }
-
-    private fun getWebIdFromToken(idToken: String): String {
-        return try {
-            val payload = idToken.split(".")[1]
-            val decoded = Base64.decode(
-                payload,
-                Base64.URL_SAFE or Base64.NO_PADDING,
-            )
-            val json = JSONObject(String(decoded))
-            json.optString("webid").takeIf { it.isNotEmpty() } ?: json.getString("sub")
-        } catch (ex: Exception) {
-            throw IllegalStateException("Unable to parse ID token", ex)
-        }
-    }
-
-    private fun extractIssFromIdToken(idToken: String): String? {
-        return try {
-            val payload = idToken.split(".")[1]
-            val decoded = Base64.decode(
-                payload,
-                Base64.URL_SAFE or Base64.NO_PADDING,
-            )
-            JSONObject(String(decoded)).optString("iss").takeIf { it.isNotEmpty() }
-        } catch (ex: Exception) {
-            null
-        }
+        return now() >= expirationTime
     }
 
     private fun buildInProgressAuthHeaders(httpMethod: String, uri: String): Map<String, String> {

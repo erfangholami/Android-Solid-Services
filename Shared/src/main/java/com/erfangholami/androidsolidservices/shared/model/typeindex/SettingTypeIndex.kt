@@ -1,12 +1,11 @@
-package com.erfangholami.androidsolidservices.shared.domain
-
+package com.erfangholami.androidsolidservices.shared.model.typeindex
 import com.apicatalog.jsonld.http.media.MediaType
-import com.erfangholami.androidsolidservices.shared.domain.resource.RdfQuad
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 import java.util.UUID
 
@@ -22,7 +21,6 @@ import java.util.UUID
  */
 public abstract class SettingTypeIndex : SolidRDFResource {
 
-    // String constants used by subclasses
     protected val typeKey : String = RDF.TYPE
     protected val typeRegistration : String = Solid.TYPE_REGISTRATION
     protected val forClassKey : String = Solid.FOR_CLASS
@@ -35,10 +33,10 @@ public abstract class SettingTypeIndex : SolidRDFResource {
 
     public constructor(
         identifier: URI,
-        mediaType: MediaType,
+        contentType: String,
         quads: List<RdfQuad>?,
-        headers: Headers?
-    ) : super(identifier, mediaType, quads, headers)
+        headers: SolidHeaders?
+    ) : super(identifier, contentType, quads, headers)
 
     init {
         setTypes()
@@ -103,11 +101,15 @@ public abstract class SettingTypeIndex : SolidRDFResource {
         quads.removeAll { it.subject == anchor.subject || it.`object` == anchor.subject }
     }
 
+    /** Returns all `solid:instance` URIs registered for `vcard:AddressBook`. */
     public fun getAddressBooks(): List<String> = getInstances(VCARD.ADDRESS_BOOK)
 
+    /** Registers [addressBook] as a `solid:instance` for `vcard:AddressBook`. */
     public fun addAddressBook(addressBook: String): Unit = addInstance(VCARD.ADDRESS_BOOK, addressBook)
 
+    /** Returns `true` if [addressBookUri] is registered in this type index. */
     public fun containsAddressBook(addressBookUri: String): Boolean = containsResource(addressBookUri)
 
+    /** Removes the registration entry for [addressBookUri] from this type index. */
     public fun removeAddressBook(addressBookUri: String): Unit = removeResource(addressBookUri)
 }

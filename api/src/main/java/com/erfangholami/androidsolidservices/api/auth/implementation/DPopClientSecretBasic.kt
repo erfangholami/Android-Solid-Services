@@ -1,8 +1,8 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.util.Base64
-import com.erfangholami.androidsolidservices.shared.domain.network.HTTPHeaderName
-import com.erfangholami.androidsolidservices.api.auth.implementation.OpenIDConstants.CLIENT_AUTHENTICATION_CLIENT_ID
+import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
+import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.CLIENT_AUTHENTICATION_CLIENT_ID
 import net.openid.appauth.AuthorizationServiceConfiguration
 import net.openid.appauth.ClientAuthentication
 import net.openid.appauth.internal.UriUtil
