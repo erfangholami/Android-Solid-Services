@@ -1,35 +1,43 @@
 package com.erfangholami.androidsolidservices.api.sharing.implementation
 
-import com.apicatalog.jsonld.http.media.MediaType
-import com.erfangholami.androidsolidservices.shared.domain.access.AclAuthorization
-import com.erfangholami.androidsolidservices.shared.domain.access.SolidACLResource
-import com.erfangholami.androidsolidservices.shared.domain.crud.N3Patch
-import com.erfangholami.androidsolidservices.shared.domain.network.SolidNetworkResponse
-import com.erfangholami.androidsolidservices.shared.domain.profile.WebId
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidContainer
-import com.erfangholami.androidsolidservices.shared.domain.sharing.GIVEN_SHARES_FILE_NAME
-import com.erfangholami.androidsolidservices.shared.domain.sharing.GivenShare
-import com.erfangholami.androidsolidservices.shared.domain.sharing.PROFILES_CONTAINER_NAME
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ReceivedShare
-import com.erfangholami.androidsolidservices.shared.domain.sharing.RECEIVED_SHARES_FILE_NAME
-import com.erfangholami.androidsolidservices.shared.domain.sharing.SHARES_CONTAINER_NAME
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ShareMode
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ShareReceiver
-import com.erfangholami.androidsolidservices.shared.domain.sharing.rdf.GivenSharesIndexRDF
-import com.erfangholami.androidsolidservices.shared.domain.sharing.rdf.ReceivedSharesIndexRDF
-import com.erfangholami.androidsolidservices.shared.vocab.ACL
+import com.erfangholami.androidsolidservices.api.access.AccessBackend
+import com.erfangholami.androidsolidservices.api.access.AcpBackend
+import com.erfangholami.androidsolidservices.api.access.WacBackend
+import com.erfangholami.androidsolidservices.api.access.pickBackend
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.model.profile.WebId
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.model.sharing.CATALOG_FILE_NAME
+import com.erfangholami.androidsolidservices.shared.model.sharing.GIVEN_SHARES_FILE_NAME
+import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
+import com.erfangholami.androidsolidservices.shared.model.sharing.RECEIVED_SHARES_FILE_NAME
+import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
+import com.erfangholami.androidsolidservices.shared.model.sharing.SHARES_CONTAINER_NAME
+import com.erfangholami.androidsolidservices.shared.model.sharing.SOLIDSHARE_CONTAINER_NAME
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
+import com.erfangholami.androidsolidservices.shared.rdf.sharing.GivenSharesIndexRDF
+import com.erfangholami.androidsolidservices.shared.rdf.sharing.ReceivedSharesIndexRDF
+import com.erfangholami.androidsolidservices.shared.util.getETag
+import com.erfangholami.androidsolidservices.shared.vocab.LDP
+import com.erfangholami.androidsolidservices.shared.vocab.RDF
+import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import java.net.URI
-import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Low-level helpers for the sharing pipeline:
  *
  * - pod-root resolution
- * - container & index file bootstrap
- * - WAC ACL read / modify / write
- * - N3-Patch driven updates of the given/received indexes
+ * - container and index file bootstrap
+ * - container detection (via `Link: rel="type" <ldp:BasicContainer>`)
+ * - delegation to an [AccessBackend] for grant / revoke / list
+ * - N3-Patch driven updates of the given/received indexes, including a
+ *   `vcard:Group` disambiguation marker for group receiver rows
  *
  * All methods either succeed or throw — callers wrap them in
  * [SolidNetworkResponse] at the public boundary.
@@ -37,6 +45,8 @@ import java.util.UUID
 internal class SharingManagerHelper {
 
     companion object {
+        private const val MAX_INDEX_PATCH_ATTEMPTS = 3
+
         @Volatile
         private var INSTANCE: SharingManagerHelper? = null
 
@@ -53,18 +63,25 @@ internal class SharingManagerHelper {
     }
 
     val rm: SolidResourceManager
+    private val wacBackend: WacBackend
+    private val acpBackend: AcpBackend
+
+    private val podRootCache = ConcurrentHashMap<String, URI>()
+    private val sharesContainerReady = ConcurrentHashMap<String, Boolean>()
 
     private constructor(resourceManager: SolidResourceManager) {
         this.rm = resourceManager
+        this.wacBackend = WacBackend(rm)
+        this.acpBackend = AcpBackend(rm)
     }
 
-    // ── Pod root / paths ────────────────────────────────────────────────────
-
     suspend fun getPodRoot(webId: String): URI {
+        podRootCache[webId]?.let { return it }
         val profile = rm.read(webId, URI.create(webId), WebId::class.java).getOrThrow()
         val storage = profile.getStorages().firstOrNull()
             ?: error("WebID profile has no pim:storage entry")
         return URI.create(storage.toString().ensureTrailingSlash())
+            .also { podRootCache[webId] = it }
     }
 
     fun givenSharesUri(podRoot: URI): URI =
@@ -76,258 +93,237 @@ internal class SharingManagerHelper {
     fun sharesContainerUri(podRoot: URI): URI =
         URI.create("${podRoot}${SHARES_CONTAINER_NAME}")
 
-    fun profilesContainerUri(podRoot: URI): URI =
-        URI.create("${podRoot}${PROFILES_CONTAINER_NAME}")
+    fun solidshareContainerUri(podRoot: URI): URI =
+        URI.create("${podRoot}${SOLIDSHARE_CONTAINER_NAME}")
 
-    fun newProfileSnapshotUri(podRoot: URI): URI =
-        URI.create("${podRoot}${PROFILES_CONTAINER_NAME}${UUID.randomUUID()}.ttl")
+    fun catalogUri(podRoot: URI): URI =
+        URI.create("${podRoot}${SOLIDSHARE_CONTAINER_NAME}${CATALOG_FILE_NAME}")
 
-    fun htmlSiblingOf(snapshotUri: URI): URI {
-        val s = snapshotUri.toString()
-        val withoutExt = if (s.endsWith(".ttl")) s.dropLast(4) else s
-        return URI.create("$withoutExt.html")
-    }
-
-    // ── Container bootstrap ─────────────────────────────────────────────────
-
-    /**
-     * Ensures `{podRoot}/.shares/` exists with an owner-only ACL, and that
-     * both index files exist (created empty if missing).
-     */
     suspend fun ensurePrivateSharesContainer(webId: String, podRoot: URI) {
+        if (sharesContainerReady[webId] == true) return
+        ensureContainer(webId, solidshareContainerUri(podRoot))
         val containerUri = sharesContainerUri(podRoot)
         ensureContainer(webId, containerUri)
-        ensureOwnerOnlyAclFor(webId, containerUri, isContainer = true)
+        backendFor(webId, containerUri).ensureOwnerOnly(
+            webId = webId, targetUri = containerUri, isContainer = true,
+        )
         ensureEmptyRdf(webId, givenSharesUri(podRoot))
         ensureEmptyRdf(webId, receivedSharesUri(podRoot))
+        sharesContainerReady[webId] = true
     }
 
-    /**
-     * Ensures `{podRoot}/solidshare/profiles/` exists. Per-resource ACLs are
-     * set on each individual snapshot; the container itself stays
-     * owner-controlled (children with their own ACL override it).
-     */
-    suspend fun ensureProfilesContainer(webId: String, podRoot: URI) {
-        val containerUri = profilesContainerUri(podRoot)
-        ensureContainer(webId, containerUri)
+    suspend fun ensureSolidshareContainer(webId: String, podRoot: URI) {
+        ensureContainer(webId, solidshareContainerUri(podRoot))
+    }
+
+    /** Creates the LDN inbox container if it doesn't already exist. */
+    suspend fun ensureInboxContainer(webId: String, inboxUri: URI) {
+        ensureContainer(webId, inboxUri)
     }
 
     private suspend fun ensureContainer(webId: String, containerUri: URI) {
-        val head = rm.head(webId, containerUri)
-        if (head is SolidNetworkResponse.Success) return
+        when (val head = rm.head(webId, containerUri)) {
+            is SolidNetworkResponse.Success -> return
+            is SolidNetworkResponse.Error ->
+                if (!head.isMissing()) error(
+                    "HEAD $containerUri failed: ${head.errorCode} ${head.errorMessage}",
+                )
+
+            is SolidNetworkResponse.Exception -> throw head.exception
+        }
         rm.create(webId, SolidContainer(containerUri)).getOrThrow()
     }
 
     private suspend fun ensureEmptyRdf(webId: String, uri: URI) {
-        val head = rm.head(webId, uri)
-        if (head is SolidNetworkResponse.Success) return
+        when (val head = rm.head(webId, uri)) {
+            is SolidNetworkResponse.Success -> return
+            is SolidNetworkResponse.Error ->
+                if (!head.isMissing()) error(
+                    "HEAD $uri failed: ${head.errorCode} ${head.errorMessage}",
+                )
+
+            is SolidNetworkResponse.Exception -> throw head.exception
+        }
         rm.create(
             webId,
             GivenSharesIndexRDF(
                 identifier = uri,
-                mediaType = MediaType.JSON_LD,
+                contentType = "application/ld+json",
                 quads = null,
                 headers = null,
             ),
         ).getOrThrow()
     }
 
-    // ── ACL: read / write / mutate ──────────────────────────────────────────
+    private fun SolidNetworkResponse.Error<*>.isMissing(): Boolean =
+        errorCode == 404 || errorCode == 410
 
-    suspend fun readAcl(webId: String, resourceUri: URI): Pair<URI, SolidACLResource> {
-        val metadata = rm.head(webId, resourceUri).getOrThrow()
-        val aclUri = metadata.aclUri
-            ?: error("Resource $resourceUri does not advertise an acl link")
-
-        val existing = rm.head(webId, aclUri)
-        return if (existing is SolidNetworkResponse.Success) {
-            aclUri to rm.read(webId, aclUri, SolidACLResource::class.java).getOrThrow()
-        } else {
-            // ACL not yet materialized (inheriting from container) — start fresh.
-            aclUri to SolidACLResource(aclUri)
+    /**
+     * Returns `true` if the server advertises [resourceUri] as an LDP
+     * container (BasicContainer or any subtype). Used to choose between
+     * `acl:accessTo` and `acl:default` when authoring an authorization.
+     */
+    suspend fun isContainer(webId: String, resourceUri: URI): Boolean {
+        val head = rm.head(webId, resourceUri)
+        if (head !is SolidNetworkResponse.Success) {
+            return resourceUri.toString().endsWith("/")
         }
+        return head.data.isContainer()
     }
 
-    suspend fun writeAcl(webId: String, aclUri: URI, acl: SolidACLResource) {
-        // PUT replaces; that's the only safe way to commit a multi-rule ACL
-        // because there is no standard PATCH for ACL resources.
-        val toWrite = SolidACLResource(
-            identifier = aclUri,
-            mediaType = MediaType.JSON_LD,
-            quads = acl.getAllQuads(),
-            headers = null,
+    private fun SolidMetadata.isContainer(): Boolean {
+        val containerTypes = setOf(
+            LDP.BASIC_CONTAINER,
+            LDP.CONTAINER,
+            LDP.DIRECT_CONTAINER,
+            LDP.INDIRECT_CONTAINER,
         )
-        val head = rm.head(webId, aclUri)
-        if (head is SolidNetworkResponse.Success) {
-            rm.update(webId, toWrite).getOrThrow()
-        } else {
-            rm.create(webId, toWrite).getOrThrow()
-        }
+        return linkTypes.any { it.toString() in containerTypes }
     }
 
     /**
-     * Builds an ACL that grants the owner full Read/Write/Control on
-     * [targetUri] (or on the container's children, if [isContainer]) and
-     * commits it.
+     * Picks the right [AccessBackend] for [resourceUri] based on the Link
+     * headers returned by HEAD. Defaults to WAC if HEAD fails so the caller
+     * always gets a non-throwing reference.
      */
-    suspend fun ensureOwnerOnlyAclFor(
-        webId: String,
-        targetUri: URI,
-        isContainer: Boolean,
-    ) {
-        val (aclUri, acl) = readAcl(webId, targetUri)
-        val alreadyHasOwnerRule = acl.getAuthorizations().any { auth ->
-            auth.agents.any { it.toString() == webId } &&
-                    auth.modes.containsAll(setOf(ACL.READ, ACL.WRITE, ACL.CONTROL))
+    suspend fun backendFor(webId: String, resourceUri: URI): AccessBackend {
+        val metadata = when (val head = rm.head(webId, resourceUri)) {
+            is SolidNetworkResponse.Success -> head.data
+            else -> return wacBackend
         }
-        if (alreadyHasOwnerRule) return
-
-        acl.addAuthorization(
-            AclAuthorization(
-                subject = "${aclUri}#owner",
-                accessTo = if (isContainer) emptyList() else listOf(targetUri),
-                default = if (isContainer) listOf(targetUri) else emptyList(),
-                modes = setOf(ACL.READ, ACL.WRITE, ACL.CONTROL),
-                agents = listOf(URI.create(webId)),
-            ),
-        )
-        writeAcl(webId, aclUri, acl)
+        return pickBackend(metadata, resourceUri, wacBackend, acpBackend)
     }
 
-    /**
-     * Adds an authorization granting [mode] to [receiver] on [resourceUri] and
-     * commits the ACL. Replaces any existing rule for the same (resource, receiver).
-     */
     suspend fun grantAccess(
         webId: String,
         resourceUri: URI,
         mode: ShareMode,
         receiver: ShareReceiver,
     ) {
-        val (aclUri, acl) = readAcl(webId, resourceUri)
-
-        // Make sure the owner keeps full control even on first ACL write.
-        val ownerAuth = AclAuthorization(
-            subject = "${aclUri}#owner",
-            accessTo = listOf(resourceUri),
-            modes = setOf(ACL.READ, ACL.WRITE, ACL.CONTROL),
-            agents = listOf(URI.create(webId)),
-        )
-
-        val keep = acl.getAuthorizations().filterNot { auth ->
-            ruleMatches(auth, resourceUri, receiver) ||
-                    auth.agents.any { it.toString() == webId } && auth.modes.containsAll(
-                setOf(ACL.READ, ACL.WRITE, ACL.CONTROL),
-            )
+        val metadata = (rm.head(webId, resourceUri) as? SolidNetworkResponse.Success)?.data
+        val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
+        val backend = if (metadata != null) {
+            pickBackend(metadata, resourceUri, wacBackend, acpBackend)
+        } else {
+            wacBackend
         }
-
-        val grant = AclAuthorization(
-            subject = "${aclUri}#share-${UUID.randomUUID()}",
-            accessTo = listOf(resourceUri),
-            modes = setOf(mode.toAclPredicate()),
-            agents = (receiver as? ShareReceiver.WebIdReceiver)?.let { listOf(URI.create(it.webId)) }
-                ?: emptyList(),
-            agentClasses = if (receiver is ShareReceiver.Public) {
-                listOf(URI.create(ShareReceiver.Public.toRdfSubject()))
-            } else emptyList(),
-            agentGroups = (receiver as? ShareReceiver.GroupReceiver)?.let {
-                listOf(URI.create(it.groupUri))
-            } ?: emptyList(),
+        backend.grant(
+            webId = webId,
+            resourceUri = resourceUri,
+            mode = mode,
+            receiver = receiver,
+            isContainer = isContainer,
         )
-
-        val rebuilt = SolidACLResource(aclUri)
-        keep.forEach { rebuilt.addAuthorization(it) }
-        rebuilt.addAuthorization(ownerAuth)
-        rebuilt.addAuthorization(grant)
-        writeAcl(webId, aclUri, rebuilt)
     }
 
-    /**
-     * Removes any authorization on [resourceUri] that targets [receiver] and
-     * commits the ACL.
-     */
     suspend fun revokeAccess(
         webId: String,
         resourceUri: URI,
         receiver: ShareReceiver,
     ) {
-        val (aclUri, acl) = readAcl(webId, resourceUri)
-        val ownerAuth = AclAuthorization(
-            subject = "${aclUri}#owner",
-            accessTo = listOf(resourceUri),
-            modes = setOf(ACL.READ, ACL.WRITE, ACL.CONTROL),
-            agents = listOf(URI.create(webId)),
-        )
-        val keep = acl.getAuthorizations().filterNot { auth ->
-            ruleMatches(auth, resourceUri, receiver) ||
-                    auth.agents.any { it.toString() == webId } && auth.modes.containsAll(
-                setOf(ACL.READ, ACL.WRITE, ACL.CONTROL),
+        val metadata = (rm.head(webId, resourceUri) as? SolidNetworkResponse.Success)?.data
+        val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
+        val backend = if (metadata != null) {
+            pickBackend(metadata, resourceUri, wacBackend, acpBackend)
+        } else {
+            wacBackend
+        }
+        backend.revoke(webId, resourceUri, receiver, isContainer)
+    }
+
+    /**
+     * Recovers owner access to [resourceUri] after an ACL/ACR edit locked the
+     * owner out: re-asserts the owner's Read/Write/Control additively (other
+     * shares are kept). A successful HEAD is required — it selects the right
+     * backend (WAC vs ACP) and detects whether the target is a container. If
+     * the HEAD itself is denied, the ACL/ACR can't be discovered through the
+     * app and the lockout must be cleared with the pod provider's tooling.
+     */
+    suspend fun reclaimOwnerControl(webId: String, resourceUri: URI) {
+        val metadata = when (val head = rm.head(webId, resourceUri)) {
+            is SolidNetworkResponse.Success -> head.data
+            is SolidNetworkResponse.Error -> error(
+                "Cannot read $resourceUri to repair owner access (HTTP ${head.errorCode}). " +
+                        "If 401/403, the owner can no longer reach this resource's ACL through " +
+                        "the app; clear the lockout via the pod provider's tooling.",
             )
+
+            is SolidNetworkResponse.Exception -> throw head.exception
         }
-        val rebuilt = SolidACLResource(aclUri)
-        keep.forEach { rebuilt.addAuthorization(it) }
-        rebuilt.addAuthorization(ownerAuth)
-        writeAcl(webId, aclUri, rebuilt)
+        pickBackend(metadata, resourceUri, wacBackend, acpBackend)
+            .reclaimOwnerControl(webId, resourceUri, metadata.isContainer())
     }
 
-    private fun ruleMatches(
-        auth: AclAuthorization,
-        resourceUri: URI,
-        receiver: ShareReceiver,
-    ): Boolean {
-        val touchesResource =
-            auth.accessTo.any { it == resourceUri } || auth.default.any { it == resourceUri }
-        if (!touchesResource) return false
-        return when (receiver) {
-            is ShareReceiver.WebIdReceiver ->
-                auth.agents.any { it.toString() == receiver.webId }
+    suspend fun getSharesFromAcl(webId: String, resourceUri: URI): List<GivenShare> =
+        backendFor(webId, resourceUri).listShares(webId, resourceUri)
 
-            is ShareReceiver.GroupReceiver ->
-                auth.agentGroups.any { it.toString() == receiver.groupUri }
+    suspend fun readGivenIndex(webId: String, podRoot: URI): GivenSharesIndexRDF =
+        rm.read(webId, givenSharesUri(podRoot), GivenSharesIndexRDF::class.java).getOrThrow()
 
-            is ShareReceiver.Public ->
-                auth.agentClasses.any { it.toString() == ShareReceiver.Public.toRdfSubject() }
-        }
-    }
+    suspend fun readReceivedIndex(webId: String, podRoot: URI): ReceivedSharesIndexRDF =
+        rm.read(webId, receivedSharesUri(podRoot), ReceivedSharesIndexRDF::class.java).getOrThrow()
 
-    // ── Index file: read / mutate via N3 Patch ──────────────────────────────
-
-    suspend fun readGivenIndex(webId: String, podRoot: URI): GivenSharesIndexRDF {
-        val uri = givenSharesUri(podRoot)
-        return rm.read(webId, uri, GivenSharesIndexRDF::class.java).getOrThrow()
-    }
-
-    suspend fun readReceivedIndex(webId: String, podRoot: URI): ReceivedSharesIndexRDF {
-        val uri = receivedSharesUri(podRoot)
-        return rm.read(webId, uri, ReceivedSharesIndexRDF::class.java).getOrThrow()
-    }
-
+    /**
+     * Replaces all modes for `(receiver, share.resourceUri)` in the index with
+     * a single triple for [share]. Collapses any multi-mode rows for the pair
+     * because callers are stating their desired single mode.
+     */
     suspend fun replaceGivenShare(webId: String, podRoot: URI, share: GivenShare) {
-        val uri = givenSharesUri(podRoot)
-        // Replace any (subject == receiver, object == resourceUri) triple regardless of mode,
-        // then insert the new one. We need a separate patch for delete to handle the case
-        // where no matching triple exists (where-clause would fail otherwise).
-        val receiverIri = share.receiver.toRdfSubject()
-        val current = readGivenIndex(webId, podRoot).getShares()
-        val existing = current.firstOrNull {
-            it.receiver.toRdfSubject() == receiverIri && it.resourceUri == share.resourceUri
-        }
-        if (existing != null) {
-            rm.patch(
-                webId, uri,
-                N3Patch.build {
-                    delete(receiverIri, existing.mode.toAclPredicate(), share.resourceUri)
-                },
-            ).getOrThrow()
-        }
-        rm.patch(
-            webId, uri,
-            N3Patch.build {
-                insert(receiverIri, share.mode.toAclPredicate(), share.resourceUri)
-            },
-        ).getOrThrow()
+        setShareModesForReceiver(
+            webId, podRoot,
+            resourceUri = share.resourceUri,
+            receiver = share.receiver,
+            modes = setOf(share.mode),
+        )
     }
 
+    /** Sets the index to record exactly [modes] for `(receiver, resourceUri)`. */
+    suspend fun setShareModesForReceiver(
+        webId: String,
+        podRoot: URI,
+        resourceUri: String,
+        receiver: ShareReceiver,
+        modes: Set<ShareMode>,
+    ) {
+        val uri = givenSharesUri(podRoot)
+        val receiverIri = receiver.toRdfSubject()
+        patchIndexWithRetry(webId, uri) {
+            val index = readGivenIndex(webId, podRoot)
+            val current = index.getShares()
+            val existingForPair = current.filter {
+                it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
+            }
+            val existingModes = existingForPair.map { it.mode }.toSet()
+            val toDelete = existingModes - modes
+            val toInsert = modes - existingModes
+            val needGroupMarker = receiver is ShareReceiver.GroupReceiver &&
+                    existingForPair.isEmpty() &&
+                    current.none {
+                        it.receiver.toRdfSubject() == receiverIri && it.resourceUri != resourceUri
+                    }
+            val patch = if (toDelete.isEmpty() && toInsert.isEmpty() && !needGroupMarker) {
+                null
+            } else {
+                N3Patch.build {
+                    toDelete.forEach { mode ->
+                        delete(receiverIri, mode.toAclPredicate(), resourceUri)
+                    }
+                    toInsert.forEach { mode ->
+                        insert(receiverIri, mode.toAclPredicate(), resourceUri)
+                    }
+                    if (needGroupMarker) insert(receiverIri, RDF.TYPE, VCARD.GROUP)
+                }
+            }
+            patch to index.getHeaders().getETag()
+        }
+    }
+
+    /**
+     * Removes all index rows for `(receiver, resourceUri)`. If the receiver
+     * is a [ShareReceiver.GroupReceiver] and this was the last reference to
+     * that group anywhere in the index, the `rdf:type vcard:Group` marker
+     * is dropped too so the file doesn't accumulate orphans.
+     */
     suspend fun removeGivenShare(
         webId: String,
         podRoot: URI,
@@ -336,38 +332,52 @@ internal class SharingManagerHelper {
     ) {
         val uri = givenSharesUri(podRoot)
         val receiverIri = receiver.toRdfSubject()
-        val current = readGivenIndex(webId, podRoot).getShares()
-        val existing = current.firstOrNull {
-            it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
-        } ?: return
-        rm.patch(
-            webId, uri,
-            N3Patch.build {
-                delete(receiverIri, existing.mode.toAclPredicate(), resourceUri)
-            },
-        ).getOrThrow()
+        patchIndexWithRetry(webId, uri) {
+            val index = readGivenIndex(webId, podRoot)
+            val current = index.getShares()
+            val existingModes = current
+                .filter {
+                    it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
+                }
+                .map { it.mode }
+                .distinct()
+            val stillReferencedAfter = current.any {
+                it.receiver.toRdfSubject() == receiverIri && it.resourceUri != resourceUri
+            }
+            val patch = if (existingModes.isEmpty()) {
+                null
+            } else {
+                N3Patch.build {
+                    existingModes.forEach { mode ->
+                        delete(receiverIri, mode.toAclPredicate(), resourceUri)
+                    }
+                    if (receiver is ShareReceiver.GroupReceiver && !stillReferencedAfter) {
+                        delete(receiverIri, RDF.TYPE, VCARD.GROUP)
+                    }
+                }
+            }
+            patch to index.getHeaders().getETag()
+        }
     }
 
     suspend fun replaceReceivedShare(webId: String, podRoot: URI, share: ReceivedShare) {
         val uri = receivedSharesUri(podRoot)
-        val current = readReceivedIndex(webId, podRoot).getShares()
-        val existing = current.firstOrNull {
-            it.ownerWebId == share.ownerWebId && it.resourceUri == share.resourceUri
+        patchIndexWithRetry(webId, uri) {
+            val index = readReceivedIndex(webId, podRoot)
+            val existing = index.getShares().firstOrNull {
+                it.ownerWebId == share.ownerWebId && it.resourceUri == share.resourceUri
+            }
+            val patch = when {
+                existing != null && existing.mode == share.mode -> null
+                else -> N3Patch.build {
+                    if (existing != null) {
+                        delete(share.ownerWebId, existing.mode.toAclPredicate(), share.resourceUri)
+                    }
+                    insert(share.ownerWebId, share.mode.toAclPredicate(), share.resourceUri)
+                }
+            }
+            patch to index.getHeaders().getETag()
         }
-        if (existing != null) {
-            rm.patch(
-                webId, uri,
-                N3Patch.build {
-                    delete(share.ownerWebId, existing.mode.toAclPredicate(), share.resourceUri)
-                },
-            ).getOrThrow()
-        }
-        rm.patch(
-            webId, uri,
-            N3Patch.build {
-                insert(share.ownerWebId, share.mode.toAclPredicate(), share.resourceUri)
-            },
-        ).getOrThrow()
     }
 
     suspend fun removeReceivedShare(
@@ -377,87 +387,88 @@ internal class SharingManagerHelper {
         ownerWebId: String,
     ) {
         val uri = receivedSharesUri(podRoot)
-        val current = readReceivedIndex(webId, podRoot).getShares()
-        val existing = current.firstOrNull {
-            it.ownerWebId == ownerWebId && it.resourceUri == resourceUri
-        } ?: return
-        rm.patch(
-            webId, uri,
-            N3Patch.build {
-                delete(ownerWebId, existing.mode.toAclPredicate(), resourceUri)
-            },
-        ).getOrThrow()
+        patchIndexWithRetry(webId, uri) {
+            val index = readReceivedIndex(webId, podRoot)
+            val existing = index.getShares().firstOrNull {
+                it.ownerWebId == ownerWebId && it.resourceUri == resourceUri
+            }
+            val patch = existing?.let {
+                N3Patch.build {
+                    delete(ownerWebId, it.mode.toAclPredicate(), resourceUri)
+                }
+            }
+            patch to index.getHeaders().getETag()
+        }
     }
 
-    // ── Read-back helpers ───────────────────────────────────────────────────
-
-    /**
-     * Reads the resource's ACL and returns every share-like rule found
-     * (one [GivenShare] per receiver × mode pair).
-     */
-    suspend fun getSharesFromAcl(webId: String, resourceUri: URI): List<GivenShare> {
-        val (_, acl) = readAcl(webId, resourceUri)
-        val shares = mutableListOf<GivenShare>()
-        acl.getAuthorizations().forEach { auth ->
-            val applies =
-                auth.accessTo.any { it == resourceUri } || auth.default.any { it == resourceUri }
-            if (!applies) return@forEach
-            val mode = ShareMode.strongest(auth.modes) ?: return@forEach
-            // Skip the owner's own self-rule.
-            val ownerSelf = auth.agents.size == 1 &&
-                    auth.agents.first().toString() == webId &&
-                    auth.modes.contains(ACL.CONTROL)
-            if (ownerSelf) return@forEach
-
-            auth.agents.forEach { agent ->
-                if (agent.toString() != webId) {
-                    shares += GivenShare(
-                        receiver = ShareReceiver.WebIdReceiver(agent.toString()),
-                        mode = mode,
-                        resourceUri = resourceUri.toString(),
-                    )
+    private suspend fun patchIndexWithRetry(
+        webId: String,
+        uri: URI,
+        build: suspend () -> Pair<N3Patch?, String?>,
+    ) {
+        var attempt = 0
+        while (true) {
+            val (patch, etag) = build()
+            if (patch == null) return
+            when (val r = rm.patch(webId, uri, patch, ifMatch = etag)) {
+                is SolidNetworkResponse.Success -> return
+                is SolidNetworkResponse.Error -> {
+                    if (r.errorCode == 412 && ++attempt < MAX_INDEX_PATCH_ATTEMPTS) continue
+                    error("Index patch for $uri failed: ${r.errorCode} ${r.errorMessage}")
                 }
-            }
-            auth.agentGroups.forEach { g ->
-                shares += GivenShare(
-                    receiver = ShareReceiver.GroupReceiver(g.toString()),
-                    mode = mode,
-                    resourceUri = resourceUri.toString(),
-                )
-            }
-            auth.agentClasses.forEach { c ->
-                if (c.toString() == ShareReceiver.Public.toRdfSubject()) {
-                    shares += GivenShare(
-                        receiver = ShareReceiver.Public,
-                        mode = mode,
-                        resourceUri = resourceUri.toString(),
-                    )
-                }
+
+                is SolidNetworkResponse.Exception -> throw r.exception
             }
         }
-        return shares.distinct()
     }
 
     /**
-     * HEADs [resourceUri] from the receiver's perspective and returns the
-     * strongest mode the caller is allowed plus the `solid:owner` link, if any.
+     * HEADs [resourceUri] from the receiver's perspective and reports access as
+     * a tri-state:
+     *
+     *  - [ReceivedAccess.Granted] — a confirmed grant (strongest observed mode +
+     *    `solid:owner` link if any). A successful HEAD proves at least Read, so
+     *    an absent `WAC-Allow` header (permitted by spec) is reported as
+     *    `Granted(READ)`, not a revocation.
+     *  - [ReceivedAccess.Denied] — authoritative no-access: 403, 404/410, or a
+     *    `WAC-Allow` header listing no recognized mode.
+     *  - [ReceivedAccess.Unknown] — cannot authoritatively decide (401
+     *    token-refresh blip, 5xx, transport/parse exception). Callers must keep
+     *    stored rows and must not surface AccessDenied in this case.
      */
     suspend fun probeReceivedAccess(
         webId: String,
         resourceUri: URI,
-    ): Pair<ShareMode, String?>? {
-        val metadata = rm.head(webId, resourceUri).getOrThrow()
-        val wac = metadata.wacAllow ?: return null
-        val combined = (wac.userModes + wac.publicModes)
-        val mode = when {
-            combined.contains("write") -> ShareMode.WRITE
-            combined.contains("append") -> ShareMode.APPEND
-            combined.contains("read") -> ShareMode.READ
-            else -> return null
+    ): ReceivedAccess {
+        val metadata = when (val head = rm.head(webId, resourceUri)) {
+            is SolidNetworkResponse.Success -> head.data
+            is SolidNetworkResponse.Error ->
+                return if (head.errorCode == 403 || head.isMissing()) {
+                    ReceivedAccess.Denied
+                } else {
+                    ReceivedAccess.Unknown
+                }
+
+            is SolidNetworkResponse.Exception -> return ReceivedAccess.Unknown
         }
         val owner = metadata.ownerUri?.toString()
-        return mode to owner
+        val wac = metadata.wacAllow
+            ?: return ReceivedAccess.Granted(ShareMode.READ, owner)
+        val combined = wac.userModes + wac.publicModes
+        return when {
+            combined.contains("write") -> ReceivedAccess.Granted(ShareMode.WRITE, owner)
+            combined.contains("append") -> ReceivedAccess.Granted(ShareMode.APPEND, owner)
+            combined.contains("read") -> ReceivedAccess.Granted(ShareMode.READ, owner)
+            else -> ReceivedAccess.Denied
+        }
     }
+}
+
+/** Tri-state result of [SharingManagerHelper.probeReceivedAccess]. */
+internal sealed interface ReceivedAccess {
+    data class Granted(val mode: ShareMode, val owner: String?) : ReceivedAccess
+    data object Denied : ReceivedAccess
+    data object Unknown : ReceivedAccess
 }
 
 internal fun String.ensureTrailingSlash(): String =

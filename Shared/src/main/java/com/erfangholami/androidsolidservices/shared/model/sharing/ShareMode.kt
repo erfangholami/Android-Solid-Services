@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.shared.domain.sharing
+package com.erfangholami.androidsolidservices.shared.model.sharing
 
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 
@@ -16,6 +16,25 @@ public enum class ShareMode {
         READ -> ACL.READ
         APPEND -> ACL.APPEND
         WRITE -> ACL.WRITE
+    }
+
+    /**
+     * The full set of WAC `acl:mode` predicates a grant of this mode must
+     * write. WAC has **no mode subsumption** — `acl:Write` grants neither
+     * `acl:Read` nor `acl:Append` — so a UI capability that's meant to
+     * include reading has to assert every implied mode explicitly:
+     *
+     *  - [READ]   → `acl:Read`
+     *  - [APPEND] → `acl:Read`, `acl:Append`  (you must read to append usefully)
+     *  - [WRITE]  → `acl:Read`, `acl:Append`, `acl:Write`
+     *
+     * Without this a "Write" receiver could overwrite a resource they cannot
+     * GET.
+     */
+    public fun impliedAclModes(): Set<String> = when (this) {
+        READ -> setOf(ACL.READ)
+        APPEND -> setOf(ACL.READ, ACL.APPEND)
+        WRITE -> setOf(ACL.READ, ACL.APPEND, ACL.WRITE)
     }
 
     public companion object {

@@ -1,29 +1,25 @@
-// IASSharingService.aidl
 package com.erfangholami.androidsolidservices.shared;
 
-import com.erfangholami.androidsolidservices.shared.domain.IASSUnitCallback;
-import com.erfangholami.androidsolidservices.shared.domain.sharing.GivenShare;
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ReceivedShare;
-import com.erfangholami.androidsolidservices.shared.domain.sharing.IASSGivenShareCallback;
-import com.erfangholami.androidsolidservices.shared.domain.sharing.IASSReceivedShareCallback;
-import com.erfangholami.androidsolidservices.shared.domain.sharing.IASSGivenShareListCallback;
-import com.erfangholami.androidsolidservices.shared.domain.sharing.IASSReceivedShareListCallback;
+import com.erfangholami.androidsolidservices.shared.IASSUnitCallback;
+import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry;
+import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare;
+import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare;
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest;
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSAccessGrantListCallback;
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSCatalogEntryListCallback;
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareCallback;
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback;
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback;
+import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback;
 
 /**
- * IPC contract for the sharing feature. Mirrors
- * `com.erfangholami.androidsolidservices.api.sharing.SharingManager`.
- *
- * `mode` is the ordinal of `ShareMode`: 0 = READ, 1 = APPEND, 2 = WRITE.
- *
- * `receiverKind` distinguishes the three receiver flavors and `receiverValue`
- * carries the IRI when applicable:
- *   0 = WebID receiver, value = WebID URI
- *   1 = Group receiver,  value = vcard:Group URI
- *   2 = Public receiver, value ignored (may be null)
+ * AIDL IPC contract for Solid resource sharing. Manages the full sharing lifecycle across
+ * processes: creating and revoking ACL-based shares, tracking given and received shares,
+ * handling incoming share requests, and maintaining the owner's public catalog. Results are
+ * delivered via one-way callbacks. Third-party apps normally use the higher-level client SDK
+ * rather than binding here directly.
  */
 interface IASSharingService {
-
-    // ── Given shares ───────────────────────────────────────────────────────
 
     void getStoredGivenShares(String webId, IASSGivenShareListCallback callback);
 
@@ -35,12 +31,14 @@ interface IASSharingService {
         IASSGivenShareListCallback callback
     );
 
+    /** mode: WAC access mode (e.g. Read=1). receiverKind: who receives access (e.g. specific WebID, public). receiverValue: the WebID or group URI when receiverKind targets a specific identity; null for public. */
     void createShare(
         String webId,
         String resourceUri,
         int mode,
         int receiverKind,
         @nullable String receiverValue,
+        boolean notifyReceiver,
         IASSGivenShareCallback callback
     );
 
@@ -61,19 +59,6 @@ interface IASSharingService {
         IASSUnitCallback callback
     );
 
-    // ── Profile share ──────────────────────────────────────────────────────
-
-    void createProfileShare(
-        String webId,
-        in List<String> selectedFieldPredicates,
-        int mode,
-        int receiverKind,
-        @nullable String receiverValue,
-        IASSGivenShareCallback callback
-    );
-
-    // ── Received shares ────────────────────────────────────────────────────
-
     void getStoredReceivedShares(String webId, IASSReceivedShareListCallback callback);
 
     void refreshReceivedShares(String webId, IASSReceivedShareListCallback callback);
@@ -89,5 +74,44 @@ interface IASSharingService {
         String resourceUri,
         String ownerWebId,
         IASSUnitCallback callback
+    );
+
+    void getAccessGrants(
+        String webId,
+        IASSAccessGrantListCallback callback
+    );
+
+    void acceptShareRequest(
+        String webId,
+        in ShareRequest request,
+        IASSGivenShareCallback callback
+    );
+
+    void rejectShareRequest(
+        String webId,
+        in ShareRequest request,
+        @nullable String reason,
+        IASSUnitCallback callback
+    );
+
+    /** Rebuilds the given-shares index by scanning pod ACLs; use when the index may be out of sync. */
+    void rebuildGivenIndex(String webId, IASSGivenShareListCallback callback);
+
+    void publishCatalogEntry(
+        String webId,
+        in CatalogEntry entry,
+        IASSUnitCallback callback
+    );
+
+    void removeCatalogEntry(
+        String webId,
+        String resourceUri,
+        IASSUnitCallback callback
+    );
+
+    void getOwnerCatalog(
+        String viewerWebId,
+        String ownerWebId,
+        IASSCatalogEntryListCallback callback
     );
 }

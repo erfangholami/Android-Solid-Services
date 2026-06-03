@@ -1,26 +1,34 @@
 package com.erfangholami.androidsolidservices.api.sharing
 
-import com.erfangholami.androidsolidservices.shared.domain.network.SolidNetworkResponse
-import com.erfangholami.androidsolidservices.shared.domain.sharing.GivenShare
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ProfileShareConfig
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ReceivedShare
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ShareMode
-import com.erfangholami.androidsolidservices.shared.domain.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.implementation.SharingManagerImplementation
+import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrant
+import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
+import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
+import com.erfangholami.androidsolidservices.shared.model.sharing.ParsedShareLink
+import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 
 /**
- * Creates, lists, and revokes shares of pod resources and profile snapshots.
+ * Creates, lists, and revokes shares of pod resources.
  *
- * Sharing is built entirely on Web Access Control (WAC). The manager keeps a
- * private bookkeeping pair (`given_shares.ttl`, `received_shares.ttl`) under
- * `{podRoot}/.shares/` so the user can see what they have shared and what
+ * Sharing is built on Web Access Control (WAC); pods that use Access
+ * Control Policy (ACP) are supported through a pluggable access-control
+ * backend. The manager keeps a private
+ * bookkeeping pair (`given_shares.ttl`, `received_shares.ttl`) under
+ * `{podRoot}/solidshare/shares/` so the user can see what they have shared and what
  * they have received without re-walking the pod every time.
  *
- * For profile shares, a snapshot RDF document and a public HTML business card
- * are written under `{podRoot}/solidshare/profiles/`; the snapshot URI is the
- * share URL.
+ * Notification plumbing (LDN inbox push, listing, accept/reject of
+ * incoming requests) lives in
+ * [com.erfangholami.androidsolidservices.api.notifications.NotificationsManager].
+ * `SharingManager` calls into it internally on `createShare` /
+ * `revokeShare`, and exposes high-level accept/reject helpers for share
+ * requests because those translate into a share creation or rejection.
  */
 public interface SharingManager {
 
@@ -31,8 +39,6 @@ public interface SharingManager {
         public fun getInstance(resourceManager: SolidResourceManager): SharingManager =
             SharingManagerImplementation.getInstance(resourceManager)
     }
-
-    // ── Given shares ────────────────────────────────────────────────────────
 
     /**
      * Returns the locally-tracked given shares (fast — single HTTP read of
@@ -53,6 +59,46 @@ public interface SharingManager {
     ): SolidNetworkResponse<List<GivenShare>>
 
     /**
+     * Walks the entire pod tree, reads every resource's ACL, and rebuilds
+     * `given_shares.ttl` from scratch. Use this to recover shares that were
+     * created on another client, outside this app's index.
+     *
+     * The walk is **resilient**: a resource that can't be read (for example a
+     * 403 because its ACL was deleted, or a transient 5xx) is skipped and the
+     * rest of the tree is still scanned. Such a resource's existing index rows
+     * are **preserved** — only resources whose live ACL was positively read
+     * are reconciled — so a partial walk can't wipe rows for an unobserved
+     * region. The returned list is the index's resulting state.
+     *
+     * **This is expensive.** A pod with N resources costs N HEAD + N (or
+     * fewer) ACL GETs. Expose as an explicit user action, not a default
+     * refresh. Containers' ACLs cover descendants via `acl:default`, so
+     * the walker can skip child resources whose ACL is inherited.
+     */
+    public suspend fun rebuildGivenIndex(
+        webId: String,
+    ): SolidNetworkResponse<List<GivenShare>>
+
+    /**
+     * Re-asserts the signed-in owner's Read/Write/Control on [resourceUri]'s
+     * ACL/ACR **without removing anyone else's access**, to recover from an
+     * ACL/ACR edit that accidentally locked the owner out of their own
+     * resource.
+     *
+     * Works only while the owner still holds Control (write access to the
+     * ACL/ACR) and the resource's `acl` link is discoverable via HEAD. If the
+     * resource is so locked that the app can't even read its metadata, this
+     * fails and the lockout must be cleared server-side (the pod provider's
+     * tooling). On WAC the re-asserted rule uses `acl:default` for containers;
+     * on ACP it adds an owner policy (with `acp:memberAccessControl` for
+     * containers).
+     */
+    public suspend fun repairOwnerControl(
+        webId: String,
+        resourceUri: String,
+    ): SolidNetworkResponse<Unit>
+
+    /**
      * Returns only the given shares affecting [resourceUri] — read directly
      * from that resource's ACL (authoritative, may differ from the index).
      */
@@ -62,22 +108,28 @@ public interface SharingManager {
     ): SolidNetworkResponse<List<GivenShare>>
 
     /**
-     * Adds (or replaces) a WAC authorization on [resourceUri] granting [mode]
+     * Adds (or replaces) an authorization on [resourceUri] granting [mode]
      * to [receiver], and updates the given-shares index.
      *
-     * If a share for the same `(resource, receiver)` pair exists, it is replaced
-     * with the new mode.
+     * If [resourceUri] is a container, the authorization uses `acl:default`
+     * so members inherit access. If a share for the same
+     * `(resource, receiver)` pair exists, it is replaced with the new mode.
+     *
+     * When [notifyReceiver] is true and [receiver] is a WebID, a best-effort
+     * `as:Offer` is posted to the receiver's LDN inbox after the share is
+     * persisted. Failure to deliver does not fail the share.
      */
     public suspend fun createShare(
         webId: String,
         resourceUri: String,
         mode: ShareMode,
         receiver: ShareReceiver,
+        notifyReceiver: Boolean = true,
     ): SolidNetworkResponse<GivenShare>
 
     /**
-     * Updates the access mode of an existing share. Equivalent to [createShare]
-     * with a different mode.
+     * Updates the access mode of an existing share. Equivalent to
+     * [createShare] with a different mode and `notifyReceiver = false`.
      */
     public suspend fun updateShare(
         webId: String,
@@ -87,31 +139,15 @@ public interface SharingManager {
     ): SolidNetworkResponse<GivenShare>
 
     /**
-     * Removes the WAC authorization for [receiver] on [resourceUri] and removes
-     * the matching index triple.
+     * Removes the authorization for [receiver] on [resourceUri] and removes
+     * the matching index triple. If [receiver] is a WebID, an `as:Undo` is
+     * posted to their inbox (best-effort).
      */
     public suspend fun revokeShare(
         webId: String,
         resourceUri: String,
         receiver: ShareReceiver,
     ): SolidNetworkResponse<Unit>
-
-    // ── Profile share ───────────────────────────────────────────────────────
-
-    /**
-     * Creates a profile snapshot and a public HTML business card from the
-     * fields selected in [config], grants the receiver the given mode on the
-     * snapshot, and adds the snapshot URI to the given-shares index.
-     *
-     * The snapshot URI is the share URL (encode in QR / send to receiver).
-     */
-    public suspend fun createProfileShare(
-        webId: String,
-        config: ProfileShareConfig,
-        mode: ShareMode = ShareMode.READ,
-    ): SolidNetworkResponse<GivenShare>
-
-    // ── Received shares ─────────────────────────────────────────────────────
 
     /**
      * Returns the locally-tracked received shares (fast). Use
@@ -130,13 +166,27 @@ public interface SharingManager {
     ): SolidNetworkResponse<List<ReceivedShare>>
 
     /**
-     * Adds [resourceUri] to the received-shares index after verifying access.
-     * Called when the user scans a QR code or pastes a share URL.
+     * Verifies access to [resourceUri] from the current user's perspective
+     * and syncs `received_shares.ttl` accordingly:
+     *
+     * - if the WAC-Allow header grants any mode, the row is added or updated
+     *   and the resulting [ReceivedShare] is returned;
+     * - if access is **not** granted, any previously-stored row for this
+     *   resource URI is removed and `null` is returned.
+     *
+     * Called when the user scans a QR code or pastes a share URL. Same call
+     * doubles as a "re-verify" — scanning the same QR after the sender has
+     * revoked will remove the stale row.
+     *
+     * [ownerHint] is the sender WebID carried by the share link (see
+     * [parseShareDeepLink]); when it is a valid IRI it is trusted ahead of the
+     * weaker owner-resolution signals so the stored row names the real sender.
      */
     public suspend fun addReceivedShare(
         webId: String,
         resourceUri: String,
-    ): SolidNetworkResponse<ReceivedShare>
+        ownerHint: String? = null,
+    ): SolidNetworkResponse<ReceivedShare?>
 
     /**
      * Removes a tracked received share. Does not affect the resource itself.
@@ -147,15 +197,121 @@ public interface SharingManager {
         ownerWebId: String,
     ): SolidNetworkResponse<Unit>
 
-    // ── Share URL / QR helpers ──────────────────────────────────────────────
+    /**
+     * Returns every access relationship the library can observe for [webId],
+     * unified into one list (see [AccessGrant]):
+     *
+     *  - the shares the user has **given** (from `given_shares.ttl`),
+     *  - the shares the user has **received** (from `received_shares.ttl`),
+     *  - the incoming access **requests** awaiting the user's decision (from the
+     *    LDN inbox), and
+     *  - grants discovered via Solid Application Interoperability (SAI)
+     *    registries when the pod exposes a `interop:hasRegistrySet`.
+     *
+     * The app-index sources are authoritative and their read failures surface
+     * as an error/exception variant. SAI discovery is **best-effort additive
+     * enrichment**: it never fails the call — a pod without SAI support simply
+     * contributes no rows. Rows that coincide between an app index and SAI
+     * (same direction, counterpart, resource, mode) are de-duplicated in favour
+     * of the authoritative app-index row.
+     */
+    public suspend fun getAccessGrants(
+        webId: String,
+    ): SolidNetworkResponse<List<AccessGrant>>
 
     /**
-     * Encoding used inside QR codes. Returns a `solidshare://` deep-link wrapping
-     * the original [resourceUri] so the SolidShare app picks it up directly,
-     * with the original https URL as a query parameter for non-Solid scanners.
+     * Approves a [ShareRequest] previously received in this user's inbox.
+     *
+     * Equivalent to calling [createShare] with the request's resource,
+     * requested mode, and requester WebID — and `notifyReceiver = true`,
+     * so the requester gets an `as:Offer` informing them of the grant.
+     *
+     * Does **not** delete the request from the inbox. The inbox remains the
+     * durable record of the decision.
      */
-    public fun getShareDeepLink(resourceUri: String): String
+    public suspend fun acceptShareRequest(
+        webId: String,
+        request: ShareRequest,
+    ): SolidNetworkResponse<GivenShare>
 
-    /** Extracts the original resource URI from a [getShareDeepLink] string. */
-    public fun parseShareDeepLink(deepLink: String): String?
+    /**
+     * Declines a [ShareRequest] by posting an `as:Reject` notification to
+     * the requester's inbox, optionally with a [reason] carried as
+     * `as:summary`.
+     *
+     * Does **not** create any share or modify the index. Does not delete
+     * the request from this user's inbox.
+     */
+    public suspend fun rejectShareRequest(
+        webId: String,
+        request: ShareRequest,
+        reason: String? = null,
+    ): SolidNetworkResponse<Unit>
+
+    /**
+     * Adds (or replaces) an entry in the owner's public catalog at
+     * `{podRoot}/solidshare/catalog.ttl`. The catalog lets potential
+     * requesters discover what to ask for; the listed resources stay
+     * private until access is granted via [acceptShareRequest].
+     *
+     * The catalog itself is publicly readable. The entry's contents
+     * (title / description / depiction) become public knowledge.
+     */
+    public suspend fun publishCatalogEntry(
+        webId: String,
+        entry: CatalogEntry,
+    ): SolidNetworkResponse<Unit>
+
+    /**
+     * Removes the entry for [resourceUri] from the owner's catalog, if
+     * present. Does not affect the resource itself or any share state.
+     */
+    public suspend fun removeCatalogEntry(
+        webId: String,
+        resourceUri: String,
+    ): SolidNetworkResponse<Unit>
+
+    /**
+     * Reads [ownerWebId]'s public catalog from the viewer's perspective.
+     * Used by a requester to browse what an owner is willing to entertain
+     * requests for.
+     *
+     * @param viewerWebId WebID of the agent making the request (used for
+     *   DPoP-authenticated HTTP).
+     * @param ownerWebId  WebID of the catalog's owner.
+     */
+    public suspend fun getOwnerCatalog(
+        viewerWebId: String,
+        ownerWebId: String,
+    ): SolidNetworkResponse<List<CatalogEntry>>
+
+    /**
+     * Encoding used inside QR codes when the target is a Solid-aware
+     * receiver. Returns a `solidshare://` deep-link wrapping the original
+     * [resourceUri] so the SolidShare app picks it up directly.
+     *
+     * For non-Solid scanners (public shares, posters, anything that just
+     * opens URLs in a browser), use [getShareBareUrl] instead so the QR
+     * decodes to a plain `https://…` link.
+     *
+     * Pass [ownerWebId] to embed the sender's WebID in the link so the
+     * receiver can identify who shared the resource even when adding it via
+     * QR / link (the notification path already carries the owner).
+     */
+    public fun getShareDeepLink(resourceUri: String, ownerWebId: String? = null): String
+
+    /**
+     * Extracts the resource URI — and, when present, the embedded owner WebID
+     * — from a [getShareDeepLink] string. Returns null when [deepLink] is not
+     * a `solidshare://` link.
+     */
+    public fun parseShareDeepLink(deepLink: String): ParsedShareLink?
+
+    /**
+     * Returns the bare `https://…` URL to encode in QR codes for non-Solid
+     * receivers and any "open in any browser" path. Equivalent to the
+     * resource URI; provided as a named helper so callers can document the
+     * choice between the two encodings.
+     */
+    public fun getShareBareUrl(resourceUri: String): String
 }

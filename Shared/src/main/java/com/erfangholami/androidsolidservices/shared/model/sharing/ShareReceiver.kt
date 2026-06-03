@@ -1,6 +1,11 @@
-package com.erfangholami.androidsolidservices.shared.domain.sharing
+package com.erfangholami.androidsolidservices.shared.model.sharing
 
 import android.os.Parcelable
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver.Companion.KIND_GROUP
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver.Companion.KIND_PUBLIC
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver.Companion.KIND_WEBID
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver.Companion.from
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver.Companion.fromKind
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import kotlinx.parcelize.Parcelize
 
@@ -13,6 +18,11 @@ import kotlinx.parcelize.Parcelize
  */
 public sealed class ShareReceiver : Parcelable {
 
+    /**
+     * The RDF subject IRI used to represent this receiver in a share index:
+     * the WebID, the group URI, or `foaf:Agent` for [Public]. Reverse with
+     * [from].
+     */
     public abstract fun toRdfSubject(): String
 
     @Parcelize
@@ -30,12 +40,21 @@ public sealed class ShareReceiver : Parcelable {
         override fun toRdfSubject(): String = Solid.PUBLIC_AGENT
     }
 
+    /**
+     * The discriminator used to flatten this receiver for AIDL transport,
+     * one of [KIND_WEBID], [KIND_GROUP], or [KIND_PUBLIC]. Pair with [value]
+     * and reconstruct via [fromKind].
+     */
     public fun kind(): Int = when (this) {
         is WebIdReceiver -> KIND_WEBID
         is GroupReceiver -> KIND_GROUP
         is Public -> KIND_PUBLIC
     }
 
+    /**
+     * The IRI payload that accompanies [kind] over AIDL: the WebID or group
+     * URI, or `null` for [Public] (which carries no identifier).
+     */
     public fun value(): String? = when (this) {
         is WebIdReceiver -> webId
         is GroupReceiver -> groupUri
