@@ -51,6 +51,8 @@ private const val AUTH_LOG_TAG = "Authenticator"
 /** Window during which concurrent refreshes for the same WebID reuse the first one's result. */
 private const val REFRESH_COALESCE_MS = 5_000L
 
+private const val REFRESH_LEAD_MS = 60_000L
+
 internal class AuthenticatorImplementation internal constructor(
     context: Context,
     private val now: () -> Long = { System.currentTimeMillis() },
@@ -552,7 +554,7 @@ internal class AuthenticatorImplementation internal constructor(
     private fun needsTokenRefresh(profile: Profile): Boolean {
         val expirationTime =
             profile.authState.lastTokenResponse?.accessTokenExpirationTime ?: return true
-        return (now() + 280_000L) > expirationTime
+        return (now() + REFRESH_LEAD_MS) > expirationTime
     }
 
     private fun isAccessTokenHardExpired(profile: Profile): Boolean {
