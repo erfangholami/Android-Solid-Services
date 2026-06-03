@@ -1,6 +1,6 @@
-// AddressBook.aidl
-package com.erfangholami.androidsolidservices.shared.domain.datamodule.contact;
+package com.erfangholami.androidsolidservices.shared.model.contacts;
 
+/** AIDL Parcelable declarations for the Solid Contacts domain model types. */
 parcelable AddressBook;
 parcelable AddressBookList;
 parcelable Contact;

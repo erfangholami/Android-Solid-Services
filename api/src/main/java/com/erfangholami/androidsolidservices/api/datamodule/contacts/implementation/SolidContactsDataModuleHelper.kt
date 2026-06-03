@@ -1,23 +1,21 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation
 
-import android.content.Context
-import com.apicatalog.jsonld.http.media.MediaType
-import com.erfangholami.androidsolidservices.shared.domain.PrivateTypeIndex
-import com.erfangholami.androidsolidservices.shared.domain.PublicTypeIndex
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.GROUPS_FILE_NAME
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.GROUP_DIRECTORY_SUFFIX
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.INDEX_FILE_NAME
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.NewContact
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.PEOPLE_DIRECTORY_SUFFIX
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.PEOPLE_FILE_NAME
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.rdf.AddressBookRDF
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.rdf.ContactRDF
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.rdf.GroupRDF
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.rdf.GroupsIndexRDF
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.rdf.NameEmailIndexRDF
-import com.erfangholami.androidsolidservices.shared.domain.profile.WebId
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
+import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
+import com.erfangholami.androidsolidservices.shared.model.contacts.GROUPS_FILE_NAME
+import com.erfangholami.androidsolidservices.shared.model.contacts.GROUP_DIRECTORY_SUFFIX
+import com.erfangholami.androidsolidservices.shared.model.contacts.INDEX_FILE_NAME
+import com.erfangholami.androidsolidservices.shared.model.contacts.NewContact
+import com.erfangholami.androidsolidservices.shared.model.contacts.PEOPLE_DIRECTORY_SUFFIX
+import com.erfangholami.androidsolidservices.shared.model.contacts.PEOPLE_FILE_NAME
+import com.erfangholami.androidsolidservices.shared.rdf.contacts.AddressBookRDF
+import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
+import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupRDF
+import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
+import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
+import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import java.net.URI
 import java.util.UUID
 
@@ -68,21 +66,21 @@ internal class SolidContactsDataModuleHelper {
 
         val nemEmailIndex = NameEmailIndexRDF(
             identifier = URI.create(nameEmailIndex),
-            mediaType = MediaType.JSON_LD,
+            contentType = "application/ld+json",
             quads = null,
             headers = null
         )
 
         val groupsIndexRDF = GroupsIndexRDF(
             identifier = URI.create(groupIndex),
-            mediaType = MediaType.JSON_LD,
+            contentType = "application/ld+json",
             quads = null,
             headers = null
         )
 
         val addressBook = AddressBookRDF(
             identifier = URI.create(uri),
-            mediaType = MediaType.JSON_LD,
+            contentType = "application/ld+json",
             quads = null,
             headers = null
         ).apply {
@@ -201,7 +199,7 @@ internal class SolidContactsDataModuleHelper {
     ): ContactRDF {
         val newContactRDF = ContactRDF(
             identifier = contactUri,
-            mediaType = MediaType.JSON_LD,
+            contentType = "application/ld+json",
             quads = null,
             headers = null
         ).apply {
@@ -282,8 +280,6 @@ internal class SolidContactsDataModuleHelper {
             groupsIndexRDF.getGroups(addressBookUri).forEach {
                 removeContactFromGroup(ownerWebId, contactUri, it.uri)
             }
-        } else {
-            //contact is not in this address book, so no need for search in groups
         }
         val contactDir = contactUri.substring(0, contactUri.lastIndexOf("/") + 1)
         solidResourceManager.delete(ownerWebId, URI.create(contactDir))
@@ -313,7 +309,7 @@ internal class SolidContactsDataModuleHelper {
     ): GroupRDF {
         val groupRdf = GroupRDF(
             identifier = groupUri,
-            mediaType = MediaType.JSON_LD,
+            contentType = "application/ld+json",
             quads = null,
             headers = null
         ).apply {
@@ -467,7 +463,7 @@ internal class SolidContactsDataModuleHelper {
                     webIdString,
                     PrivateTypeIndex(
                         privateTypeIndexUri!!,
-                        MediaType.JSON_LD,
+                        "application/ld+json",
                         null,
                         null
                     )
@@ -504,7 +500,7 @@ internal class SolidContactsDataModuleHelper {
                     webIdString,
                     PublicTypeIndex(
                         publicTypeIndexUri!!,
-                        MediaType.JSON_LD,
+                        "application/ld+json",
                         null,
                         null
                     )

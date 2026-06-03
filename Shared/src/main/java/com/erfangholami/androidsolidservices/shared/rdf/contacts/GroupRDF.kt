@@ -1,42 +1,64 @@
-package com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.rdf
+package com.erfangholami.androidsolidservices.shared.rdf.contacts
 
 import com.apicatalog.jsonld.http.media.MediaType
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.Contact
-import com.erfangholami.androidsolidservices.shared.domain.resource.RdfQuad
-import com.erfangholami.androidsolidservices.shared.domain.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.model.contacts.Contact
+import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.vocab.OWL
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
-import okhttp3.Headers
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
+/**
+ * RDF representation of a Solid contact group (`vcard:Group`).
+ *
+ * Wraps the quads of one group document on a pod and exposes typed accessors and
+ * mutators. Construct from a pod response by passing the parsed quads, or create a
+ * new empty instance by supplying only the identifier.
+ *
+ * All mutator methods update the in-memory quad list; call the contacts data module
+ * to persist the change to the pod.
+ */
 public class GroupRDF : SolidRDFResource {
 
     public constructor(
         identifier: URI,
-        mediaType: MediaType? = null,
+        contentType: String? = null,
         quads: List<RdfQuad>? = null,
-        headers: Headers? = null
-    ) : super(identifier, mediaType ?: MediaType.JSON_LD, quads, headers)
+        headers: SolidHeaders? = null
+    ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     init {
         addQuad(getIdentifier().toString(), RDF.TYPE, VCARD.GROUP)
     }
 
+    /** Returns the group's display name (`vcard:fn`). */
     public fun getTitle(): String =
         quads.find {
             it.subject == getIdentifier().toString() && it.predicate == VCARD.FN
         }!!.`object`
 
+    /** Sets the group's display name. */
     public fun setTitle(title: String) {
         addQuadLiteral(getIdentifier().toString(), VCARD.FN, title, XSD.STRING)
     }
 
+    /**
+     * Adds a `vcard:includesGroup` triple linking this group to [addressBookUri],
+     * so the group is discoverable from the address-book root.
+     */
     public fun setIncludesInAddressBook(addressBookUri: String) {
         addQuad(addressBookUri, VCARD.INCLUDES_GROUP, getIdentifier().toString())
     }
 
+    /**
+     * Returns the [Contact] summaries for all members of this group (`vcard:hasMember`).
+     *
+     * Where an `owl:sameAs` alias is present (used to map a group-local blank-node member
+     * reference to the canonical contact URI), the canonical URI is returned.
+     */
     public fun getContacts(): List<Contact> {
         val members = quads
             .filter { it.predicate == VCARD.HAS_MEMBER }
@@ -55,6 +77,11 @@ public class GroupRDF : SolidRDFResource {
         }
     }
 
+    /**
+     * Adds [contact] as a member of this group (`vcard:hasMember`), also recording
+     * the contact's display name inline so group listings can be rendered without an
+     * extra pod request.
+     */
     public fun addMember(contact: ContactRDF) {
         addQuad(
             getIdentifier().toString(),
@@ -65,6 +92,11 @@ public class GroupRDF : SolidRDFResource {
         addQuadLiteral(contact.getIdentifier().toString(), VCARD.FN, contact.getFullName(), XSD.STRING)
     }
 
+    /**
+     * Removes the membership entry for [contactURI] from this group's quad list.
+     *
+     * @return `true` if the member was found and removed, `false` if not present.
+     */
     public fun removeMember(contactURI: URI): Boolean {
         val contactStr = contactURI.toString()
         val member = quads.find {

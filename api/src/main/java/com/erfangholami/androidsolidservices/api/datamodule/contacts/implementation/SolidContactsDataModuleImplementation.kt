@@ -1,12 +1,12 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation
 
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.DataModuleResult
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.AddressBook
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.AddressBookList
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.CONTACTS_DIRECTORY_SUFFIX
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.FullContact
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.FullGroup
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.NewContact
+import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
+import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook
+import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList
+import com.erfangholami.androidsolidservices.shared.model.contacts.CONTACTS_DIRECTORY_SUFFIX
+import com.erfangholami.androidsolidservices.shared.model.contacts.FullContact
+import com.erfangholami.androidsolidservices.shared.model.contacts.FullGroup
+import com.erfangholami.androidsolidservices.shared.model.contacts.NewContact
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.SolidContactsDataModule
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager

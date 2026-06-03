@@ -1,21 +1,25 @@
-// IASSContactsModuleInterface.aidl
-package com.erfangholami.androidsolidservices.shared.domain.datamodule.contact;
+package com.erfangholami.androidsolidservices.shared.model.contacts;
 
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.AddressBook;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.AddressBookList;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.Contact;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.NewContact;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.FullContact;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.Email;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.PhoneNumber;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.Name;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.Group;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.FullGroup;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactModuleAddressBookListCallback;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactModuleAddressBookCallback;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactModuleFullContactCallback;
-import com.erfangholami.androidsolidservices.shared.domain.datamodule.contact.IASSContactModuleFullGroupCallback;
+import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook;
+import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList;
+import com.erfangholami.androidsolidservices.shared.model.contacts.Contact;
+import com.erfangholami.androidsolidservices.shared.model.contacts.NewContact;
+import com.erfangholami.androidsolidservices.shared.model.contacts.FullContact;
+import com.erfangholami.androidsolidservices.shared.model.contacts.Email;
+import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneNumber;
+import com.erfangholami.androidsolidservices.shared.model.contacts.Name;
+import com.erfangholami.androidsolidservices.shared.model.contacts.Group;
+import com.erfangholami.androidsolidservices.shared.model.contacts.FullGroup;
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookListCallback;
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookCallback;
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullContactCallback;
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullGroupCallback;
 
+/**
+ * AIDL sub-interface for the Solid Contacts data module. Provides cross-process operations
+ * for managing address books, contacts, and groups stored on a Solid pod. Returned by
+ * IASSDataModulesService; results are delivered via one-way callbacks.
+ */
 interface IASSContactsModuleInterface {
 
     void getAddressBooks(String webId, IASSContactModuleAddressBookListCallback callback);
