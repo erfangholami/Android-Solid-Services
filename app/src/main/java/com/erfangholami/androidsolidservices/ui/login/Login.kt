@@ -38,8 +38,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.erfangholami.androidsolidservices.R
 import com.erfangholami.androidsolidservices.ui.navigation.MainPage
-import net.openid.appauth.AuthorizationException
-import net.openid.appauth.AuthorizationResponse
 
 @Composable
 fun Login(
@@ -54,9 +52,7 @@ fun Login(
             override fun parseResult(resultCode: Int, intent: Intent?): Intent? = intent
         }) { intent: Intent? ->
             if (intent != null) {
-                val resp: AuthorizationResponse? = AuthorizationResponse.fromIntent(intent)
-                val ex: AuthorizationException? = AuthorizationException.fromIntent(intent)
-                viewModel.submitAuthorizationResponse(resp, ex)
+                viewModel.submitAuthorizationResponse(intent)
             }
         }
 

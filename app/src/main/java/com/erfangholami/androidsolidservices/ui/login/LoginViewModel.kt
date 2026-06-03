@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.openid.appauth.AuthorizationException
-import net.openid.appauth.AuthorizationResponse
 import javax.inject.Inject
 
 data class LoginUiState(
@@ -93,19 +91,15 @@ class LoginViewModel @Inject constructor(
         )
     }
 
-    fun submitAuthorizationResponse(
-        authResponse: AuthorizationResponse?,
-        authException: AuthorizationException?,
-    ) {
+    fun submitAuthorizationResponse(responseData: Intent?) {
         viewModelScope.launch {
-            val authorized = submitAuthorization(authResponse, authException)
+            val authorized = submitAuthorization(responseData)
             _uiState.update { it.copy(loading = false) }
             if (authorized) {
                 _uiState.update { it.copy(errorMessage = null) }
                 events.send(if (isAddingAccount) LoginEvent.NavigateBack else LoginEvent.NavigateToMain)
             } else {
-                val message = authException?.errorDescription ?: "A problem during login occurred!"
-                _uiState.update { it.copy(errorMessage = message) }
+                _uiState.update { it.copy(errorMessage = "A problem during login occurred!") }
             }
         }
     }

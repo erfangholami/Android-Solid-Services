@@ -1,20 +1,16 @@
 package com.erfangholami.androidsolidservices.domain.usecase
 
+import android.content.Intent
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import javax.inject.Inject
-import net.openid.appauth.AuthorizationException
-import net.openid.appauth.AuthorizationResponse
 
 class SubmitAuthorizationUseCase @Inject constructor(
     private val authRepository: AuthRepository,
 ) {
 
-    suspend operator fun invoke(
-        authResponse: AuthorizationResponse?,
-        authException: AuthorizationException?,
-    ): Boolean {
+    suspend operator fun invoke(responseData: Intent?): Boolean {
         try {
-            authRepository.submitAuthorizationResponse(authResponse, authException)
+            authRepository.submitAuthorizationResponse(responseData)
         } catch (_: Exception) {
         }
         return authRepository.isUserAuthorized()

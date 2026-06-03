@@ -7,8 +7,6 @@ import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.StateFlow
-import net.openid.appauth.AuthorizationException
-import net.openid.appauth.AuthorizationResponse
 
 @Singleton
 class AuthRepositoryImplementation @Inject constructor(
@@ -34,10 +32,8 @@ class AuthRepositoryImplementation @Inject constructor(
     ): Pair<Intent?, String?> =
         authenticator.createAuthenticationIntent(webId, oidcIssuer, appName, redirectUri)
 
-    override suspend fun submitAuthorizationResponse(
-        authResponse: AuthorizationResponse?,
-        authException: AuthorizationException?,
-    ): String? = authenticator.submitAuthorizationResponse(authResponse, authException)
+    override suspend fun submitAuthorizationResponse(responseData: Intent?): String? =
+        authenticator.submitAuthorizationResponse(responseData)
 
     override suspend fun getActiveWebId(): String? = authenticator.getActiveWebId()
 

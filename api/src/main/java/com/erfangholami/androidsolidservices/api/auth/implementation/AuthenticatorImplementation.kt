@@ -161,13 +161,15 @@ internal class AuthenticatorImplementation internal constructor(
         return Pair(authService.getAuthorizationRequestIntent(authRequest), null)
     }
 
-    override suspend fun submitAuthorizationResponse(
-        authResponse: AuthorizationResponse?,
-        authException: AuthorizationException?,
-    ): String? {
+    override suspend fun submitAuthorizationResponse(responseData: Intent?): String? {
         profileManager.awaitInit()
 
+        val authResponse = responseData?.let { AuthorizationResponse.fromIntent(it) }
+        val authException = responseData?.let { AuthorizationException.fromIntent(it) }
+
         val current = inProgressAuth.get() ?: return null
+        if (authResponse == null && authException == null) return null
+
         val updatedAuthState = deepCopyAuthState(current.authState)
         updatedAuthState.update(authResponse, authException)
         inProgressAuth.set(current.copy(authState = updatedAuthState))

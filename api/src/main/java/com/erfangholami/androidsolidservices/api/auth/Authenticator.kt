@@ -5,8 +5,6 @@ import android.content.Intent
 import com.erfangholami.androidsolidservices.api.auth.implementation.AuthenticatorImplementation
 import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import kotlinx.coroutines.flow.StateFlow
-import net.openid.appauth.AuthorizationException
-import net.openid.appauth.AuthorizationResponse
 
 /**
  * Manages OpenID Connect authentication with Solid pods on behalf of one or more users.
@@ -56,14 +54,13 @@ public interface Authenticator {
     /**
      * Completes the authorization flow after the OIDC provider redirects back to the app.
      *
-     * Pass the [AuthorizationResponse] and [AuthorizationException] received in the redirect
-     * Activity's `onActivityResult`. Returns the authorized WebID on success, or `null`
-     * if authorization was denied or the response was empty.
+     * @param responseData The result [Intent] delivered to the redirect Activity (the `data` from
+     *   its Activity Result / `onActivityResult` callback) — that is, the result of launching the
+     *   [Intent] returned by [createAuthenticationIntent]. Pass `null` if the flow was cancelled.
+     * @return The authorized WebID on success, or `null` if authorization was denied, cancelled, or
+     *   could not be completed.
      */
-    public suspend fun submitAuthorizationResponse(
-        authResponse: AuthorizationResponse?,
-        authException: AuthorizationException?,
-    ): String?
+    public suspend fun submitAuthorizationResponse(responseData: Intent?): String?
 
     /**
      * Returns an [Intent] that launches the Solid OIDC logout / session termination flow.

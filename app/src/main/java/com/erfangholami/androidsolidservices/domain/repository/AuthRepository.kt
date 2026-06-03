@@ -3,8 +3,6 @@ package com.erfangholami.androidsolidservices.domain.repository
 import android.content.Intent
 import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import kotlinx.coroutines.flow.StateFlow
-import net.openid.appauth.AuthorizationException
-import net.openid.appauth.AuthorizationResponse
 
 interface AuthRepository {
 
@@ -24,10 +22,7 @@ interface AuthRepository {
         redirectUri: String,
     ): Pair<Intent?, String?>
 
-    suspend fun submitAuthorizationResponse(
-        authResponse: AuthorizationResponse?,
-        authException: AuthorizationException?,
-    ): String?
+    suspend fun submitAuthorizationResponse(responseData: Intent?): String?
 
     suspend fun getActiveWebId(): String?
     suspend fun setActiveWebId(webId: String)
