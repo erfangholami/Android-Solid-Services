@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.erfangholami.androidsolidservices.R
-import com.erfangholami.androidsolidservices.model.GrantedApp
+import com.erfangholami.androidsolidservices.domain.model.GrantedApp
 
 @Composable
 fun RevokePermissionDialog(

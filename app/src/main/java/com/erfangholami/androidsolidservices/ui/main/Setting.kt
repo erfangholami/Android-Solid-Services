@@ -30,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,10 +38,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.erfangholami.androidsolidservices.R
+import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import com.erfangholami.androidsolidservices.ui.navigation.Login
-import com.erfangholami.androidsolidservices.shared.domain.profile.Profile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,14 +50,14 @@ fun Setting(
     navController: NavController,
     viewModel: SettingViewModel,
 ) {
-    val navigateToLogin by viewModel.navigateToLogin.collectAsState()
-    val accounts by viewModel.accounts.collectAsState()
-    val activeWebId by viewModel.activeWebId.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(navigateToLogin) {
-        if (navigateToLogin) {
-            navController.navigate(Login()) {
-                popUpTo(navController.graph.id) { inclusive = true }
+    LaunchedEffect(Unit) {
+        viewModel.eventsFlow.collect { event ->
+            when (event) {
+                SettingEvent.NavigateToLogin -> navController.navigate(Login()) {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                }
             }
         }
     }
@@ -69,7 +69,7 @@ fun Setting(
             )
         }
     ) { paddingValues ->
-        if (viewModel.logoutLoading.value) {
+        if (uiState.logoutLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -103,17 +103,17 @@ fun Setting(
                         .clip(RoundedCornerShape(12.dp)),
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
-                    items(accounts) { profile ->
+                    items(uiState.accounts) { profile ->
                         AccountRow(
                             profile = profile,
-                            isActive = profile.userInfo?.webId == activeWebId,
+                            isActive = profile.userInfo?.webId == uiState.activeWebId,
                             onClick = {
                                 profile.userInfo?.webId?.let { webId ->
                                     viewModel.switchAccount(webId)
                                 }
                             },
                         )
-                        if (profile != accounts.last()) {
+                        if (profile != uiState.accounts.last()) {
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                     }
@@ -173,7 +173,6 @@ private fun AccountRow(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Avatar circle with first letter
         Box(
             modifier = Modifier
                 .size(40.dp)

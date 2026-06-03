@@ -1,54 +1,72 @@
 package com.erfangholami.androidsolidservices.ui.main
 
-import android.accounts.Account
-import android.accounts.AccountManager
-import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.erfangholami.androidsolidservices.base.BaseViewModel
-import com.erfangholami.androidsolidservices.base.Constants
-import com.erfangholami.androidsolidservices.shared.domain.profile.Profile
-import com.erfangholami.androidsolidservices.api.auth.Authenticator
+import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
+import com.erfangholami.androidsolidservices.domain.usecase.LogoutAllUseCase
+import com.erfangholami.androidsolidservices.domain.usecase.LogoutUseCase
+import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import javax.inject.Named
+
+data class SettingUiState(
+    val accounts: List<Profile> = emptyList(),
+    val activeWebId: String = "",
+    val logoutLoading: Boolean = false,
+)
+
+sealed interface SettingEvent {
+    data object NavigateToLogin : SettingEvent
+}
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val accountManager: AccountManager,
-    private val authenticator: Authenticator,
-    @Named(Constants.ASS_ACCOUNT_NAME) private val aSSAccountName: String,
-) : BaseViewModel() {
+    private val authRepository: AuthRepository,
+    private val logout: LogoutUseCase,
+    private val logoutAll: LogoutAllUseCase,
+) : ViewModel() {
 
-    val accounts: StateFlow<List<Profile>> = authenticator.loggedInProfilesFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    private val logoutLoading = MutableStateFlow(false)
 
-    val activeWebId: StateFlow<String> = authenticator.activeWebIdFlow
-        .map { it ?: "" }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+    val uiState: StateFlow<SettingUiState> = combine(
+        authRepository.loggedInProfilesFlow,
+        authRepository.activeWebIdFlow,
+        logoutLoading,
+    ) { accounts, activeWebId, loading ->
+        SettingUiState(
+            accounts = accounts,
+            activeWebId = activeWebId ?: "",
+            logoutLoading = loading,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingUiState())
 
-    val logoutLoading = mutableStateOf(false)
+    private val events = Channel<SettingEvent>(Channel.BUFFERED)
+    val eventsFlow = events.receiveAsFlow()
 
-    val navigateToLogin: StateFlow<Boolean> = authenticator.isAuthorizedFlow
-        .map { !it }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+    init {
+        viewModelScope.launch {
+            authRepository.isAuthorizedFlow.collect { authorized ->
+                if (!authorized) events.send(SettingEvent.NavigateToLogin)
+            }
+        }
+    }
 
     fun switchAccount(webId: String) {
-        viewModelScope.launch {
-            authenticator.setActiveWebId(webId)
-        }
+        viewModelScope.launch { authRepository.setActiveWebId(webId) }
     }
 
     fun logout() {
         viewModelScope.launch {
             logoutLoading.value = true
-            val webId = activeWebId.value
-            authenticator.removeProfile(webId)
-            accountManager.removeAccountExplicitly(Account(webId, aSSAccountName))
+            logout(uiState.value.activeWebId)
             logoutLoading.value = false
         }
     }
@@ -56,12 +74,7 @@ class SettingViewModel @Inject constructor(
     fun logoutAll() {
         viewModelScope.launch {
             logoutLoading.value = true
-            authenticator.getAllLoggedInProfiles().forEach { profile ->
-                accountManager.removeAccountExplicitly(
-                    Account(profile.userInfo!!.webId, aSSAccountName)
-                )
-            }
-            authenticator.removeAllProfiles()
+            logoutAll()
             logoutLoading.value = false
         }
     }

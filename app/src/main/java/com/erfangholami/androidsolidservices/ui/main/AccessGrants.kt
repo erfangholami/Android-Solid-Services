@@ -36,7 +36,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.erfangholami.androidsolidservices.R
-import com.erfangholami.androidsolidservices.model.GrantedApp
+import com.erfangholami.androidsolidservices.domain.model.GrantedApp
 import com.erfangholami.androidsolidservices.ui.elements.RevokePermissionDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +46,8 @@ fun AccessGrants(
     viewModel: AccessGrantViewModel,
 ) {
 
-    val grantedApps by viewModel.grantedApps.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val grantedApps = uiState.grantedApps
 
     val revokePermissionApp = remember { mutableStateOf<GrantedApp?>(null) }
     val showRevokePermissionDialog = remember { mutableStateOf(false) }

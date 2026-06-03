@@ -1,16 +1,33 @@
 package com.erfangholami.androidsolidservices.ui.startup
 
-import com.erfangholami.androidsolidservices.base.BaseViewModel
-import com.erfangholami.androidsolidservices.api.auth.Authenticator
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+sealed interface StartupEvent {
+    data object NavigateToMain : StartupEvent
+    data object NavigateToLogin : StartupEvent
+}
 
 @HiltViewModel
 class StartupViewModel @Inject constructor(
-    val authenticator: Authenticator,
-) : BaseViewModel() {
+    private val authRepository: AuthRepository,
+) : ViewModel() {
 
-    fun isLoggedIn(): Boolean {
-        return authenticator.isUserAuthorized()
+    private val events = Channel<StartupEvent>(Channel.BUFFERED)
+    val eventsFlow = events.receiveAsFlow()
+
+    fun decideStartDestination() {
+        viewModelScope.launch {
+            events.send(
+                if (authRepository.isUserAuthorized()) StartupEvent.NavigateToMain
+                else StartupEvent.NavigateToLogin
+            )
+        }
     }
 }

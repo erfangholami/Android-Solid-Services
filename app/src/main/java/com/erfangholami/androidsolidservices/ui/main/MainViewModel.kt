@@ -1,11 +1,9 @@
 package com.erfangholami.androidsolidservices.ui.main
 
-import android.accounts.Account
-import android.accounts.AccountManager
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.erfangholami.androidsolidservices.base.BaseViewModel
-import com.erfangholami.androidsolidservices.base.Constants
-import com.erfangholami.androidsolidservices.api.auth.Authenticator
+import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
+import com.erfangholami.androidsolidservices.domain.usecase.SyncSystemAccountsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -14,47 +12,29 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import javax.inject.Named
+
+data class MainUiState(
+    val webId: String = "",
+    val storages: List<String> = emptyList(),
+)
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val accountManager: AccountManager,
-    private val authenticator: Authenticator,
-    @Named(Constants.ASS_ACCOUNT_NAME) private val aSSAccountName: String,
-) : BaseViewModel() {
+    authRepository: AuthRepository,
+    private val syncSystemAccounts: SyncSystemAccountsUseCase,
+) : ViewModel() {
 
-    val webId: StateFlow<String> = authenticator.activeProfileFlow
+    val uiState: StateFlow<MainUiState> = authRepository.activeProfileFlow
         .filterNotNull()
-        .map { it.userInfo?.webId ?: "" }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
-
-    val storages: StateFlow<List<String>> = authenticator.activeProfileFlow
-        .filterNotNull()
-        .map { it.webId?.getStorages()?.map { uri -> uri.toString() } ?: emptyList() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .map { profile ->
+            MainUiState(
+                webId = profile.userInfo?.webId ?: "",
+                storages = profile.webId?.getStorages()?.map { it.toString() } ?: emptyList(),
+            )
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MainUiState())
 
     init {
-        syncAccountManager()
-    }
-
-    private fun syncAccountManager() {
-        viewModelScope.launch {
-            authenticator.getActiveWebId()
-            val existingAccounts = accountManager.accounts
-                .filter { it.type == aSSAccountName }
-                .map { it.name }
-                .toSet()
-
-            authenticator.getAllLoggedInProfiles().forEach { profile ->
-                val profileWebId = profile.userInfo!!.webId
-                if (profileWebId !in existingAccounts) {
-                    accountManager.addAccountExplicitly(
-                        Account(profileWebId, aSSAccountName),
-                        "password",
-                        null
-                    )
-                }
-            }
-        }
+        viewModelScope.launch { syncSystemAccounts() }
     }
 }

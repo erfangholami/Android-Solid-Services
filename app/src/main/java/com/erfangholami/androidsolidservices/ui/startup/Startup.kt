@@ -21,20 +21,22 @@ import com.erfangholami.androidsolidservices.ui.navigation.MainPage
 @Composable
 fun Startup(
     navController: NavHostController,
-    viewModel: StartupViewModel
+    viewModel: StartupViewModel,
 ) {
 
     LaunchedEffect(Unit) {
-        if (viewModel.isLoggedIn()) {
-            navController.navigate(MainPage) {
-                popUpTo(navController.graph.id) {
-                    inclusive = true
+        viewModel.decideStartDestination()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.eventsFlow.collect { event ->
+            when (event) {
+                StartupEvent.NavigateToMain -> navController.navigate(MainPage) {
+                    popUpTo(navController.graph.id) { inclusive = true }
                 }
-            }
-        } else {
-            navController.navigate(Login()) {
-                popUpTo(navController.graph.id) {
-                    inclusive = true
+
+                StartupEvent.NavigateToLogin -> navController.navigate(Login()) {
+                    popUpTo(navController.graph.id) { inclusive = true }
                 }
             }
         }
