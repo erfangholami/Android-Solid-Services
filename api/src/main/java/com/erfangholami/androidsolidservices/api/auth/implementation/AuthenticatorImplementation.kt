@@ -199,14 +199,20 @@ internal class AuthenticatorImplementation internal constructor(
             nonceSink = { forUri, nonce -> updateInProgressDPoPNonce(forUri, nonce) },
         )
 
-        val issuers = webIdProfile.getOidcIssuers()
-        if (issuers.isNotEmpty()) {
-            val tokenIss = IdTokenClaims.issuer(idToken)?.trimEnd('/')
-            val issuerUris = issuers.map { it.toString().trimEnd('/') }
-            if (tokenIss != null && !issuerUris.contains(tokenIss)) {
-                inProgressAuth.clear()
-                return ""
-            }
+        // Solid-OIDC: the issuer that minted this token must be one the WebID document explicitly
+        // authorizes via solid:oidcIssuer. If the profile declares none — or none that match — the
+        // issuer cannot be trusted to speak for this WebID, so the login is rejected rather than
+        // accepting an unverified `webid` claim.
+        val tokenIss = IdTokenClaims.issuer(idToken)?.trimEnd('/')
+        val declaredIssuers = webIdProfile.getOidcIssuers().map { it.toString().trimEnd('/') }
+        if (tokenIss == null || tokenIss !in declaredIssuers) {
+            Log.w(
+                AUTH_LOG_TAG,
+                "Rejecting login for ${userInfo.webId}: token issuer '$tokenIss' is not listed as a " +
+                    "solid:oidcIssuer in the WebID profile (declared: $declaredIssuers).",
+            )
+            inProgressAuth.clear()
+            return ""
         }
 
         val finalProfile = inProgressAuth.get()!!.copy(
