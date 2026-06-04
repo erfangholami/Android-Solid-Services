@@ -100,6 +100,7 @@ internal class AuthenticatorImplementation internal constructor(
         oidcIssuer: String?,
         appName: String,
         redirectUri: String,
+        clientId: String?,
     ): Pair<Intent?, String?> {
         profileManager.awaitInit()
 
@@ -134,13 +135,19 @@ internal class AuthenticatorImplementation internal constructor(
             )
         }
 
-        val existingRegistration = findExistingRegistration(conf.discoveryDoc?.issuer)
-        val regResponse = existingRegistration
-            ?: registerToOpenId(conf, appName, redirectUri)
-            ?: return Pair(null, "Cannot register to OpenId.")
+        // A Solid-OIDC Client Identifier (a hosted Client ID Document, passed as [clientId]) is used
+        // as-is and needs no dynamic registration; without one, register a client dynamically.
+        val regResponse = if (clientId == null) {
+            findExistingRegistration(conf.discoveryDoc?.issuer)
+                ?: registerToOpenId(conf, appName, redirectUri)
+                ?: return Pair(null, "Cannot register to OpenId.")
+        } else {
+            null
+        }
+        val effectiveClientId = clientId ?: regResponse!!.clientId
 
         val authState = AuthState(conf)
-        authState.update(regResponse)
+        if (regResponse != null) authState.update(regResponse)
         // Mint a fresh DPoP key id for this login so the issued tokens bind to a key unique to the
         // resulting account; it is carried through the code exchange and persisted with the profile.
         inProgressAuth.set(Profile(authState = authState, dpopKeyId = UUID.randomUUID().toString().replace("-", "")))
@@ -152,7 +159,7 @@ internal class AuthenticatorImplementation internal constructor(
 
         val authRequest = AuthorizationRequest.Builder(
             conf,
-            regResponse.clientId,
+            effectiveClientId,
             ResponseTypeValues.CODE,
             redirectUri.toUri(),
         )

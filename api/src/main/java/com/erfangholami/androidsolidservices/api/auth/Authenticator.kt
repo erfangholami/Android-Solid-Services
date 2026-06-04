@@ -39,8 +39,14 @@ public interface Authenticator {
      *
      * @param webId Optional WebID to pre-fill; pass `null` to let the user enter it.
      * @param oidcIssuer Optional OIDC issuer URL to pre-fill; pass `null` to discover from [webId].
-     * @param appName The display name shown to the user on the authorization page.
-     * @param redirectUri The URI the OIDC provider redirects to after authorization.
+     * @param appName The display name shown to the user on the authorization page. Ignored when
+     *   [clientId] is supplied (the hosted Client ID Document provides the name instead).
+     * @param redirectUri The URI the OIDC provider redirects to after authorization. When [clientId]
+     *   is supplied it must appear in that document's `redirect_uris`.
+     * @param clientId Optional Solid-OIDC Client Identifier: the HTTPS URL of a hosted
+     *   [Client ID Document](https://solidproject.org/TR/oidc#clientids). When provided, that stable
+     *   public-client identity is used directly and dynamic client registration is skipped; when
+     *   `null`, a client is registered dynamically with the OpenID provider.
      * @return A pair of (intent, error): if successful, the intent is non-null; otherwise
      *   the error string describes what went wrong.
      */
@@ -49,6 +55,7 @@ public interface Authenticator {
         oidcIssuer: String? = null,
         appName: String,
         redirectUri: String,
+        clientId: String? = null,
     ): Pair<Intent?, String?>
 
     /**
