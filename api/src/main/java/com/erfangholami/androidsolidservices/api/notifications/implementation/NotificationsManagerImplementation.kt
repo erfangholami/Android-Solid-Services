@@ -262,6 +262,30 @@ internal class NotificationsManagerImplementation : NotificationsManager {
         ).requireSuccess(requesterWebId)
     }
 
+    override suspend fun recordDecisionGranted(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: String,
+        mode: ShareMode,
+        requestUri: String?,
+    ): SolidNetworkResponse<Unit> = wrap {
+        inboxNotifier.postDecisionGranted(
+            ownerWebId, requesterWebId, encodeUriString(resourceUri), mode, requestUri,
+        ).requireSuccess(ownerWebId)
+    }
+
+    override suspend fun recordDecisionRejected(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: String,
+        mode: ShareMode?,
+        reason: String?,
+    ): SolidNetworkResponse<Unit> = wrap {
+        inboxNotifier.postDecisionRejected(
+            ownerWebId, requesterWebId, encodeUriString(resourceUri), mode, reason,
+        ).requireSuccess(ownerWebId)
+    }
+
     private fun InboxPostResult.requireSuccess(targetWebId: String) {
         when (this) {
             is InboxPostResult.Success -> Unit
@@ -325,7 +349,10 @@ internal class NotificationsManagerImplementation : NotificationsManager {
                     )
                 }
 
-                ShareNotificationType.REJECT -> Unit
+                ShareNotificationType.REJECT,
+                ShareNotificationType.DECISION_GRANTED,
+                ShareNotificationType.DECISION_REJECTED,
+                    -> Unit
             }
         }
     }

@@ -90,6 +90,48 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
         body = buildAcceptTurtle(ownerWebId, requesterWebId, resourceUri, mode, requestUri),
     )
 
+    /**
+     * Mirrors the owner's own `as:Accept` into the owner's **own** inbox as a
+     * read-only record that they granted [requesterWebId]'s request. Same body
+     * as [postAccept] (actor = owner, target = requester), just delivered to
+     * the author rather than the requester; the reader classifies it as
+     * [com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType.DECISION_GRANTED]
+     * because its `as:actor` is the inbox owner.
+     */
+    suspend fun postDecisionGranted(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: URI,
+        mode: ShareMode,
+        requestUri: String?,
+    ): InboxPostResult = postFromSenderToReceiver(
+        senderWebId = ownerWebId,
+        receiverWebId = ownerWebId,
+        slugPrefix = "solidshare-decision-accept",
+        body = buildAcceptTurtle(ownerWebId, requesterWebId, resourceUri, mode, requestUri),
+    )
+
+    /**
+     * Mirrors an `as:Reject` authored by the owner into the owner's **own**
+     * inbox as a read-only record that they declined [requesterWebId]'s
+     * request. Unlike [postReject] (sent to the requester, no mode) this keeps
+     * the originally-requested [mode] so the owner's record can show what was
+     * asked for. Classified as
+     * [com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType.DECISION_REJECTED].
+     */
+    suspend fun postDecisionRejected(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: URI,
+        mode: ShareMode?,
+        reason: String?,
+    ): InboxPostResult = postFromSenderToReceiver(
+        senderWebId = ownerWebId,
+        receiverWebId = ownerWebId,
+        slugPrefix = "solidshare-decision-reject",
+        body = buildRejectTurtle(ownerWebId, requesterWebId, resourceUri, reason, mode),
+    )
+
     private suspend fun postFromSenderToReceiver(
         senderWebId: String,
         receiverWebId: String,
@@ -241,6 +283,7 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
         requesterWebId: String,
         resourceUri: URI,
         reason: String?,
+        mode: ShareMode? = null,
     ): String = buildString {
         appendLine("@prefix as:  <${AS.NAMESPACE}> .")
         appendLine("@prefix rdf: <${RDF.NAMESPACE}> .")
@@ -251,6 +294,9 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
         appendLine("    <${AS.ACTOR}>      <$ownerWebId> ;")
         appendLine("    <${AS.OBJECT}>     <$resourceUri> ;")
         appendLine("    <${AS.TARGET}>     <$requesterWebId> ;")
+        if (mode != null) {
+            appendLine("    <${ACL.MODE}>      <${mode.toAclPredicate()}> ;")
+        }
         if (reason != null) {
             appendLine("    <${AS.SUMMARY}>    ${escapeLiteral(reason)} ;")
         }

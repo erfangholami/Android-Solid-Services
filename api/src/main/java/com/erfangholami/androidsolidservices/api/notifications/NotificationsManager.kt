@@ -185,4 +185,39 @@ public interface NotificationsManager {
         mode: ShareMode,
         requestUri: String? = null,
     ): SolidNetworkResponse<Unit>
+
+    /**
+     * Posts a read-only record into **[ownerWebId]'s own** inbox noting that
+     * they granted [requesterWebId]'s AccessRequest on [resourceUri] with
+     * [mode]. This is the owner-side counterpart of [sendAccept] (which notifies
+     * the requester): a local memo so the owner's notifications screen can show
+     * "you approved …" after the request is cleared. Surfaces back via
+     * [listNotifications] as
+     * [com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType.DECISION_GRANTED]
+     * with no received-share side effect. Used by `SharingManager.acceptShareRequest`;
+     * best-effort like the other sends.
+     */
+    public suspend fun recordDecisionGranted(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: String,
+        mode: ShareMode,
+        requestUri: String? = null,
+    ): SolidNetworkResponse<Unit>
+
+    /**
+     * Posts a read-only record into **[ownerWebId]'s own** inbox noting that
+     * they declined [requesterWebId]'s AccessRequest on [resourceUri] (which had
+     * asked for [mode]), with an optional [reason]. Owner-side counterpart of
+     * [sendReject]. Surfaces back via [listNotifications] as
+     * [com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType.DECISION_REJECTED].
+     * Used by `SharingManager.rejectShareRequest`; best-effort.
+     */
+    public suspend fun recordDecisionRejected(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: String,
+        mode: ShareMode? = null,
+        reason: String? = null,
+    ): SolidNetworkResponse<Unit>
 }

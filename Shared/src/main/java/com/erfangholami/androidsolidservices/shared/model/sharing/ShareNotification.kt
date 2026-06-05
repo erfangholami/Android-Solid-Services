@@ -38,4 +38,13 @@ public data class ShareNotification(
 
     /** `as:published` timestamp string from the notification, if present. */
     val publishedAt: String?,
+
+    /**
+     * WebID of the activity's `as:target`, when present. For the self-authored
+     * [ShareNotificationType.DECISION_GRANTED] / [ShareNotificationType.DECISION_REJECTED]
+     * records this is the requester the decision was about (the counterpart to
+     * show), since `ownerWebId` (the `as:actor`) is the inbox owner themselves.
+     * Null for the other types, which carry no meaningful target for callers.
+     */
+    val targetWebId: String? = null,
 ) : Parcelable

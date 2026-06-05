@@ -182,21 +182,36 @@ internal class InboxReader(private val rm: SolidResourceManager) {
         profileCache: MutableMap<String, WebId?>,
     ): ShareNotification? {
         val rdf = rm.read(webId, itemUri, ShareNotificationRDF::class.java).getOrThrow()
-        val type = when (rdf.activityType()) {
-            AS.OFFER -> ShareNotificationType.OFFER
-            AS.ACCEPT -> ShareNotificationType.ACCEPTED
-            AS.UNDO -> ShareNotificationType.UNDO
-            AS.REJECT -> ShareNotificationType.REJECT
-            else -> return null
-        }
+        val rawType = rdf.activityType()
         val actor = rdf.actor() ?: return null
         val obj = rdf.activityObject() ?: return null
+
+        // An as:Accept / as:Reject whose actor is this very inbox's owner is the
+        // owner's own read-only memo of a decision they made on an incoming
+        // request — not a counterpart's grant/decline. The same activity, read
+        // out of the requester's inbox, has a foreign actor and stays
+        // ACCEPTED / REJECT. See ShareNotificationType.DECISION_GRANTED.
+        val isOwnDecision = (rawType == AS.ACCEPT || rawType == AS.REJECT) &&
+                IriUtils.sameIri(actor, webId)
+        val type = when {
+            isOwnDecision && rawType == AS.ACCEPT -> ShareNotificationType.DECISION_GRANTED
+            isOwnDecision && rawType == AS.REJECT -> ShareNotificationType.DECISION_REJECTED
+            rawType == AS.OFFER -> ShareNotificationType.OFFER
+            rawType == AS.ACCEPT -> ShareNotificationType.ACCEPTED
+            rawType == AS.UNDO -> ShareNotificationType.UNDO
+            rawType == AS.REJECT -> ShareNotificationType.REJECT
+            else -> return null
+        }
         val mode = ShareMode.strongest(rdf.aclModes())
             ?: rdf.mode()?.let { name ->
                 ShareMode.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
             }
 
-        if (type != ShareNotificationType.REJECT &&
+        // REJECT carries no grant to verify, and a self-authored decision is
+        // about the owner's own resource, so neither needs the impersonation
+        // gate that protects against a forged grant to my resources.
+        val skipOwnershipGate = isOwnDecision || type == ShareNotificationType.REJECT
+        if (!skipOwnershipGate &&
             !actorMatchesOwner(
                 webId,
                 claimedActor = actor,
@@ -215,6 +230,7 @@ internal class InboxReader(private val rm: SolidResourceManager) {
             mode = mode,
             summary = rdf.summary(),
             publishedAt = rdf.published(),
+            targetWebId = rdf.target(),
         )
     }
 
