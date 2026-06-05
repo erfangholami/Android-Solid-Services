@@ -365,6 +365,19 @@ internal class InboxReader(private val rm: SolidResourceManager) {
         }
     }
 
+    /**
+     * Reads the WebID profile at [webIdUri] (caching the result, including a null) so the
+     * ownership checks can inspect its declared `pim:storage`.
+     *
+     * The profile usually belongs to a third party — the `as:actor` of an incoming
+     * notification — whose pod and OIDC issuer differ from the reader's, so it is read
+     * **anonymously** first via [SolidResourceManager.readPublic]. WebID profile documents are
+     * public, and attaching the reader's own-issuer Authorization/DPoP headers to a foreign host
+     * is at best ignored and at worst rejected (Inrupt PodSpaces answers 401 to a foreign-issuer
+     * token) — which otherwise made every cross-pod notification fail this gate and disappear.
+     * The authenticated [SolidResourceManager.read] is kept as a fallback for the unusual server
+     * that gates even the profile from anonymous callers.
+     */
     private suspend fun readProfileCached(
         viaWebId: String,
         webId: String,
@@ -373,15 +386,18 @@ internal class InboxReader(private val rm: SolidResourceManager) {
     ): WebId? {
         val key = IriUtils.canonical(webId)
         if (cache.containsKey(key)) return cache[key]
-        val profile = runCatching {
-            rm.read(viaWebId, webIdUri, WebId::class.java).getOrThrow()
-        }.onFailure { t ->
-            Log.w(
-                INBOX_LOG_TAG,
-                "readProfileCached: could not read WebID profile $webId; skipping storage check.",
-                t,
-            )
-        }.getOrNull()
+        val profile =
+            (rm.readPublic(webIdUri, WebId::class.java) as? SolidNetworkResponse.Success)?.data
+                ?: runCatching {
+                    rm.read(viaWebId, webIdUri, WebId::class.java).getOrThrow()
+                }.onFailure { t ->
+                    Log.w(
+                        INBOX_LOG_TAG,
+                        "readProfileCached: could not read WebID profile $webId anonymously or " +
+                                "authenticated; skipping storage check.",
+                        t,
+                    )
+                }.getOrNull()
         cache[key] = profile
         return profile
     }
