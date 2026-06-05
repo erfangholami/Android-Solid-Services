@@ -576,6 +576,22 @@ internal class SharingManagerImplementation : SharingManager {
                     t,
                 )
             }
+            runCatching {
+                notifications.recordDecisionGranted(
+                    ownerWebId = webId,
+                    requesterWebId = request.requesterWebId,
+                    resourceUri = request.resourceUri,
+                    mode = request.requestedMode,
+                    requestUri = request.requestUri,
+                ).getOrThrow()
+            }.onFailure { t ->
+                Log.w(
+                    SHARING_LOG_TAG,
+                    "acceptShareRequest: grant succeeded but failed to record the decision in " +
+                            "$webId's own inbox; the owner's notifications screen won't show it.",
+                    t,
+                )
+            }
         }
         result
     }
@@ -597,6 +613,22 @@ internal class SharingManagerImplementation : SharingManager {
                 SHARING_LOG_TAG,
                 "rejectShareRequest: reject recorded but failed to notify " +
                         "${request.requesterWebId} about ${request.resourceUri}.",
+                t,
+            )
+        }
+        runCatching {
+            notifications.recordDecisionRejected(
+                ownerWebId = webId,
+                requesterWebId = request.requesterWebId,
+                resourceUri = request.resourceUri,
+                mode = request.requestedMode,
+                reason = reason,
+            ).getOrThrow()
+        }.onFailure { t ->
+            Log.w(
+                SHARING_LOG_TAG,
+                "rejectShareRequest: declined but failed to record the decision in " +
+                        "$webId's own inbox; the owner's notifications screen won't show it.",
                 t,
             )
         }
@@ -698,22 +730,6 @@ internal class SharingManagerImplementation : SharingManager {
             } catch (e: Exception) {
                 SolidNetworkResponse.Exception(e)
             }
-            runCatching {
-                notifications.recordDecisionGranted(
-                    ownerWebId = webId,
-                    requesterWebId = request.requesterWebId,
-                    resourceUri = request.resourceUri,
-                    mode = request.requestedMode,
-                    requestUri = request.requestUri,
-                ).getOrThrow()
-            }.onFailure { t ->
-                Log.w(
-                    SHARING_LOG_TAG,
-                    "acceptShareRequest: grant succeeded but failed to record the decision in " +
-                            "$webId's own inbox; the owner's notifications screen won't show it.",
-                    t,
-                )
-            }
         }
 
     private suspend fun resolveOwner(webId: String, resourceUri: URI): String {
@@ -768,22 +784,6 @@ internal class SharingManagerImplementation : SharingManager {
                 SHARING_LOG_TAG,
                 "writeOwnerProvenance: could not stamp dcterms:creator on $resourceUri " +
                         "(likely a non-RDF resource); the share link's owner hint covers this case.",
-                t,
-            )
-        }
-        runCatching {
-            notifications.recordDecisionRejected(
-                ownerWebId = webId,
-                requesterWebId = request.requesterWebId,
-                resourceUri = request.resourceUri,
-                mode = request.requestedMode,
-                reason = reason,
-            ).getOrThrow()
-        }.onFailure { t ->
-            Log.w(
-                SHARING_LOG_TAG,
-                "rejectShareRequest: declined but failed to record the decision in " +
-                        "$webId's own inbox; the owner's notifications screen won't show it.",
                 t,
             )
         }
