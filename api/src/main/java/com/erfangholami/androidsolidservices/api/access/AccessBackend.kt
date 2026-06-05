@@ -31,6 +31,20 @@ internal interface AccessBackend {
      * Replaces any pre-existing authorization for the same
      * `(resource, receiver)` pair and always re-asserts the owner's
      * Read/Write/Control rule so a first write cannot lock the owner out.
+     *
+     * When [includeImpliedModes] is true (default), WAC expands [mode] to the
+     * capability set the sharing UI implies — `APPEND`/`WRITE` also grant
+     * `acl:Read` so a recipient can GET what they may add to or overwrite (see
+     * `ShareMode.impliedAclModes`). Pass `false` to write **only** the single
+     * `acl:mode` for [mode], with no implied Read — required for an LDN inbox,
+     * where the public must be able to POST (append) a notification but must
+     * not read the inbox's contents. Per Web Access Control, creating a member
+     * of a container needs `acl:Append`, which is a subclass of `acl:Write`
+     * and does **not** entail `acl:Read`; Linked Data Notifications likewise
+     * gates *writing* to the inbox, never reading. ACP already grants only the
+     * named mode, so this flag is a no-op for [AcpBackend].
+     *
+     * Specs: https://solidproject.org/TR/wac and https://www.w3.org/TR/ldn/
      */
     public suspend fun grant(
         webId: String,
@@ -38,6 +52,7 @@ internal interface AccessBackend {
         mode: ShareMode,
         receiver: ShareReceiver,
         isContainer: Boolean,
+        includeImpliedModes: Boolean = true,
     )
 
     /**

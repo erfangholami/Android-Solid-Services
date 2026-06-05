@@ -206,6 +206,7 @@ internal class SharingManagerHelper {
         resourceUri: URI,
         mode: ShareMode,
         receiver: ShareReceiver,
+        includeImpliedModes: Boolean = true,
     ) {
         val metadata = (rm.head(webId, resourceUri) as? SolidNetworkResponse.Success)?.data
         val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
@@ -220,6 +221,7 @@ internal class SharingManagerHelper {
             mode = mode,
             receiver = receiver,
             isContainer = isContainer,
+            includeImpliedModes = includeImpliedModes,
         )
     }
 

@@ -105,12 +105,22 @@ public interface NotificationsManager {
      *
      * If an inbox is already advertised — in the WebID document, via a `HEAD`
      * `Link: rel="…ldp#inbox"`, or in an extended profile linked through
-     * `rdfs:seeAlso` / `foaf:isPrimaryTopicOf` — that URI is returned unchanged.
-     * Otherwise a `{podRoot}inbox/` container is created, granted public
-     * `acl:Append` (write-only on ACP servers like Inrupt ESS; Read is also
-     * implied on WAC servers), and advertised by writing `ldp:inbox` into a
-     * writable profile document — preferring the storage-side extended profile,
-     * since the Inrupt-managed WebID document itself is not writable.
+     * `rdfs:seeAlso` / `foaf:isPrimaryTopicOf` — that URI is returned after
+     * (best-effort) re-asserting public `acl:Append` on it, so an inbox created
+     * before this grant existed (or by another client) is still repaired.
+     * Otherwise a `{podRoot}inbox/` container is created and advertised by
+     * writing `ldp:inbox` into a writable profile document — preferring the
+     * storage-side extended profile, since the Inrupt-managed WebID document
+     * itself is not writable.
+     *
+     * The public grant is **write-only `acl:Append`** on every backend (WAC and
+     * ACP alike): per Web Access Control, creating a member of a container
+     * requires `acl:Append` (a subclass of `acl:Write`, not entailing
+     * `acl:Read`), and Linked Data Notifications gates *writing* to the inbox,
+     * not reading — so anyone may POST a notification but no one but the owner
+     * can read the inbox. (The grant skips the sharing UI's implied `acl:Read`
+     * via `AccessBackend.grant(includeImpliedModes = false)`.)
+     * Specs: https://solidproject.org/TR/wac and https://www.w3.org/TR/ldn/
      *
      * Idempotent and best-effort: safe to call on every account activation.
      */

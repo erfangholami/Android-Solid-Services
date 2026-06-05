@@ -54,6 +54,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
         mode: ShareMode,
         receiver: ShareReceiver,
         isContainer: Boolean,
+        includeImpliedModes: Boolean,
     ): Unit = withStaleAclRetry {
         val read = readAcl(webId, resourceUri)
 
@@ -68,7 +69,11 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
             subject = "${read.aclUri}#share-${UUID.randomUUID()}",
             accessTo = listOf(resourceUri),
             default = if (isContainer) listOf(resourceUri) else emptyList(),
-            modes = mode.impliedAclModes(),
+            modes = if (includeImpliedModes) {
+                mode.impliedAclModes()
+            } else {
+                setOf(mode.toAclPredicate())
+            },
             agents = (receiver as? ShareReceiver.WebIdReceiver)?.let {
                 listOf(URI.create(it.webId))
             } ?: emptyList(),

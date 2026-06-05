@@ -197,14 +197,45 @@ internal class NotificationsManagerImplementation : NotificationsManager {
     }
 
     override suspend fun ensureInbox(webId: String): SolidNetworkResponse<String> = wrap {
-        inboxReader.resolveOwnInbox(webId)?.let { return@wrap it.toString() }
+        inboxReader.resolveOwnInbox(webId)?.let { existingInbox ->
+            ensurePublicAppend(webId, existingInbox)
+            return@wrap existingInbox.toString()
+        }
 
         val podRoot = helper.getPodRoot(webId)
         val inboxUri = URI.create("${podRoot}inbox/")
         helper.ensureInboxContainer(webId, inboxUri)
-        helper.grantAccess(webId, inboxUri, ShareMode.APPEND, ShareReceiver.Public)
+        helper.grantAccess(
+            webId, inboxUri, ShareMode.APPEND, ShareReceiver.Public,
+            includeImpliedModes = false,
+        )
         advertiseInbox(webId, inboxUri)
         inboxUri.toString()
+    }
+
+    /**
+     * Re-asserts public `acl:Append` on an already-provisioned inbox so other
+     * users can always deliver share notifications to [webId], even when the
+     * inbox was created before this grant existed or by another client that
+     * left it without public append. [grant][com.erfangholami.androidsolidservices.api.access.AccessBackend.grant]
+     * replaces the existing `(inbox, Public)` authorization, so this is
+     * idempotent. Best-effort: a failure leaves the discoverable inbox in place,
+     * so [ensureInbox] still reports success.
+     */
+    private suspend fun ensurePublicAppend(webId: String, inboxUri: URI) {
+        runCatching {
+            helper.grantAccess(
+            webId, inboxUri, ShareMode.APPEND, ShareReceiver.Public,
+            includeImpliedModes = false,
+        )
+        }.onFailure { t ->
+            Log.w(
+                NOTIFS_LOG_TAG,
+                "ensureInbox: existing inbox $inboxUri could not be granted public acl:Append; " +
+                        "other users may be unable to deliver share notifications to this account.",
+                t,
+            )
+        }
     }
 
     override suspend fun sendOffer(

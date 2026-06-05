@@ -60,6 +60,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         mode: ShareMode,
         receiver: ShareReceiver,
         isContainer: Boolean,
+        includeImpliedModes: Boolean,
     ) {
         val read = readAcr(webId, resourceUri)
         val keep = read.acr.getAllQuads().toMutableList()
