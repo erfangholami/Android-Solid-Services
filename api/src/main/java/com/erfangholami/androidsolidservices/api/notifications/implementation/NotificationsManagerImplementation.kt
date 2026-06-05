@@ -337,6 +337,24 @@ internal class NotificationsManagerImplementation : NotificationsManager {
         @Suppress("UNUSED_VARIABLE") val unused = targetWebId
     }
 
+    /**
+     * Reconciles the receiver's stored received-shares index against the grant/revoke
+     * notifications just read from the inbox, so the "shared with me" list updates the moment a
+     * notification arrives — on the notifications screen or a background poll — with no user
+     * action, unlike an `as:AccessRequest` (which the owner must explicitly accept).
+     *
+     * Each notification has already cleared [InboxReader]'s ownership gate (its `as:actor`
+     * provably owns the object), so an `as:Offer` / `as:Accept` is a trustworthy grant and the
+     * resource is **added** to the index. A live access probe enriches the row with the
+     * server-confirmed mode/owner when possible, but a grant for a resource on another pod can't
+     * be probed with the reader's own-issuer token (Inrupt answers 401 → [ReceivedAccess.Unknown]),
+     * so the notification's own `acl:mode` and actor are trusted rather than dropped; only an
+     * authoritative [ReceivedAccess.Denied] (403/404) skips the add. An `as:Undo` **removes** the
+     * resource from the index.
+     *
+     * Best-effort: per-item failures are logged and the index self-heals on the next
+     * [refreshReceivedShares]; they never fail the enclosing [listNotifications].
+     */
     private suspend fun syncReceivedSharesFor(
         webId: String,
         notifications: List<ShareNotification>,
@@ -349,13 +367,13 @@ internal class NotificationsManagerImplementation : NotificationsManager {
                 ShareNotificationType.OFFER, ShareNotificationType.ACCEPTED -> runCatching {
                     val resourceUri = encodeUriString(n.resourceUri)
                     val access = helper.probeReceivedAccess(webId, resourceUri)
-                    if (access !is ReceivedAccess.Granted) return@runCatching
-                    val ownerWebId = access.owner ?: n.ownerWebId
+                    if (access is ReceivedAccess.Denied) return@runCatching
+                    val granted = access as? ReceivedAccess.Granted
                     helper.replaceReceivedShare(
                         webId, podRoot,
                         ReceivedShare(
-                            ownerWebId = ownerWebId,
-                            mode = access.mode,
+                            ownerWebId = granted?.owner ?: n.ownerWebId,
+                            mode = granted?.mode ?: n.mode ?: ShareMode.READ,
                             resourceUri = resourceUri.toString(),
                             addedAt = n.publishedAt ?: nowIsoDateTime(),
                         ),
@@ -363,7 +381,7 @@ internal class NotificationsManagerImplementation : NotificationsManager {
                 }.onFailure { t ->
                     Log.w(
                         NOTIFS_LOG_TAG,
-                        "syncReceivedSharesFor: OFFER sync failed for ${n.resourceUri}; " +
+                        "syncReceivedSharesFor: grant sync failed for ${n.resourceUri}; " +
                                 "received-index may be stale until next refreshReceivedShares.",
                         t,
                     )
