@@ -7,6 +7,7 @@ import com.erfangholami.androidsolidservices.api.notifications.NotificationsMana
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.implementation.ReceivedAccess
 import com.erfangholami.androidsolidservices.api.sharing.implementation.SharingManagerHelper
+import com.erfangholami.androidsolidservices.api.sharing.implementation.nowIsoDateTime
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
@@ -325,6 +326,7 @@ internal class NotificationsManagerImplementation : NotificationsManager {
                             ownerWebId = ownerWebId,
                             mode = access.mode,
                             resourceUri = resourceUri.toString(),
+                            addedAt = n.publishedAt ?: nowIsoDateTime(),
                         ),
                     )
                 }.onFailure { t ->

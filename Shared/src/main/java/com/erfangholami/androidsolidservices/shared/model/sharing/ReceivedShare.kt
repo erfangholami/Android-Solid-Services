@@ -6,10 +6,17 @@ import kotlinx.parcelize.Parcelize
 /**
  * A share the user has received — [ownerWebId] has granted the current user [mode]
  * on [resourceUri]. Stored in `{podRoot}/solidshare/shares/received_shares.ttl`.
+ *
+ * [addedAt] is the ISO-8601 instant recorded for the share (`dcterms:created` on
+ * the index record). When the share is auto-synced from an inbox offer this is
+ * the owner's original share time (the offer's `as:published`); when added by
+ * scanning or pasting a link it is the moment it was added. `null` for legacy
+ * rows written before timestamps existed.
  */
 @Parcelize
 public data class ReceivedShare(
     val ownerWebId: String,
     val mode: ShareMode,
     val resourceUri: String,
+    val addedAt: String? = null,
 ) : Parcelable

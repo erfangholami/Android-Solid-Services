@@ -117,6 +117,9 @@ internal class SharingManagerImplementation : SharingManager {
         val storedPairToReceiver = stored.associate {
             (it.receiver.toRdfSubject() to it.resourceUri) to it.receiver
         }
+        val storedPairToCreated = stored
+            .groupBy { it.receiver.toRdfSubject() to it.resourceUri }
+            .mapValues { (_, list) -> list.firstNotNullOfOrNull { it.createdAt } }
 
         verifiedByPair.forEach { (pair, modes) ->
             val receiver = storedPairToReceiver[pair]
@@ -128,6 +131,7 @@ internal class SharingManagerImplementation : SharingManager {
                 resourceUri = pair.second,
                 receiver = receiver,
                 modes = modes,
+                createdAt = storedPairToCreated[pair],
             )
         }
 
@@ -165,6 +169,9 @@ internal class SharingManagerImplementation : SharingManager {
         }
 
         val previous = helper.readGivenIndex(webId, podRoot).getShares()
+        val previousPairToCreated = previous
+            .groupBy { it.receiver.toRdfSubject() to it.resourceUri }
+            .mapValues { (_, list) -> list.firstNotNullOfOrNull { it.createdAt } }
         previous.map { it.receiver.toRdfSubject() to it.resourceUri }.distinct().forEach { pair ->
             if (pair.second !in scan.observedResources) return@forEach
             val receiver = previous.first {
@@ -179,6 +186,7 @@ internal class SharingManagerImplementation : SharingManager {
                     resourceUri = pair.second,
                     receiver = list.first().receiver,
                     modes = list.map { it.mode }.toSet(),
+                    createdAt = previousPairToCreated[pair],
                 )
             }
         helper.readGivenIndex(webId, podRoot).getShares()
@@ -315,7 +323,7 @@ internal class SharingManagerImplementation : SharingManager {
         val canonicalUri = uri.toString()
         helper.grantAccess(webId, uri, mode, receiver)
         writeOwnerProvenance(webId, uri)
-        val share = GivenShare(receiver, mode, canonicalUri)
+        val share = GivenShare(receiver, mode, canonicalUri, createdAt = nowIsoDateTime())
         runCatching {
             helper.replaceGivenShare(webId, podRoot, share)
         }.onFailure { t ->
@@ -420,6 +428,7 @@ internal class SharingManagerImplementation : SharingManager {
                         ownerWebId = access.owner ?: share.ownerWebId,
                         mode = access.mode,
                         resourceUri = share.resourceUri,
+                        addedAt = share.addedAt,
                     )
                     verified += refreshed
                     helper.replaceReceivedShare(webId, podRoot, refreshed)
@@ -454,6 +463,7 @@ internal class SharingManagerImplementation : SharingManager {
                     ownerWebId = ownerWebId,
                     mode = access.mode,
                     resourceUri = canonicalUri,
+                    addedAt = nowIsoDateTime(),
                 )
                 helper.replaceReceivedShare(webId, podRoot, share)
                 share
@@ -510,7 +520,7 @@ internal class SharingManagerImplementation : SharingManager {
                 mode = share.mode,
                 status = AccessGrantStatus.ACTIVE,
                 source = AccessGrantSource.APP_INDEX,
-                grantedAt = null,
+                grantedAt = share.createdAt,
                 requestUri = null,
             )
         }
@@ -523,7 +533,7 @@ internal class SharingManagerImplementation : SharingManager {
                 mode = share.mode,
                 status = AccessGrantStatus.ACTIVE,
                 source = AccessGrantSource.APP_INDEX,
-                grantedAt = null,
+                grantedAt = share.addedAt,
                 requestUri = null,
             )
         }

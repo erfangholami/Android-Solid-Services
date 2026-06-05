@@ -23,4 +23,24 @@ public object SolidShare {
 
     /** Mode literal on an AccessRequest: "read" | "append" | "write". */
     public const val REQUESTED_MODE: String = "${NAMESPACE}requestedMode"
+
+    /**
+     * `rdf:type` of a reified share record in the given/received index. Each
+     * record bundles a resource, a counterpart, one or more `acl:mode`s, and a
+     * `dcterms:created` timestamp on one subject node — so a share carries the
+     * moment it was made. See `GivenSharesIndexRDF` / `ReceivedSharesIndexRDF`.
+     */
+    public const val SHARE: String = "${NAMESPACE}Share"
+
+    /** The shared resource IRI on a [SHARE] record. */
+    public const val RESOURCE: String = "${NAMESPACE}resource"
+
+    /**
+     * The receiver IRI on a given-share [SHARE] record: a WebID, a
+     * `vcard:Group` URI, or `foaf:Agent` for public.
+     */
+    public const val RECEIVER: String = "${NAMESPACE}receiver"
+
+    /** The owner WebID on a received-share [SHARE] record. */
+    public const val OWNER: String = "${NAMESPACE}owner"
 }
