@@ -26,6 +26,7 @@ import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.util.getETag
 import com.erfangholami.androidsolidservices.shared.vocab.DC
+import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -321,13 +322,14 @@ internal class SharingManagerImplementation : SharingManager {
         helper.ensurePrivateSharesContainer(webId, podRoot)
         val uri = encodeUriString(resourceUri)
         val canonicalUri = uri.toString()
-        helper.grantAccess(webId, uri, mode, receiver)
+        val canonicalReceiver = canonicalizeReceiver(webId, receiver)
+        helper.grantAccess(webId, uri, mode, canonicalReceiver)
         writeOwnerProvenance(webId, uri)
-        val share = GivenShare(receiver, mode, canonicalUri, createdAt = nowIsoDateTime())
+        val share = GivenShare(canonicalReceiver, mode, canonicalUri, createdAt = nowIsoDateTime())
         runCatching {
             helper.replaceGivenShare(webId, podRoot, share)
         }.onFailure { t ->
-            runCatching { helper.revokeAccess(webId, uri, receiver) }.onFailure { rb ->
+            runCatching { helper.revokeAccess(webId, uri, canonicalReceiver) }.onFailure { rb ->
                 Log.e(
                     SHARING_LOG_TAG,
                     "createShare: index write FAILED and rollback of the WAC grant for " +
@@ -338,19 +340,77 @@ internal class SharingManagerImplementation : SharingManager {
             }
             throw t
         }
-        if (notifyReceiver && receiver is ShareReceiver.WebIdReceiver) {
+        if (notifyReceiver && canonicalReceiver is ShareReceiver.WebIdReceiver) {
             runCatching {
-                notifications.sendOffer(webId, receiver.webId, canonicalUri, mode)
+                notifications.sendOffer(webId, canonicalReceiver.webId, canonicalUri, mode)
             }.onFailure { t ->
                 Log.w(
                     SHARING_LOG_TAG,
-                    "createShare: failed to notify ${receiver.webId} about $canonicalUri; " +
+                    "createShare: failed to notify ${canonicalReceiver.webId} about $canonicalUri; " +
                             "share is created but receiver was not pinged.",
                     t,
                 )
             }
         }
         share
+    }
+
+    /**
+     * Resolves a [ShareReceiver.WebIdReceiver] whose IRI is a bare profile
+     * **document** URL (no fragment, e.g. `…/card`) to the real WebID it
+     * describes (e.g. `…/card#me`), via the profile's `foaf:primaryTopic` /
+     * `foaf:isPrimaryTopicOf`.
+     *
+     * WAC matches `acl:agent` against the receiver's *authenticated* WebID,
+     * which is fragment-qualified — so granting to the bare document URL
+     * silently grants no access, and a later accept-request (which carries the
+     * receiver's real WebID) creates a second, duplicate index row. Resolving
+     * up front grants the right agent and keeps a single record.
+     *
+     * Already-fragment-qualified WebIDs and non-WebID receivers pass through
+     * untouched; any resolution failure falls back to the original IRI so a
+     * share is never blocked.
+     */
+    private suspend fun canonicalizeReceiver(
+        viewerWebId: String,
+        receiver: ShareReceiver,
+    ): ShareReceiver {
+        if (receiver !is ShareReceiver.WebIdReceiver) return receiver
+        if (receiver.webId.contains('#')) return receiver
+        val resolved = runCatching { resolveProfileWebId(viewerWebId, receiver.webId) }
+            .onFailure { t ->
+                Log.w(
+                    SHARING_LOG_TAG,
+                    "canonicalizeReceiver: could not resolve a fragment-qualified WebID for " +
+                            "${receiver.webId}; sharing with it as-is (WAC may not match the " +
+                            "receiver's real WebID).",
+                    t,
+                )
+            }
+            .getOrNull()
+        return if (resolved != null) ShareReceiver.WebIdReceiver(resolved) else receiver
+    }
+
+    private suspend fun resolveProfileWebId(viewerWebId: String, docIri: String): String? {
+        val docUri = encodeUriString(docIri)
+        val docStr = docUri.toString()
+        val rdf = runCatching {
+            rm.readPublic(docUri, SolidRDFResource::class.java).getOrThrow()
+        }.getOrElse {
+            rm.read(viewerWebId, docUri, SolidRDFResource::class.java).getOrThrow()
+        }
+        val candidates = rdf.getAllQuads().mapNotNull { q ->
+            when {
+                q.predicate == FOAF.PRIMARY_TOPIC && !q.isLiteralObject -> q.`object`
+                q.predicate == FOAF.IS_PRIMARY_TOPIC_OF && !q.isLiteralObject -> q.subject
+                else -> null
+            }
+        }
+        val sameDocFragment = candidates.firstOrNull {
+            it != docStr && it.substringBefore('#') == docStr
+        }
+        return (sameDocFragment ?: candidates.firstOrNull { it != docStr })
+            ?.takeIf { IriUtils.isValid(it) }
     }
 
     override suspend fun updateShare(
