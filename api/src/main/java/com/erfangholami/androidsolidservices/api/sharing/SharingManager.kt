@@ -115,6 +115,20 @@ public interface SharingManager {
     ): SolidNetworkResponse<Unit>
 
     /**
+     * Resets [resourceUri]'s ACL/ACR to **owner-only** — dropping every other
+     * agent's access so only [webId] can reach it. Use to make a resource
+     * private, e.g. a freshly duplicated copy that must not inherit the
+     * original's shares. On WAC this writes a single owner Read/Write/Control
+     * rule (with `acl:default` for containers, so members inherit owner-only);
+     * on ACP an equivalent owner-only policy. Requires the caller to hold
+     * Control on the resource.
+     */
+    public suspend fun makePrivate(
+        webId: String,
+        resourceUri: String,
+    ): SolidNetworkResponse<Unit>
+
+    /**
      * Returns only the given shares affecting [resourceUri] — read directly
      * from that resource's ACL (authoritative, may differ from the index).
      */

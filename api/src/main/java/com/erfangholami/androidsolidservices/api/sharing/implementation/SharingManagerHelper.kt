@@ -243,6 +243,17 @@ internal class SharingManagerHelper {
         backend.revoke(webId, resourceUri, receiver, isContainer)
     }
 
+    suspend fun makeOwnerOnly(webId: String, resourceUri: URI) {
+        val metadata = (rm.head(webId, resourceUri) as? SolidNetworkResponse.Success)?.data
+        val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
+        val backend = if (metadata != null) {
+            pickBackend(metadata, resourceUri, wacBackend, acpBackend)
+        } else {
+            wacBackend
+        }
+        backend.ensureOwnerOnly(webId, resourceUri, isContainer)
+    }
+
     /**
      * Recovers owner access to [resourceUri] after an ACL/ACR edit locked the
      * owner out: re-asserts the owner's Read/Write/Control additively (other

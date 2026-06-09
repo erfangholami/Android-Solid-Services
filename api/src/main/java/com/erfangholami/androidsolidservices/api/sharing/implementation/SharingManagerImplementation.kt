@@ -213,6 +213,13 @@ internal class SharingManagerImplementation : SharingManager {
         helper.reclaimOwnerControl(webId, encodeUriString(resourceUri))
     }
 
+    override suspend fun makePrivate(
+        webId: String,
+        resourceUri: String,
+    ): SolidNetworkResponse<Unit> = wrap {
+        helper.makeOwnerOnly(webId, encodeUriString(resourceUri))
+    }
+
     private data class NodeObservation(
         /** Share observations read from this node's effective ACL. */
         val shares: List<GivenShare>,
