@@ -182,11 +182,16 @@ internal class SharingManagerImplementation : SharingManager {
             .groupBy { it.receiver.toRdfSubject() to it.resourceUri }
             .mapValues { (_, list) -> list.firstNotNullOfOrNull { it.createdAt } }
         previous.map { it.receiver.toRdfSubject() to it.resourceUri }.distinct().forEach { pair ->
-            if (pair.second !in scan.observedResources) return@forEach
+            val resourceUri = pair.second
+            // Observed rows are re-asserted from the live ACL below; excluded rows
+            // are dropped outright (and never re-added). Anything else — an
+            // unreadable or unreached resource — keeps its row.
+            val prune = resourceUri in scan.observedResources || isExcludedFromScan(resourceUri)
+            if (!prune) return@forEach
             val receiver = previous.first {
-                it.receiver.toRdfSubject() == pair.first && it.resourceUri == pair.second
+                it.receiver.toRdfSubject() == pair.first && it.resourceUri == resourceUri
             }.receiver
-            helper.removeGivenShare(webId, podRoot, pair.second, receiver)
+            helper.removeGivenShare(webId, podRoot, resourceUri, receiver)
         }
         scan.shares.groupBy { it.receiver.toRdfSubject() to it.resourceUri }
             .forEach { (pair, list) ->
@@ -240,6 +245,16 @@ internal class SharingManagerImplementation : SharingManager {
         val complete: Boolean,
     )
 
+    /**
+     * Whether [resourceUri] matches one of the active profile's excluded scan
+     * paths (the engine's own bookkeeping, the inbox, the public profile
+     * document). Drives both halves of the exclusion: the walk never descends
+     * into such a resource, and a rebuild prunes any index row already stored for
+     * one instead of treating it as a user-managed share.
+     */
+    private fun isExcludedFromScan(resourceUri: String): Boolean =
+        profile.storageLayout.excludedScanPaths().any { resourceUri.contains(it) }
+
     private suspend fun scanPod(webId: String, root: URI): PodScan =
         scanFrontier(webId, listOf(root), Semaphore(MAX_CONCURRENT_NODE_READS))
 
@@ -271,7 +286,7 @@ internal class SharingManagerImplementation : SharingManager {
 
     private suspend fun visitNode(webId: String, node: URI): NodeObservation {
         val nodeStr = node.toString()
-        if (profile.storageLayout.excludedScanPaths().any { nodeStr.contains(it) }) {
+        if (isExcludedFromScan(nodeStr)) {
             return NodeObservation(emptyList(), emptyList(), observed = false, complete = true)
         }
 

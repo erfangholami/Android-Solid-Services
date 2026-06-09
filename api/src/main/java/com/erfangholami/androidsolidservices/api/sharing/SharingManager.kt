@@ -81,6 +81,15 @@ public interface SharingManager {
      * fewer) ACL GETs. Expose as an explicit user action, not a default
      * refresh. Containers' ACLs cover descendants via `acl:default`, so
      * the walker can skip child resources whose ACL is inherited.
+     *
+     * The walk skips the path fragments the active profile's storage layout
+     * marks excluded (see [SharingProfile.storageLayout] →
+     * `ShareStorageLayout.excludedScanPaths`) — by default the engine's own
+     * bookkeeping container, the LDN inbox, and the public WebID profile document
+     * — so protocol-mandated public access is never listed as a share the user
+     * could revoke and thereby break notifications or WebID resolution. Any index
+     * row already stored for an excluded path is pruned, so a rebuild also clears
+     * entries written before the exclusion applied.
      */
     public suspend fun rebuildGivenIndex(
         webId: String,

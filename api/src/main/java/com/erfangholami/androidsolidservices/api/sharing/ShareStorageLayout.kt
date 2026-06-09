@@ -34,9 +34,12 @@ public interface ShareStorageLayout {
     public fun catalog(podRoot: URI): URI
 
     /**
-     * Path fragments a full pod-tree rebuild must skip so the scan never
-     * recurses into this profile's own bookkeeping. Each is matched as a
-     * substring of a resource URI.
+     * Path fragments a full pod-tree rebuild must skip, each matched as a
+     * substring of a resource URI. Covers this profile's own bookkeeping (so the
+     * scan never recurses into it) and any resource whose public access is
+     * mandated by the protocol rather than chosen by the user — such as the LDN
+     * inbox (`acl:Append`) and the public WebID profile document (`acl:Read`) —
+     * so they are never listed as shares the user could revoke.
      */
     public fun excludedScanPaths(): List<String>
 }
@@ -58,5 +61,6 @@ public object SolidShareStorageLayout : ShareStorageLayout {
     override fun catalog(podRoot: URI): URI =
         URI.create("$podRoot$SOLIDSHARE_CONTAINER_NAME$CATALOG_FILE_NAME")
 
-    override fun excludedScanPaths(): List<String> = listOf("/$SOLIDSHARE_CONTAINER_NAME")
+    override fun excludedScanPaths(): List<String> =
+        listOf("/$SOLIDSHARE_CONTAINER_NAME", "/inbox/", "/profile/card")
 }

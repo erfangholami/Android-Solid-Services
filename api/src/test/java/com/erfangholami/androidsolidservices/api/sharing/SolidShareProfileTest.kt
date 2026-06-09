@@ -25,7 +25,10 @@ class SolidShareProfileTest {
             layout.receivedIndex(podRoot),
         )
         assertEquals(URI.create("https://alice.pod/solidshare/catalog.ttl"), layout.catalog(podRoot))
-        assertEquals(listOf("/solidshare/"), layout.excludedScanPaths())
+        assertEquals(
+            listOf("/solidshare/", "/inbox/", "/profile/card"),
+            layout.excludedScanPaths(),
+        )
     }
 
     @Test
