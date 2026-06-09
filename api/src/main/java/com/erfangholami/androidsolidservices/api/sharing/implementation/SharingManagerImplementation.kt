@@ -6,6 +6,8 @@ import com.erfangholami.androidsolidservices.api.exceptions.SharingException
 import com.erfangholami.androidsolidservices.api.notifications.NotificationsManager
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.SharingManager
+import com.erfangholami.androidsolidservices.api.sharing.SharingProfile
+import com.erfangholami.androidsolidservices.api.sharing.SolidShareProfile
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
@@ -19,6 +21,8 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ParsedShareLink
 import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.CatalogRDF
@@ -47,32 +51,36 @@ internal class SharingManagerImplementation : SharingManager {
         @Volatile
         private var INSTANCE: SharingManager? = null
 
-        fun getInstance(authenticator: Authenticator): SharingManager =
+        fun getInstance(
+            authenticator: Authenticator,
+            profile: SharingProfile = SolidShareProfile,
+        ): SharingManager =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SharingManagerImplementation(authenticator).also { INSTANCE = it }
+                INSTANCE ?: SharingManagerImplementation(
+                    SolidResourceManager.getInstance(authenticator), profile,
+                ).also { INSTANCE = it }
             }
 
-        fun getInstance(resourceManager: SolidResourceManager): SharingManager =
+        fun getInstance(
+            resourceManager: SolidResourceManager,
+            profile: SharingProfile = SolidShareProfile,
+        ): SharingManager =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SharingManagerImplementation(resourceManager).also { INSTANCE = it }
+                INSTANCE ?: SharingManagerImplementation(resourceManager, profile)
+                    .also { INSTANCE = it }
             }
     }
 
-    private val helper: SharingManagerHelper
     private val rm: SolidResourceManager
+    private val profile: SharingProfile
+    private val helper: SharingManagerHelper
     private val notifications: NotificationsManager
     private val saiReader: SaiAccessGrantReader
 
-    private constructor(authenticator: Authenticator) {
-        this.rm = SolidResourceManager.getInstance(authenticator)
-        this.helper = SharingManagerHelper.getInstance(rm)
-        this.notifications = NotificationsManager.getInstance(rm)
-        this.saiReader = SaiAccessGrantReader(rm)
-    }
-
-    private constructor(resourceManager: SolidResourceManager) {
+    private constructor(resourceManager: SolidResourceManager, profile: SharingProfile) {
         this.rm = resourceManager
-        this.helper = SharingManagerHelper.getInstance(rm)
+        this.profile = profile
+        this.helper = SharingManagerHelper.getInstance(rm, profile)
         this.notifications = NotificationsManager.getInstance(rm)
         this.saiReader = SaiAccessGrantReader(rm)
     }
@@ -82,7 +90,7 @@ internal class SharingManagerImplementation : SharingManager {
     ): SolidNetworkResponse<List<GivenShare>> = wrap {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
-        helper.readGivenIndex(webId, podRoot).getShares()
+        helper.readGivenShares(webId, podRoot)
     }
 
     override suspend fun refreshGivenShares(
@@ -90,7 +98,7 @@ internal class SharingManagerImplementation : SharingManager {
     ): SolidNetworkResponse<List<GivenShare>> = wrap {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
-        val stored = helper.readGivenIndex(webId, podRoot).getShares()
+        val stored = helper.readGivenShares(webId, podRoot)
 
         val verified = mutableListOf<GivenShare>()
         val observedResourceUris = mutableSetOf<String>()
@@ -169,7 +177,7 @@ internal class SharingManagerImplementation : SharingManager {
             )
         }
 
-        val previous = helper.readGivenIndex(webId, podRoot).getShares()
+        val previous = helper.readGivenShares(webId, podRoot)
         val previousPairToCreated = previous
             .groupBy { it.receiver.toRdfSubject() to it.resourceUri }
             .mapValues { (_, list) -> list.firstNotNullOfOrNull { it.createdAt } }
@@ -190,7 +198,7 @@ internal class SharingManagerImplementation : SharingManager {
                     createdAt = previousPairToCreated[pair],
                 )
             }
-        helper.readGivenIndex(webId, podRoot).getShares()
+        helper.readGivenShares(webId, podRoot)
     }
 
     override suspend fun repairOwnerControl(
@@ -263,7 +271,7 @@ internal class SharingManagerImplementation : SharingManager {
 
     private suspend fun visitNode(webId: String, node: URI): NodeObservation {
         val nodeStr = node.toString()
-        if (nodeStr.contains("/solidshare/")) {
+        if (profile.storageLayout.excludedScanPaths().any { nodeStr.contains(it) }) {
             return NodeObservation(emptyList(), emptyList(), observed = false, complete = true)
         }
 
@@ -460,7 +468,7 @@ internal class SharingManagerImplementation : SharingManager {
     ): SolidNetworkResponse<List<ReceivedShare>> = wrap {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
-        helper.readReceivedIndex(webId, podRoot).getShares()
+        helper.readReceivedShares(webId, podRoot)
     }
 
     override suspend fun refreshReceivedShares(
@@ -468,7 +476,7 @@ internal class SharingManagerImplementation : SharingManager {
     ): SolidNetworkResponse<List<ReceivedShare>> = wrap {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
-        val stored = helper.readReceivedIndex(webId, podRoot).getShares()
+        val stored = helper.readReceivedShares(webId, podRoot)
         val verified = mutableListOf<ReceivedShare>()
         stored.forEach { share ->
             val access = runCatching {
@@ -530,7 +538,7 @@ internal class SharingManagerImplementation : SharingManager {
             }
 
             ReceivedAccess.Denied -> {
-                val stored = helper.readReceivedIndex(webId, podRoot).getShares()
+                val stored = helper.readReceivedShares(webId, podRoot)
                 val matching = stored.filter { it.resourceUri == canonicalUri }
                 if (matching.isEmpty()) {
                     throw SharingException.AccessDenied(
@@ -547,7 +555,7 @@ internal class SharingManagerImplementation : SharingManager {
             }
 
             ReceivedAccess.Unknown -> {
-                helper.readReceivedIndex(webId, podRoot).getShares()
+                helper.readReceivedShares(webId, podRoot)
                     .firstOrNull { it.resourceUri == canonicalUri }
                     ?: throw SharingException.AccessIndeterminate(canonicalUri)
             }
@@ -566,13 +574,72 @@ internal class SharingManagerImplementation : SharingManager {
         )
     }
 
+    override suspend fun syncReceivedShares(
+        webId: String,
+        notifications: List<ShareNotification>,
+    ): SolidNetworkResponse<List<ReceivedShare>> = wrap {
+        val podRoot = helper.getPodRoot(webId)
+        helper.ensurePrivateSharesContainer(webId, podRoot)
+        notifications.forEach { n -> applyReceivedShareNotification(webId, podRoot, n) }
+        helper.readReceivedShares(webId, podRoot)
+    }
+
+    private suspend fun applyReceivedShareNotification(
+        webId: String,
+        podRoot: URI,
+        n: ShareNotification,
+    ) {
+        when (n.type) {
+            ShareNotificationType.OFFER, ShareNotificationType.ACCEPTED -> runCatching {
+                val resourceUri = encodeUriString(n.resourceUri)
+                val access = helper.probeReceivedAccess(webId, resourceUri)
+                if (access is ReceivedAccess.Denied) return@runCatching
+                val granted = access as? ReceivedAccess.Granted
+                helper.replaceReceivedShare(
+                    webId, podRoot,
+                    ReceivedShare(
+                        ownerWebId = granted?.owner ?: n.ownerWebId,
+                        mode = granted?.mode ?: n.mode ?: ShareMode.READ,
+                        resourceUri = resourceUri.toString(),
+                        addedAt = n.publishedAt ?: nowIsoDateTime(),
+                    ),
+                )
+            }.onFailure { t ->
+                Log.w(
+                    SHARING_LOG_TAG,
+                    "syncReceivedShares: grant sync failed for ${n.resourceUri}; " +
+                            "received-index may be stale until next refreshReceivedShares.",
+                    t,
+                )
+            }
+
+            ShareNotificationType.UNDO -> runCatching {
+                helper.removeReceivedShare(
+                    webId, podRoot, encodeUriString(n.resourceUri).toString(), n.ownerWebId,
+                )
+            }.onFailure { t ->
+                Log.w(
+                    SHARING_LOG_TAG,
+                    "syncReceivedShares: UNDO sync failed for ${n.resourceUri}; " +
+                            "received-index may still list this share.",
+                    t,
+                )
+            }
+
+            ShareNotificationType.REJECT,
+            ShareNotificationType.DECISION_GRANTED,
+            ShareNotificationType.DECISION_REJECTED,
+                -> Unit
+        }
+    }
+
     override suspend fun getAccessGrants(
         webId: String,
     ): SolidNetworkResponse<List<AccessGrant>> = wrap {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
 
-        val given = helper.readGivenIndex(webId, podRoot).getShares().map { share ->
+        val given = helper.readGivenShares(webId, podRoot).map { share ->
             AccessGrant(
                 direction = AccessGrantDirection.GIVEN,
                 counterpartWebId = share.receiver.toRdfSubject(),
@@ -585,7 +652,7 @@ internal class SharingManagerImplementation : SharingManager {
             )
         }
 
-        val received = helper.readReceivedIndex(webId, podRoot).getShares().map { share ->
+        val received = helper.readReceivedShares(webId, podRoot).map { share ->
             AccessGrant(
                 direction = AccessGrantDirection.RECEIVED,
                 counterpartWebId = share.ownerWebId,
@@ -708,6 +775,7 @@ internal class SharingManagerImplementation : SharingManager {
         webId: String,
         entry: CatalogEntry,
     ): SolidNetworkResponse<Unit> = wrap {
+        if (!profile.catalogEnabled) return@wrap
         val normalizedEntry =
             entry.copy(resourceUri = encodeUriString(entry.resourceUri).toString())
         val podRoot = helper.getPodRoot(webId)
@@ -732,7 +800,7 @@ internal class SharingManagerImplementation : SharingManager {
         val survivingQuads =
             current.getAllQuads().filterNot { it.subject == normalizedEntry.resourceUri }
         val rebuilt = CatalogRDF(catalogUri, "application/ld+json", survivingQuads, null)
-        rebuilt.addEntry(normalizedEntry)
+        rebuilt.addEntry(normalizedEntry, profile.vocabulary)
 
         if (existing != null) {
             rm.update(webId, rebuilt).getOrThrow()
@@ -746,6 +814,7 @@ internal class SharingManagerImplementation : SharingManager {
         webId: String,
         resourceUri: String,
     ): SolidNetworkResponse<Unit> = wrap {
+        if (!profile.catalogEnabled) return@wrap
         val podRoot = helper.getPodRoot(webId)
         val catalogUri = helper.catalogUri(podRoot)
         val current = runCatching {
@@ -769,6 +838,7 @@ internal class SharingManagerImplementation : SharingManager {
         viewerWebId: String,
         ownerWebId: String,
     ): SolidNetworkResponse<List<CatalogEntry>> = wrap {
+        if (!profile.catalogEnabled) return@wrap emptyList()
         val ownerPodRoot = helper.getPodRoot(ownerWebId)
         val catalogUri = helper.catalogUri(ownerPodRoot)
         val catalog = runCatching {
@@ -781,17 +851,17 @@ internal class SharingManagerImplementation : SharingManager {
                 t,
             )
         }.getOrNull() ?: return@wrap emptyList()
-        catalog.getEntries()
+        catalog.getEntries(profile.vocabulary)
     }
 
     override fun getShareDeepLink(resourceUri: String, ownerWebId: String?): String =
-        ShareLinkCodec.deepLink(resourceUri, ownerWebId)
+        profile.linkCodec.deepLink(resourceUri, ownerWebId)
 
     override fun parseShareDeepLink(deepLink: String): ParsedShareLink? =
-        ShareLinkCodec.parse(deepLink)
+        profile.linkCodec.parse(deepLink)
 
     override fun getShareBareUrl(resourceUri: String): String =
-        ShareLinkCodec.bareUrl(resourceUri)
+        profile.linkCodec.bareUrl(resourceUri)
 
     private suspend fun <T> wrap(block: suspend () -> T): SolidNetworkResponse<T> =
         withContext(Dispatchers.IO) {

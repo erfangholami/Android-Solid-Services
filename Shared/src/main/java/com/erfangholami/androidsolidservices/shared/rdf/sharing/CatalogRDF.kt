@@ -7,7 +7,8 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
-import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
+import com.erfangholami.androidsolidservices.shared.vocab.ShareVocabulary
+import com.erfangholami.androidsolidservices.shared.vocab.SolidShareVocabulary
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
@@ -41,9 +42,9 @@ public class CatalogRDF : SolidRDFResource {
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     /** Returns every entry recorded in the catalog. */
-    public fun getEntries(): List<CatalogEntry> {
+    public fun getEntries(vocab: ShareVocabulary = SolidShareVocabulary): List<CatalogEntry> {
         val entrySubjects = getAllQuads()
-            .filter { it.predicate == RDF.TYPE && it.`object` == "${SolidShare.NAMESPACE}CatalogEntry" }
+            .filter { it.predicate == RDF.TYPE && it.`object` == vocab.catalogEntryType }
             .map { it.subject }
             .distinct()
         return entrySubjects.map { subject ->
@@ -57,8 +58,8 @@ public class CatalogRDF : SolidRDFResource {
     }
 
     /** Writes the triples for [entry] into the catalog document. */
-    public fun addEntry(entry: CatalogEntry) {
-        addQuad(entry.resourceUri, RDF.TYPE, "${SolidShare.NAMESPACE}CatalogEntry")
+    public fun addEntry(entry: CatalogEntry, vocab: ShareVocabulary = SolidShareVocabulary) {
+        addQuad(entry.resourceUri, RDF.TYPE, vocab.catalogEntryType)
         addQuadLiteral(entry.resourceUri, DC.TITLE, entry.title)
         entry.description?.let { addQuadLiteral(entry.resourceUri, DC.DESCRIPTION, it) }
         entry.depictionUri?.let { addQuad(entry.resourceUri, FOAF.DEPICTION, it) }

@@ -10,6 +10,7 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ParsedShareLink
 import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 
@@ -33,11 +34,17 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 public interface SharingManager {
 
     public companion object {
-        public fun getInstance(authenticator: Authenticator): SharingManager =
-            SharingManagerImplementation.getInstance(authenticator)
+        public fun getInstance(
+            authenticator: Authenticator,
+            profile: SharingProfile = SolidShareProfile,
+        ): SharingManager =
+            SharingManagerImplementation.getInstance(authenticator, profile)
 
-        public fun getInstance(resourceManager: SolidResourceManager): SharingManager =
-            SharingManagerImplementation.getInstance(resourceManager)
+        public fun getInstance(
+            resourceManager: SolidResourceManager,
+            profile: SharingProfile = SolidShareProfile,
+        ): SharingManager =
+            SharingManagerImplementation.getInstance(resourceManager, profile)
     }
 
     /**
@@ -196,6 +203,27 @@ public interface SharingManager {
         resourceUri: String,
         ownerWebId: String,
     ): SolidNetworkResponse<Unit>
+
+    /**
+     * Reconciles the user's received-shares index against a batch of share
+     * [notifications] already read — and ownership-gated — from their inbox,
+     * then returns the updated stored received shares.
+     *
+     * An `OFFER`/`ACCEPTED` adds or updates the resource (trusting the
+     * gate-verified notification's own mode/owner when a live cross-pod access
+     * probe is indeterminate); an `UNDO` removes it; `REJECT` and decision
+     * records are ignored. Best-effort per item: a single failure is logged and
+     * skipped, never failing the call.
+     *
+     * Pairs with
+     * [com.erfangholami.androidsolidservices.api.notifications.NotificationsManager.listNotifications]:
+     * the caller lists notifications once for its feed, then hands the same list
+     * here to keep the "shared with me" view in sync without a second inbox read.
+     */
+    public suspend fun syncReceivedShares(
+        webId: String,
+        notifications: List<ShareNotification>,
+    ): SolidNetworkResponse<List<ReceivedShare>>
 
     /**
      * Returns every access relationship the library can observe for [webId],

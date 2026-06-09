@@ -7,7 +7,8 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
-import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
+import com.erfangholami.androidsolidservices.shared.vocab.ShareVocabulary
+import com.erfangholami.androidsolidservices.shared.vocab.SolidShareVocabulary
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
@@ -54,19 +55,19 @@ public class ReceivedSharesIndexRDF : SolidRDFResource {
     )
 
     /** The reified received-share records (node form only — excludes legacy flat rows). */
-    public fun getShareNodes(): List<Node> {
+    public fun getShareNodes(vocab: ShareVocabulary = SolidShareVocabulary): List<Node> {
         val all = getAllQuads()
         return all.asSequence()
-            .filter { it.predicate == RDF.TYPE && it.`object` == SolidShare.SHARE }
+            .filter { it.predicate == RDF.TYPE && it.`object` == vocab.shareType }
             .map { it.subject }
             .distinct()
             .mapNotNull { subject ->
                 val nodeQuads = all.filter { it.subject == subject }
                 val resourceUri = nodeQuads.firstOrNull {
-                    it.predicate == SolidShare.RESOURCE && !it.isLiteralObject
+                    it.predicate == vocab.resource && !it.isLiteralObject
                 }?.`object` ?: return@mapNotNull null
                 val ownerWebId = nodeQuads.firstOrNull {
-                    it.predicate == SolidShare.OWNER && !it.isLiteralObject
+                    it.predicate == vocab.owner && !it.isLiteralObject
                 }?.`object` ?: return@mapNotNull null
                 val mode = ShareMode.strongest(
                     nodeQuads.filter { it.predicate == ACL.MODE }.map { it.`object` }.toSet(),
@@ -99,8 +100,8 @@ public class ReceivedSharesIndexRDF : SolidRDFResource {
         }
 
     /** Every received share: reified records first, then any legacy rows they don't supersede. */
-    public fun getShares(): List<ReceivedShare> {
-        val nodeShares = getShareNodes().map {
+    public fun getShares(vocab: ShareVocabulary = SolidShareVocabulary): List<ReceivedShare> {
+        val nodeShares = getShareNodes(vocab).map {
             ReceivedShare(it.ownerWebId, it.mode, it.resourceUri, it.addedAt)
         }
         val covered = nodeShares.map { it.ownerWebId to it.resourceUri }.toSet()

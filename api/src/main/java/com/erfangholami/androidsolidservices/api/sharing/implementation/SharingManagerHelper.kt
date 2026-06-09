@@ -11,13 +11,10 @@ import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
-import com.erfangholami.androidsolidservices.shared.model.sharing.CATALOG_FILE_NAME
-import com.erfangholami.androidsolidservices.shared.model.sharing.GIVEN_SHARES_FILE_NAME
+import com.erfangholami.androidsolidservices.api.sharing.SharingProfile
+import com.erfangholami.androidsolidservices.api.sharing.SolidShareProfile
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
-import com.erfangholami.androidsolidservices.shared.model.sharing.RECEIVED_SHARES_FILE_NAME
 import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
-import com.erfangholami.androidsolidservices.shared.model.sharing.SHARES_CONTAINER_NAME
-import com.erfangholami.androidsolidservices.shared.model.sharing.SOLIDSHARE_CONTAINER_NAME
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.GivenSharesIndexRDF
@@ -27,7 +24,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
-import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import java.net.URI
@@ -57,27 +53,39 @@ internal class SharingManagerHelper {
         @Volatile
         private var INSTANCE: SharingManagerHelper? = null
 
-        fun getInstance(authenticator: Authenticator): SharingManagerHelper =
+        fun getInstance(
+            authenticator: Authenticator,
+            profile: SharingProfile = SolidShareProfile,
+        ): SharingManagerHelper =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SharingManagerHelper(SolidResourceManager.getInstance(authenticator))
-                    .also { INSTANCE = it }
+                INSTANCE ?: SharingManagerHelper(
+                    SolidResourceManager.getInstance(authenticator), profile,
+                ).also { INSTANCE = it }
             }
 
-        fun getInstance(resourceManager: SolidResourceManager): SharingManagerHelper =
+        fun getInstance(
+            resourceManager: SolidResourceManager,
+            profile: SharingProfile = SolidShareProfile,
+        ): SharingManagerHelper =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SharingManagerHelper(resourceManager).also { INSTANCE = it }
+                INSTANCE ?: SharingManagerHelper(resourceManager, profile).also { INSTANCE = it }
             }
     }
 
     val rm: SolidResourceManager
+    private val profile: SharingProfile
     private val wacBackend: WacBackend
     private val acpBackend: AcpBackend
+
+    private val layout get() = profile.storageLayout
+    private val vocabulary get() = profile.vocabulary
 
     private val podRootCache = ConcurrentHashMap<String, URI>()
     private val sharesContainerReady = ConcurrentHashMap<String, Boolean>()
 
-    private constructor(resourceManager: SolidResourceManager) {
+    private constructor(resourceManager: SolidResourceManager, profile: SharingProfile) {
         this.rm = resourceManager
+        this.profile = profile
         this.wacBackend = WacBackend(rm)
         this.acpBackend = AcpBackend(rm)
     }
@@ -91,20 +99,15 @@ internal class SharingManagerHelper {
             .also { podRootCache[webId] = it }
     }
 
-    fun givenSharesUri(podRoot: URI): URI =
-        URI.create("${podRoot}${SHARES_CONTAINER_NAME}${GIVEN_SHARES_FILE_NAME}")
+    fun givenSharesUri(podRoot: URI): URI = layout.givenIndex(podRoot)
 
-    fun receivedSharesUri(podRoot: URI): URI =
-        URI.create("${podRoot}${SHARES_CONTAINER_NAME}${RECEIVED_SHARES_FILE_NAME}")
+    fun receivedSharesUri(podRoot: URI): URI = layout.receivedIndex(podRoot)
 
-    fun sharesContainerUri(podRoot: URI): URI =
-        URI.create("${podRoot}${SHARES_CONTAINER_NAME}")
+    fun sharesContainerUri(podRoot: URI): URI = layout.sharesContainer(podRoot)
 
-    fun solidshareContainerUri(podRoot: URI): URI =
-        URI.create("${podRoot}${SOLIDSHARE_CONTAINER_NAME}")
+    fun solidshareContainerUri(podRoot: URI): URI = layout.rootContainer(podRoot)
 
-    fun catalogUri(podRoot: URI): URI =
-        URI.create("${podRoot}${SOLIDSHARE_CONTAINER_NAME}${CATALOG_FILE_NAME}")
+    fun catalogUri(podRoot: URI): URI = layout.catalog(podRoot)
 
     suspend fun ensurePrivateSharesContainer(webId: String, podRoot: URI) {
         if (sharesContainerReady[webId] == true) return
@@ -272,6 +275,12 @@ internal class SharingManagerHelper {
     suspend fun readReceivedIndex(webId: String, podRoot: URI): ReceivedSharesIndexRDF =
         rm.read(webId, receivedSharesUri(podRoot), ReceivedSharesIndexRDF::class.java).getOrThrow()
 
+    suspend fun readGivenShares(webId: String, podRoot: URI): List<GivenShare> =
+        readGivenIndex(webId, podRoot).getShares(vocabulary)
+
+    suspend fun readReceivedShares(webId: String, podRoot: URI): List<ReceivedShare> =
+        readReceivedIndex(webId, podRoot).getShares(vocabulary)
+
     /**
      * Replaces the record for `(receiver, share.resourceUri)` in the index with
      * a single-mode record for [share], carrying [GivenShare.createdAt]. Any
@@ -307,7 +316,7 @@ internal class SharingManagerHelper {
         val receiverIri = receiver.toRdfSubject()
         patchIndexWithRetry(webId, uri) {
             val index = readGivenIndex(webId, podRoot)
-            val nodes = index.getShareNodes()
+            val nodes = index.getShareNodes(vocabulary)
             val legacy = index.getLegacyFlatShares()
             val node = nodes.firstOrNull {
                 it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
@@ -341,9 +350,9 @@ internal class SharingManagerHelper {
                 N3Patch.build {
                     legacyForPair.forEach { delete(receiverIri, it.mode.toAclPredicate(), resourceUri) }
                     if (creatingNode) {
-                        insert(subject, RDF.TYPE, SolidShare.SHARE)
-                        insert(subject, SolidShare.RESOURCE, resourceUri)
-                        insert(subject, SolidShare.RECEIVER, receiverIri)
+                        insert(subject, RDF.TYPE, vocabulary.shareType)
+                        insert(subject, vocabulary.resource, resourceUri)
+                        insert(subject, vocabulary.receiver, receiverIri)
                     }
                     modesToInsert.forEach { insert(subject, ACL.MODE, it.toAclPredicate()) }
                     modesToDelete.forEach { delete(subject, ACL.MODE, it.toAclPredicate()) }
@@ -373,7 +382,7 @@ internal class SharingManagerHelper {
         val receiverIri = receiver.toRdfSubject()
         patchIndexWithRetry(webId, uri) {
             val index = readGivenIndex(webId, podRoot)
-            val nodes = index.getShareNodes()
+            val nodes = index.getShareNodes(vocabulary)
             val legacy = index.getLegacyFlatShares()
             val node = nodes.firstOrNull {
                 it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
@@ -391,9 +400,9 @@ internal class SharingManagerHelper {
             } else {
                 N3Patch.build {
                     node?.let { n ->
-                        delete(n.subject, RDF.TYPE, SolidShare.SHARE)
-                        delete(n.subject, SolidShare.RESOURCE, resourceUri)
-                        delete(n.subject, SolidShare.RECEIVER, receiverIri)
+                        delete(n.subject, RDF.TYPE, vocabulary.shareType)
+                        delete(n.subject, vocabulary.resource, resourceUri)
+                        delete(n.subject, vocabulary.receiver, receiverIri)
                         n.modes.forEach { delete(n.subject, ACL.MODE, it.toAclPredicate()) }
                         n.createdAt?.let {
                             deleteLiteral(n.subject, DC.CREATED, it, datatype = XSD.DATE_TIME)
@@ -420,7 +429,7 @@ internal class SharingManagerHelper {
         val ownerIri = share.ownerWebId
         patchIndexWithRetry(webId, uri) {
             val index = readReceivedIndex(webId, podRoot)
-            val node = index.getShareNodes().firstOrNull {
+            val node = index.getShareNodes(vocabulary).firstOrNull {
                 it.ownerWebId == ownerIri && it.resourceUri == share.resourceUri
             }
             val legacyForPair = index.getLegacyFlatShares().filter {
@@ -437,9 +446,9 @@ internal class SharingManagerHelper {
                 N3Patch.build {
                     legacyForPair.forEach { delete(ownerIri, it.mode.toAclPredicate(), share.resourceUri) }
                     if (creatingNode) {
-                        insert(subject, RDF.TYPE, SolidShare.SHARE)
-                        insert(subject, SolidShare.RESOURCE, share.resourceUri)
-                        insert(subject, SolidShare.OWNER, ownerIri)
+                        insert(subject, RDF.TYPE, vocabulary.shareType)
+                        insert(subject, vocabulary.resource, share.resourceUri)
+                        insert(subject, vocabulary.owner, ownerIri)
                         insert(subject, ACL.MODE, share.mode.toAclPredicate())
                         share.addedAt?.let {
                             insertLiteral(subject, DC.CREATED, it, datatype = XSD.DATE_TIME)
@@ -468,7 +477,7 @@ internal class SharingManagerHelper {
         val uri = receivedSharesUri(podRoot)
         patchIndexWithRetry(webId, uri) {
             val index = readReceivedIndex(webId, podRoot)
-            val node = index.getShareNodes().firstOrNull {
+            val node = index.getShareNodes(vocabulary).firstOrNull {
                 it.ownerWebId == ownerWebId && it.resourceUri == resourceUri
             }
             val legacyForPair = index.getLegacyFlatShares().filter {
@@ -479,9 +488,9 @@ internal class SharingManagerHelper {
             } else {
                 N3Patch.build {
                     node?.let { n ->
-                        delete(n.subject, RDF.TYPE, SolidShare.SHARE)
-                        delete(n.subject, SolidShare.RESOURCE, resourceUri)
-                        delete(n.subject, SolidShare.OWNER, ownerWebId)
+                        delete(n.subject, RDF.TYPE, vocabulary.shareType)
+                        delete(n.subject, vocabulary.resource, resourceUri)
+                        delete(n.subject, vocabulary.owner, ownerWebId)
                         delete(n.subject, ACL.MODE, n.mode.toAclPredicate())
                         n.addedAt?.let {
                             deleteLiteral(n.subject, DC.CREATED, it, datatype = XSD.DATE_TIME)
