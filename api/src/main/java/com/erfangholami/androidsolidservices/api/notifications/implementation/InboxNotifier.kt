@@ -1,9 +1,9 @@
 package com.erfangholami.androidsolidservices.api.notifications.implementation
 
-import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.api.notifications.NotificationTransport
+import com.erfangholami.androidsolidservices.api.notifications.ShareNotificationProfile
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
-import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.AS
@@ -12,21 +12,13 @@ import com.erfangholami.androidsolidservices.shared.vocab.SAI
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import java.net.URI
 import java.time.Instant
+import java.util.UUID
 
-/**
- * Posts Activity Streams 2.0 / SolidShare-shaped notifications to an
- * agent's LDN inbox.
- *
- * POSTs are DPoP-authenticated via [SolidResourceManager.post]. Returns a
- * typed [InboxPostResult] so the caller can distinguish "no inbox advertised"
- * / 401 / 403 / generic HTTP failure / network exception.
- *
- * Spec anchors:
- *  - LDN: https://www.w3.org/TR/ldn/
- *  - Activity Streams 2: https://www.w3.org/TR/activitystreams-core/
- *  - Solid Notifications: https://solidproject.org/TR/notifications-protocol
- */
-internal class InboxNotifier(private val rm: SolidResourceManager) {
+internal class InboxNotifier(
+    private val transport: NotificationTransport,
+    private val discovery: InboxDiscovery,
+    private val profile: ShareNotificationProfile,
+) {
 
     suspend fun postOffer(
         ownerWebId: String,
@@ -36,7 +28,7 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = ownerWebId,
         receiverWebId = receiverWebId,
-        slugPrefix = "solidshare-offer",
+        slugPrefix = profile.slugs.offer,
         body = buildOfferTurtle(ownerWebId, receiverWebId, resourceUri, mode),
     )
 
@@ -48,7 +40,7 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = ownerWebId,
         receiverWebId = receiverWebId,
-        slugPrefix = "solidshare-undo",
+        slugPrefix = profile.slugs.undo,
         body = buildUndoTurtle(ownerWebId, receiverWebId, resourceUri, mode),
     )
 
@@ -61,7 +53,7 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = requesterWebId,
         receiverWebId = ownerWebId,
-        slugPrefix = "solidshare-request",
+        slugPrefix = profile.slugs.request,
         body = buildRequestTurtle(requesterWebId, ownerWebId, resourceUri, requestedMode, summary),
     )
 
@@ -73,7 +65,7 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = ownerWebId,
         receiverWebId = requesterWebId,
-        slugPrefix = "solidshare-reject",
+        slugPrefix = profile.slugs.reject,
         body = buildRejectTurtle(ownerWebId, requesterWebId, resourceUri, reason),
     )
 
@@ -86,18 +78,10 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = ownerWebId,
         receiverWebId = requesterWebId,
-        slugPrefix = "solidshare-accept",
+        slugPrefix = profile.slugs.accept,
         body = buildAcceptTurtle(ownerWebId, requesterWebId, resourceUri, mode, requestUri),
     )
 
-    /**
-     * Mirrors the owner's own `as:Accept` into the owner's **own** inbox as a
-     * read-only record that they granted [requesterWebId]'s request. Same body
-     * as [postAccept] (actor = owner, target = requester), just delivered to
-     * the author rather than the requester; the reader classifies it as
-     * [com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType.DECISION_GRANTED]
-     * because its `as:actor` is the inbox owner.
-     */
     suspend fun postDecisionGranted(
         ownerWebId: String,
         requesterWebId: String,
@@ -107,18 +91,10 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = ownerWebId,
         receiverWebId = ownerWebId,
-        slugPrefix = "solidshare-decision-accept",
+        slugPrefix = profile.slugs.decisionAccept,
         body = buildAcceptTurtle(ownerWebId, requesterWebId, resourceUri, mode, requestUri),
     )
 
-    /**
-     * Mirrors an `as:Reject` authored by the owner into the owner's **own**
-     * inbox as a read-only record that they declined [requesterWebId]'s
-     * request. Unlike [postReject] (sent to the requester, no mode) this keeps
-     * the originally-requested [mode] so the owner's record can show what was
-     * asked for. Classified as
-     * [com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType.DECISION_REJECTED].
-     */
     suspend fun postDecisionRejected(
         ownerWebId: String,
         requesterWebId: String,
@@ -128,7 +104,7 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = ownerWebId,
         receiverWebId = ownerWebId,
-        slugPrefix = "solidshare-decision-reject",
+        slugPrefix = profile.slugs.decisionReject,
         body = buildRejectTurtle(ownerWebId, requesterWebId, resourceUri, reason, mode),
     )
 
@@ -138,19 +114,21 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
         slugPrefix: String,
         body: String,
     ): InboxPostResult {
-        val inbox = resolveInbox(senderWebId, receiverWebId)
+        val inbox = discovery.resolveInboxOf(receiverWebId, senderWebId)
             ?: return InboxPostResult.NoInbox(receiverWebId)
-        val slug = "$slugPrefix-${java.util.UUID.randomUUID()}"
+        val slug = "$slugPrefix-${UUID.randomUUID()}"
         return when (
-            val r = rm.post(
-                webid = senderWebId,
-                uri = inbox,
+            val r = transport.post(
+                webId = senderWebId,
+                inbox = inbox.toString(),
                 contentType = HTTPAcceptType.TURTLE,
                 body = body.toByteArray(),
-                additionalHeaders = mapOf("Slug" to slug),
+                slug = slug,
             )
         ) {
-            is SolidNetworkResponse.Success -> InboxPostResult.Success(r.data)
+            is SolidNetworkResponse.Success ->
+                InboxPostResult.Success(r.data?.let { runCatching { URI.create(it) }.getOrNull() })
+
             is SolidNetworkResponse.Error -> when (r.errorCode) {
                 401 -> InboxPostResult.Unauthorized(inbox)
                 403 -> InboxPostResult.Forbidden(inbox)
@@ -159,37 +137,6 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
 
             is SolidNetworkResponse.Exception -> InboxPostResult.NetworkError(inbox, r.exception)
         }
-    }
-
-    private suspend fun resolveInbox(senderWebId: String, receiverWebId: String): URI? {
-        val profile = runCatching {
-            rm.readPublic(URI.create(receiverWebId), WebId::class.java).getOrThrow()
-        }.getOrNull()
-        profile?.getInbox()?.let { return it }
-
-        runCatching {
-            when (val r = rm.headPublic(URI.create(receiverWebId))) {
-                is SolidNetworkResponse.Success -> r.data.inboxUri
-                else -> null
-            }
-        }.getOrNull()?.let { return it }
-
-        profile?.let { p ->
-            (p.getPrimaryTopicDocuments() + p.getRelatedResources()).distinct().forEach { doc ->
-                runCatching {
-                    rm.readPublic(doc, WebId::class.java).getOrThrow().getInbox()
-                }.getOrNull()?.let { return it }
-                runCatching {
-                    rm.read(senderWebId, doc, WebId::class.java).getOrThrow().getInbox()
-                }.getOrNull()?.let { return it }
-            }
-        }
-
-        profile?.getStorages()?.firstOrNull()?.let { storage ->
-            val root = storage.toString().let { if (it.endsWith("/")) it else "$it/" }
-            return URI.create("${root}inbox/")
-        }
-        return null
     }
 
     private fun buildOfferTurtle(
@@ -313,30 +260,11 @@ internal class InboxNotifier(private val rm: SolidResourceManager) {
     }
 }
 
-/**
- * Typed result of an inbox POST. Used by [InboxNotifier]; the
- * [com.erfangholami.androidsolidservices.api.notifications.NotificationsManager]
- * layer converts the variants to
- * [com.erfangholami.androidsolidservices.api.exceptions.SharingException]
- * for the public boundary.
- */
 internal sealed class InboxPostResult {
-    /** Server returned 2xx. [locationUri] is the server-allocated URI, when present. */
-    data class Success(val locationUri: java.net.URI?) : InboxPostResult()
-
-    /** Receiver's WebID profile and HEAD-link both fail to yield an inbox URI. */
+    data class Success(val locationUri: URI?) : InboxPostResult()
     data class NoInbox(val targetWebId: String) : InboxPostResult()
-
-    /** Server responded 401. */
-    data class Unauthorized(val inboxUri: java.net.URI) : InboxPostResult()
-
-    /** Server responded 403. */
-    data class Forbidden(val inboxUri: java.net.URI) : InboxPostResult()
-
-    /** Server responded with another non-2xx status. */
-    data class HttpError(val inboxUri: java.net.URI, val statusCode: Int) : InboxPostResult()
-
-    /** No HTTP response at all (network failure, timeout, DNS, etc.). */
-    data class NetworkError(val inboxUri: java.net.URI, val cause: Throwable) : InboxPostResult()
+    data class Unauthorized(val inboxUri: URI) : InboxPostResult()
+    data class Forbidden(val inboxUri: URI) : InboxPostResult()
+    data class HttpError(val inboxUri: URI, val statusCode: Int) : InboxPostResult()
+    data class NetworkError(val inboxUri: URI, val cause: Throwable) : InboxPostResult()
 }
-

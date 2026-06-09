@@ -6,7 +6,8 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResou
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.AS
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
-import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
+import com.erfangholami.androidsolidservices.shared.vocab.ShareNotificationVocabulary
+import com.erfangholami.androidsolidservices.shared.vocab.SolidShareNotificationVocabulary
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
@@ -69,7 +70,9 @@ public class ShareNotificationRDF : SolidRDFResource {
     public fun target(): String? = forActivity(AS.TARGET)
 
     /** Fallback access-mode literal (`solidshare:mode "read"`), if present. */
-    public fun mode(): String? = forActivity(SolidShare.MODE)
+    public fun mode(
+        vocab: ShareNotificationVocabulary = SolidShareNotificationVocabulary,
+    ): String? = forActivity(vocab.modeLiteral)
 
     /** Standard WAC `acl:mode` IRIs asserted on the activity. */
     public fun aclModes(): Set<String> {

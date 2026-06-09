@@ -2,6 +2,7 @@ package com.erfangholami.androidsolidservices.api.notifications.implementation
 
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.exceptions.SharingException
+import com.erfangholami.androidsolidservices.api.notifications.ShareNotificationProfile
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
@@ -37,55 +38,15 @@ import java.net.URI
  * - Activity Streams 2: https://www.w3.org/TR/activitystreams-core/
  * - Solid Notifications: https://solidproject.org/TR/notifications-protocol
  */
-internal class InboxReader(private val rm: SolidResourceManager) {
+internal class InboxReader(
+    private val rm: SolidResourceManager,
+    private val discovery: InboxDiscovery,
+    private val profile: ShareNotificationProfile,
+) {
 
     private companion object {
         private const val INBOX_LOG_TAG = "InboxReader"
     }
-
-    suspend fun resolveOwnInbox(webId: String): URI? {
-        val profile = runCatching {
-            rm.read(webId, URI.create(webId), WebId::class.java).getOrThrow()
-        }.onFailure { t ->
-            Log.w(
-                INBOX_LOG_TAG,
-                "resolveOwnInbox: profile read failed for $webId; trying HEAD-link fallback.",
-                t,
-            )
-        }.getOrNull()
-        profile?.getInbox()?.let { return it }
-
-        runCatching {
-            when (val r = rm.head(webId, URI.create(webId))) {
-                is SolidNetworkResponse.Success -> r.data.inboxUri
-                else -> null
-            }
-        }.onFailure { t ->
-            Log.w(
-                INBOX_LOG_TAG,
-                "resolveOwnInbox: HEAD fallback failed for $webId; trying extended profile.",
-                t,
-            )
-        }.getOrNull()?.let { return it }
-
-        profile?.let { p ->
-            extendedProfileDocs(p).forEach { doc ->
-                runCatching {
-                    rm.read(webId, doc, WebId::class.java).getOrThrow().getInbox()
-                }.onFailure { t ->
-                    Log.w(
-                        INBOX_LOG_TAG,
-                        "resolveOwnInbox: extended profile $doc unreadable; skipping.",
-                        t
-                    )
-                }.getOrNull()?.let { return it }
-            }
-        }
-        return null
-    }
-
-    private fun extendedProfileDocs(profile: WebId): List<URI> =
-        (profile.getPrimaryTopicDocuments() + profile.getRelatedResources()).distinct()
 
     suspend fun listNotifications(webId: String): List<ShareNotification> {
         val items = listInboxItems(webId)
@@ -150,7 +111,7 @@ internal class InboxReader(private val rm: SolidResourceManager) {
     }
 
     private suspend fun listInboxItems(webId: String): List<URI> {
-        val inboxUri = resolveOwnInbox(webId) ?: return emptyList()
+        val inboxUri = discovery.resolveOwnInbox(webId) ?: return emptyList()
         val container = when (
             val r = rm.read(webId, inboxUri, SolidContainer::class.java)
         ) {
@@ -203,7 +164,7 @@ internal class InboxReader(private val rm: SolidResourceManager) {
             else -> return null
         }
         val mode = ShareMode.strongest(rdf.aclModes())
-            ?: rdf.mode()?.let { name ->
+            ?: rdf.mode(profile.vocabulary)?.let { name ->
                 ShareMode.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
             }
 
@@ -245,7 +206,7 @@ internal class InboxReader(private val rm: SolidResourceManager) {
         val obj = rdf.activityObject() ?: return null
         val mode = (
                 ShareMode.strongest(rdf.aclModes())
-                    ?: rdf.requestedMode()?.let { name ->
+                    ?: rdf.requestedMode(profile.vocabulary)?.let { name ->
                         ShareMode.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
                     }
                 ) ?: return null

@@ -7,7 +7,9 @@ import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.AS
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.SAI
+import com.erfangholami.androidsolidservices.shared.vocab.ShareNotificationVocabulary
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
+import com.erfangholami.androidsolidservices.shared.vocab.SolidShareNotificationVocabulary
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
@@ -56,7 +58,9 @@ public class ShareRequestRDF : SolidRDFResource {
     public fun target(): String? = forSubject(AS.TARGET)
 
     /** Fallback requested-mode literal (`solidshare:requestedMode "read"`). */
-    public fun requestedMode(): String? = forSubject(SolidShare.REQUESTED_MODE)
+    public fun requestedMode(
+        vocab: ShareNotificationVocabulary = SolidShareNotificationVocabulary,
+    ): String? = forSubject(vocab.requestedModeLiteral)
 
     /** Standard WAC `acl:mode` IRIs requested. */
     public fun aclModes(): Set<String> {

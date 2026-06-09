@@ -30,11 +30,17 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 public interface NotificationsManager {
 
     public companion object {
-        public fun getInstance(authenticator: Authenticator): NotificationsManager =
-            NotificationsManagerImplementation.getInstance(authenticator)
+        public fun getInstance(
+            authenticator: Authenticator,
+            profile: ShareNotificationProfile = SolidShareNotificationProfile,
+        ): NotificationsManager =
+            NotificationsManagerImplementation.getInstance(authenticator, profile)
 
-        public fun getInstance(resourceManager: SolidResourceManager): NotificationsManager =
-            NotificationsManagerImplementation.getInstance(resourceManager)
+        public fun getInstance(
+            resourceManager: SolidResourceManager,
+            profile: ShareNotificationProfile = SolidShareNotificationProfile,
+        ): NotificationsManager =
+            NotificationsManagerImplementation.getInstance(resourceManager, profile)
     }
 
     /**

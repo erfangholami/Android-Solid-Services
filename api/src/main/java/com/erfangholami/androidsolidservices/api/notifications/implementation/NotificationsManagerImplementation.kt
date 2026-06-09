@@ -4,18 +4,15 @@ import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.exceptions.SharingException
 import com.erfangholami.androidsolidservices.api.notifications.NotificationsManager
+import com.erfangholami.androidsolidservices.api.notifications.ShareNotificationProfile
+import com.erfangholami.androidsolidservices.api.notifications.SolidShareNotificationProfile
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.api.sharing.implementation.ReceivedAccess
-import com.erfangholami.androidsolidservices.api.sharing.implementation.SharingManagerHelper
-import com.erfangholami.androidsolidservices.api.sharing.implementation.nowIsoDateTime
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
-import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType
-import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.util.getETag
@@ -24,7 +21,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URI
 
-internal class NotificationsManagerImplementation : NotificationsManager {
+internal class NotificationsManagerImplementation private constructor(
+    private val rm: SolidResourceManager,
+    profile: ShareNotificationProfile,
+) : NotificationsManager {
+
+    private val provisioner = InboxProvisioner(rm)
+    private val discovery = InboxDiscovery(rm)
+    private val transport = NotificationTransportImplementation.create(rm, discovery)
+    internal val inboxReader = InboxReader(rm, discovery, profile)
+    internal val inboxNotifier = InboxNotifier(transport, discovery, profile)
 
     companion object {
         private const val NOTIFS_LOG_TAG = "NotificationsManager"
@@ -32,46 +38,27 @@ internal class NotificationsManagerImplementation : NotificationsManager {
         @Volatile
         private var INSTANCE: NotificationsManager? = null
 
-        fun getInstance(authenticator: Authenticator): NotificationsManager =
+        fun getInstance(
+            authenticator: Authenticator,
+            profile: ShareNotificationProfile = SolidShareNotificationProfile,
+        ): NotificationsManager =
+            getInstance(SolidResourceManager.getInstance(authenticator), profile)
+
+        fun getInstance(
+            resourceManager: SolidResourceManager,
+            profile: ShareNotificationProfile = SolidShareNotificationProfile,
+        ): NotificationsManager =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: NotificationsManagerImplementation(authenticator).also {
+                INSTANCE ?: NotificationsManagerImplementation(resourceManager, profile).also {
                     INSTANCE = it
                 }
             }
-
-        fun getInstance(resourceManager: SolidResourceManager): NotificationsManager =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: NotificationsManagerImplementation(resourceManager).also {
-                    INSTANCE = it
-                }
-            }
-    }
-
-    private val rm: SolidResourceManager
-    private val helper: SharingManagerHelper
-    internal val inboxReader: InboxReader
-    internal val inboxNotifier: InboxNotifier
-
-    private constructor(authenticator: Authenticator) {
-        this.rm = SolidResourceManager.getInstance(authenticator)
-        this.helper = SharingManagerHelper.getInstance(rm)
-        this.inboxReader = InboxReader(rm)
-        this.inboxNotifier = InboxNotifier(rm)
-    }
-
-    private constructor(resourceManager: SolidResourceManager) {
-        this.rm = resourceManager
-        this.helper = SharingManagerHelper.getInstance(rm)
-        this.inboxReader = InboxReader(rm)
-        this.inboxNotifier = InboxNotifier(rm)
     }
 
     override suspend fun listNotifications(
         webId: String,
     ): SolidNetworkResponse<List<ShareNotification>> = wrap {
-        val notifications = inboxReader.listNotifications(webId)
-        syncReceivedSharesFor(webId, notifications)
-        notifications
+        inboxReader.listNotifications(webId)
     }
 
     override suspend fun listRequests(
@@ -197,37 +184,22 @@ internal class NotificationsManagerImplementation : NotificationsManager {
     }
 
     override suspend fun ensureInbox(webId: String): SolidNetworkResponse<String> = wrap {
-        inboxReader.resolveOwnInbox(webId)?.let { existingInbox ->
+        discovery.resolveOwnInbox(webId)?.let { existingInbox ->
             ensurePublicAppend(webId, existingInbox)
             return@wrap existingInbox.toString()
         }
 
-        val podRoot = helper.getPodRoot(webId)
+        val podRoot = provisioner.podRoot(webId)
         val inboxUri = URI.create("${podRoot}inbox/")
-        helper.ensureInboxContainer(webId, inboxUri)
-        helper.grantAccess(
-            webId, inboxUri, ShareMode.APPEND, ShareReceiver.Public,
-            includeImpliedModes = false,
-        )
+        provisioner.ensureContainer(webId, inboxUri)
+        provisioner.grantPublicAppend(webId, inboxUri)
         advertiseInbox(webId, inboxUri)
         inboxUri.toString()
     }
 
-    /**
-     * Re-asserts public `acl:Append` on an already-provisioned inbox so other
-     * users can always deliver share notifications to [webId], even when the
-     * inbox was created before this grant existed or by another client that
-     * left it without public append. [grant][com.erfangholami.androidsolidservices.api.access.AccessBackend.grant]
-     * replaces the existing `(inbox, Public)` authorization, so this is
-     * idempotent. Best-effort: a failure leaves the discoverable inbox in place,
-     * so [ensureInbox] still reports success.
-     */
     private suspend fun ensurePublicAppend(webId: String, inboxUri: URI) {
         runCatching {
-            helper.grantAccess(
-            webId, inboxUri, ShareMode.APPEND, ShareReceiver.Public,
-            includeImpliedModes = false,
-        )
+            provisioner.grantPublicAppend(webId, inboxUri)
         }.onFailure { t ->
             Log.w(
                 NOTIFS_LOG_TAG,
@@ -335,77 +307,6 @@ internal class NotificationsManagerImplementation : NotificationsManager {
                 throw SharingException.NotificationDelivery(inboxUri.toString(), statusCode = null)
         }
         @Suppress("UNUSED_VARIABLE") val unused = targetWebId
-    }
-
-    /**
-     * Reconciles the receiver's stored received-shares index against the grant/revoke
-     * notifications just read from the inbox, so the "shared with me" list updates the moment a
-     * notification arrives — on the notifications screen or a background poll — with no user
-     * action, unlike an `as:AccessRequest` (which the owner must explicitly accept).
-     *
-     * Each notification has already cleared [InboxReader]'s ownership gate (its `as:actor`
-     * provably owns the object), so an `as:Offer` / `as:Accept` is a trustworthy grant and the
-     * resource is **added** to the index. A live access probe enriches the row with the
-     * server-confirmed mode/owner when possible, but a grant for a resource on another pod can't
-     * be probed with the reader's own-issuer token (Inrupt answers 401 → [ReceivedAccess.Unknown]),
-     * so the notification's own `acl:mode` and actor are trusted rather than dropped; only an
-     * authoritative [ReceivedAccess.Denied] (403/404) skips the add. An `as:Undo` **removes** the
-     * resource from the index.
-     *
-     * Best-effort: per-item failures are logged and the index self-heals on the next
-     * [refreshReceivedShares]; they never fail the enclosing [listNotifications].
-     */
-    private suspend fun syncReceivedSharesFor(
-        webId: String,
-        notifications: List<ShareNotification>,
-    ) {
-        if (notifications.isEmpty()) return
-        val podRoot = helper.getPodRoot(webId)
-        helper.ensurePrivateSharesContainer(webId, podRoot)
-        notifications.forEach { n ->
-            when (n.type) {
-                ShareNotificationType.OFFER, ShareNotificationType.ACCEPTED -> runCatching {
-                    val resourceUri = encodeUriString(n.resourceUri)
-                    val access = helper.probeReceivedAccess(webId, resourceUri)
-                    if (access is ReceivedAccess.Denied) return@runCatching
-                    val granted = access as? ReceivedAccess.Granted
-                    helper.replaceReceivedShare(
-                        webId, podRoot,
-                        ReceivedShare(
-                            ownerWebId = granted?.owner ?: n.ownerWebId,
-                            mode = granted?.mode ?: n.mode ?: ShareMode.READ,
-                            resourceUri = resourceUri.toString(),
-                            addedAt = n.publishedAt ?: nowIsoDateTime(),
-                        ),
-                    )
-                }.onFailure { t ->
-                    Log.w(
-                        NOTIFS_LOG_TAG,
-                        "syncReceivedSharesFor: grant sync failed for ${n.resourceUri}; " +
-                                "received-index may be stale until next refreshReceivedShares.",
-                        t,
-                    )
-                }
-
-                ShareNotificationType.UNDO -> runCatching {
-                    helper.removeReceivedShare(
-                        webId, podRoot, encodeUriString(n.resourceUri).toString(), n.ownerWebId,
-                    )
-                }.onFailure { t ->
-                    Log.w(
-                        NOTIFS_LOG_TAG,
-                        "syncReceivedSharesFor: UNDO sync failed for ${n.resourceUri}; " +
-                                "received-index may still list this share.",
-                        t,
-                    )
-                }
-
-                ShareNotificationType.REJECT,
-                ShareNotificationType.DECISION_GRANTED,
-                ShareNotificationType.DECISION_REJECTED,
-                    -> Unit
-            }
-        }
     }
 
     private suspend fun advertiseInbox(webId: String, inboxUri: URI) {
