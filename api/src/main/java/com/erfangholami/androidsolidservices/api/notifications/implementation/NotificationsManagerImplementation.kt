@@ -231,6 +231,17 @@ internal class NotificationsManagerImplementation private constructor(
         ).requireSuccess(receiverWebId)
     }
 
+    override suspend fun sendUpdate(
+        ownerWebId: String,
+        receiverWebId: String,
+        resourceUri: String,
+        mode: ShareMode,
+    ): SolidNetworkResponse<Unit> = wrap {
+        inboxNotifier.postUpdate(
+            ownerWebId, receiverWebId, encodeUriString(resourceUri), mode,
+        ).requireSuccess(receiverWebId)
+    }
+
     override suspend fun sendRequest(
         requesterWebId: String,
         ownerWebId: String,

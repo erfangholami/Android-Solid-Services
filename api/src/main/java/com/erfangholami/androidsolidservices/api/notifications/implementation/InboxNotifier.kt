@@ -32,6 +32,18 @@ internal class InboxNotifier(
         body = buildOfferTurtle(ownerWebId, receiverWebId, resourceUri, mode),
     )
 
+    suspend fun postUpdate(
+        ownerWebId: String,
+        receiverWebId: String,
+        resourceUri: URI,
+        mode: ShareMode,
+    ): InboxPostResult = postFromSenderToReceiver(
+        senderWebId = ownerWebId,
+        receiverWebId = receiverWebId,
+        slugPrefix = profile.slugs.update,
+        body = buildUpdateTurtle(ownerWebId, receiverWebId, resourceUri, mode),
+    )
+
     suspend fun postUndo(
         ownerWebId: String,
         receiverWebId: String,
@@ -151,6 +163,25 @@ internal class InboxNotifier(
         appendLine()
         appendLine("<#offer>")
         appendLine("    rdf:type           <${AS.OFFER}> ;")
+        appendLine("    <${AS.ACTOR}>      <$ownerWebId> ;")
+        appendLine("    <${AS.OBJECT}>     <$resourceUri> ;")
+        appendLine("    <${AS.TARGET}>     <$receiverWebId> ;")
+        appendLine("    <${ACL.MODE}>      <${mode.toAclPredicate()}> ;")
+        appendLine("    <${AS.PUBLISHED}>  \"${Instant.now()}\"^^xsd:dateTime .")
+    }
+
+    private fun buildUpdateTurtle(
+        ownerWebId: String,
+        receiverWebId: String,
+        resourceUri: URI,
+        mode: ShareMode,
+    ): String = buildString {
+        appendLine("@prefix as:  <${AS.NAMESPACE}> .")
+        appendLine("@prefix rdf: <${RDF.NAMESPACE}> .")
+        appendLine("@prefix xsd: <${XSD.NAMESPACE}> .")
+        appendLine()
+        appendLine("<#update>")
+        appendLine("    rdf:type           <${AS.UPDATE}> ;")
         appendLine("    <${AS.ACTOR}>      <$ownerWebId> ;")
         appendLine("    <${AS.OBJECT}>     <$resourceUri> ;")
         appendLine("    <${AS.TARGET}>     <$receiverWebId> ;")

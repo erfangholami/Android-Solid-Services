@@ -135,14 +135,22 @@ public interface SharingManager {
     ): SolidNetworkResponse<GivenShare>
 
     /**
-     * Updates the access mode of an existing share. Equivalent to
-     * [createShare] with a different mode and `notifyReceiver = false`.
+     * Updates the access mode of an existing share — replacing [receiver]'s
+     * authorization on [resourceUri] with [mode] (widening or narrowing it) and
+     * patching the given-shares index, while preserving the share's original
+     * `dcterms:created` time. Equivalent to [createShare] with the new mode.
+     *
+     * When [notifyReceiver] is true and [receiver] is a WebID, a best-effort
+     * `as:Offer` carrying the new mode is posted to the receiver's inbox (as on
+     * [createShare]); this also lets the receiver's "shared with me" view sync
+     * to the changed level. Defaults to false so a silent re-grant stays silent.
      */
     public suspend fun updateShare(
         webId: String,
         resourceUri: String,
         mode: ShareMode,
         receiver: ShareReceiver,
+        notifyReceiver: Boolean = false,
     ): SolidNetworkResponse<GivenShare>
 
     /**

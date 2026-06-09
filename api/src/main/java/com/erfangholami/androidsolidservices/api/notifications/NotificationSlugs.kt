@@ -16,6 +16,9 @@ public interface NotificationSlugs {
     /** Slug prefix for an `as:Undo`. */
     public val undo: String
 
+    /** Slug prefix for an `as:Update` (access-level change). */
+    public val update: String
+
     /** Slug prefix for an `interop:AccessRequest`. */
     public val request: String
 
@@ -36,6 +39,7 @@ public interface NotificationSlugs {
 public object SolidShareNotificationSlugs : NotificationSlugs {
     override val offer: String = "solidshare-offer"
     override val undo: String = "solidshare-undo"
+    override val update: String = "solidshare-update"
     override val request: String = "solidshare-request"
     override val reject: String = "solidshare-reject"
     override val accept: String = "solidshare-accept"

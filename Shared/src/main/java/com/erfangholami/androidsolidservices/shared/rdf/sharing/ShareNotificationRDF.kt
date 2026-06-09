@@ -25,8 +25,8 @@ import java.net.URI
  *     as:published       "2026-05-29T10:00:00Z"^^xsd:dateTime .
  * ```
  *
- * Any of `as:Offer`, `as:Accept`, `as:Undo`, or `as:Reject` are accepted.
- * Notifications without a recognised type are returned with [activityType] =
+ * Any of `as:Offer`, `as:Update`, `as:Accept`, `as:Undo`, or `as:Reject` are
+ * accepted. Notifications without a recognised type are returned with [activityType] =
  * null and should be skipped by callers. The access mode is read from the
  * standard WAC `acl:mode` IRI ([aclModes]); a `solidshare:mode` string
  * literal ([mode]) is also accepted as a fallback.
@@ -37,7 +37,7 @@ import java.net.URI
 public class ShareNotificationRDF : SolidRDFResource {
 
     private companion object {
-        val RECOGNISED_TYPES = setOf(AS.OFFER, AS.ACCEPT, AS.UNDO, AS.REJECT)
+        val RECOGNISED_TYPES = setOf(AS.OFFER, AS.UPDATE, AS.ACCEPT, AS.UNDO, AS.REJECT)
     }
 
     public constructor(

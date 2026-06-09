@@ -158,6 +158,7 @@ internal class InboxReader(
             isOwnDecision && rawType == AS.ACCEPT -> ShareNotificationType.DECISION_GRANTED
             isOwnDecision && rawType == AS.REJECT -> ShareNotificationType.DECISION_REJECTED
             rawType == AS.OFFER -> ShareNotificationType.OFFER
+            rawType == AS.UPDATE -> ShareNotificationType.UPDATED
             rawType == AS.ACCEPT -> ShareNotificationType.ACCEPTED
             rawType == AS.UNDO -> ShareNotificationType.UNDO
             rawType == AS.REJECT -> ShareNotificationType.REJECT

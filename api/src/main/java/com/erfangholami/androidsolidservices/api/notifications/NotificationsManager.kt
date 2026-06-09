@@ -22,9 +22,9 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
  * connection.
  *
  * Outgoing notifications go through this manager too:
- *  - [sendOffer] / [sendUndo] — used internally by
- *    `SharingManager.createShare` and `revokeShare` so callers don't need
- *    to touch the notifier directly.
+ *  - [sendOffer] / [sendUpdate] / [sendUndo] — used internally by
+ *    `SharingManager.createShare`, `updateShare`, and `revokeShare` so callers
+ *    don't need to touch the notifier directly.
  *  - [sendRequest] / [sendReject] — request-to-share flow.
  */
 public interface NotificationsManager {
@@ -155,6 +155,22 @@ public interface NotificationsManager {
         ownerWebId: String,
         receiverWebId: String,
         resourceUri: String,
+    ): SolidNetworkResponse<Unit>
+
+    /**
+     * Posts an `as:Update` to [receiverWebId]'s inbox indicating that the access
+     * level [ownerWebId] grants them on [resourceUri] has changed to [mode]
+     * (widened or narrowed). Used by `SharingManager.updateShare(notifyReceiver =
+     * true)`. Distinct from [sendOffer] so the receiver sees "your access was
+     * updated" rather than a fresh share. Surfaces on the receiver side as
+     * [com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType.UPDATED]
+     * and is treated like an `as:Offer` for received-share syncing. Best-effort.
+     */
+    public suspend fun sendUpdate(
+        ownerWebId: String,
+        receiverWebId: String,
+        resourceUri: String,
+        mode: ShareMode,
     ): SolidNetworkResponse<Unit>
 
     /**

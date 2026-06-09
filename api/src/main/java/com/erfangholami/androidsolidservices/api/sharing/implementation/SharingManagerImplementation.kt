@@ -426,8 +426,30 @@ internal class SharingManagerImplementation : SharingManager {
         resourceUri: String,
         mode: ShareMode,
         receiver: ShareReceiver,
-    ): SolidNetworkResponse<GivenShare> =
-        createShare(webId, resourceUri, mode, receiver, notifyReceiver = false)
+        notifyReceiver: Boolean,
+    ): SolidNetworkResponse<GivenShare> {
+        val result = createShare(webId, resourceUri, mode, receiver, notifyReceiver = false)
+        if (notifyReceiver && result is SolidNetworkResponse.Success) {
+            val updated = result.data
+            val updatedReceiver = updated.receiver
+            if (updatedReceiver is ShareReceiver.WebIdReceiver) {
+                runCatching {
+                    notifications.sendUpdate(
+                        webId, updatedReceiver.webId, updated.resourceUri, mode,
+                    ).getOrThrow()
+                }.onFailure { t ->
+                    Log.w(
+                        SHARING_LOG_TAG,
+                        "updateShare: access changed for ${updated.resourceUri} but failed to " +
+                                "notify ${updatedReceiver.webId} of the new level; the receiver's " +
+                                "view will sync on their next refresh.",
+                        t,
+                    )
+                }
+            }
+        }
+        return result
+    }
 
     override suspend fun revokeShare(
         webId: String,
@@ -590,7 +612,10 @@ internal class SharingManagerImplementation : SharingManager {
         n: ShareNotification,
     ) {
         when (n.type) {
-            ShareNotificationType.OFFER, ShareNotificationType.ACCEPTED -> runCatching {
+            ShareNotificationType.OFFER,
+            ShareNotificationType.ACCEPTED,
+            ShareNotificationType.UPDATED,
+                -> runCatching {
                 val resourceUri = encodeUriString(n.resourceUri)
                 val access = helper.probeReceivedAccess(webId, resourceUri)
                 if (access is ReceivedAccess.Denied) return@runCatching

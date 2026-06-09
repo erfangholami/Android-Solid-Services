@@ -5,6 +5,7 @@ package com.erfangholami.androidsolidservices.shared.model.sharing
  *
  * Maps to Activity Streams 2 / SolidShare activity types:
  * - [OFFER]    → `as:Offer`       — owner is granting access to me
+ * - [UPDATED]  → `as:Update`      — owner changed the access level they grant me
  * - [ACCEPTED] → `as:Accept`      — owner has granted an AccessRequest I sent
  * - [UNDO]     → `as:Undo`        — owner has retracted access they gave me
  * - [REJECT]   → `as:Reject`      — owner has declined an AccessRequest I sent
@@ -25,6 +26,14 @@ package com.erfangholami.androidsolidservices.shared.model.sharing
 public enum class ShareNotificationType {
     /** Sender is offering access. */
     OFFER,
+
+    /**
+     * Sender previously granted access and has now **changed the level** they
+     * grant me — widened or narrowed it. `as:Update`; `resourceUri` is the
+     * resource and `mode` the new level. Treated like [OFFER] for received-share
+     * syncing, so the stored row's mode is updated in place.
+     */
+    UPDATED,
 
     /** Sender previously offered access and has now revoked it. */
     UNDO,

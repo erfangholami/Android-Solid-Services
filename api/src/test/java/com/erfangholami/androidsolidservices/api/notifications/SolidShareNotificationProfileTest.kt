@@ -17,6 +17,7 @@ class SolidShareNotificationProfileTest {
         val slugs = SolidShareNotificationProfile.slugs
         assertEquals("solidshare-offer", slugs.offer)
         assertEquals("solidshare-undo", slugs.undo)
+        assertEquals("solidshare-update", slugs.update)
         assertEquals("solidshare-request", slugs.request)
         assertEquals("solidshare-reject", slugs.reject)
         assertEquals("solidshare-accept", slugs.accept)
@@ -29,6 +30,7 @@ class SolidShareNotificationProfileTest {
         val custom = object : NotificationSlugs {
             override val offer: String = "myapp-offer"
             override val undo: String = "myapp-undo"
+            override val update: String = "myapp-update"
             override val request: String = "myapp-request"
             override val reject: String = "myapp-reject"
             override val accept: String = "myapp-accept"
