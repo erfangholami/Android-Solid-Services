@@ -4,6 +4,7 @@ import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.collapseByReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.DC
@@ -117,20 +118,26 @@ public class GivenSharesIndexRDF : SolidRDFResource {
         }
     }
 
-    /** Every share: reified records first, then any legacy rows they don't supersede. */
+    /**
+     * Every share, one row per `(receiver, resourceUri)` at the strongest mode:
+     * reified records first, then any legacy rows for pairs they don't cover. The
+     * several implied acl:modes a grant writes (e.g. Read+Append for "Add") are
+     * folded into the single logical level via [collapseByReceiver], so a receiver
+     * never appears more than once per resource.
+     */
     public fun getShares(vocab: ShareVocabulary = SolidShareVocabulary): List<GivenShare> {
         val nodeShares = getShareNodes(vocab).flatMap { node ->
             node.modes.map { mode ->
                 GivenShare(node.receiver, mode, node.resourceUri, node.createdAt)
             }
         }
-        val covered = nodeShares
-            .map { Triple(it.receiver.toRdfSubject(), it.resourceUri, it.mode) }
+        val coveredPairs = nodeShares
+            .map { it.receiver.toRdfSubject() to it.resourceUri }
             .toSet()
         val legacy = getLegacyFlatShares().filter {
-            Triple(it.receiver.toRdfSubject(), it.resourceUri, it.mode) !in covered
+            (it.receiver.toRdfSubject() to it.resourceUri) !in coveredPairs
         }
-        return nodeShares + legacy
+        return (nodeShares + legacy).collapseByReceiver()
     }
 
     private fun groupSubjects(all: List<RdfQuad>): Set<String> = all

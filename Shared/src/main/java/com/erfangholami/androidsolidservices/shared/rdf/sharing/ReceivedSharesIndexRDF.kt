@@ -4,6 +4,7 @@ import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.collapseByOwner
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
@@ -99,13 +100,18 @@ public class ReceivedSharesIndexRDF : SolidRDFResource {
             )
         }
 
-    /** Every received share: reified records first, then any legacy rows they don't supersede. */
+    /**
+     * Every received share, one row per `(ownerWebId, resourceUri)` at the
+     * strongest mode: reified records first, then any legacy rows for pairs they
+     * don't cover, folded via [collapseByOwner] so an owner never appears more
+     * than once per resource.
+     */
     public fun getShares(vocab: ShareVocabulary = SolidShareVocabulary): List<ReceivedShare> {
         val nodeShares = getShareNodes(vocab).map {
             ReceivedShare(it.ownerWebId, it.mode, it.resourceUri, it.addedAt)
         }
         val covered = nodeShares.map { it.ownerWebId to it.resourceUri }.toSet()
         val legacy = getLegacyFlatShares().filter { (it.ownerWebId to it.resourceUri) !in covered }
-        return nodeShares + legacy
+        return (nodeShares + legacy).collapseByOwner()
     }
 }

@@ -20,21 +20,21 @@ public enum class ShareMode {
 
     /**
      * The full set of WAC `acl:mode` predicates a grant of this mode must
-     * write. WAC has **no mode subsumption** — `acl:Write` grants neither
-     * `acl:Read` nor `acl:Append` — so a UI capability that's meant to
-     * include reading has to assert every implied mode explicitly:
+     * write. WAC has **no mode subsumption** — `acl:Write` does not grant
+     * `acl:Read` — so a UI capability that's meant to include reading has to
+     * assert `acl:Read` explicitly:
      *
-     *  - [READ]   → `acl:Read`
-     *  - [APPEND] → `acl:Read`, `acl:Append`  (you must read to append usefully)
-     *  - [WRITE]  → `acl:Read`, `acl:Append`, `acl:Write`
+     *  - [READ]   → `acl:Read`                ("View")
+     *  - [APPEND] → `acl:Read`, `acl:Append`  ("Add": read + append)
+     *  - [WRITE]  → `acl:Read`, `acl:Write`   ("Edit": read + modify)
      *
-     * Without this a "Write" receiver could overwrite a resource they cannot
-     * GET.
+     * Without the explicit `acl:Read` a "Write" receiver could overwrite a
+     * resource they cannot GET.
      */
     public fun impliedAclModes(): Set<String> = when (this) {
         READ -> setOf(ACL.READ)
         APPEND -> setOf(ACL.READ, ACL.APPEND)
-        WRITE -> setOf(ACL.READ, ACL.APPEND, ACL.WRITE)
+        WRITE -> setOf(ACL.READ, ACL.WRITE)
     }
 
     public companion object {
@@ -53,6 +53,19 @@ public enum class ShareMode {
             predicates.contains(ACL.WRITE) -> WRITE
             predicates.contains(ACL.APPEND) -> APPEND
             predicates.contains(ACL.READ) -> READ
+            else -> null
+        }
+
+        /**
+         * Picks the most permissive of a collection of [ShareMode]s
+         * (Write > Append > Read), or `null` if empty. Used to fold the several
+         * implied acl:modes a grant writes (e.g. Read+Append for "Add") back into
+         * the single logical level shown per receiver.
+         */
+        public fun strongest(modes: Collection<ShareMode>): ShareMode? = when {
+            modes.contains(WRITE) -> WRITE
+            modes.contains(APPEND) -> APPEND
+            modes.contains(READ) -> READ
             else -> null
         }
     }

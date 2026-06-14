@@ -7,6 +7,7 @@ import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.collapseByReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.ACP
@@ -201,7 +202,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
                 }
             }
         }
-        return shares.distinct()
+        return shares.collapseByReceiver()
     }
 
     override suspend fun ensureOwnerOnly(
@@ -412,18 +413,6 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
 
         is ShareReceiver.Public ->
             quads.any { it.subject == matcher && it.predicate == ACP.AGENT && it.`object` == ACP.PUBLIC_AGENT }
-    }
-
-    private fun policyOnlyAllows(
-        quads: List<com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad>,
-        policy: String,
-        mode: ShareMode,
-    ): Boolean {
-        val allowed = quads
-            .filter { it.subject == policy && it.predicate == ACP.ALLOW }
-            .map { it.`object` }
-            .toSet()
-        return allowed.size == 1 && allowed.first() == mode.toAclPredicate()
     }
 
     private fun receiversFromMatcher(

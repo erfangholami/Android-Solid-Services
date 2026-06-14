@@ -8,6 +8,7 @@ import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
+import com.erfangholami.androidsolidservices.shared.model.sharing.collapseByReceiver
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import java.net.URI
@@ -157,7 +158,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
                 }
             }
         }
-        return shares.distinct()
+        return shares.collapseByReceiver()
     }
 
     override suspend fun ensureOwnerOnly(
