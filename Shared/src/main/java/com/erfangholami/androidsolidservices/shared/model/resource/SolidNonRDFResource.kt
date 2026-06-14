@@ -45,6 +45,18 @@ public open class SolidNonRDFResource : NonRDFResource, SolidResource {
 
     override fun getMetadata(): SolidMetadata = metadata
 
+    /** The size of this resource in bytes (its `Content-Length`), or `0` when the server did not report one. */
+    public fun getSize(): Long = metadata.contentLength.takeIf { it >= 0 } ?: 0L
+
+    /** The last-modified time in epoch milliseconds (the `Last-Modified` header), or `null` when absent. */
+    public fun getLastModified(): Long? = parseHttpDateMillis(metadata.lastModified)
+
+    /**
+     * The creation time in epoch milliseconds. Always `null` for a binary resource: HTTP exposes no
+     * creation header, and a non-RDF resource carries no triples from which to read `dcterms:created`.
+     */
+    public fun getCreatedTime(): Long? = null
+
     override fun writeToParcel(dest: Parcel, flags: Int) {
         super.writeToParcel(dest, flags)
     }

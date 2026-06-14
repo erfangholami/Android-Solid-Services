@@ -2,7 +2,8 @@ package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.vocab.DC
+import com.erfangholami.androidsolidservices.shared.vocab.STAT
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
@@ -46,6 +47,30 @@ public open class SolidRDFResource : RDFResource, SolidResource {
     ) : super(identifier, contentType, quads, headers)
 
     override fun getMetadata(): SolidMetadata = metadata
+
+    /** The size of this resource in bytes (its `Content-Length`), or `0` when the server did not report one. */
+    public fun getSize(): Long = metadata.contentLength.takeIf { it >= 0 } ?: 0L
+
+    /**
+     * The last-modified time in epoch milliseconds. Prefers this resource's own `dcterms:modified`
+     * (then `stat:mtime`) triple and falls back to the `Last-Modified` header. `null` when none is present.
+     */
+    public fun getLastModified(): Long? {
+        val subject = getIdentifier().toString()
+        return findPropertyForSubject(subject, DC.MODIFIED)?.let(::parseIsoInstantMillis)
+            ?: statSecondsToMillis(findPropertyForSubject(subject, STAT.MTIME)?.toLongOrNull())
+            ?: parseHttpDateMillis(metadata.lastModified)
+    }
+
+    /**
+     * The creation time in epoch milliseconds, from this resource's own `dcterms:created`
+     * (then `stat:ctime`) triple, or `null` when neither is present.
+     */
+    public fun getCreatedTime(): Long? {
+        val subject = getIdentifier().toString()
+        return findPropertyForSubject(subject, DC.CREATED)?.let(::parseIsoInstantMillis)
+            ?: statSecondsToMillis(findPropertyForSubject(subject, STAT.CTIME)?.toLongOrNull())
+    }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         super.writeToParcel(dest, flags)
