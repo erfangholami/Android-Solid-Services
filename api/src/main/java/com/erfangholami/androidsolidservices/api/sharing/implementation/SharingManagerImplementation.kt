@@ -646,7 +646,7 @@ internal class SharingManagerImplementation : SharingManager {
                     webId, podRoot,
                     ReceivedShare(
                         ownerWebId = granted?.owner ?: n.ownerWebId,
-                        mode = granted?.mode ?: n.mode ?: ShareMode.READ,
+                        mode = n.mode ?: granted?.mode ?: ShareMode.READ,
                         resourceUri = resourceUri.toString(),
                         addedAt = n.publishedAt ?: nowIsoDateTime(),
                     ),
