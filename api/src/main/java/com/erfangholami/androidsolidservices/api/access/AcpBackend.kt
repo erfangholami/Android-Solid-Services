@@ -74,7 +74,6 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         val priorPolicySubjects = keep
             .filter { it.predicate == ACP.ALL_OF && it.`object` in priorMatcherSubjects }
             .map { it.subject }
-            .filter { policyOnlyAllows(keep, it, mode) }
             .toSet()
         val priorAcSubjects = keep
             .filter { it.predicate == ACP.APPLY && it.`object` in priorPolicySubjects }
@@ -106,7 +105,11 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
             acr = freshAcr,
             acrUri = acrUri,
             receiver = receiver,
-            modes = setOf(mode.toAclPredicate()),
+            modes = if (includeImpliedModes) {
+                mode.impliedAclModes()
+            } else {
+                setOf(mode.toAclPredicate())
+            },
             isContainer = isContainer,
             ownerSelf = false,
         )
