@@ -9,7 +9,6 @@ import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -186,6 +185,18 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         additionalHeaders: Map<String, String>,
     ): SolidNetworkResponse<URI?> = withContext(Dispatchers.IO) {
         solidHttpClient.post(webid, uri, contentType, body, additionalHeaders)
+    }
+
+    override suspend fun <T : Resource> createInContainer(
+        webid: String,
+        containerUri: URI,
+        resource: T,
+    ): SolidNetworkResponse<URI?> = withContext(Dispatchers.IO) {
+        try {
+            solidHttpClient.postResource(webid, containerUri, resource)
+        } catch (e: Exception) {
+            SolidNetworkResponse.Exception(e)
+        }
     }
 
     override suspend fun putRaw(

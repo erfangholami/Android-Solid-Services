@@ -313,6 +313,48 @@ internal class SolidHttpClient(
         }
     }
 
+    suspend fun <T : Resource> postResource(
+        webId: String,
+        containerUri: URI,
+        resource: T,
+    ): SolidNetworkResponse<URI?> {
+        return try {
+            val linkType = when {
+                SolidContainer::class.java.isAssignableFrom(resource.javaClass) -> "<${LDP.BASIC_CONTAINER}>; rel=\"type\""
+                RDFResource::class.java.isAssignableFrom(resource.javaClass) -> "<${LDP.RDF_SOURCE}>; rel=\"type\""
+                else -> "<${LDP.NON_RDF_SOURCE}>; rel=\"type\""
+            }
+            val headers = buildMap {
+                put(HTTPHeaderName.LINK, linkType)
+                slugFrom(resource.getIdentifier())?.let { put("Slug", it) }
+            }
+            val response = executeAuthenticated(
+                method = "POST",
+                webId = webId,
+                uri = containerUri,
+                contentType = resource.getContentType(),
+                body = resource.getEntity().readBytes(),
+                additionalHeaders = headers,
+            )
+            if (response.isSuccessful()) {
+                invalidate(containerUri)
+                val location = response.headers[HTTPHeaderName.LOCATION]
+                    ?.let { runCatching { URI.create(it) }.getOrNull() }
+                SolidNetworkResponse.Success(location)
+            } else {
+                SolidNetworkResponse.Error(response.statusCode, response.body)
+            }
+        } catch (e: Exception) {
+            SolidNetworkResponse.Exception(e)
+        }
+    }
+
+    private fun slugFrom(identifier: URI): String? {
+        val path = identifier.rawPath?.trimEnd('/') ?: return null
+        val segment = path.substringAfterLast('/').ifBlank { return null }
+        return runCatching { java.net.URLDecoder.decode(segment, "UTF-8") }.getOrDefault(segment)
+    }
+
     suspend fun delete(
         webId: String,
         uri: URI,

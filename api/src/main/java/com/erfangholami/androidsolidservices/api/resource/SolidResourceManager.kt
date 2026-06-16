@@ -280,4 +280,10 @@ public interface SolidResourceManager {
         body: ByteArray,
         additionalHeaders: Map<String, String> = emptyMap(),
     ): SolidNetworkResponse<URI?>
+
+    public suspend fun <T : Resource> createInContainer(
+        webid: String,
+        containerUri: URI,
+        resource: T,
+    ): SolidNetworkResponse<URI?>
 }
