@@ -97,7 +97,7 @@ mavenPublishing {
             variant = "release",
         )
     )
-    coordinates("com.erfangholami.androidsolidservices", "api", "0.5.0")
+    coordinates("com.erfangholami.androidsolidservices", "api", "0.5.1")
 
     pom {
         name.set("Android Solid Services - API")
