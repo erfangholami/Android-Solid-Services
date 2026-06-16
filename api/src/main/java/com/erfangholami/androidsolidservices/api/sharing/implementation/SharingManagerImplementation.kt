@@ -36,10 +36,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.net.URI
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.concurrent.ConcurrentHashMap
 
 internal class SharingManagerImplementation : SharingManager {
 
@@ -77,6 +85,8 @@ internal class SharingManagerImplementation : SharingManager {
     private val notifications: NotificationsManager
     private val saiReader: SaiAccessGrantReader
 
+    private val receivedIndexLocks = ConcurrentHashMap<String, Mutex>()
+
     private constructor(resourceManager: SolidResourceManager, profile: SharingProfile) {
         this.rm = resourceManager
         this.profile = profile
@@ -84,6 +94,9 @@ internal class SharingManagerImplementation : SharingManager {
         this.notifications = NotificationsManager.getInstance(rm)
         this.saiReader = SaiAccessGrantReader(rm)
     }
+
+    private fun receivedIndexLock(webId: String): Mutex =
+        receivedIndexLocks.computeIfAbsent(webId) { Mutex() }
 
     override suspend fun getStoredGivenShares(
         webId: String,
@@ -518,6 +531,7 @@ internal class SharingManagerImplementation : SharingManager {
     override suspend fun refreshReceivedShares(
         webId: String,
     ): SolidNetworkResponse<List<ReceivedShare>> = wrap {
+        receivedIndexLock(webId).withLock {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
         val stored = helper.readReceivedShares(webId, podRoot)
@@ -556,6 +570,7 @@ internal class SharingManagerImplementation : SharingManager {
             }
         }
         verified
+        }
     }
 
     override suspend fun addReceivedShare(
@@ -563,6 +578,7 @@ internal class SharingManagerImplementation : SharingManager {
         resourceUri: String,
         ownerHint: String?,
     ): SolidNetworkResponse<ReceivedShare?> = wrap {
+        receivedIndexLock(webId).withLock {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
         val uri = encodeUriString(resourceUri)
@@ -604,6 +620,7 @@ internal class SharingManagerImplementation : SharingManager {
                     ?: throw SharingException.AccessIndeterminate(canonicalUri)
             }
         }
+        }
     }
 
     override suspend fun removeReceivedShare(
@@ -611,21 +628,27 @@ internal class SharingManagerImplementation : SharingManager {
         resourceUri: String,
         ownerWebId: String,
     ): SolidNetworkResponse<Unit> = wrap {
-        val podRoot = helper.getPodRoot(webId)
-        helper.ensurePrivateSharesContainer(webId, podRoot)
-        helper.removeReceivedShare(
-            webId, podRoot, encodeUriString(resourceUri).toString(), ownerWebId,
-        )
+        receivedIndexLock(webId).withLock {
+            val podRoot = helper.getPodRoot(webId)
+            helper.ensurePrivateSharesContainer(webId, podRoot)
+            helper.removeReceivedShare(
+                webId, podRoot, encodeUriString(resourceUri).toString(), ownerWebId,
+            )
+        }
     }
 
     override suspend fun syncReceivedShares(
         webId: String,
         notifications: List<ShareNotification>,
     ): SolidNetworkResponse<List<ReceivedShare>> = wrap {
-        val podRoot = helper.getPodRoot(webId)
-        helper.ensurePrivateSharesContainer(webId, podRoot)
-        notifications.forEach { n -> applyReceivedShareNotification(webId, podRoot, n) }
-        helper.readReceivedShares(webId, podRoot)
+        receivedIndexLock(webId).withLock {
+            val podRoot = helper.getPodRoot(webId)
+            helper.ensurePrivateSharesContainer(webId, podRoot)
+            collapseToTerminalReceivedNotifications(notifications).forEach { n ->
+                applyReceivedShareNotification(webId, podRoot, n)
+            }
+            helper.readReceivedShares(webId, podRoot)
+        }
     }
 
     private suspend fun applyReceivedShareNotification(
@@ -976,4 +999,38 @@ internal class SharingManagerImplementation : SharingManager {
         }
     }
 
+}
+
+private val PRESENCE_CHANGING_TYPES = setOf(
+    ShareNotificationType.OFFER,
+    ShareNotificationType.ACCEPTED,
+    ShareNotificationType.UPDATED,
+    ShareNotificationType.UNDO,
+)
+
+internal fun collapseToTerminalReceivedNotifications(
+    notifications: List<ShareNotification>,
+): List<ShareNotification> =
+    notifications
+        .filter { it.type in PRESENCE_CHANGING_TYPES }
+        .groupBy { IriUtils.canonical(it.ownerWebId) to IriUtils.canonical(it.resourceUri) }
+        .values
+        .mapNotNull { group -> group.maxWithOrNull(NOTIFICATION_RECENCY) }
+
+private fun ShareNotification.isGrant(): Boolean = type != ShareNotificationType.UNDO
+
+internal val NOTIFICATION_RECENCY: Comparator<ShareNotification> =
+    compareBy<ShareNotification>(
+        { parseNotificationInstant(it.publishedAt) },
+        { if (it.isGrant()) 1 else 0 },
+        { it.notificationUri },
+    )
+
+internal fun parseNotificationInstant(value: String?): Instant {
+    if (value.isNullOrBlank()) return Instant.MIN
+    return runCatching { Instant.parse(value) }.getOrNull()
+        ?: runCatching { OffsetDateTime.parse(value).toInstant() }.getOrNull()
+        ?: runCatching { LocalDateTime.parse(value).toInstant(ZoneOffset.UTC) }.getOrNull()
+        ?: runCatching { LocalDate.parse(value).atStartOfDay(ZoneOffset.UTC).toInstant() }.getOrNull()
+        ?: Instant.MIN
 }
