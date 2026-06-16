@@ -1,21 +1,15 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
+# Android Solid Services — app R8/ProGuard rules. This is the only minified module
+# (isMinifyEnabled = true); the three libraries ship their rules via consumer-rules.pro.
 #
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
-
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
-
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# The app needs no keep rules of its own for correctness:
+#  - kotlinx.serialization is covered by the R8 rules embedded in kotlinx-serialization-core.
+#  - The reflective resource construction (SolidResourceParser) targets Shared types and is kept
+#    by Shared's consumer-rules.pro, which merges in through the api/client AAR dependencies.
+#  - Bound services and activities are kept via the AndroidManifest, Hilt entry points via Hilt's
+#    own rules, and WorkManager/Compose/AppAuth/okhttp ship their own consumer rules.
+#
+# Keep line-number info so release crash reports deobfuscate against the generated mapping.txt,
+# while still obfuscating the original .kt file names. Remove these two lines if deobfuscatable
+# stack traces are not needed.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
