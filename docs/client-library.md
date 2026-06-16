@@ -19,7 +19,7 @@ android {
     }
 }
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.4.1")
+    implementation("com.erfangholami.androidsolidservices:client:0.5.0")
 }
 ```
 
@@ -29,12 +29,14 @@ dependencies {
 
 ## Entry Point: `Solid`
 
-All three clients are obtained from the `Solid` companion object. Each is a process-scoped singleton.
+All clients are obtained from the `Solid` companion object. Each is a process-scoped singleton.
 
 ```kotlin
-val signInClient      = Solid.getSignInClient(context)
-val resourceClient    = Solid.getResourceClient(context)
-val contactsModule    = Solid.getContactsDataModule(context)
+val signInClient        = Solid.getSignInClient(context)
+val resourceClient      = Solid.getResourceClient(context)
+val contactsModule      = Solid.getContactsDataModule(context)
+val sharingClient       = Solid.getSharingClient(context)        // since 0.5.0
+val notificationsClient = Solid.getNotificationsClient(context)  // since 0.5.0
 ```
 
 ---
@@ -112,25 +114,42 @@ All methods are `suspend` functions. They throw a subclass of `SolidResourceExce
 // Emits connection state of the resource IPC service
 fun resourceServiceConnectionState(): Flow<Boolean>
 
-// Fetch the authenticated user's WebID document
-suspend fun getWebId(): WebId
+// Fetch a user's WebID document
+suspend fun getWebId(webId: String): WebId
 
 // Fetch HTTP headers only (no body) — returns SolidMetadata with ETag, Content-Type,
-// WAC-Allow, ACL link, Accept-Patch/Post, Last-Modified, and other Solid headers.
-suspend fun head(webId: String, resourceUrl: String): SolidNetworkResponse<SolidMetadata>
+// Content-Length, WAC-Allow, Link relations (acl, describedby, type, storageDescription),
+// Accept-Patch/Post/Put, and Last-Modified — with no body transfer.
+suspend fun head(webId: String, resourceUrl: String): SolidMetadata
 
-// Read a resource. clazz must extend RDFSource or NonRDFSource.
-suspend fun <T : Resource> read(resourceUrl: String, clazz: Class<T>): T
+// Read a resource. clazz must extend RDFResource or NonRDFResource.
+suspend fun <T : SolidResource> read(webId: String, resourceUrl: String, clazz: Class<T>): T
 
 // Create a new resource on the pod
-suspend fun <T : Resource> create(resource: T): T
+suspend fun <T : SolidResource> create(webId: String, resource: T): T
 
-// Replace an existing resource
-suspend fun <T : Resource> update(resource: T): T
+// Replace an existing resource. Pass ifMatch (an ETag from a prior read/head) for a
+// conditional PUT that fails with 412 on concurrent modification.  (ifMatch since 0.5.0)
+suspend fun <T : SolidResource> update(webId: String, resource: T, ifMatch: String? = null): T
+
+// Apply an N3 Patch to an RDF resource — atomic partial update, no full read needed.
+// Preferred over update() when only a subset of triples changes.  (since 0.5.0)
+suspend fun patch(webId: String, uri: URI, patch: N3Patch)
 
 // Delete a resource
-suspend fun <T : Resource> delete(resource: T): T
+suspend fun <T : SolidResource> delete(webId: String, resource: T): T
+
+// Read an LDP container; each contained resource is enriched with its own HEAD metadata
+suspend fun readContainer(webId: String, containerUrl: String): SolidContainer
+
+// Recursively delete a container and all of its contents (containerUri must end with '/')
+suspend fun deleteContainer(webId: String, containerUri: URI)
 ```
+
+!!! tip "N3 Patch & ETags over IPC (0.5.0)"
+    `head()`, `patch()`, and the `ifMatch` parameter on `update()` were added to the in-process
+    `api` in 0.4.0; since 0.5.0 they are reachable over IPC too, so client apps get HEAD metadata,
+    atomic partial RDF updates, and optimistic-concurrency writes without the host app.
 
 ### Resource types
 
@@ -143,15 +162,17 @@ suspend fun <T : Resource> delete(resource: T): T
 
 ```kotlin
 val resourceClient = Solid.getResourceClient(context)
+val webId = signInClient.getAccount()?.webId ?: return  // persisted after login
 
 resourceClient.resourceServiceConnectionState().collect { connected ->
     if (connected) {
         try {
             val note = resourceClient.read(
+                webId,
                 "https://yourpod.example/notes/hello.ttl",
                 MyNote::class.java
             )
-            val updated = resourceClient.update(note.copy(body = "updated text"))
+            val updated = resourceClient.update(webId, note.copy(body = "updated text"))
         } catch (e: SolidException) {
             handleException(e)
         }
@@ -231,6 +252,160 @@ suspend fun addContactToGroup(contactUri: String, groupUri: String): FullGroup?
 
 suspend fun removeContactFromGroup(contactUri: String, groupUri: String): FullGroup?
 ```
+
+---
+
+## SolidSharingClient
+
+!!! note "New in 0.5.0"
+
+Creates, lists, and revokes shares of pod resources; tracks shares received from others; browses an
+owner's catalog; and accepts or rejects access requests. Sharing is enforced by the pod's access
+control — Web Access Control (WAC), or Access Control Policy (ACP) on servers that use it. Obtain via
+`Solid.getSharingClient(context)`.
+
+All methods are `suspend` functions and throw a subclass of `SolidException` on failure. Collect
+`connectionState()` and wait for `true` before issuing calls.
+
+### Share mode and receiver
+
+```kotlin
+// Access level granted to a receiver
+enum class ShareMode { READ, APPEND, WRITE }  // surfaced as View / Add / Edit
+
+// Who the share is for
+sealed class ShareReceiver {
+    data class WebIdReceiver(val webId: String)     // a single Solid user
+    data class GroupReceiver(val groupUri: String)  // a vcard:Group; members inherit access
+    data object Public                              // any agent (resource reachable by URL)
+}
+```
+
+A grant writes the full set of implied WAC modes — **Add** = Read + Append, **Edit** = Read + Write —
+and the index collapses them back to one logical mode per receiver.
+
+### Methods
+
+```kotlin
+// Connection state of the sharing IPC service
+fun connectionState(): Flow<Boolean>
+
+// --- Shares you give ---
+
+// Grant `receiver` access of `mode` on `resourceUri` (a container shares to its members too).
+// When notifyReceiver is true and receiver is a WebID, an offer is delivered to their inbox.
+suspend fun createShare(
+    webId: String,
+    resourceUri: String,
+    mode: ShareMode,
+    receiver: ShareReceiver,
+    notifyReceiver: Boolean = true,
+): GivenShare?
+
+// Change the access mode of an existing share
+suspend fun updateShare(webId: String, resourceUri: String, mode: ShareMode, receiver: ShareReceiver): GivenShare?
+
+// Remove a receiver's access (sends a best-effort withdrawal notification for a WebID receiver)
+suspend fun revokeShare(webId: String, resourceUri: String, receiver: ShareReceiver)
+
+// Fast read from the on-pod index; re-validate against live ACLs with refreshGivenShares
+suspend fun getStoredGivenShares(webId: String): List<GivenShare>
+suspend fun refreshGivenShares(webId: String): List<GivenShare>
+
+// Authoritative: read the shares straight from a resource's ACL
+suspend fun getGivenSharesForResource(webId: String, resourceUri: String): List<GivenShare>
+
+// Rebuild the index by walking the pod's ACLs (expensive — expose as an explicit user action)
+suspend fun rebuildGivenIndex(webId: String): List<GivenShare>
+
+// --- Shares you receive ---
+
+suspend fun getStoredReceivedShares(webId: String): List<ReceivedShare>
+suspend fun refreshReceivedShares(webId: String): List<ReceivedShare>
+
+// Start tracking a resource shared with you (e.g. after scanning a QR / opening a share link)
+suspend fun addReceivedShare(webId: String, resourceUri: String): ReceivedShare?
+suspend fun removeReceivedShare(webId: String, resourceUri: String, ownerWebId: String)
+
+// --- Access grants, requests, catalog ---
+
+// Every observable access relationship (given, received, incoming requests, SAI grants), unified
+suspend fun getAccessGrants(webId: String): List<AccessGrant>
+
+// Decide on an incoming access request (from SolidNotificationsClient.listRequests)
+suspend fun acceptShareRequest(webId: String, request: ShareRequest): GivenShare?
+suspend fun rejectShareRequest(webId: String, request: ShareRequest, reason: String? = null)
+
+// Public catalog of resources others may request access to (the resources stay private)
+suspend fun publishCatalogEntry(webId: String, entry: CatalogEntry)
+suspend fun removeCatalogEntry(webId: String, resourceUri: String)
+suspend fun getOwnerCatalog(viewerWebId: String, ownerWebId: String): List<CatalogEntry>
+```
+
+### Example
+
+```kotlin
+val sharingClient = Solid.getSharingClient(context)
+
+sharingClient.connectionState().collect { connected ->
+    if (connected) {
+        try {
+            // Share a note with Bob at Edit (read + write) and notify his inbox
+            sharingClient.createShare(
+                webId = myWebId,
+                resourceUri = "https://mypod.example/notes/hello.ttl",
+                mode = ShareMode.WRITE,
+                receiver = ShareReceiver.WebIdReceiver("https://bob.example/profile/card#me"),
+            )
+
+            // List what I've shared, and act on incoming requests
+            val given = sharingClient.getStoredGivenShares(myWebId)
+            val grants = sharingClient.getAccessGrants(myWebId)
+        } catch (e: SolidException) {
+            handleException(e)
+        }
+    }
+}
+```
+
+---
+
+## SolidNotificationsClient
+
+!!! note "New in 0.5.0"
+
+Reads and sends share-notification inbox messages over [Linked Data Notifications](https://www.w3.org/TR/ldn/)
+(LDN). Obtain via `Solid.getNotificationsClient(context)`.
+
+This layer is **pull-only** — there is no push subscription. Call `listNotifications()` /
+`listRequests()` from a periodic background worker (Android's effective minimum is 15 minutes) and on
+user-initiated refresh. All methods are `suspend` functions and throw `SolidException` on failure.
+
+```kotlin
+// Connection state of the notifications IPC service
+fun connectionState(): Flow<Boolean>
+
+// Incoming share notifications (offers, accepts, withdrawals, rejections)
+suspend fun listNotifications(webId: String): List<ShareNotification>
+
+// Incoming access requests — others asking for access to this user's resources
+suspend fun listRequests(webId: String): List<ShareRequest>
+
+// Tell receiverWebId you granted / withdrew access (used internally by createShare/revokeShare)
+suspend fun sendOffer(ownerWebId: String, receiverWebId: String, resourceUri: String, mode: ShareMode)
+suspend fun sendUndo(ownerWebId: String, receiverWebId: String, resourceUri: String)
+
+// Ask ownerWebId for access; decline a request
+suspend fun sendRequest(requesterWebId: String, ownerWebId: String, resourceUri: String, requestedMode: ShareMode, summary: String? = null)
+suspend fun sendReject(ownerWebId: String, requesterWebId: String, resourceUri: String, reason: String? = null)
+
+// Garbage-collect the inbox: drop Offer/Undo pairs and (optionally) items older than an ISO instant
+suspend fun compactInbox(webId: String, olderThanIso: String? = null)
+```
+
+To accept or reject a request returned by `listRequests()`, pass it to
+`SolidSharingClient.acceptShareRequest()` / `rejectShareRequest()` — accepting creates the share and
+notifies the requester.
 
 ---
 

@@ -17,6 +17,7 @@ Despite Solid's growing adoption, the Android ecosystem had no native way to int
 - **Single sign-in** — log in once in the ASS app; every other app on your device reuses that session.
 - **Multi-account** — manage multiple Solid pod accounts and switch between them from Settings.
 - **Permission control** — each app must request access; you approve or deny from within ASS.
+- **Resource sharing** — share pod resources and containers with other people at View / Add / Edit access (Web Access Control or Access Control Policy), with share links and a Linked Data Notifications inbox for offers and access requests.
 - **SDK** — two libraries (`client`, `api`) let developers integrate Solid into their Android apps with just a few lines of Kotlin.
 
 ## See It in Action

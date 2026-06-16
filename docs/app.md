@@ -9,6 +9,8 @@ The **Android Solid Services** app is the hub of the ecosystem. It manages your 
 - **Access control** — third-party apps must request a grant; you see the app name and approve or deny from within ASS.
 - **Resource management** — proxy CRUD operations on pod resources for connected apps.
 - **Contacts data module** — manage address books, contacts, and groups stored on the pod.
+- **Resource sharing** *(0.5.0)* — share resources and containers with other people at View / Add / Edit access (WAC or ACP), with share links and a public catalog of given/received shares.
+- **Notifications inbox** *(0.5.0)* — a Linked Data Notifications inbox for share offers and access requests, with accept/reject handling.
 
 ## Screenshots
 
@@ -18,7 +20,7 @@ The **Android Solid Services** app is the hub of the ecosystem. It manages your 
 
 ## How the App Works
 
-When a third-party app wants to use Solid, it binds to one of ASS's three AIDL services:
+When a third-party app wants to use Solid, it binds to one of ASS's AIDL services:
 
 ```
 Third-party app
@@ -28,7 +30,9 @@ Third-party app
 Android Solid Services
       ├── ASSAuthenticatorService      ← login, access grants, account switching
       ├── ASSResourceService           ← read / create / update / delete pod resources
-      └── SolidDataModulesService      ← contacts data module (address books, contacts, groups)
+      ├── SolidDataModulesService      ← contacts data module (address books, contacts, groups)
+      ├── ASSSharingService            ← share / revoke resources, access grants (0.5.0)
+      └── ASSNotificationsService      ← Linked Data Notifications inbox (0.5.0)
 ```
 
 The third-party app never handles tokens or pod credentials directly. ASS performs all authenticated requests on its behalf.
@@ -45,8 +49,8 @@ Download the latest APK from the [GitHub Releases page](https://github.com/erfan
 | State / architecture | MVVM, ViewModel, StateFlow                                  |
 | Dependency injection | Hilt                                                        |
 | IPC                  | Android AIDL bound services                                 |
-| Authentication       | OpenID Connect + DPoP (`net.openid:appauth`)                |
-| Persistence          | DataStore + Protocol Buffers (access grants, user profiles) |
+| Authentication       | OpenID Connect + DPoP or Bearer tokens (`net.openid:appauth`) |
+| Persistence          | DataStore + Protocol Buffers (access grants, user profiles); token store encrypted at rest (AES-256-GCM, Android Keystore) |
 | Solid protocol       | Custom `SolidHttpClient` (OkHttp-based)                     |
 | Min SDK              | 26                                                          |
 | Target SDK           | 33                                                          |

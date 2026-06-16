@@ -1,6 +1,6 @@
 # Android Solid Services API Library
 
-The **Android Solid Services API** library lets your app communicate with a Solid pod server directly — no Android Solid Services host app required. It handles OpenID Connect authentication with DPoP and exposes interfaces for resource management and the Contacts data module.
+The **Android Solid Services API** library lets your app communicate with a Solid pod server directly — no Android Solid Services host app required. It handles OpenID Connect authentication (using DPoP when the provider supports it, otherwise Bearer tokens) and exposes interfaces for resource management and the Contacts data module.
 
 **Use this when:**
 
@@ -20,7 +20,7 @@ android {
     }
 }
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.4.1")
+    implementation("com.erfangholami.androidsolidservices:api:0.5.0")
 }
 ```
 
@@ -30,7 +30,7 @@ dependencies {
 
 ## Authenticator
 
-Manages OpenID Connect sessions with DPoP (Demonstration of Proof-of-Possession) support, including multi-account handling.
+Manages OpenID Connect sessions — DPoP (Demonstration of Proof-of-Possession) when the provider supports it, Bearer tokens otherwise — including multi-account handling.
 
 ```kotlin
 val authenticator = Authenticator.getInstance(context)
@@ -53,31 +53,33 @@ val (intent, error) = authenticator.createAuthenticationIntent(
     webId = "https://yourpod.example/profile/card#me",  // optional
     oidcIssuer = null,         // optional; derived from webId if omitted
     appName = "My App",
-    redirectUri = "myapp://callback"
+    redirectUri = "myapp://callback",
+    clientId = null,           // optional; supply a hosted Client ID Document URL (see below)
 )
-startActivity(intent)
+launcher.launch(intent)        // an ActivityResultLauncher for the redirect Activity
 
-// 2. In your Activity/Fragment, handle the redirect result
-val result = authenticator.submitAuthorizationResponse(authResponse, authException)
-// result is the WebID string on success, or null on failure
+// 2. Handle the redirect result — pass the result Intent straight through
+val webId = authenticator.submitAuthorizationResponse(result.data)
+// webId is the authorized WebID on success, or null if denied/cancelled
 ```
 
 ### All methods
 
 ```kotlin
-// Create intent for browser-based login
+// Create intent for browser-based login.
+// Pass clientId — a hosted Solid-OIDC Client ID Document URL — to use a stable client identity
+// instead of dynamic registration; appName is ignored when clientId is set.  (clientId since 0.5.0)
 suspend fun createAuthenticationIntent(
     webId: String? = null,
     oidcIssuer: String? = null,
     appName: String,
     redirectUri: String,
+    clientId: String? = null,
 ): Pair<Intent?, String?>
 
-// Handle the redirect from the browser after login
-suspend fun submitAuthorizationResponse(
-    authResponse: AuthorizationResponse?,
-    authException: AuthorizationException?,
-): String?                          // returns WebID on success, null on failure
+// Complete login: pass the result Intent delivered to your redirect Activity.
+// Returns the authorized WebID, or null if denied/cancelled.  (signature changed in 0.5.0)
+suspend fun submitAuthorizationResponse(responseData: Intent?): String?
 
 // Build logout intent for browser-based session termination
 suspend fun getTerminationSessionIntent(
@@ -85,21 +87,9 @@ suspend fun getTerminationSessionIntent(
     logoutRedirectUrl: String,
 ): Pair<Intent?, String?>
 
-// Get (and optionally refresh) the current token
-suspend fun getLastTokenResponse(
-    webId: String,
-    forceRefresh: Boolean = false,
-): TokenResponse?
-
-// Get auth headers (Authorization + DPoP) for a manual HTTP request
-suspend fun getAuthHeaders(
-    webId: String,
-    httpMethod: String,
-    uri: String,
-): Map<String, String>
-
-// Update the DPoP nonce (call this when the server returns a new nonce)
-fun updateDPoPNonce(webId: String, nonce: String)
+// Re-fetch a signed-in user's WebID document and refresh the cached profile (e.g. after an
+// in-app profile edit). Leaves auth state untouched.  (since 0.5.0)
+suspend fun reloadProfile(webId: String): Profile
 
 // Synchronous profile accessors
 fun isUserAuthorized(): Boolean
@@ -113,6 +103,19 @@ suspend fun setActiveWebId(webId: String)
 suspend fun removeProfile(webId: String)
 suspend fun removeAllProfiles()
 ```
+
+!!! info "Tokens are managed for you (0.5.0)"
+    The transport-level methods `getLastTokenResponse`, `getAuthHeaders`, and `updateDPoPNonce` were
+    **removed** from the public `Authenticator` and moved to an internal session seam. Access tokens,
+    `Authorization`/`DPoP` headers, and DPoP nonces are handled inside the library — go through
+    `SolidResourceManager`, `SharingManager`, and the other managers. The persisted token store is
+    **encrypted at rest** (AES-256-GCM via an Android Keystore key), and each account uses its own
+    DPoP keypair.
+
+!!! tip "Stable client identity — Client ID Document"
+    Supplying `clientId` lets the app authenticate with a stable, hosted `client_id` instead of
+    per-device dynamic registration (which can expire and force a re-login). See
+    [Using a Solid-OIDC Client ID Document](client-id-document/README.md).
 
 ---
 
@@ -197,7 +200,20 @@ suspend fun delete(
     webid: String,
     resourceUri: URI,
 ): SolidNetworkResponse<Boolean>
+
+// Create a resource inside a container via POST (the server assigns the name, returned as the URI).
+// Lets an add-only recipient (Append access) upload into a shared container without Write.  (0.5.0)
+suspend fun <T : Resource> createInContainer(
+    webid: String,
+    containerUri: URI,
+    resource: T,
+): SolidNetworkResponse<URI?>
 ```
+
+!!! note "Response cache (0.5.0)"
+    The underlying `SolidHttpClient` now keeps an in-memory response cache — per-account keyed, with
+    TTL freshness, ETag/`Last-Modified` revalidation, single-flight de-duplication of concurrent
+    identical reads, and write-through invalidation. It is on by default and transparent to callers.
 
 ### N3Patch
 
@@ -323,4 +339,104 @@ suspend fun deleteGroup(ownerWebId: String, addressBookString: String, groupStri
 suspend fun addContactToGroup(ownerWebId: String, contactString: String, groupString: String): DataModuleResult<FullGroup>
 
 suspend fun removeContactFromGroup(ownerWebId: String, contactString: String, groupString: String): DataModuleResult<FullGroup>
+```
+
+---
+
+## SharingManager
+
+!!! note "New in 0.5.0"
+
+Creates, lists, and revokes shares of pod resources. Built on Web Access Control (WAC); pods that use
+Access Control Policy (ACP) are supported through a pluggable access-control backend selected from the
+resource's advertised authorization links. A private index pair under `{podRoot}/solidshare/shares/`
+lets the user see what they have shared and received without re-walking the pod. All methods are
+`suspend` and return `SolidNetworkResponse<T>`.
+
+```kotlin
+val sharingManager = SharingManager.getInstance(authenticator)
+// or seed it with an existing resource manager, and/or a custom profile:
+// SharingManager.getInstance(resourceManager, profile = SolidShareProfile)
+```
+
+The `ShareMode` (`READ` / `APPEND` / `WRITE`, surfaced as View / Add / Edit) and `ShareReceiver`
+(`WebIdReceiver` / `GroupReceiver` / `Public`) types are described on the
+[Client library page](client-library.md#share-mode-and-receiver).
+
+### Methods
+
+```kotlin
+// --- Shares you give ---
+suspend fun createShare(webId: String, resourceUri: String, mode: ShareMode, receiver: ShareReceiver, notifyReceiver: Boolean = true): SolidNetworkResponse<GivenShare>
+suspend fun updateShare(webId: String, resourceUri: String, mode: ShareMode, receiver: ShareReceiver, notifyReceiver: Boolean = false): SolidNetworkResponse<GivenShare>
+suspend fun revokeShare(webId: String, resourceUri: String, receiver: ShareReceiver): SolidNetworkResponse<Unit>
+
+suspend fun getStoredGivenShares(webId: String): SolidNetworkResponse<List<GivenShare>>
+suspend fun refreshGivenShares(webId: String): SolidNetworkResponse<List<GivenShare>>
+suspend fun getGivenSharesForResource(webId: String, resourceUri: String): SolidNetworkResponse<List<GivenShare>>
+suspend fun rebuildGivenIndex(webId: String): SolidNetworkResponse<List<GivenShare>>   // expensive: walks the pod's ACLs
+
+// Reset a resource to owner-only (make it private); re-assert owner Read/Write/Control after a lockout
+suspend fun makePrivate(webId: String, resourceUri: String): SolidNetworkResponse<Unit>
+suspend fun repairOwnerControl(webId: String, resourceUri: String): SolidNetworkResponse<Unit>
+
+// --- Shares you receive ---
+suspend fun getStoredReceivedShares(webId: String): SolidNetworkResponse<List<ReceivedShare>>
+suspend fun refreshReceivedShares(webId: String): SolidNetworkResponse<List<ReceivedShare>>
+suspend fun addReceivedShare(webId: String, resourceUri: String, ownerHint: String? = null): SolidNetworkResponse<ReceivedShare?>
+suspend fun removeReceivedShare(webId: String, resourceUri: String, ownerWebId: String): SolidNetworkResponse<Unit>
+// Reconcile received shares against a batch of notifications already read from the inbox
+suspend fun syncReceivedShares(webId: String, notifications: List<ShareNotification>): SolidNetworkResponse<List<ReceivedShare>>
+
+// --- Access grants, requests, catalog ---
+suspend fun getAccessGrants(webId: String): SolidNetworkResponse<List<AccessGrant>>     // given + received + requests + SAI grants
+suspend fun acceptShareRequest(webId: String, request: ShareRequest): SolidNetworkResponse<GivenShare>
+suspend fun rejectShareRequest(webId: String, request: ShareRequest, reason: String? = null): SolidNetworkResponse<Unit>
+suspend fun publishCatalogEntry(webId: String, entry: CatalogEntry): SolidNetworkResponse<Unit>
+suspend fun removeCatalogEntry(webId: String, resourceUri: String): SolidNetworkResponse<Unit>
+suspend fun getOwnerCatalog(viewerWebId: String, ownerWebId: String): SolidNetworkResponse<List<CatalogEntry>>
+
+// --- Share links ---
+fun getShareDeepLink(resourceUri: String, ownerWebId: String? = null): String   // https://solidshare.app/s?resource=…&owner=… App Link
+fun parseShareDeepLink(deepLink: String): ParsedShareLink?
+fun getShareBareUrl(resourceUri: String): String                                // plain https URL for non-Solid scanners
+```
+
+---
+
+## NotificationsManager
+
+!!! note "New in 0.5.0"
+
+The [Linked Data Notifications](https://www.w3.org/TR/ldn/) (LDN) inbox layer behind sharing. Lists
+incoming offers and access requests, sends the matching outgoing notifications, and provisions the
+user's inbox. **Pull-only** — there is no push subscription; refresh on demand or from a periodic
+worker. `SharingManager` calls into this internally on `createShare` / `updateShare` / `revokeShare`,
+so most apps only need the read and request methods directly. All methods return
+`SolidNetworkResponse<T>`.
+
+```kotlin
+val notifications = NotificationsManager.getInstance(authenticator)
+// or NotificationsManager.getInstance(resourceManager, profile = SolidShareNotificationProfile)
+```
+
+```kotlin
+// Read the inbox
+suspend fun listNotifications(webId: String): SolidNetworkResponse<List<ShareNotification>>  // syncs received_shares.ttl as a side effect
+suspend fun listRequests(webId: String): SolidNetworkResponse<List<ShareRequest>>
+
+// Provision / maintain the inbox
+suspend fun ensureInbox(webId: String): SolidNetworkResponse<String>          // public append-but-not-read; idempotent
+suspend fun compactInbox(webId: String, olderThanIso: String? = null): SolidNetworkResponse<Int>
+suspend fun deleteNotification(webId: String, notificationUri: String): SolidNetworkResponse<Boolean>
+
+// Outgoing notifications (offer / update / withdraw — used internally by SharingManager)
+suspend fun sendOffer(ownerWebId: String, receiverWebId: String, resourceUri: String, mode: ShareMode): SolidNetworkResponse<Unit>
+suspend fun sendUpdate(ownerWebId: String, receiverWebId: String, resourceUri: String, mode: ShareMode): SolidNetworkResponse<Unit>
+suspend fun sendUndo(ownerWebId: String, receiverWebId: String, resourceUri: String): SolidNetworkResponse<Unit>
+
+// Request-to-share flow
+suspend fun sendRequest(requesterWebId: String, ownerWebId: String, resourceUri: String, requestedMode: ShareMode, summary: String? = null): SolidNetworkResponse<Unit>
+suspend fun sendAccept(ownerWebId: String, requesterWebId: String, resourceUri: String, mode: ShareMode, requestUri: String? = null): SolidNetworkResponse<Unit>
+suspend fun sendReject(ownerWebId: String, requesterWebId: String, resourceUri: String, reason: String? = null): SolidNetworkResponse<Unit>
 ```

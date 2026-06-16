@@ -10,6 +10,73 @@ Library versions are published to Maven Central:
 
 ---
 
+## v0.5.0 — June 2026
+
+Headline release: **resource sharing** and a **Linked Data Notifications inbox**, plus a
+security-focused overhaul of authentication and a clean-architecture refactor of the libraries.
+**Source-breaking** for external SDK consumers (the project is pre-1.0 and unstable).
+
+### New — Resource sharing
+
+- **`SharingManager`** (`api`) / **`Solid.getSharingClient()`** (`client`): share any pod resource or
+  container with another WebID at a chosen level — **View** (Read), **Add** (append-only), or **Edit**
+  (read/write) — and change the level or revoke it later, optionally notifying the receiver.
+- Authorization works on both **Web Access Control (WAC)** and **Access Control Policy (ACP)** pods;
+  the backend is auto-selected from the resource's advertised authorization links.
+- Make a resource **private** (owner-only) in one call; add-only recipients can upload into a shared
+  container via `createInContainer(...)` without read/write on its other contents.
+- **Share links** as `https://solidshare.app/s…` Android App Links, a public catalog of given/received
+  shares (rebuildable from the pod's own ACLs), and a typed `SharingException` hierarchy.
+
+### New — Notifications & inbox (Linked Data Notifications)
+
+- **`NotificationsManager`** (`api`) / **`Solid.getNotificationsClient()`** (`client`): a full LDN
+  loop over the user's inbox. An owner offers access — or a peer requests it — the notification lands
+  in the target's inbox, and the recipient accepts or rejects, with a response sent back.
+- The inbox is auto-provisioned with **public append-but-not-read** access. Notification senders are
+  verified cross-pod by reading their WebID profile anonymously. Pull-only (no push subscription yet).
+
+### New — Authentication
+
+- **Solid-OIDC Client ID Document** — authenticate with a stable, hosted `client_id` instead of
+  per-device dynamic registration, removing forced re-logins when a provider drops an old
+  registration. See [Using a Client ID Document](client-id-document/README.md).
+- **Per-account DPoP keys** — each account gets its own DPoP keypair in the Android Keystore.
+
+### New — Resources & contacts over IPC
+
+- `head()`, `patch()`, and conditional `update(…, ifMatch)` (ETag optimistic concurrency) are now
+  reachable over IPC through `SolidResourceClient`.
+- New **size**, **created-time**, and **modified-time** accessors on the resource models.
+- The **contacts data module** is now wired end-to-end over the IPC service and `client` SDK.
+
+### Improvements
+
+- **Authentication hardening** — the token/profile store is now **encrypted at rest** (AES-256-GCM
+  via an Android Keystore key, with transparent migration of pre-0.5.0 plaintext stores); logins are
+  rejected unless the token issuer is authorized by the WebID (`solid:oidcIssuer`); the ID token
+  returned by a refresh is re-validated; silent token refresh is fixed against servers that enforce a
+  `DPoP-Nonce` on the token endpoint (e.g. Inrupt ESS), with per-origin nonce tracking and coalesced
+  concurrent refreshes. Transport-level token/header plumbing was removed from the public
+  `Authenticator` (**source-breaking**; no known external caller).
+- **Networking** — `SolidHttpClient` gained an in-memory response cache (per-account keyed, TTL
+  freshness, ETag/Last-Modified revalidation, single-flight de-duplication, LRU eviction) with
+  write-through invalidation, on by default.
+- **Library refactor** — `Shared` reorganized into intent-based packages (`model/`, `rdf/`, `http/`,
+  …) and stripped of okhttp / titanium-json-ld types on its public API (resource models now expose a
+  `String` content-type and a `SolidHeaders` value type); the `client` library extracted a shared,
+  self-healing `ServiceConnector` and **unified its error contract** so every method throws
+  `SolidException` (**source-breaking** for resource calls).
+
+### Bug fixes
+
+- Fixed adding received shares from notifications when a cross-pod access probe fails.
+- Fixed ACP grants to write the implied ACL modes, matching WAC behaviour.
+- 401 retry handling now distinguishes a DPoP-nonce rotation from an expired token and never returns
+  an expired or post-failed-refresh token to callers.
+
+---
+
 ## v0.4.1 — May 2026
 
 Namespace migration release. No new features; everything moves under `com.erfangholami.androidsolidservices`.

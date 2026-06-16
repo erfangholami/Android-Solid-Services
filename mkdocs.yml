@@ -36,16 +36,20 @@ extra_javascript:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - How It Works: concepts.md
-  - Components:
-      - Android Solid Services API Library: api-library.md
-      - Android Solid Services App: app.md
-      - Android Solid Services Client Library: client-library.md
-  - Architecture: architecture.md
-  - Troubleshooting: troubleshooting.md
-  - API Reference: api/index.html
-  - Releases: release.md
+  - Get Started:
+      - Getting Started: getting-started.md
+      - How It Works: concepts.md
+  - Integrate:
+      - Client Library: client-library.md
+      - API Library: api-library.md
+      - Solid-OIDC Client ID Document: client-id-document/README.md
+  - Internals:
+      - Architecture: architecture.md
+      - The App: app.md
+  - Reference:
+      - API Reference: api/index.html
+      - Releases: release.md
+      - Troubleshooting: troubleshooting.md
 
 plugins:
   - search

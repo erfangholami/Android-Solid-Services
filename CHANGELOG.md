@@ -2,6 +2,130 @@
 
 All notable changes to this project are documented here.
 
+## [0.5.1] — June 2026
+
+Added consumer and proguard rules. 
+
+## [0.5.0] — June 2026
+
+**Resource sharing** and a **Linked Data Notifications inbox**, on top of a
+security-focused overhaul of the authentication layer and a clean-architecture refactor of the
+`Shared`, `api`, and `client` libraries. **Source-breaking** for external SDK consumers (the project
+is pre-1.0 and unstable).
+
+### Features
+
+#### Resource sharing
+
+- New `SharingManager` (`api`), `Solid.getSharingClient()` (`client`), and `IASSharingService`
+  (AIDL): share any pod resource or container with another WebID at a chosen level — **View** (Read),
+  **Add** (append-only), or **Edit** (read/write) — and change the level or revoke it later,
+  optionally notifying the receiver.
+- Authorization works on both **Web Access Control (WAC)** and **Access Control Policy (ACP)** pods;
+  the backend is auto-selected from the resource's advertised authorization links. A grant writes the
+  full set of implied ACL modes (Add = Read + Append, Edit = Read + Write) and the index collapses
+  them back to one logical mode per receiver.
+- Make a resource **private** (owner-only) in a single call.
+- **Add-only uploads**: `createInContainer(...)` lets a recipient with append access POST new files
+  and folders into a shared container without read or write access to its other contents.
+- **Share links** as `https://solidshare.app/s…` Android App Links, for inviting a receiver
+  out-of-band.
+- A catalog of given and received shares is persisted as an index on the pod for fast listing and can
+  be rebuilt by walking the pod's own ACLs; a configurable exclude list keeps protocol paths
+  (`/inbox`, `/profile/card`, the app's own storage) out of it.
+- A typed `SharingException` hierarchy (no inbox, unauthorized/forbidden inbox, delivery failure,
+  stale ACL, unsupported auth backend, …) surfaces precise failure causes.
+
+#### Notifications & inbox (Linked Data Notifications)
+
+- New `NotificationsManager` (`api`), `Solid.getNotificationsClient()` (`client`), and
+  `IASSNotificationsService` (AIDL) implementing a full LDN loop over the user's inbox: an owner
+  offers access — or a peer requests it — the notification lands in the target's inbox, and the
+  recipient accepts or rejects, with a response notification sent back and the decision recorded.
+- The inbox is auto-provisioned and advertised with **public append-but-not-read** access, as the
+  notifications and access-control specs require.
+- Cross-pod safe: notification senders are verified by reading their WebID profile **anonymously**, a
+  profile-document URL is resolved to its real fragment WebID before granting, and a notification's
+  declared mode is trusted when a cross-pod access probe is blocked.
+- The transport is a generic Linked Data Notifications layer, decoupled from sharing so it can carry
+  other notification types later.
+
+#### Authentication
+
+- **Solid-OIDC Client ID Document**: the app can authenticate with a stable, hosted `client_id`
+  document instead of per-device dynamic registration — removing the forced re-login that happened
+  when a provider garbage-collected an old registration.
+- **Per-account DPoP keys**: each account now gets its own DPoP keypair in the Android Keystore
+  instead of sharing one key across accounts.
+
+#### Resources & contacts over IPC
+
+- `head()` (metadata-only), `patch()`/`patchRaw()` (N3 Patch), and conditional `update(…, ifMatch)`
+  (ETag optimistic concurrency) — added to the in-process `api` in 0.4.0 — are now exposed over IPC,
+  so third-party apps reach them through `SolidResourceClient`.
+- New **size, created-time, and modified-time** accessors on the resource models, derived from
+  `Content-Length`/`Last-Modified` headers and `dcterms`/`stat` triples.
+- The **contacts data module** is now wired end-to-end over the IPC service and `client` SDK.
+
+### Improvements
+
+#### Authentication hardening
+
+- The persisted token/profile store is now **encrypted at rest** (AES-256-GCM under an Android
+  Keystore key); pre-0.5.0 plaintext stores are migrated transparently on first read.
+- A login is **rejected unless the token issuer is authorized by the WebID** (`solid:oidcIssuer`),
+  and the **ID token returned by a refresh is re-validated** (signature, issuer, and that the WebID
+  never changes mid-session).
+- **Silent token refresh fixed** against servers that require a `DPoP-Nonce` on the token endpoint
+  (e.g. Inrupt ESS): refresh runs through a DPoP-aware token request that reads the nonce and retries
+  once on a `use_dpop_nonce` challenge ([RFC 9449](https://datatracker.ietf.org/doc/html/rfc9449)
+  §8). Nonces are tracked **per origin** (§9), a **recoverable** failure (nonce, network, 5xx) no
+  longer invalidates the session, and concurrent refreshes for one WebID are **coalesced** so a
+  rotated refresh token isn't spent twice.
+- Token/header/nonce plumbing (`getLastTokenResponse`, `getAuthHeaders`, `updateDPoPNonce`) is
+  **removed from the public `Authenticator`** and moved to an internal session seam — consumers no
+  longer handle access tokens or `Authorization`/`DPoP` headers, and AppAuth's `TokenResponse` no
+  longer leaks through the public surface. `submitAuthorizationResponse` now takes the redirect
+  `Intent` directly. **Source-breaking** (no known external caller).
+
+#### Networking
+
+- `SolidHttpClient` gained an **in-memory response cache** — per-account keyed, TTL freshness,
+  ETag/Last-Modified revalidation, single-flight de-duplication of concurrent identical reads, and
+  LRU eviction — with write-through invalidation, on by default. It eliminates the redundant repeat
+  reads that dominated request time.
+
+#### Library clean-architecture refactor (`Shared` / `api` / `client`)
+
+- **Shared**: the catch-all `domain.*` package is replaced with intent-based packages (`model/`,
+  `rdf/`, `http/`, `result/`, `error/`, `util/`, `vocab/`). The public API no longer exposes okhttp
+  or titanium-json-ld types — resource models carry a plain `String` content-type and a
+  `SolidHeaders` value type, and the JSON-LD codec is an internal `implementation` dependency. RDF
+  quads cross the IPC boundary as structured `@Serializable` data instead of being re-serialised to
+  JSON-LD per parcel. **Source-breaking** (`getHeaders()` returns `SolidHeaders`; the `MediaType`
+  constructors are gone).
+- **api**: organised by feature with `internal` implementations; removed the dead
+  `SolidAccountResourceManager`; internalised the authorization backends; `jjwt-api`/titanium are no
+  longer transitive; added test seams (injectable clock and `OkHttpClient`).
+- **client**: extracted a shared `ServiceConnector` (removing ~660 lines of duplicated AIDL
+  bind/callback boilerplate) with self-healing binding that re-binds on binder death; added the
+  required Android 11+ `<queries>` manifest entry; **unified the error contract** so every client
+  method throws `SolidException` (sealed) rather than returning `SolidNetworkResponse.Error`.
+  **Source-breaking** for resource calls.
+
+#### App
+
+- The ASS app was restructured into data / domain / ui layers with use cases, and the login and
+  sign-in flow reworked accordingly.
+
+### Bug fixes
+
+- Fixed adding received shares from notifications when a cross-pod access probe fails — the
+  notification's declared mode is now trusted instead of dropping the share.
+- Fixed **ACP** grants to write the implied ACL modes, matching WAC behaviour.
+- 401 retry handling now distinguishes a DPoP-nonce rotation from an expired token, force-refreshes
+  at most once per call, and never returns an expired or post-failed-refresh token to callers.
+
 ## [0.4.1] — May 2026
 
 Namespace migration. Source code, Maven coordinates, and Gradle module folders move under `com.erfangholami.androidsolidservices`. No source-level API changes.

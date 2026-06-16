@@ -39,7 +39,7 @@ Rules that matter (the spec makes these MUST/normative — see
 | `redirect_uris` | Must contain the **exact** `redirectUri` you pass to the SDK, or the provider rejects the login. |
 | `grant_types` | **Must include `refresh_token`** or you get no refresh token (and the re-login problem returns). |
 | `scope` | **Must include `offline_access`** for the same reason. |
-| `token_endpoint_auth_method` | `none` — this is a public client; DPoP + PKCE replace a client secret. |
+| `token_endpoint_auth_method` | `none` — this is a public client; PKCE (plus DPoP when the provider supports it) replaces a client secret. |
 | `application_type` | `native` — signals custom-scheme/loopback redirects are expected. |
 
 ## 2. Host it

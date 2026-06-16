@@ -79,14 +79,11 @@ The value must exactly match your application ID (e.g. `com.example.myapp`).
 
 ### Token refresh fails silently / requests return 401
 
-**Cause:** The DPoP nonce returned by the server was not updated before a retry, or the refresh token was revoked.
+**Cause:** The authorization server requires a `DPoP-Nonce` on the **token endpoint** (e.g. Inrupt ESS) and an older client couldn't complete the nonce challenge during refresh — so the access token expired and the user was forced to sign in again. Or the refresh token was revoked.
 
-**Fix:** The client handles nonce rotation automatically. If you're calling `api` directly and see `401 Unauthorized`:
+**Fix:** Upgrade to `0.5.0` or later. Nonce handling and token refresh are now fully internal and nonce-aware: the library reads the `DPoP-Nonce`, retries the token request once on a `use_dpop_nonce` challenge ([RFC 9449](https://datatracker.ietf.org/doc/html/rfc9449) §8), tracks nonces **per origin**, and no longer invalidates the session on a *recoverable* failure (nonce/network/5xx).
 
-1. Check for a `DPoP-Nonce` header in the 401 response and call `authenticator.updateDPoPNonce(webId, nonce)`.
-2. Then retry the request — ASS does this automatically for you when using `client`.
-
-If the token is fully revoked, call `getLastTokenResponse(webId, forceRefresh = true)` or re-authenticate.
+You no longer call `updateDPoPNonce` or `getLastTokenResponse` — both were **removed** from the public `Authenticator` in 0.5.0. Access tokens and DPoP headers are attached for you; go through the resource / sharing / contacts managers (or the `client` SDK). If the refresh token is genuinely revoked (the session reports unauthorized), re-authenticate with `requestLogin()` / `createAuthenticationIntent()`.
 
 ---
 
@@ -161,6 +158,37 @@ If access should be granted, check the ACL/ACP policy on the pod server side.
 **Cause:** The type index on the pod may not have been updated when address books were created by another client.
 
 **Fix:** Ensure the pod's type index is populated. Some Solid servers require the creating client to register resources in the type index. Check the pod's type index resource manually if needed.
+
+---
+
+## Sharing & Notifications
+
+### A share is created but the receiver never gets a notification
+
+**Cause:** Writing the share onto the resource's access control and notifying the receiver are separate steps — delivery is **best-effort** and never fails the share. The receiver may advertise no LDN inbox, or their inbox rejected the POST.
+
+**Fix:** The receiver's WebID must advertise a writable, public-append `ldp:inbox`. Notifications are also **pull-only**: the receiving app polls `listNotifications()` (e.g. a 15-minute background worker) — there is no push. The share itself still took effect on the resource ACL regardless of delivery.
+
+---
+
+### `SharingException` on `createShare` / `revokeShare`
+
+Common variants and what they mean:
+
+- **`NoInbox`** — the target WebID advertises no `ldp:inbox`; the share succeeded but no notification was sent.
+- **`InboxUnauthorized` / `InboxForbidden`** — the receiver's inbox rejected the notification POST (401 / 403).
+- **`AccessDenied`** — you don't hold Control on the resource, so its ACL/ACR can't be written.
+- **`StaleAcl`** — the resource's ACL changed concurrently (412 Precondition Failed); retry.
+- **`UnsupportedAuthBackend`** — the pod's access-control system isn't supported.
+- **`AccessIndeterminate`** — a transient or cross-pod proof error; treated as "unknown", not a definitive denial.
+
+---
+
+### A share added from a link shows the wrong owner, or won't add (cross-pod)
+
+**Cause:** Cross-pod access probes can be blocked — some servers reject foreign-issuer tokens with 401 — and a receiver IRI may be a bare profile-document URL rather than a fragment WebID.
+
+**Fix:** Upgrade to `0.5.0`+. The library reads actor profiles **anonymously**, resolves profile-document URLs to the real fragment WebID before granting, and trusts the notification's declared mode/owner when a live probe is indeterminate. When adding via QR/link, pass the owner hint the share link carries.
 
 ---
 
