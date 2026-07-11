@@ -7,6 +7,20 @@ All notable changes to this project are documented here.
 Correctness and data-integrity hardening on top of the in-progress 0.6.0 contacts/tickets work.
 **Source-compatible** — no public signatures change; behaviour becomes more correct.
 
+### Added
+
+- **Unified result/error model (`SolidResult` / `SolidError`)** — the foundation for collapsing the
+  library's six historical error idioms into one. `SolidResult<T>` is `Success(value)` |
+  `Failure(SolidError)`, with combinators (`map`/`flatMap`/`fold`/`recover`) and accessors
+  (`getOrNull`/`errorOrNull`/`getOrThrow`). `SolidError` is a typed, sealed superset of every existing
+  failure (HTTP statuses, transport/TLS/timeout/cancellation, and the sharing/notification/access
+  domain), each carrying a machine `code` (`SolidErrorCode`), a `retryable` hint, the originating
+  `httpStatus`, and the `cause`. HTTP statuses map to an error in exactly one place
+  (`SolidError.fromHttp`); throwables via `SolidError.fromThrowable`. Transitional `toResult()` /
+  `toNetworkResponse()` bridges let features migrate one at a time while everything keeps compiling —
+  callers can already opt in with `response.toResult()`. **Additive**; the per-feature migration of
+  public signatures (and the retirement of `SolidNetworkResponse` / `DataModuleResult`) follows.
+
 ### Fixed
 
 - **Binary resources no longer corrupt over IPC**: `NonRDFResource` parcels its body as raw bytes
