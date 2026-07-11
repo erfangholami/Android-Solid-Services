@@ -8,7 +8,9 @@ import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
@@ -47,7 +49,7 @@ import kotlinx.coroutines.delay
  *   `vcard:Group` disambiguation marker for group receiver rows
  *
  * All methods either succeed or throw — callers wrap them in
- * [SolidNetworkResponse] at the public boundary.
+ * [SolidResult] at the public boundary.
  */
 internal class SharingManagerHelper {
 
@@ -155,26 +157,18 @@ internal class SharingManagerHelper {
 
     private suspend fun ensureContainer(webId: String, containerUri: URI) {
         when (val head = rm.head(webId, containerUri)) {
-            is SolidNetworkResponse.Success -> return
-            is SolidNetworkResponse.Error ->
-                if (!head.isMissing()) error(
-                    "HEAD $containerUri failed: ${head.errorCode} ${head.errorMessage}",
-                )
-
-            is SolidNetworkResponse.Exception -> throw head.exception
+            is SolidResult.Success -> return
+            is SolidResult.Failure ->
+                if (!head.error.isMissing()) throw head.error.asException()
         }
         rm.create(webId, SolidContainer(containerUri)).getOrThrow()
     }
 
     private suspend fun ensureEmptyRdf(webId: String, uri: URI) {
         when (val head = rm.head(webId, uri)) {
-            is SolidNetworkResponse.Success -> return
-            is SolidNetworkResponse.Error ->
-                if (!head.isMissing()) error(
-                    "HEAD $uri failed: ${head.errorCode} ${head.errorMessage}",
-                )
-
-            is SolidNetworkResponse.Exception -> throw head.exception
+            is SolidResult.Success -> return
+            is SolidResult.Failure ->
+                if (!head.error.isMissing()) throw head.error.asException()
         }
         rm.create(
             webId,
@@ -187,8 +181,8 @@ internal class SharingManagerHelper {
         ).getOrThrow()
     }
 
-    private fun SolidNetworkResponse.Error<*>.isMissing(): Boolean =
-        errorCode == 404 || errorCode == 410
+    private fun SolidError.isMissing(): Boolean =
+        code == SolidErrorCode.NOT_FOUND
 
     /**
      * Returns `true` if the server advertises [resourceUri] as an LDP
@@ -197,10 +191,10 @@ internal class SharingManagerHelper {
      */
     suspend fun isContainer(webId: String, resourceUri: URI): Boolean {
         val head = rm.head(webId, resourceUri)
-        if (head !is SolidNetworkResponse.Success) {
+        if (head !is SolidResult.Success) {
             return resourceUri.toString().endsWith("/")
         }
-        return head.data.isContainer()
+        return head.value.isContainer()
     }
 
     private fun SolidMetadata.isContainer(): Boolean {
@@ -220,7 +214,7 @@ internal class SharingManagerHelper {
      */
     suspend fun backendFor(webId: String, resourceUri: URI): AccessBackend {
         val metadata = when (val head = rm.head(webId, resourceUri)) {
-            is SolidNetworkResponse.Success -> head.data
+            is SolidResult.Success -> head.value
             else -> return wacBackend
         }
         return pickBackend(metadata, resourceUri, wacBackend, acpBackend)
@@ -233,7 +227,7 @@ internal class SharingManagerHelper {
         receiver: ShareReceiver,
         includeImpliedModes: Boolean = true,
     ) {
-        val metadata = (rm.head(webId, resourceUri) as? SolidNetworkResponse.Success)?.data
+        val metadata = (rm.head(webId, resourceUri) as? SolidResult.Success)?.value
         val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
         val backend = if (metadata != null) {
             pickBackend(metadata, resourceUri, wacBackend, acpBackend)
@@ -255,7 +249,7 @@ internal class SharingManagerHelper {
         resourceUri: URI,
         receiver: ShareReceiver,
     ) {
-        val metadata = (rm.head(webId, resourceUri) as? SolidNetworkResponse.Success)?.data
+        val metadata = (rm.head(webId, resourceUri) as? SolidResult.Success)?.value
         val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
         val backend = if (metadata != null) {
             pickBackend(metadata, resourceUri, wacBackend, acpBackend)
@@ -266,7 +260,7 @@ internal class SharingManagerHelper {
     }
 
     suspend fun makeOwnerOnly(webId: String, resourceUri: URI) {
-        val metadata = (rm.head(webId, resourceUri) as? SolidNetworkResponse.Success)?.data
+        val metadata = (rm.head(webId, resourceUri) as? SolidResult.Success)?.value
         val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
         val backend = if (metadata != null) {
             pickBackend(metadata, resourceUri, wacBackend, acpBackend)
@@ -286,14 +280,12 @@ internal class SharingManagerHelper {
      */
     suspend fun reclaimOwnerControl(webId: String, resourceUri: URI) {
         val metadata = when (val head = rm.head(webId, resourceUri)) {
-            is SolidNetworkResponse.Success -> head.data
-            is SolidNetworkResponse.Error -> error(
-                "Cannot read $resourceUri to repair owner access (HTTP ${head.errorCode}). " +
+            is SolidResult.Success -> head.value
+            is SolidResult.Failure -> error(
+                "Cannot read $resourceUri to repair owner access (${head.error.message}). " +
                         "If 401/403, the owner can no longer reach this resource's ACL through " +
                         "the app; clear the lockout via the pod provider's tooling.",
             )
-
-            is SolidNetworkResponse.Exception -> throw head.exception
         }
         pickBackend(metadata, resourceUri, wacBackend, acpBackend)
             .reclaimOwnerControl(webId, resourceUri, metadata.isContainer())
@@ -559,16 +551,16 @@ internal class SharingManagerHelper {
             val (patch, etag) = build()
             if (patch == null) return
             when (val r = rm.patch(webId, uri, patch, ifMatch = etag)) {
-                is SolidNetworkResponse.Success -> return
-                is SolidNetworkResponse.Error -> {
-                    if (r.errorCode == 412 && ++attempt < MAX_INDEX_PATCH_ATTEMPTS) {
+                is SolidResult.Success -> return
+                is SolidResult.Failure -> {
+                    if (r.error.code == SolidErrorCode.PRECONDITION_FAILED &&
+                        ++attempt < MAX_INDEX_PATCH_ATTEMPTS
+                    ) {
                         delay(INDEX_PATCH_BACKOFF_MS * attempt + Random.nextLong(INDEX_PATCH_JITTER_MS))
                         continue
                     }
-                    error("Index patch for $uri failed: ${r.errorCode} ${r.errorMessage}")
+                    error("Index patch for $uri failed: ${r.error.message}")
                 }
-
-                is SolidNetworkResponse.Exception -> throw r.exception
             }
         }
     }
@@ -592,15 +584,13 @@ internal class SharingManagerHelper {
         resourceUri: URI,
     ): ReceivedAccess {
         val metadata = when (val head = rm.head(webId, resourceUri)) {
-            is SolidNetworkResponse.Success -> head.data
-            is SolidNetworkResponse.Error ->
-                return if (head.errorCode == 403 || head.isMissing()) {
+            is SolidResult.Success -> head.value
+            is SolidResult.Failure ->
+                return if (head.error.code == SolidErrorCode.FORBIDDEN || head.error.isMissing()) {
                     ReceivedAccess.Denied
                 } else {
                     ReceivedAccess.Unknown
                 }
-
-            is SolidNetworkResponse.Exception -> return ReceivedAccess.Unknown
         }
         val owner = metadata.ownerUri?.toString()
         val wac = metadata.wacAllow

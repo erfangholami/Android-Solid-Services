@@ -4,7 +4,7 @@ import com.erfangholami.androidsolidservices.api.access.WacBackend
 import com.erfangholami.androidsolidservices.api.notifications.implementation.NotificationsManagerImplementation
 import com.erfangholami.androidsolidservices.api.sharing.implementation.SharingManagerHelper
 import com.erfangholami.androidsolidservices.api.sharing.implementation.SharingManagerImplementation
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
@@ -58,7 +58,7 @@ class SharingEngineTest {
             alice, resource, ShareMode.WRITE, bob, notifyReceiver = false,
         )
 
-        assertTrue("the index-write failure must surface", result is SolidNetworkResponse.Exception)
+        assertTrue("the index-write failure must surface", result is SolidResult.Failure)
         assertTrue(
             "a rolled-back new share must leave the receiver with no access",
             receiversOnResource().none { it.receiver == bob },
@@ -74,7 +74,7 @@ class SharingEngineTest {
             alice, resource, ShareMode.WRITE, bob, notifyReceiver = false,
         )
 
-        assertTrue(result is SolidNetworkResponse.Exception)
+        assertTrue(result is SolidResult.Failure)
         val bobShare = receiversOnResource().singleOrNull { it.receiver == bob }
         assertNotNull("a mode-change index failure must NOT revoke live access", bobShare)
     }

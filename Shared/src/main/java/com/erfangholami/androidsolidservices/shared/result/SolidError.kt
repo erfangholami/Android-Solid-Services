@@ -46,10 +46,9 @@ public enum class SolidErrorCode {
  * A `SolidError` carries a stable machine [code], a developer-facing [message]
  * (diagnostic — not for end users; branch on [code] and localize that), the
  * originating [httpStatus] when a server responded, a [retryable] hint, and the
- * underlying [cause] when one exists. It replaces the six historical error
- * idioms (`SolidNetworkResponse.Error(Int, String)`, `DataModuleResult.Error`,
- * thrown `SharingException`, the client `SolidException`, nullable returns, and
- * `Success(empty)`-on-failure).
+ * underlying [cause] when one exists. It replaces the library's former mix of
+ * per-feature result types, thrown domain exceptions, nullable returns, and
+ * `Success(empty)`-on-failure.
  *
  * HTTP responses map to an error exactly once via [fromHttp]; local throwables
  * via [fromThrowable].

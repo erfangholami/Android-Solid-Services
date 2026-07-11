@@ -3,7 +3,7 @@ package com.erfangholami.androidsolidservices.api.sharing
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.implementation.SharingManagerImplementation
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrant
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
@@ -54,7 +54,7 @@ public interface SharingManager {
      */
     public suspend fun getStoredGivenShares(
         webId: String,
-    ): SolidNetworkResponse<List<GivenShare>>
+    ): SolidResult<List<GivenShare>>
 
     /**
      * Re-validates each tracked given share by re-reading the relevant
@@ -63,7 +63,7 @@ public interface SharingManager {
      */
     public suspend fun refreshGivenShares(
         webId: String,
-    ): SolidNetworkResponse<List<GivenShare>>
+    ): SolidResult<List<GivenShare>>
 
     /**
      * Walks the entire pod tree, reads every resource's ACL, and rebuilds
@@ -93,7 +93,7 @@ public interface SharingManager {
      */
     public suspend fun rebuildGivenIndex(
         webId: String,
-    ): SolidNetworkResponse<List<GivenShare>>
+    ): SolidResult<List<GivenShare>>
 
     /**
      * Re-asserts the signed-in owner's Read/Write/Control on [resourceUri]'s
@@ -112,7 +112,7 @@ public interface SharingManager {
     public suspend fun repairOwnerControl(
         webId: String,
         resourceUri: String,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Resets [resourceUri]'s ACL/ACR to **owner-only** — dropping every other
@@ -126,7 +126,7 @@ public interface SharingManager {
     public suspend fun makePrivate(
         webId: String,
         resourceUri: String,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Returns only the given shares affecting [resourceUri] — read directly
@@ -135,7 +135,7 @@ public interface SharingManager {
     public suspend fun getGivenSharesForResource(
         webId: String,
         resourceUri: String,
-    ): SolidNetworkResponse<List<GivenShare>>
+    ): SolidResult<List<GivenShare>>
 
     /**
      * Adds (or replaces) an authorization on [resourceUri] granting [mode]
@@ -155,7 +155,7 @@ public interface SharingManager {
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean = true,
-    ): SolidNetworkResponse<GivenShare>
+    ): SolidResult<GivenShare>
 
     /**
      * Updates the access mode of an existing share — replacing [receiver]'s
@@ -174,7 +174,7 @@ public interface SharingManager {
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean = false,
-    ): SolidNetworkResponse<GivenShare>
+    ): SolidResult<GivenShare>
 
     /**
      * Removes the authorization for [receiver] on [resourceUri] and removes
@@ -185,7 +185,7 @@ public interface SharingManager {
         webId: String,
         resourceUri: String,
         receiver: ShareReceiver,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Returns the locally-tracked received shares (fast). Use
@@ -193,7 +193,7 @@ public interface SharingManager {
      */
     public suspend fun getStoredReceivedShares(
         webId: String,
-    ): SolidNetworkResponse<List<ReceivedShare>>
+    ): SolidResult<List<ReceivedShare>>
 
     /**
      * Re-validates each tracked received share via HEAD (uses `WAC-Allow` and
@@ -201,7 +201,7 @@ public interface SharingManager {
      */
     public suspend fun refreshReceivedShares(
         webId: String,
-    ): SolidNetworkResponse<List<ReceivedShare>>
+    ): SolidResult<List<ReceivedShare>>
 
     /**
      * Verifies access to [resourceUri] from the current user's perspective
@@ -224,7 +224,7 @@ public interface SharingManager {
         webId: String,
         resourceUri: String,
         ownerHint: String? = null,
-    ): SolidNetworkResponse<ReceivedShare?>
+    ): SolidResult<ReceivedShare?>
 
     /**
      * Removes a tracked received share. Does not affect the resource itself.
@@ -233,7 +233,7 @@ public interface SharingManager {
         webId: String,
         resourceUri: String,
         ownerWebId: String,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Reconciles the user's received-shares index against a batch of share
@@ -254,7 +254,7 @@ public interface SharingManager {
     public suspend fun syncReceivedShares(
         webId: String,
         notifications: List<ShareNotification>,
-    ): SolidNetworkResponse<List<ReceivedShare>>
+    ): SolidResult<List<ReceivedShare>>
 
     /**
      * Returns every access relationship the library can observe for [webId],
@@ -276,7 +276,7 @@ public interface SharingManager {
      */
     public suspend fun getAccessGrants(
         webId: String,
-    ): SolidNetworkResponse<List<AccessGrant>>
+    ): SolidResult<List<AccessGrant>>
 
     /**
      * Approves a [ShareRequest] previously received in this user's inbox.
@@ -291,7 +291,7 @@ public interface SharingManager {
     public suspend fun acceptShareRequest(
         webId: String,
         request: ShareRequest,
-    ): SolidNetworkResponse<GivenShare>
+    ): SolidResult<GivenShare>
 
     /**
      * Declines a [ShareRequest] by posting an `as:Reject` notification to
@@ -305,7 +305,7 @@ public interface SharingManager {
         webId: String,
         request: ShareRequest,
         reason: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Adds (or replaces) an entry in the owner's public catalog at
@@ -319,7 +319,7 @@ public interface SharingManager {
     public suspend fun publishCatalogEntry(
         webId: String,
         entry: CatalogEntry,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Removes the entry for [resourceUri] from the owner's catalog, if
@@ -328,7 +328,7 @@ public interface SharingManager {
     public suspend fun removeCatalogEntry(
         webId: String,
         resourceUri: String,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Reads [ownerWebId]'s public catalog from the viewer's perspective.
@@ -342,7 +342,7 @@ public interface SharingManager {
     public suspend fun getOwnerCatalog(
         viewerWebId: String,
         ownerWebId: String,
-    ): SolidNetworkResponse<List<CatalogEntry>>
+    ): SolidResult<List<CatalogEntry>>
 
     /**
      * Encoding used inside QR codes when the target is a Solid-aware

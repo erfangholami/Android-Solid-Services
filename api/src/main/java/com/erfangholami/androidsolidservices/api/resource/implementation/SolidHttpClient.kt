@@ -8,7 +8,8 @@ import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
@@ -86,7 +87,7 @@ internal class SolidHttpClient(
         webId: String,
         uri: URI,
         clazz: Class<T>
-    ): SolidNetworkResponse<T> {
+    ): SolidResult<T> {
         return try {
             val accept =
                 if (RDFResource::class.java.isAssignableFrom(clazz)) HTTPAcceptType.JSON_LD else HTTPAcceptType.ANY
@@ -94,12 +95,12 @@ internal class SolidHttpClient(
                 executeAuthenticated("GET", webId, uri, accept = accept, additionalHeaders = cond)
             }
             if (response.isSuccessful()) {
-                SolidNetworkResponse.Success(SolidResourceParser.parse(response, clazz))
+                SolidResult.Success(SolidResourceParser.parse(response, clazz))
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -108,7 +109,7 @@ internal class SolidHttpClient(
         resource: T,
         ifMatch: String? = null,
         ifNoneMatchStar: Boolean = false,
-    ): SolidNetworkResponse<T> {
+    ): SolidResult<T> {
         return try {
             val linkType = when {
                 SolidContainer::class.java.isAssignableFrom(resource.javaClass) -> "<${LDP.BASIC_CONTAINER}>; rel=\"type\""
@@ -129,13 +130,13 @@ internal class SolidHttpClient(
             )
             if (response.isSuccessful()) {
                 invalidate(resource.getIdentifier())
-                SolidNetworkResponse.Success(resource)
+                SolidResult.Success(resource)
             } else {
                 if (response.statusCode == 412) invalidate(resource.getIdentifier())
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -144,7 +145,7 @@ internal class SolidHttpClient(
         uri: URI,
         patch: N3Patch,
         ifMatch: String? = null
-    ): SolidNetworkResponse<Unit> {
+    ): SolidResult<Unit> {
         return try {
             val response = executeAuthenticated(
                 method = "PATCH",
@@ -156,13 +157,13 @@ internal class SolidHttpClient(
             )
             if (response.isSuccessful()) {
                 invalidate(uri)
-                SolidNetworkResponse.Success(Unit)
+                SolidResult.Success(Unit)
             } else {
                 if (response.statusCode == 412) invalidate(uri)
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -171,7 +172,7 @@ internal class SolidHttpClient(
         uri: URI,
         n3Body: String,
         ifMatch: String? = null
-    ): SolidNetworkResponse<Unit> {
+    ): SolidResult<Unit> {
         return try {
             val response = executeAuthenticated(
                 method = "PATCH",
@@ -183,17 +184,17 @@ internal class SolidHttpClient(
             )
             if (response.isSuccessful()) {
                 invalidate(uri)
-                SolidNetworkResponse.Success(Unit)
+                SolidResult.Success(Unit)
             } else {
                 if (response.statusCode == 412) invalidate(uri)
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
-    suspend fun head(webId: String, uri: URI): SolidNetworkResponse<SolidMetadata> {
+    suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> {
         return try {
             val response = readCached(
                 webId,
@@ -205,19 +206,19 @@ internal class SolidHttpClient(
                 executeAuthenticated("HEAD", webId, uri, additionalHeaders = cond)
             }
             if (response.isSuccessful()) {
-                SolidNetworkResponse.Success(SolidMetadata.from(SolidHeaders(response.headers.toMultimap())))
+                SolidResult.Success(SolidMetadata.from(SolidHeaders(response.headers.toMultimap())))
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
     suspend fun <T : Resource> getPublic(
         uri: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> {
+    ): SolidResult<T> {
         return try {
             val accept =
                 if (RDFResource::class.java.isAssignableFrom(clazz)) HTTPAcceptType.JSON_LD else HTTPAcceptType.ANY
@@ -227,16 +228,16 @@ internal class SolidHttpClient(
                 send(method = "GET", uri = uri, accept = accept, headers = cond)
             }
             if (response.isSuccessful()) {
-                SolidNetworkResponse.Success(SolidResourceParser.parse(response, clazz))
+                SolidResult.Success(SolidResourceParser.parse(response, clazz))
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
-    suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> {
+    suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> {
         return try {
             val response = readCached(
                 SolidResponseCache.PUBLIC_PRINCIPAL,
@@ -248,12 +249,12 @@ internal class SolidHttpClient(
                 send(method = "HEAD", uri = uri, headers = cond)
             }
             if (response.isSuccessful()) {
-                SolidNetworkResponse.Success(SolidMetadata.from(SolidHeaders(response.headers.toMultimap())))
+                SolidResult.Success(SolidMetadata.from(SolidHeaders(response.headers.toMultimap())))
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -264,7 +265,7 @@ internal class SolidHttpClient(
         body: ByteArray,
         ifMatch: String? = null,
         linkHeader: String? = null,
-    ): SolidNetworkResponse<Unit> {
+    ): SolidResult<Unit> {
         return try {
             val response = executeAuthenticated(
                 method = "PUT",
@@ -278,13 +279,13 @@ internal class SolidHttpClient(
             )
             if (response.isSuccessful()) {
                 invalidate(uri)
-                SolidNetworkResponse.Success(Unit)
+                SolidResult.Success(Unit)
             } else {
                 if (response.statusCode == 412) invalidate(uri)
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -294,7 +295,7 @@ internal class SolidHttpClient(
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String> = emptyMap(),
-    ): SolidNetworkResponse<URI?> {
+    ): SolidResult<URI?> {
         return try {
             val response = executeAuthenticated(
                 method = "POST",
@@ -308,12 +309,12 @@ internal class SolidHttpClient(
                 invalidate(uri)
                 val location = response.headers[HTTPHeaderName.LOCATION]
                     ?.let { runCatching { URI.create(it) }.getOrNull() }
-                SolidNetworkResponse.Success(location)
+                SolidResult.Success(location)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -321,7 +322,7 @@ internal class SolidHttpClient(
         webId: String,
         containerUri: URI,
         resource: T,
-    ): SolidNetworkResponse<URI?> {
+    ): SolidResult<URI?> {
         return try {
             val linkType = when {
                 SolidContainer::class.java.isAssignableFrom(resource.javaClass) -> "<${LDP.BASIC_CONTAINER}>; rel=\"type\""
@@ -344,12 +345,12 @@ internal class SolidHttpClient(
                 invalidate(containerUri)
                 val location = response.headers[HTTPHeaderName.LOCATION]
                     ?.let { runCatching { URI.create(it) }.getOrNull() }
-                SolidNetworkResponse.Success(location)
+                SolidResult.Success(location)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -363,18 +364,18 @@ internal class SolidHttpClient(
         webId: String,
         uri: URI,
         ifMatch: String? = null
-    ): SolidNetworkResponse<Boolean> {
+    ): SolidResult<Boolean> {
         return try {
             val response = executeAuthenticated("DELETE", webId, uri, ifMatch = ifMatch)
             if (response.isSuccessful()) {
                 invalidate(uri)
-                SolidNetworkResponse.Success(true)
+                SolidResult.Success(true)
             } else {
                 if (response.statusCode == 412) invalidate(uri)
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -382,7 +383,7 @@ internal class SolidHttpClient(
         webId: String,
         sourceUri: URI,
         destinationUri: URI,
-    ): SolidNetworkResponse<Boolean> {
+    ): SolidResult<Boolean> {
         return try {
             val response = executeAuthenticated(
                 method = "COPY",
@@ -392,12 +393,12 @@ internal class SolidHttpClient(
             )
             if (response.isSuccessful()) {
                 invalidate(destinationUri)
-                SolidNetworkResponse.Success(true)
+                SolidResult.Success(true)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
+                SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            solidFailure(e)
         }
     }
 
@@ -422,6 +423,12 @@ internal class SolidHttpClient(
 
     private fun invalidate(uri: URI) {
         if (cacheEnabled) cache.invalidateWithParent(uri.toString())
+    }
+
+    /** Maps a caught throwable to a [SolidResult.Failure], rethrowing coroutine cancellation. */
+    private fun <T> solidFailure(e: Throwable): SolidResult<T> {
+        if (e is kotlinx.coroutines.CancellationException) throw e
+        return SolidResult.Failure(SolidError.fromThrowable(e))
     }
 
     private suspend fun executeAuthenticated(

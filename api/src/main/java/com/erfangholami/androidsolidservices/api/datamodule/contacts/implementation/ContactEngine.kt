@@ -8,10 +8,10 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.INDEX_FILE_NA
 import com.erfangholami.androidsolidservices.shared.model.contacts.PEOPLE_DIRECTORY_SUFFIX
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContact
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContactList
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import java.net.URI
 import java.util.UUID
@@ -27,14 +27,14 @@ internal class ContactEngine(
     override suspend fun get(
         ownerWebId: String,
         contactUri: String,
-    ): DataModuleResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = runResult {
         SolidContact.createFromRdf(pod.contact(ownerWebId, URI.create(contactUri)))
     }
 
     override suspend fun getAll(
         ownerWebId: String,
         addressBookUri: String,
-    ): DataModuleResult<SolidContactList> = runResult {
+    ): SolidResult<SolidContactList> = runResult {
         SolidContactList(fetchAll(ownerWebId, addressBookUri))
     }
 
@@ -43,7 +43,7 @@ internal class ContactEngine(
         addressBookUri: String,
         data: ContactData,
         groupUris: List<String>,
-    ): DataModuleResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = runResult {
         require(data.effectiveFullName().isNotBlank()) {
             "A contact needs at least a name, phone number, or email address"
         }
@@ -77,7 +77,7 @@ internal class ContactEngine(
         addressBookUri: String,
         contactUri: String,
         data: ContactData,
-    ): DataModuleResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = runResult {
         require(data.effectiveFullName().isNotBlank()) {
             "A contact needs at least a name, phone number, or email address"
         }
@@ -100,7 +100,7 @@ internal class ContactEngine(
         ownerWebId: String,
         addressBookUri: String,
         contactUri: String,
-    ): DataModuleResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = runResult {
         val contact = runCatching {
             SolidContact.createFromRdf(pod.contact(ownerWebId, URI.create(contactUri)))
         }.getOrNull()
@@ -127,7 +127,7 @@ internal class ContactEngine(
         contactUri: String,
         photo: ByteArray,
         contentType: String,
-    ): DataModuleResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = runResult {
         val contactRdf = pod.contact(ownerWebId, URI.create(contactUri))
         val contactContainer = contactUri.substringBefore(INDEX_FILE_NAME)
         val photoUri = "${contactContainer}photo${extensionFor(contentType)}"
@@ -151,7 +151,7 @@ internal class ContactEngine(
     override suspend fun removePhoto(
         ownerWebId: String,
         contactUri: String,
-    ): DataModuleResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = runResult {
         val contactRdf = pod.contact(ownerWebId, URI.create(contactUri))
         contactRdf.getPhotoUrl()?.let { photoUri ->
             contactRdf.removePhoto()
@@ -164,7 +164,7 @@ internal class ContactEngine(
     override suspend fun getPhoto(
         ownerWebId: String,
         photoUri: String,
-    ): DataModuleResult<ContactPhoto> = runResult {
+    ): SolidResult<ContactPhoto> = runResult {
         val resource = pod.solidResourceManager
             .read(ownerWebId, URI.create(photoUri), SolidNonRDFResource::class.java)
             .getOrThrow()
@@ -175,7 +175,7 @@ internal class ContactEngine(
     override suspend fun findByWebId(
         ownerWebId: String,
         webId: String,
-    ): DataModuleResult<ContactMatch> = runResult {
+    ): SolidResult<ContactMatch> = runResult {
         val target = webId.trim()
         val bookUris = pod.privateTypeIndex(ownerWebId).getAddressBooks() +
                 pod.publicTypeIndex(ownerWebId).getAddressBooks()
@@ -217,11 +217,9 @@ internal class ContactEngine(
 
     private suspend fun deleteTolerant(ownerWebId: String, uri: URI) {
         when (val result = pod.solidResourceManager.delete(ownerWebId, uri)) {
-            is SolidNetworkResponse.Success -> Unit
-            is SolidNetworkResponse.Error ->
-                if (result.errorCode == 404 || result.errorCode == 410) Unit else result.getOrThrow()
-
-            is SolidNetworkResponse.Exception -> result.getOrThrow()
+            is SolidResult.Success -> Unit
+            is SolidResult.Failure ->
+                if (result.error.code == SolidErrorCode.NOT_FOUND) Unit else result.getOrThrow()
         }
     }
 }

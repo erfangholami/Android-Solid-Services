@@ -8,7 +8,7 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketArtifact
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketList
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import java.net.URI
 
 internal class SolidTicketsDataModuleImplementation : SolidTicketsDataModule {
@@ -46,14 +46,14 @@ internal class SolidTicketsDataModuleImplementation : SolidTicketsDataModule {
 
     override suspend fun getTickets(
         ownerWebId: String,
-    ): DataModuleResult<TicketList> = runResult {
+    ): SolidResult<TicketList> = runResult {
         TicketList(helper.getTicketSummaries(ownerWebId))
     }
 
     override suspend fun getTicket(
         ownerWebId: String,
         ticketUri: String,
-    ): DataModuleResult<Ticket> = runResult {
+    ): SolidResult<Ticket> = runResult {
         Ticket.createFromRdf(helper.getTicket(ownerWebId, URI.create(ticketUri)))
     }
 
@@ -65,7 +65,7 @@ internal class SolidTicketsDataModuleImplementation : SolidTicketsDataModule {
         artifactContentType: String?,
         isPrivate: Boolean,
         container: String?,
-    ): DataModuleResult<Ticket> = runResult {
+    ): SolidResult<Ticket> = runResult {
         val ticketRdf = helper.createTicket(
             ownerWebId,
             storage,
@@ -82,21 +82,21 @@ internal class SolidTicketsDataModuleImplementation : SolidTicketsDataModule {
         ownerWebId: String,
         ticketUri: String,
         updated: NewTicket,
-    ): DataModuleResult<Ticket> = runResult {
+    ): SolidResult<Ticket> = runResult {
         Ticket.createFromRdf(helper.updateTicket(ownerWebId, URI.create(ticketUri), updated))
     }
 
     override suspend fun deleteTicket(
         ownerWebId: String,
         ticketUri: String,
-    ): DataModuleResult<Ticket> = runResult {
+    ): SolidResult<Ticket> = runResult {
         Ticket.createFromRdf(helper.deleteTicket(ownerWebId, URI.create(ticketUri)))
     }
 
     override suspend fun getTicketArtifact(
         ownerWebId: String,
         artifactUri: String,
-    ): DataModuleResult<TicketArtifact> = runResult {
+    ): SolidResult<TicketArtifact> = runResult {
         helper.getTicketArtifact(ownerWebId, URI.create(artifactUri))
     }
 }

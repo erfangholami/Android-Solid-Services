@@ -4,7 +4,8 @@ import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.implementation.nowIsoDateTime
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
@@ -208,10 +209,11 @@ internal class SolidTicketsDataModuleHelper {
             headers = null
         )
         when (val response = solidResourceManager.create(ownerWebId, index)) {
-            is SolidNetworkResponse.Success -> Unit
-            is SolidNetworkResponse.Error ->
-                if (response.errorCode != 409 && response.errorCode != 412) response.getOrThrow()
-            is SolidNetworkResponse.Exception -> response.getOrThrow()
+            is SolidResult.Success -> Unit
+            is SolidResult.Failure ->
+                if (response.error.code != SolidErrorCode.CONFLICT &&
+                    response.error.code != SolidErrorCode.PRECONDITION_FAILED
+                ) response.getOrThrow()
         }
 
         if (isPrivate) {
@@ -230,7 +232,7 @@ internal class SolidTicketsDataModuleHelper {
 
     private suspend fun ensureContainer(ownerWebId: String, containerUri: URI) {
         val missing = solidResourceManager.head(ownerWebId, containerUri).let {
-            it is SolidNetworkResponse.Error && it.errorCode == 404
+            it is SolidResult.Failure && it.error.code == SolidErrorCode.NOT_FOUND
         }
         if (missing) {
             solidResourceManager.create(ownerWebId, SolidContainer(containerUri)).getOrThrow()
@@ -239,11 +241,9 @@ internal class SolidTicketsDataModuleHelper {
 
     private suspend fun deleteTolerant(ownerWebId: String, uri: URI) {
         when (val result = solidResourceManager.delete(ownerWebId, uri)) {
-            is SolidNetworkResponse.Success -> Unit
-            is SolidNetworkResponse.Error ->
-                if (result.errorCode == 404 || result.errorCode == 410) Unit else result.getOrThrow()
-
-            is SolidNetworkResponse.Exception -> result.getOrThrow()
+            is SolidResult.Success -> Unit
+            is SolidResult.Failure ->
+                if (result.error.code == SolidErrorCode.NOT_FOUND) Unit else result.getOrThrow()
         }
     }
 

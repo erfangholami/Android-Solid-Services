@@ -3,7 +3,7 @@ package com.erfangholami.androidsolidservices.api.notifications
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.notifications.implementation.NotificationTransportImplementation
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 /**
  * Pure Linked Data Notifications transport — the protocol layer for delivering
@@ -44,7 +44,7 @@ public interface NotificationTransport {
      * profile document — returning its URI string, or `null` if none is
      * discoverable.
      */
-    public suspend fun discoverInbox(webId: String): SolidNetworkResponse<String?>
+    public suspend fun discoverInbox(webId: String): SolidResult<String?>
 
     /**
      * POSTs an opaque notification [body] to [inbox] as [webId], optionally
@@ -57,7 +57,7 @@ public interface NotificationTransport {
         contentType: String,
         body: ByteArray,
         slug: String? = null,
-    ): SolidNetworkResponse<String?>
+    ): SolidResult<String?>
 
     /**
      * Reads every item currently in [inbox] and decodes each into a generic
@@ -67,17 +67,17 @@ public interface NotificationTransport {
     public suspend fun list(
         webId: String,
         inbox: String,
-    ): SolidNetworkResponse<List<RawNotification>>
+    ): SolidResult<List<RawNotification>>
 
     /** Reads and decodes a single notification by [notificationUri]. */
     public suspend fun read(
         webId: String,
         notificationUri: String,
-    ): SolidNetworkResponse<RawNotification>
+    ): SolidResult<RawNotification>
 
     /** Deletes a single notification by [notificationUri]; `true` when confirmed. */
     public suspend fun delete(
         webId: String,
         notificationUri: String,
-    ): SolidNetworkResponse<Boolean>
+    ): SolidResult<Boolean>
 }

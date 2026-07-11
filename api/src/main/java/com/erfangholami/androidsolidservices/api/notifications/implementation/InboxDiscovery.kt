@@ -1,7 +1,7 @@
 package com.erfangholami.androidsolidservices.api.notifications.implementation
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import java.net.URI
@@ -59,6 +59,6 @@ internal class InboxDiscovery(private val rm: SolidResourceManager) {
     private fun extendedProfileDocs(profile: WebId): List<URI> =
         (profile.getPrimaryTopicDocuments() + profile.getRelatedResources()).distinct()
 
-    private fun inboxFromMetadata(response: SolidNetworkResponse<SolidMetadata>): URI? =
-        (response as? SolidNetworkResponse.Success)?.data?.inboxUri
+    private fun inboxFromMetadata(response: SolidResult<SolidMetadata>): URI? =
+        (response as? SolidResult.Success)?.value?.inboxUri
 }

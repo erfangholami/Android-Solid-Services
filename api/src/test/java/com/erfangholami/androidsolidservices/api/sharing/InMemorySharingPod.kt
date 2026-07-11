@@ -3,7 +3,8 @@ package com.erfangholami.androidsolidservices.api.sharing
 import com.erfangholami.androidsolidservices.api.access.NTriples
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.access.SolidACLResource
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
@@ -43,13 +44,13 @@ internal class InMemorySharingPod(
 
     private fun isAcl(s: String) = s.endsWith(".acl")
 
-    override suspend fun head(webid: String, uri: URI): SolidNetworkResponse<SolidMetadata> {
+    override suspend fun head(webid: String, uri: URI): SolidResult<SolidMetadata> {
         val s = uri.toString()
         return if (isAcl(s)) {
-            acls[s]?.let { SolidNetworkResponse.Success(SolidMetadata.EMPTY.copy(etag = it.etag)) }
-                ?: SolidNetworkResponse.Error(404, "no ACL at $s")
+            acls[s]?.let { SolidResult.Success(SolidMetadata.EMPTY.copy(etag = it.etag)) }
+                ?: SolidResult.Failure(SolidError.fromHttp(404, "no ACL at $s"))
         } else {
-            SolidNetworkResponse.Success(SolidMetadata.EMPTY.copy(aclUri = URI.create("$s.acl")))
+            SolidResult.Success(SolidMetadata.EMPTY.copy(aclUri = URI.create("$s.acl")))
         }
     }
 
@@ -58,11 +59,11 @@ internal class InMemorySharingPod(
         webid: String,
         resource: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> {
+    ): SolidResult<T> {
         val s = resource.toString()
         return when {
             WebId::class.java.isAssignableFrom(clazz) && s == ownerWebId ->
-                SolidNetworkResponse.Success(
+                SolidResult.Success(
                     WebId(
                         URI.create(ownerWebId),
                         listOf(RdfQuad(ownerWebId, PIM.STORAGE, podRoot)),
@@ -70,19 +71,19 @@ internal class InMemorySharingPod(
                 )
 
             SolidACLResource::class.java.isAssignableFrom(clazz) -> {
-                val doc = acls[s] ?: return SolidNetworkResponse.Error(404, "no ACL: $s")
+                val doc = acls[s] ?: return SolidResult.Failure(SolidError.fromHttp(404, "no ACL: $s"))
                 val quads = NTriples.parse(String(doc.body, Charsets.UTF_8), resource)
-                SolidNetworkResponse.Success(
+                SolidResult.Success(
                     SolidACLResource(resource, quads, SolidHeaders(mapOf("ETag" to listOf(doc.etag)))) as T,
                 )
             }
 
             GivenSharesIndexRDF::class.java.isAssignableFrom(clazz) ->
-                SolidNetworkResponse.Success(
+                SolidResult.Success(
                     GivenSharesIndexRDF(resource, "application/ld+json", emptyList(), null) as T,
                 )
 
-            else -> SolidNetworkResponse.Error(404, "not served: $s as ${clazz.simpleName}")
+            else -> SolidResult.Failure(SolidError.fromHttp(404, "not served: $s as ${clazz.simpleName}"))
         }
     }
 
@@ -93,11 +94,11 @@ internal class InMemorySharingPod(
         body: ByteArray,
         ifMatch: String?,
         linkHeader: String?,
-    ): SolidNetworkResponse<Unit> {
+    ): SolidResult<Unit> {
         aclPutLog += uri.toString()
         etagSeq++
         acls[uri.toString()] = Doc(body, "etag-$etagSeq")
-        return SolidNetworkResponse.Success(Unit)
+        return SolidResult.Success(Unit)
     }
 
     override suspend fun patch(
@@ -105,41 +106,41 @@ internal class InMemorySharingPod(
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> =
+    ): SolidResult<Unit> =
         if (uri.toString() == givenIndexUri) {
-            SolidNetworkResponse.Error(500, "index patch boom (test)")
+            SolidResult.Failure(SolidError.fromHttp(500, "index patch boom (test)"))
         } else {
-            SolidNetworkResponse.Success(Unit)
+            SolidResult.Success(Unit)
         }
 
-    override suspend fun <T : Resource> create(webid: String, resource: T): SolidNetworkResponse<T> =
-        SolidNetworkResponse.Success(resource)
+    override suspend fun <T : Resource> create(webid: String, resource: T): SolidResult<T> =
+        SolidResult.Success(resource)
 
     override suspend fun <T : Resource> update(
         webid: String,
         newResource: T,
         ifMatch: String?,
-    ): SolidNetworkResponse<T> = SolidNetworkResponse.Success(newResource)
+    ): SolidResult<T> = SolidResult.Success(newResource)
 
     override suspend fun <T : Resource> readPublic(
         uri: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> = read("", uri, clazz)
+    ): SolidResult<T> = read("", uri, clazz)
 
-    override suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> = head("", uri)
+    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> = head("", uri)
 
     override suspend fun patchRaw(
         webid: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = SolidNetworkResponse.Success(Unit)
+    ): SolidResult<Unit> = SolidResult.Success(Unit)
 
-    override suspend fun delete(webid: String, resourceUri: URI): SolidNetworkResponse<Boolean> =
-        SolidNetworkResponse.Success(true)
+    override suspend fun delete(webid: String, resourceUri: URI): SolidResult<Boolean> =
+        SolidResult.Success(true)
 
-    override suspend fun <T : Resource> delete(webid: String, resource: T): SolidNetworkResponse<T> =
-        SolidNetworkResponse.Success(resource)
+    override suspend fun <T : Resource> delete(webid: String, resource: T): SolidResult<T> =
+        SolidResult.Success(resource)
 
     override suspend fun post(
         webid: String,
@@ -147,11 +148,11 @@ internal class InMemorySharingPod(
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidNetworkResponse<URI?> = SolidNetworkResponse.Success(null)
+    ): SolidResult<URI?> = SolidResult.Success(null)
 
     override suspend fun <T : Resource> createInContainer(
         webid: String,
         containerUri: URI,
         resource: T,
-    ): SolidNetworkResponse<URI?> = SolidNetworkResponse.Success(null)
+    ): SolidResult<URI?> = SolidResult.Success(null)
 }

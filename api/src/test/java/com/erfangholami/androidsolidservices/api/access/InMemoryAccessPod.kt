@@ -2,7 +2,8 @@ package com.erfangholami.androidsolidservices.api.access
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.access.SolidACLResource
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
@@ -38,14 +39,14 @@ internal class InMemoryAccessPod : SolidResourceManager {
 
     private fun isAclUri(s: String): Boolean = s.endsWith(".acl")
 
-    override suspend fun head(webid: String, uri: URI): SolidNetworkResponse<SolidMetadata> {
+    override suspend fun head(webid: String, uri: URI): SolidResult<SolidMetadata> {
         val s = uri.toString()
         return if (isAclUri(s)) {
             stored[s]?.let {
-                SolidNetworkResponse.Success(SolidMetadata.EMPTY.copy(etag = it.etag))
-            } ?: SolidNetworkResponse.Error(404, "no ACL/ACR at $s")
+                SolidResult.Success(SolidMetadata.EMPTY.copy(etag = it.etag))
+            } ?: SolidResult.Failure(SolidError.fromHttp(404, "no ACL/ACR at $s"))
         } else {
-            SolidNetworkResponse.Success(SolidMetadata.EMPTY.copy(aclUri = aclUriFor(uri)))
+            SolidResult.Success(SolidMetadata.EMPTY.copy(aclUri = aclUriFor(uri)))
         }
     }
 
@@ -54,9 +55,9 @@ internal class InMemoryAccessPod : SolidResourceManager {
         webid: String,
         resource: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> {
+    ): SolidResult<T> {
         val doc = stored[resource.toString()]
-            ?: return SolidNetworkResponse.Error(404, "not found: $resource")
+            ?: return SolidResult.Failure(SolidError.fromHttp(404, "not found: $resource"))
         val quads = NTriples.parse(String(doc.body, Charsets.UTF_8), resource)
         val headers = SolidHeaders(mapOf("ETag" to listOf(doc.etag)))
         val parsed: Resource = if (SolidACLResource::class.java.isAssignableFrom(clazz)) {
@@ -64,7 +65,7 @@ internal class InMemoryAccessPod : SolidResourceManager {
         } else {
             SolidRDFResource(resource, "application/n-triples", quads, headers)
         }
-        return SolidNetworkResponse.Success(parsed as T)
+        return SolidResult.Success(parsed as T)
     }
 
     override suspend fun putRaw(
@@ -74,51 +75,51 @@ internal class InMemoryAccessPod : SolidResourceManager {
         body: ByteArray,
         ifMatch: String?,
         linkHeader: String?,
-    ): SolidNetworkResponse<Unit> {
+    ): SolidResult<Unit> {
         putLog += uri.toString() to ifMatch
         if (failNextPutWith412) {
             failNextPutWith412 = false
-            return SolidNetworkResponse.Error(412, "precondition failed (test)")
+            return SolidResult.Failure(SolidError.fromHttp(412, "precondition failed (test)"))
         }
         etagSeq++
         stored[uri.toString()] = StoredDoc(body, "etag-$etagSeq")
-        return SolidNetworkResponse.Success(Unit)
+        return SolidResult.Success(Unit)
     }
 
     override suspend fun <T : Resource> readPublic(
         uri: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> = read("", uri, clazz)
+    ): SolidResult<T> = read("", uri, clazz)
 
-    override suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> = head("", uri)
+    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> = head("", uri)
 
-    override suspend fun <T : Resource> create(webid: String, resource: T): SolidNetworkResponse<T> =
+    override suspend fun <T : Resource> create(webid: String, resource: T): SolidResult<T> =
         notImplemented()
 
     override suspend fun <T : Resource> update(
         webid: String,
         newResource: T,
         ifMatch: String?,
-    ): SolidNetworkResponse<T> = notImplemented()
+    ): SolidResult<T> = notImplemented()
 
     override suspend fun patch(
         webid: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = notImplemented()
+    ): SolidResult<Unit> = notImplemented()
 
     override suspend fun patchRaw(
         webid: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = notImplemented()
+    ): SolidResult<Unit> = notImplemented()
 
-    override suspend fun delete(webid: String, resourceUri: URI): SolidNetworkResponse<Boolean> =
+    override suspend fun delete(webid: String, resourceUri: URI): SolidResult<Boolean> =
         notImplemented()
 
-    override suspend fun <T : Resource> delete(webid: String, resource: T): SolidNetworkResponse<T> =
+    override suspend fun <T : Resource> delete(webid: String, resource: T): SolidResult<T> =
         notImplemented()
 
     override suspend fun post(
@@ -127,14 +128,14 @@ internal class InMemoryAccessPod : SolidResourceManager {
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidNetworkResponse<URI?> = notImplemented()
+    ): SolidResult<URI?> = notImplemented()
 
     override suspend fun <T : Resource> createInContainer(
         webid: String,
         containerUri: URI,
         resource: T,
-    ): SolidNetworkResponse<URI?> = notImplemented()
+    ): SolidResult<URI?> = notImplemented()
 
-    private fun <T> notImplemented(): SolidNetworkResponse<T> =
-        SolidNetworkResponse.Exception(NotImplementedError("not exercised by the access-backend tests"))
+    private fun <T> notImplemented(): SolidResult<T> =
+        SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised by the access-backend tests")))
 }

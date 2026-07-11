@@ -2,7 +2,8 @@ package com.erfangholami.androidsolidservices.api.notifications
 
 import com.erfangholami.androidsolidservices.api.notifications.implementation.InboxDiscovery
 import com.erfangholami.androidsolidservices.api.notifications.implementation.InboxReader
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
@@ -59,32 +60,32 @@ class InboxReaderGateTest {
         val fake = FakeSolidResourceManager(
             onRead = { uri ->
                 when (uri.toString()) {
-                    readerWebId -> SolidNetworkResponse.Success(readerProfile())
-                    inboxUri -> SolidNetworkResponse.Success(inboxContainer())
-                    itemUri -> SolidNetworkResponse.Success(offer(actorWebId, resourceUri))
-                    else -> SolidNetworkResponse.Error(404, "not found: $uri")
+                    readerWebId -> SolidResult.Success(readerProfile())
+                    inboxUri -> SolidResult.Success(inboxContainer())
+                    itemUri -> SolidResult.Success(offer(actorWebId, resourceUri))
+                    else -> SolidResult.Failure(SolidError.fromHttp(404, "not found: $uri"))
                 }
             },
             onReadPublic = { uri ->
                 if (uri.toString() == actorWebId) {
-                    SolidNetworkResponse.Success(
+                    SolidResult.Success(
                         WebId(
                             URI.create(actorWebId),
                             listOf(RdfQuad(actorWebId, PIM.STORAGE, actorStorage)),
                         ),
                     )
                 } else {
-                    SolidNetworkResponse.Error(404, "not found: $uri")
+                    SolidResult.Failure(SolidError.fromHttp(404, "not found: $uri"))
                 }
             },
             onHead = { uri ->
                 if (uri.toString() == resourceUri) {
-                    SolidNetworkResponse.Success(
+                    SolidResult.Success(
                         headOwner?.let { SolidMetadata.EMPTY.copy(ownerUri = URI.create(it)) }
                             ?: SolidMetadata.EMPTY,
                     )
                 } else {
-                    SolidNetworkResponse.Error(404, "not found: $uri")
+                    SolidResult.Failure(SolidError.fromHttp(404, "not found: $uri"))
                 }
             },
         )

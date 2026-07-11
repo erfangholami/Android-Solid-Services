@@ -1,7 +1,7 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
 import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.runBlocking
 import net.openid.appauth.TokenResponse
 import okhttp3.OkHttpClient
@@ -93,7 +93,7 @@ class SolidHttpClientTest {
 
         val result = runBlocking { client.delete(webId, url("/r")) }
 
-        assertTrue(result is SolidNetworkResponse.Success)
+        assertTrue(result is SolidResult.Success)
         assertEquals(2, server.requestCount)
         assertTrue("the nonce should have been recorded", "nonce-abc" in fake.recordedNonces)
         assertEquals("a nonce challenge must not force a token refresh", 0, fake.forceRefreshCount)
@@ -114,7 +114,7 @@ class SolidHttpClientTest {
 
         val result = runBlocking { client.delete(webId, url("/r")) }
 
-        assertTrue(result is SolidNetworkResponse.Success)
+        assertTrue(result is SolidResult.Success)
         assertEquals(2, server.requestCount)
         assertEquals(1, fake.forceRefreshCount)
     }
@@ -132,8 +132,8 @@ class SolidHttpClientTest {
 
         val result = runBlocking { client.delete(webId, url("/r")) }
 
-        assertTrue(result is SolidNetworkResponse.Error)
-        assertEquals(401, (result as SolidNetworkResponse.Error).errorCode)
+        assertTrue(result is SolidResult.Failure)
+        assertEquals(401, (result as SolidResult.Failure).error.httpStatus)
         assertEquals("must not retry endlessly on a real auth failure", 2, server.requestCount)
         assertEquals(1, fake.forceRefreshCount)
     }
@@ -146,8 +146,8 @@ class SolidHttpClientTest {
             client.putRaw(webId, url("/r"), "text/turtle", ByteArray(0), ifMatch = "etag1")
         }
 
-        assertTrue(result is SolidNetworkResponse.Error)
-        assertEquals(412, (result as SolidNetworkResponse.Error).errorCode)
+        assertTrue(result is SolidResult.Failure)
+        assertEquals(412, (result as SolidResult.Failure).error.httpStatus)
         assertEquals(1, server.requestCount)
         assertEquals("\"etag1\"", server.takeRequest().getHeader("If-Match"))
     }
@@ -172,7 +172,7 @@ class SolidHttpClientTest {
 
         val result = runBlocking { client.delete(webId, url("/r")) }
 
-        assertTrue(result is SolidNetworkResponse.Success)
+        assertTrue(result is SolidResult.Success)
         assertEquals(2, server.requestCount)
     }
 
@@ -187,10 +187,10 @@ class SolidHttpClientTest {
             client.post(webId, url("/shared/"), "text/turtle", "data".toByteArray())
         }
 
-        assertTrue(result is SolidNetworkResponse.Success)
+        assertTrue(result is SolidResult.Success)
         assertEquals(
             URI.create("https://alice.pod/shared/new-item"),
-            (result as SolidNetworkResponse.Success).data,
+            (result as SolidResult.Success).value,
         )
     }
 }

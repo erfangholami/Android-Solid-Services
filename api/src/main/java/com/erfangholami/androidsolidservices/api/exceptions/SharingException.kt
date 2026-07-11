@@ -24,7 +24,7 @@ package com.erfangholami.androidsolidservices.api.exceptions
  *    the server isn't compatible.
  *
  * These exceptions are thrown by `SharingManager` / `NotificationsManager`
- * implementations and surfaced as `SolidNetworkResponse.Exception(e)` at
+ * implementations and surfaced as a typed `SolidResult.Failure(SolidError…)` at
  * the public boundary. The bound services map them to
  * [com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode]
  * for IPC transport; the client SDK reconstructs the typed exception.

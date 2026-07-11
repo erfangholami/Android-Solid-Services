@@ -14,8 +14,8 @@ import com.erfangholami.androidsolidservices.shared.rdf.contacts.AddressBookRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
-import com.erfangholami.androidsolidservices.shared.result.getOrThrow
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
+
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import java.net.URI
 import kotlinx.coroutines.runBlocking
@@ -155,7 +155,7 @@ class ContactEngineTest {
 
             val result = contactEngine.delete(webId, bookUri, created.uri)
 
-            assertTrue(result is DataModuleResult.Exception)
+            assertTrue(result is SolidResult.Failure)
             val people = fake.store[peopleUri] as NameEmailIndexRDF
             assertEquals(1, people.getContacts(bookUri).size)
         }
@@ -274,7 +274,7 @@ class ContactEngineTest {
 
             val result = bookEngine.delete(webId, bookUri)
 
-            assertTrue(result is DataModuleResult.Exception)
+            assertTrue(result is SolidResult.Failure)
             val typeIndex = fake.store[privateIndexUri] as PrivateTypeIndex
             assertTrue(typeIndex.getAddressBooks().contains(bookUri))
         }

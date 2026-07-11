@@ -2,7 +2,7 @@ package com.erfangholami.androidsolidservices.api.datamodule.contacts
 
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 /**
  * Manages the address books of a pod user.
@@ -14,7 +14,7 @@ import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
 public interface AddressBookStore {
 
     /** Lists the address books registered in [ownerWebId]'s private and public type indexes. */
-    public suspend fun list(ownerWebId: String): DataModuleResult<AddressBookList>
+    public suspend fun list(ownerWebId: String): SolidResult<AddressBookList>
 
     /**
      * Ensures the contacts container (default `{storage}contacts/`) exists — creating it as an
@@ -26,13 +26,13 @@ public interface AddressBookStore {
         ownerWebId: String,
         storage: String,
         container: String? = null,
-    ): DataModuleResult<AddressBookList>
+    ): SolidResult<AddressBookList>
 
     /** Reads the address book at [addressBookUri] with its contact and group summaries. */
     public suspend fun get(
         ownerWebId: String,
         addressBookUri: String,
-    ): DataModuleResult<AddressBook>
+    ): SolidResult<AddressBook>
 
     /**
      * Creates an address book titled [title] under [container] (default
@@ -45,14 +45,14 @@ public interface AddressBookStore {
         isPrivate: Boolean = true,
         storage: String,
         container: String? = null,
-    ): DataModuleResult<AddressBook>
+    ): SolidResult<AddressBook>
 
     /** Renames the address book at [addressBookUri] to [newName]. */
     public suspend fun rename(
         ownerWebId: String,
         addressBookUri: String,
         newName: String,
-    ): DataModuleResult<AddressBook>
+    ): SolidResult<AddressBook>
 
     /**
      * Deletes the address book at [addressBookUri]: its type-index registration and
@@ -61,7 +61,7 @@ public interface AddressBookStore {
     public suspend fun delete(
         ownerWebId: String,
         addressBookUri: String,
-    ): DataModuleResult<AddressBook>
+    ): SolidResult<AddressBook>
 
     /**
      * Returns the user's default address book: the first book registered in the
@@ -72,5 +72,5 @@ public interface AddressBookStore {
         ownerWebId: String,
         storage: String,
         title: String = "Contacts",
-    ): DataModuleResult<AddressBook>
+    ): SolidResult<AddressBook>
 }

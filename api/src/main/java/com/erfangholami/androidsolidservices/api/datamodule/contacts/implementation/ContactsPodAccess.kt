@@ -1,9 +1,7 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation
 
-import android.os.Parcelable
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
@@ -12,22 +10,24 @@ import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.CancellationException
 import java.net.URI
 
 /**
- * Wraps a contacts-engine operation into a [DataModuleResult], mapping any thrown
- * exception to [DataModuleResult.Exception]. [CancellationException] is rethrown so
+ * Wraps a contacts-engine operation into a [SolidResult], mapping any thrown
+ * exception to [SolidResult.Failure]. [CancellationException] is rethrown so
  * coroutine cancellation propagates instead of surfacing as a failed result.
  */
-internal suspend fun <T : Parcelable> runResult(block: suspend () -> T): DataModuleResult<T> =
+internal suspend fun <T> runResult(block: suspend () -> T): SolidResult<T> =
     try {
-        DataModuleResult.Success(block())
+        SolidResult.Success(block())
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
-        DataModuleResult.Exception(e)
+        SolidResult.Failure(SolidError.fromThrowable(e))
     }
 
 /**
@@ -69,7 +69,7 @@ internal class ContactsPodAccess(
      */
     suspend fun ensureContainer(ownerWebId: String, containerUri: URI) {
         val missing = solidResourceManager.head(ownerWebId, containerUri).let {
-            it is SolidNetworkResponse.Error && it.errorCode == 404
+            it is SolidResult.Failure && it.error.code == SolidErrorCode.NOT_FOUND
         }
         if (!missing) return
         parentContainer(containerUri)?.let { ensureContainer(ownerWebId, it) }
@@ -126,9 +126,9 @@ internal class ContactsPodAccess(
         }
     }
 
-    private fun <T> SolidNetworkResponse<T>.dataOrNullIfMissing(): T? = when (this) {
-        is SolidNetworkResponse.Success -> data
-        is SolidNetworkResponse.Error -> if (errorCode == 404) null else getOrThrow()
-        is SolidNetworkResponse.Exception -> getOrThrow()
+    private fun <T> SolidResult<T>.dataOrNullIfMissing(): T? = when (this) {
+        is SolidResult.Success -> value
+        is SolidResult.Failure ->
+            if (error.code == SolidErrorCode.NOT_FOUND) null else getOrThrow()
     }
 }

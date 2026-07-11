@@ -10,7 +10,7 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.PEOPLE_FILE_N
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.AddressBookRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import java.net.URI
 import java.util.UUID
 
@@ -18,7 +18,7 @@ internal class AddressBookEngine(
     private val pod: ContactsPodAccess,
 ) : AddressBookStore {
 
-    override suspend fun list(ownerWebId: String): DataModuleResult<AddressBookList> = runResult {
+    override suspend fun list(ownerWebId: String): SolidResult<AddressBookList> = runResult {
         readBookList(ownerWebId)
     }
 
@@ -26,7 +26,7 @@ internal class AddressBookEngine(
         ownerWebId: String,
         storage: String,
         container: String?,
-    ): DataModuleResult<AddressBookList> = runResult {
+    ): SolidResult<AddressBookList> = runResult {
         val targetContainer = container ?: "${storage}${CONTACTS_DIRECTORY_SUFFIX}"
         pod.ensureContainer(ownerWebId, URI.create(targetContainer))
         readBookList(ownerWebId)
@@ -44,7 +44,7 @@ internal class AddressBookEngine(
     override suspend fun get(
         ownerWebId: String,
         addressBookUri: String,
-    ): DataModuleResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = runResult {
         readBook(ownerWebId, addressBookUri)
     }
 
@@ -54,7 +54,7 @@ internal class AddressBookEngine(
         isPrivate: Boolean,
         storage: String,
         container: String?,
-    ): DataModuleResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = runResult {
         val bookUri = createBook(ownerWebId, title, isPrivate, storage, container)
         readBook(ownerWebId, bookUri)
     }
@@ -63,7 +63,7 @@ internal class AddressBookEngine(
         ownerWebId: String,
         addressBookUri: String,
         newName: String,
-    ): DataModuleResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = runResult {
         val addressBookRdf = pod.addressBook(ownerWebId, URI.create(addressBookUri))
         if (addressBookRdf.getTitle() != newName) {
             addressBookRdf.setTitle(newName)
@@ -75,7 +75,7 @@ internal class AddressBookEngine(
     override suspend fun delete(
         ownerWebId: String,
         addressBookUri: String,
-    ): DataModuleResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = runResult {
         val book = runCatching { readBook(ownerWebId, addressBookUri) }.getOrNull()
 
         // Delete the whole book container recursively first, and only deregister it from the type
@@ -104,7 +104,7 @@ internal class AddressBookEngine(
         ownerWebId: String,
         storage: String,
         title: String,
-    ): DataModuleResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = runResult {
         val firstPrivate = pod.privateTypeIndex(ownerWebId).getAddressBooks().firstOrNull()
         val bookUri = firstPrivate ?: createBook(
             ownerWebId = ownerWebId,

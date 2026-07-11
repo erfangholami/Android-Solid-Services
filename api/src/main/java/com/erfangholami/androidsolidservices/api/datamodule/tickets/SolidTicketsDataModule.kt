@@ -7,7 +7,7 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketArtifact
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketList
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 /**
  * Manages wallet tickets (`schema:Ticket` resources) on a user's Solid pod.
@@ -20,7 +20,7 @@ import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
  * first use.
  *
  * All operations are performed on behalf of [ownerWebId] and return a
- * [DataModuleResult] to distinguish data errors from unexpected exceptions.
+ * [SolidResult] to distinguish data errors from unexpected exceptions.
  *
  * Obtain an instance via [SolidTicketsDataModule.getInstance].
  */
@@ -49,13 +49,13 @@ public interface SolidTicketsDataModule {
      */
     public suspend fun getTickets(
         ownerWebId: String,
-    ): DataModuleResult<TicketList>
+    ): SolidResult<TicketList>
 
     /** Reads the full ticket at [ticketUri]. */
     public suspend fun getTicket(
         ownerWebId: String,
         ticketUri: String,
-    ): DataModuleResult<Ticket>
+    ): SolidResult<Ticket>
 
     /**
      * Creates [newTicket] in [ownerWebId]'s tickets container, bootstrapping the
@@ -80,7 +80,7 @@ public interface SolidTicketsDataModule {
         artifactContentType: String? = null,
         isPrivate: Boolean = true,
         container: String? = null,
-    ): DataModuleResult<Ticket>
+    ): SolidResult<Ticket>
 
     /**
      * Rewrites the ticket at [ticketUri] from [updated] with replace semantics:
@@ -92,7 +92,7 @@ public interface SolidTicketsDataModule {
         ownerWebId: String,
         ticketUri: String,
         updated: NewTicket,
-    ): DataModuleResult<Ticket>
+    ): SolidResult<Ticket>
 
     /**
      * Deletes the ticket at [ticketUri]: its index row, its artifact binary (when
@@ -101,11 +101,11 @@ public interface SolidTicketsDataModule {
     public suspend fun deleteTicket(
         ownerWebId: String,
         ticketUri: String,
-    ): DataModuleResult<Ticket>
+    ): SolidResult<Ticket>
 
     /** Downloads the original imported artifact at [artifactUri] (a `solidshare:artifact` target). */
     public suspend fun getTicketArtifact(
         ownerWebId: String,
         artifactUri: String,
-    ): DataModuleResult<TicketArtifact>
+    ): SolidResult<TicketArtifact>
 }

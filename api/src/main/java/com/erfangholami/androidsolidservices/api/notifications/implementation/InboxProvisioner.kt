@@ -4,7 +4,8 @@ import com.erfangholami.androidsolidservices.api.access.AcpBackend
 import com.erfangholami.androidsolidservices.api.access.WacBackend
 import com.erfangholami.androidsolidservices.api.access.pickBackend
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
@@ -26,19 +27,17 @@ internal class InboxProvisioner(private val rm: SolidResourceManager) {
 
     suspend fun ensureContainer(webId: String, containerUri: URI) {
         when (val head = rm.head(webId, containerUri)) {
-            is SolidNetworkResponse.Success -> return
-            is SolidNetworkResponse.Error ->
-                if (head.errorCode != 404 && head.errorCode != 410) {
-                    error("HEAD $containerUri failed: ${head.errorCode} ${head.errorMessage}")
+            is SolidResult.Success -> return
+            is SolidResult.Failure ->
+                if (head.error.code != SolidErrorCode.NOT_FOUND) {
+                    throw head.error.asException()
                 }
-
-            is SolidNetworkResponse.Exception -> throw head.exception
         }
         rm.create(webId, SolidContainer(containerUri)).getOrThrow()
     }
 
     suspend fun grantPublicAppend(webId: String, inboxUri: URI) {
-        val metadata = (rm.head(webId, inboxUri) as? SolidNetworkResponse.Success)?.data
+        val metadata = (rm.head(webId, inboxUri) as? SolidResult.Success)?.value
         val backend = if (metadata != null) {
             pickBackend(metadata, inboxUri, wacBackend, acpBackend)
         } else {

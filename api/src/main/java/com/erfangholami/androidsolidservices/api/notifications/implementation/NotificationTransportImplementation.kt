@@ -4,7 +4,8 @@ import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.notifications.NotificationTransport
 import com.erfangholami.androidsolidservices.api.notifications.RawNotification
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
@@ -41,12 +42,13 @@ internal class NotificationTransportImplementation private constructor(
             NotificationTransportImplementation(resourceManager, discovery, ioDispatcher)
     }
 
-    override suspend fun discoverInbox(webId: String): SolidNetworkResponse<String?> =
+    override suspend fun discoverInbox(webId: String): SolidResult<String?> =
         withContext(ioDispatcher) {
             try {
-                SolidNetworkResponse.Success(discovery.resolveOwnInbox(webId)?.toString())
+                SolidResult.Success(discovery.resolveOwnInbox(webId)?.toString())
             } catch (e: Exception) {
-                SolidNetworkResponse.Exception(e)
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                SolidResult.Failure(SolidError.fromThrowable(e))
             }
         }
 
@@ -56,71 +58,69 @@ internal class NotificationTransportImplementation private constructor(
         contentType: String,
         body: ByteArray,
         slug: String?,
-    ): SolidNetworkResponse<String?> = withContext(ioDispatcher) {
+    ): SolidResult<String?> = withContext(ioDispatcher) {
         try {
             val headers = if (slug != null) mapOf(SLUG_HEADER to slug) else emptyMap()
             when (val r = rm.post(webId, encodeUriString(inbox), contentType, body, headers)) {
-                is SolidNetworkResponse.Success -> SolidNetworkResponse.Success(r.data?.toString())
-                is SolidNetworkResponse.Error -> SolidNetworkResponse.Error(r.errorCode, r.errorMessage)
-                is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(r.exception)
+                is SolidResult.Success -> SolidResult.Success(r.value?.toString())
+                is SolidResult.Failure -> r
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 
     override suspend fun list(
         webId: String,
         inbox: String,
-    ): SolidNetworkResponse<List<RawNotification>> = withContext(ioDispatcher) {
+    ): SolidResult<List<RawNotification>> = withContext(ioDispatcher) {
         try {
             val container = when (
                 val r = rm.read(webId, encodeUriString(inbox), SolidContainer::class.java)
             ) {
-                is SolidNetworkResponse.Success -> r.data
-                is SolidNetworkResponse.Error ->
-                    return@withContext SolidNetworkResponse.Error(r.errorCode, r.errorMessage)
-
-                is SolidNetworkResponse.Exception ->
-                    return@withContext SolidNetworkResponse.Exception(r.exception)
+                is SolidResult.Success -> r.value
+                is SolidResult.Failure -> return@withContext r
             }
             val items = container.getContained().mapNotNull {
                 runCatching { encodeUriString(it.identifier) }.getOrNull()
             }
-            SolidNetworkResponse.Success(items.mapNotNull { readRaw(webId, it) })
+            SolidResult.Success(items.mapNotNull { readRaw(webId, it) })
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 
     override suspend fun read(
         webId: String,
         notificationUri: String,
-    ): SolidNetworkResponse<RawNotification> = withContext(ioDispatcher) {
+    ): SolidResult<RawNotification> = withContext(ioDispatcher) {
         try {
             val uri = encodeUriString(notificationUri)
             when (val r = rm.read(webId, uri, SolidRDFResource::class.java)) {
-                is SolidNetworkResponse.Success ->
-                    SolidNetworkResponse.Success(
-                        RawNotificationParser.parse(uri.toString(), r.data.getAllQuads()),
+                is SolidResult.Success ->
+                    SolidResult.Success(
+                        RawNotificationParser.parse(uri.toString(), r.value.getAllQuads()),
                     )
 
-                is SolidNetworkResponse.Error -> SolidNetworkResponse.Error(r.errorCode, r.errorMessage)
-                is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(r.exception)
+                is SolidResult.Failure -> r
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 
     override suspend fun delete(
         webId: String,
         notificationUri: String,
-    ): SolidNetworkResponse<Boolean> = withContext(ioDispatcher) {
+    ): SolidResult<Boolean> = withContext(ioDispatcher) {
         try {
             rm.delete(webId, encodeUriString(notificationUri))
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 

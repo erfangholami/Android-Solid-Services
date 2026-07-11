@@ -1,7 +1,8 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
@@ -23,35 +24,35 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         webid: String,
         resource: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> =
+    ): SolidResult<T> =
         store[resource.toString()]
-            ?.let { SolidNetworkResponse.Success(it as T) }
-            ?: SolidNetworkResponse.Error(404, "not found: $resource")
+            ?.let { SolidResult.Success(it as T) }
+            ?: SolidResult.Failure(SolidError.fromHttp(404, "not found: $resource"))
 
     override suspend fun <T : Resource> create(
         webid: String,
         resource: T,
-    ): SolidNetworkResponse<T> {
+    ): SolidResult<T> {
         put(resource)
-        return SolidNetworkResponse.Success(resource)
+        return SolidResult.Success(resource)
     }
 
     override suspend fun <T : Resource> update(
         webid: String,
         newResource: T,
         ifMatch: String?,
-    ): SolidNetworkResponse<T> {
+    ): SolidResult<T> {
         put(newResource)
-        return SolidNetworkResponse.Success(newResource)
+        return SolidResult.Success(newResource)
     }
 
     override suspend fun delete(
         webid: String,
         resourceUri: URI,
-    ): SolidNetworkResponse<Boolean> {
+    ): SolidResult<Boolean> {
         val uri = resourceUri.toString()
         if (uri in failDeletesFor) {
-            return SolidNetworkResponse.Error(409, "delete failed (test): $uri")
+            return SolidResult.Failure(SolidError.fromHttp(409, "delete failed (test): $uri"))
         }
         deletedUris.add(uri)
         if (uri.endsWith("/")) {
@@ -59,15 +60,15 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         } else {
             store.remove(uri)
         }
-        return SolidNetworkResponse.Success(true)
+        return SolidResult.Success(true)
     }
 
     override suspend fun <T : Resource> delete(
         webid: String,
         resource: T,
-    ): SolidNetworkResponse<T> {
+    ): SolidResult<T> {
         delete(webid, resource.getIdentifier())
-        return SolidNetworkResponse.Success(resource)
+        return SolidResult.Success(resource)
     }
 
     override suspend fun putRaw(
@@ -77,39 +78,39 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         body: ByteArray,
         ifMatch: String?,
         linkHeader: String?,
-    ): SolidNetworkResponse<Unit> {
+    ): SolidResult<Unit> {
         rawPuts[uri.toString()] = body
-        return SolidNetworkResponse.Success(Unit)
+        return SolidResult.Success(Unit)
     }
 
-    override suspend fun head(webid: String, uri: URI): SolidNetworkResponse<SolidMetadata> =
+    override suspend fun head(webid: String, uri: URI): SolidResult<SolidMetadata> =
         if (store.containsKey(uri.toString())) {
-            SolidNetworkResponse.Success(SolidMetadata.EMPTY)
+            SolidResult.Success(SolidMetadata.EMPTY)
         } else {
-            SolidNetworkResponse.Error(404, "not found: $uri")
+            SolidResult.Failure(SolidError.fromHttp(404, "not found: $uri"))
         }
 
-    override suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> =
-        SolidNetworkResponse.Success(SolidMetadata.EMPTY)
+    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> =
+        SolidResult.Success(SolidMetadata.EMPTY)
 
     override suspend fun <T : Resource> readPublic(
         uri: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> = read("", uri, clazz)
+    ): SolidResult<T> = read("", uri, clazz)
 
     override suspend fun patch(
         webid: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = notImplemented()
+    ): SolidResult<Unit> = notImplemented()
 
     override suspend fun patchRaw(
         webid: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = notImplemented()
+    ): SolidResult<Unit> = notImplemented()
 
     override suspend fun post(
         webid: String,
@@ -117,14 +118,14 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidNetworkResponse<URI?> = notImplemented()
+    ): SolidResult<URI?> = notImplemented()
 
     override suspend fun <T : Resource> createInContainer(
         webid: String,
         containerUri: URI,
         resource: T,
-    ): SolidNetworkResponse<URI?> = notImplemented()
+    ): SolidResult<URI?> = notImplemented()
 
-    private fun <T> notImplemented(): SolidNetworkResponse<T> =
-        SolidNetworkResponse.Exception(NotImplementedError("not exercised by this test"))
+    private fun <T> notImplemented(): SolidResult<T> =
+        SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised by this test")))
 }

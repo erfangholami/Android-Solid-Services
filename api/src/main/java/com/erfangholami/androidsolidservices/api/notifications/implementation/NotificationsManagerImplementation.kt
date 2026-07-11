@@ -8,7 +8,8 @@ import com.erfangholami.androidsolidservices.api.notifications.ShareNotification
 import com.erfangholami.androidsolidservices.api.notifications.SolidShareNotificationProfile
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
@@ -57,20 +58,20 @@ internal class NotificationsManagerImplementation private constructor(
 
     override suspend fun listNotifications(
         webId: String,
-    ): SolidNetworkResponse<List<ShareNotification>> = wrap {
+    ): SolidResult<List<ShareNotification>> = wrap {
         inboxReader.listNotifications(webId)
     }
 
     override suspend fun listRequests(
         webId: String,
-    ): SolidNetworkResponse<List<ShareRequest>> = wrap {
+    ): SolidResult<List<ShareRequest>> = wrap {
         inboxReader.listRequests(webId)
     }
 
     override suspend fun compactInbox(
         webId: String,
         olderThanIso: String?,
-    ): SolidNetworkResponse<Int> = wrap {
+    ): SolidResult<Int> = wrap {
         val notifications = inboxReader.listNotifications(webId)
         val requests = inboxReader.listRequests(webId)
         val toDelete = mutableSetOf<URI>()
@@ -150,16 +151,11 @@ internal class NotificationsManagerImplementation private constructor(
             runCatching { rm.delete(webId, uri) }
                 .onSuccess { r ->
                     when (r) {
-                        is SolidNetworkResponse.Success -> if (r.data) deleted++
-                        is SolidNetworkResponse.Error -> Log.w(
+                        is SolidResult.Success -> if (r.value) deleted++
+                        is SolidResult.Failure -> Log.w(
                             NOTIFS_LOG_TAG,
-                            "compactInbox: delete failed for $uri (${r.errorCode}: ${r.errorMessage}).",
-                        )
-
-                        is SolidNetworkResponse.Exception -> Log.w(
-                            NOTIFS_LOG_TAG,
-                            "compactInbox: delete threw for $uri.",
-                            r.exception,
+                            "compactInbox: delete failed for $uri (${r.error.code}: ${r.error.message}).",
+                            r.error.cause,
                         )
                     }
                 }
@@ -173,17 +169,20 @@ internal class NotificationsManagerImplementation private constructor(
     override suspend fun deleteNotification(
         webId: String,
         notificationUri: String,
-    ): SolidNetworkResponse<Boolean> = wrap {
+    ): SolidResult<Boolean> = wrap {
         when (val r = rm.delete(webId, encodeUriString(notificationUri))) {
-            is SolidNetworkResponse.Success -> r.data
-            is SolidNetworkResponse.Error ->
-                throw SharingException.NotificationDelivery(notificationUri, r.errorCode)
-
-            is SolidNetworkResponse.Exception -> throw r.exception
+            is SolidResult.Success -> r.value
+            is SolidResult.Failure -> {
+                val status = r.error.httpStatus
+                if (status != null) {
+                    throw SharingException.NotificationDelivery(notificationUri, status)
+                }
+                throw r.error.asException()
+            }
         }
     }
 
-    override suspend fun ensureInbox(webId: String): SolidNetworkResponse<String> = wrap {
+    override suspend fun ensureInbox(webId: String): SolidResult<String> = wrap {
         discovery.resolveOwnInbox(webId)?.let { existingInbox ->
             ensurePublicAppend(webId, existingInbox)
             return@wrap existingInbox.toString()
@@ -215,7 +214,7 @@ internal class NotificationsManagerImplementation private constructor(
         receiverWebId: String,
         resourceUri: String,
         mode: ShareMode,
-    ): SolidNetworkResponse<Unit> = wrap {
+    ): SolidResult<Unit> = wrap {
         inboxNotifier.postOffer(
             ownerWebId, receiverWebId, encodeUriString(resourceUri), mode,
         ).requireSuccess(receiverWebId)
@@ -225,7 +224,7 @@ internal class NotificationsManagerImplementation private constructor(
         ownerWebId: String,
         receiverWebId: String,
         resourceUri: String,
-    ): SolidNetworkResponse<Unit> = wrap {
+    ): SolidResult<Unit> = wrap {
         inboxNotifier.postUndo(
             ownerWebId, receiverWebId, encodeUriString(resourceUri),
         ).requireSuccess(receiverWebId)
@@ -236,7 +235,7 @@ internal class NotificationsManagerImplementation private constructor(
         receiverWebId: String,
         resourceUri: String,
         mode: ShareMode,
-    ): SolidNetworkResponse<Unit> = wrap {
+    ): SolidResult<Unit> = wrap {
         inboxNotifier.postUpdate(
             ownerWebId, receiverWebId, encodeUriString(resourceUri), mode,
         ).requireSuccess(receiverWebId)
@@ -248,7 +247,7 @@ internal class NotificationsManagerImplementation private constructor(
         resourceUri: String,
         requestedMode: ShareMode,
         summary: String?,
-    ): SolidNetworkResponse<Unit> = wrap {
+    ): SolidResult<Unit> = wrap {
         inboxNotifier.postRequest(
             requesterWebId, ownerWebId, encodeUriString(resourceUri), requestedMode, summary,
         ).requireSuccess(ownerWebId)
@@ -259,7 +258,7 @@ internal class NotificationsManagerImplementation private constructor(
         requesterWebId: String,
         resourceUri: String,
         reason: String?,
-    ): SolidNetworkResponse<Unit> = wrap {
+    ): SolidResult<Unit> = wrap {
         inboxNotifier.postReject(
             ownerWebId, requesterWebId, encodeUriString(resourceUri), reason,
         ).requireSuccess(requesterWebId)
@@ -271,7 +270,7 @@ internal class NotificationsManagerImplementation private constructor(
         resourceUri: String,
         mode: ShareMode,
         requestUri: String?,
-    ): SolidNetworkResponse<Unit> = wrap {
+    ): SolidResult<Unit> = wrap {
         inboxNotifier.postAccept(
             ownerWebId, requesterWebId, encodeUriString(resourceUri), mode, requestUri,
         ).requireSuccess(requesterWebId)
@@ -283,7 +282,7 @@ internal class NotificationsManagerImplementation private constructor(
         resourceUri: String,
         mode: ShareMode,
         requestUri: String?,
-    ): SolidNetworkResponse<Unit> = wrap {
+    ): SolidResult<Unit> = wrap {
         inboxNotifier.postDecisionGranted(
             ownerWebId, requesterWebId, encodeUriString(resourceUri), mode, requestUri,
         ).requireSuccess(ownerWebId)
@@ -295,7 +294,7 @@ internal class NotificationsManagerImplementation private constructor(
         resourceUri: String,
         mode: ShareMode?,
         reason: String?,
-    ): SolidNetworkResponse<Unit> = wrap {
+    ): SolidResult<Unit> = wrap {
         inboxNotifier.postDecisionRejected(
             ownerWebId, requesterWebId, encodeUriString(resourceUri), mode, reason,
         ).requireSuccess(ownerWebId)
@@ -351,15 +350,16 @@ internal class NotificationsManagerImplementation private constructor(
         if (existing.getInbox() != null) return true
         val patch = N3Patch.build { insert(webId, LDP.INBOX, inboxUri.toString()) }
         return rm.patch(webId, doc, patch, ifMatch = existing.getHeaders().getETag()) is
-                SolidNetworkResponse.Success
+                SolidResult.Success
     }
 
-    private suspend fun <T> wrap(block: suspend () -> T): SolidNetworkResponse<T> =
+    private suspend fun <T> wrap(block: suspend () -> T): SolidResult<T> =
         withContext(Dispatchers.IO) {
             try {
-                SolidNetworkResponse.Success(block())
+                SolidResult.Success(block())
             } catch (e: Exception) {
-                SolidNetworkResponse.Exception(e)
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                SolidResult.Failure(SolidError.fromThrowable(e))
             }
         }
 }

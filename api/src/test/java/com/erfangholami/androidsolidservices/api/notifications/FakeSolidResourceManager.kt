@@ -1,19 +1,20 @@
 package com.erfangholami.androidsolidservices.api.notifications
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import java.net.URI
 
 internal class FakeSolidResourceManager(
-    var onRead: (URI) -> SolidNetworkResponse<out Resource> = { notImplemented() },
-    var onReadPublic: (URI) -> SolidNetworkResponse<out Resource> = { notImplemented() },
-    var onHead: (URI) -> SolidNetworkResponse<SolidMetadata> = { SolidNetworkResponse.Success(SolidMetadata.EMPTY) },
-    var onHeadPublic: (URI) -> SolidNetworkResponse<SolidMetadata> = { SolidNetworkResponse.Success(SolidMetadata.EMPTY) },
-    var onPost: (URI) -> SolidNetworkResponse<URI?> = { SolidNetworkResponse.Success(null) },
-    var onDelete: (URI) -> SolidNetworkResponse<Boolean> = { SolidNetworkResponse.Success(true) },
+    var onRead: (URI) -> SolidResult<out Resource> = { notImplemented() },
+    var onReadPublic: (URI) -> SolidResult<out Resource> = { notImplemented() },
+    var onHead: (URI) -> SolidResult<SolidMetadata> = { SolidResult.Success(SolidMetadata.EMPTY) },
+    var onHeadPublic: (URI) -> SolidResult<SolidMetadata> = { SolidResult.Success(SolidMetadata.EMPTY) },
+    var onPost: (URI) -> SolidResult<URI?> = { SolidResult.Success(null) },
+    var onDelete: (URI) -> SolidResult<Boolean> = { SolidResult.Success(true) },
 ) : SolidResourceManager {
 
     @Suppress("UNCHECKED_CAST")
@@ -21,18 +22,18 @@ internal class FakeSolidResourceManager(
         webid: String,
         resource: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> = onRead(resource) as SolidNetworkResponse<T>
+    ): SolidResult<T> = onRead(resource) as SolidResult<T>
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> readPublic(
         uri: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> = onReadPublic(uri) as SolidNetworkResponse<T>
+    ): SolidResult<T> = onReadPublic(uri) as SolidResult<T>
 
-    override suspend fun head(webid: String, uri: URI): SolidNetworkResponse<SolidMetadata> =
+    override suspend fun head(webid: String, uri: URI): SolidResult<SolidMetadata> =
         onHead(uri)
 
-    override suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> =
+    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> =
         onHeadPublic(uri)
 
     override suspend fun post(
@@ -41,35 +42,35 @@ internal class FakeSolidResourceManager(
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidNetworkResponse<URI?> = onPost(uri)
+    ): SolidResult<URI?> = onPost(uri)
 
-    override suspend fun delete(webid: String, resourceUri: URI): SolidNetworkResponse<Boolean> =
+    override suspend fun delete(webid: String, resourceUri: URI): SolidResult<Boolean> =
         onDelete(resourceUri)
 
-    override suspend fun <T : Resource> create(webid: String, resource: T): SolidNetworkResponse<T> =
+    override suspend fun <T : Resource> create(webid: String, resource: T): SolidResult<T> =
         notImplemented()
 
     override suspend fun <T : Resource> update(
         webid: String,
         newResource: T,
         ifMatch: String?,
-    ): SolidNetworkResponse<T> = notImplemented()
+    ): SolidResult<T> = notImplemented()
 
     override suspend fun patch(
         webid: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = notImplemented()
+    ): SolidResult<Unit> = notImplemented()
 
     override suspend fun patchRaw(
         webid: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = notImplemented()
+    ): SolidResult<Unit> = notImplemented()
 
-    override suspend fun <T : Resource> delete(webid: String, resource: T): SolidNetworkResponse<T> =
+    override suspend fun <T : Resource> delete(webid: String, resource: T): SolidResult<T> =
         notImplemented()
 
     override suspend fun putRaw(
@@ -79,16 +80,16 @@ internal class FakeSolidResourceManager(
         body: ByteArray,
         ifMatch: String?,
         linkHeader: String?,
-    ): SolidNetworkResponse<Unit> = notImplemented()
+    ): SolidResult<Unit> = notImplemented()
 
     override suspend fun <T : Resource> createInContainer(
         webid: String,
         containerUri: URI,
         resource: T,
-    ): SolidNetworkResponse<URI?> = notImplemented()
+    ): SolidResult<URI?> = notImplemented()
 
     companion object {
-        private fun <T> notImplemented(): SolidNetworkResponse<T> =
-            SolidNetworkResponse.Exception(NotImplementedError("not exercised by this test"))
+        private fun <T> notImplemented(): SolidResult<T> =
+            SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised by this test")))
     }
 }

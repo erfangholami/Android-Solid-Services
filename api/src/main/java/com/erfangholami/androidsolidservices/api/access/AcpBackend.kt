@@ -3,7 +3,8 @@ package com.erfangholami.androidsolidservices.api.access
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.exceptions.SharingException
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
@@ -214,8 +215,8 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         isContainer: Boolean,
     ) {
         val metadataResp = rm.head(webId, targetUri)
-        if (metadataResp is SolidNetworkResponse.Success &&
-            isAlreadyOwnerOnly(metadataResp.data.wacAllow)
+        if (metadataResp is SolidResult.Success &&
+            isAlreadyOwnerOnly(metadataResp.value.wacAllow)
         ) return
 
         val read = readAcr(webId, targetUri)
@@ -271,7 +272,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
                 resourceUri.toString(), backend = "ACP",
             )
         val existing = rm.head(webId, acrUri)
-        if (existing !is SolidNetworkResponse.Success) {
+        if (existing !is SolidResult.Success) {
             return AcrRead(
                 acrUri = acrUri,
                 acr = SolidRDFResource(acrUri, "application/ld+json", emptyList(), null),
@@ -291,7 +292,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         return AcrRead(
             acrUri = acrUri,
             acr = parsed ?: SolidRDFResource(acrUri, "application/ld+json", emptyList(), null),
-            etag = if (parsed != null) existing.data.etag else null,
+            etag = if (parsed != null) existing.value.etag else null,
             parseFailed = parsed == null,
         )
     }
@@ -315,15 +316,13 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
             linkHeader = null,
         )
         when (result) {
-            is SolidNetworkResponse.Success -> Unit
-            is SolidNetworkResponse.Error -> {
-                if (result.errorCode == 412) {
+            is SolidResult.Success -> Unit
+            is SolidResult.Failure -> {
+                if (result.error.code == SolidErrorCode.PRECONDITION_FAILED) {
                     throw SharingException.StaleAcl(acrUri.toString())
                 }
-                error("ACR write failed: ${result.errorCode} ${result.errorMessage}")
+                error("ACR write failed: ${result.error.message}")
             }
-
-            is SolidNetworkResponse.Exception -> throw result.exception
         }
     }
 

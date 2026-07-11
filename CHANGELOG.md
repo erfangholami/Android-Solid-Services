@@ -4,22 +4,26 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-Correctness and data-integrity hardening on top of the in-progress 0.6.0 contacts/tickets work.
-**Source-compatible** — no public signatures change; behaviour becomes more correct.
+Correctness and data-integrity hardening on top of the in-progress 0.6.0 contacts/tickets work, plus
+a **unified result/error model** that replaces the library's six historical error idioms. The
+result-type change is **source-breaking** for SDK consumers (pre-1.0); the rest is behaviour-only.
 
-### Added
+### Changed (breaking)
 
-- **Unified result/error model (`SolidResult` / `SolidError`)** — the foundation for collapsing the
-  library's six historical error idioms into one. `SolidResult<T>` is `Success(value)` |
-  `Failure(SolidError)`, with combinators (`map`/`flatMap`/`fold`/`recover`) and accessors
-  (`getOrNull`/`errorOrNull`/`getOrThrow`). `SolidError` is a typed, sealed superset of every existing
-  failure (HTTP statuses, transport/TLS/timeout/cancellation, and the sharing/notification/access
-  domain), each carrying a machine `code` (`SolidErrorCode`), a `retryable` hint, the originating
-  `httpStatus`, and the `cause`. HTTP statuses map to an error in exactly one place
-  (`SolidError.fromHttp`); throwables via `SolidError.fromThrowable`. Transitional `toResult()` /
-  `toNetworkResponse()` bridges let features migrate one at a time while everything keeps compiling —
-  callers can already opt in with `response.toResult()`. **Additive**; the per-feature migration of
-  public signatures (and the retirement of `SolidNetworkResponse` / `DataModuleResult`) follows.
+- **One result type everywhere: `SolidResult<T>` + `SolidError`.** Every public operation across
+  `SolidResourceManager`, the contacts/tickets data modules, `SharingManager`, and
+  `NotificationsManager` now returns `SolidResult<T>` (= `Success(value)` | `Failure(SolidError)`)
+  instead of the former mix of `SolidNetworkResponse`, `DataModuleResult`, thrown `SharingException`,
+  nullable returns, and `Success(empty)`-on-failure. `SolidError` is a typed, sealed superset of every
+  failure — HTTP statuses (401/403/404/405/409/412/429/5xx/…), transport (network/timeout/TLS),
+  local (malformed/cancelled/not-authenticated), and the sharing/notification/access domain — each
+  carrying a machine `code` (`SolidErrorCode`), a `retryable` hint, the originating `httpStatus`, and
+  the `cause`. Callers now branch on `error.code` instead of parsing a status int or a prose string.
+  HTTP is classified in exactly one place (`SolidError.fromHttp`); throwables via
+  `SolidError.fromThrowable`; coroutine cancellation is never swallowed. `SolidResult` provides
+  `map`/`flatMap`/`fold`/`recover`/`getOrNull`/`errorOrNull`/`getOrThrow`. The legacy
+  `SolidNetworkResponse` and `DataModuleResult` types (and their transitional bridges) have been
+  **removed** — `SolidResult` is the sole result type.
 
 ### Fixed
 

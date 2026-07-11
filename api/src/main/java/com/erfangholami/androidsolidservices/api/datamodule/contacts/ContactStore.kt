@@ -5,7 +5,7 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.ContactMatch
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactPhoto
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContact
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContactList
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 /**
  * Reads and writes the contacts of a pod user.
@@ -20,7 +20,7 @@ public interface ContactStore {
     public suspend fun get(
         ownerWebId: String,
         contactUri: String,
-    ): DataModuleResult<SolidContact>
+    ): SolidResult<SolidContact>
 
     /**
      * Fetches every contact of the address book at [addressBookUri] with full detail.
@@ -29,7 +29,7 @@ public interface ContactStore {
     public suspend fun getAll(
         ownerWebId: String,
         addressBookUri: String,
-    ): DataModuleResult<SolidContactList>
+    ): SolidResult<SolidContactList>
 
     /**
      * Creates a contact from [data] in the address book at [addressBookUri], optionally
@@ -41,7 +41,7 @@ public interface ContactStore {
         addressBookUri: String,
         data: ContactData,
         groupUris: List<String> = emptyList(),
-    ): DataModuleResult<SolidContact>
+    ): SolidResult<SolidContact>
 
     /**
      * Rewrites the contact at [contactUri] from [data] with replace semantics:
@@ -62,7 +62,7 @@ public interface ContactStore {
         addressBookUri: String,
         contactUri: String,
         data: ContactData,
-    ): DataModuleResult<SolidContact>
+    ): SolidResult<SolidContact>
 
     /**
      * Deletes the contact at [contactUri] from the address book at [addressBookUri]:
@@ -73,7 +73,7 @@ public interface ContactStore {
         ownerWebId: String,
         addressBookUri: String,
         contactUri: String,
-    ): DataModuleResult<SolidContact>
+    ): SolidResult<SolidContact>
 
     /**
      * Uploads (or overwrites) the contact's photo as a binary resource next to the
@@ -84,19 +84,19 @@ public interface ContactStore {
         contactUri: String,
         photo: ByteArray,
         contentType: String,
-    ): DataModuleResult<SolidContact>
+    ): SolidResult<SolidContact>
 
     /** Deletes the contact's photo binary and removes its `vcard:hasPhoto` link. */
     public suspend fun removePhoto(
         ownerWebId: String,
         contactUri: String,
-    ): DataModuleResult<SolidContact>
+    ): SolidResult<SolidContact>
 
     /** Downloads the photo binary at [photoUri] (a `vcard:hasPhoto` target). */
     public suspend fun getPhoto(
         ownerWebId: String,
         photoUri: String,
-    ): DataModuleResult<ContactPhoto>
+    ): SolidResult<ContactPhoto>
 
     /**
      * Looks for a contact whose WebId-typed `vcard:url` equals [webId] across every
@@ -106,5 +106,5 @@ public interface ContactStore {
     public suspend fun findByWebId(
         ownerWebId: String,
         webId: String,
-    ): DataModuleResult<ContactMatch>
+    ): SolidResult<ContactMatch>
 }

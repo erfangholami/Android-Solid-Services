@@ -3,7 +3,8 @@ package com.erfangholami.androidsolidservices.api.notifications.implementation
 import com.erfangholami.androidsolidservices.api.notifications.NotificationTransport
 import com.erfangholami.androidsolidservices.api.notifications.ShareNotificationProfile
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.AS
@@ -138,16 +139,19 @@ internal class InboxNotifier(
                 slug = slug,
             )
         ) {
-            is SolidNetworkResponse.Success ->
-                InboxPostResult.Success(r.data?.let { runCatching { URI.create(it) }.getOrNull() })
+            is SolidResult.Success ->
+                InboxPostResult.Success(r.value?.let { runCatching { URI.create(it) }.getOrNull() })
 
-            is SolidNetworkResponse.Error -> when (r.errorCode) {
-                401 -> InboxPostResult.Unauthorized(inbox)
-                403 -> InboxPostResult.Forbidden(inbox)
-                else -> InboxPostResult.HttpError(inbox, r.errorCode)
+            is SolidResult.Failure -> {
+                val error = r.error
+                val status = error.httpStatus
+                when {
+                    error.code == SolidErrorCode.UNAUTHORIZED -> InboxPostResult.Unauthorized(inbox)
+                    error.code == SolidErrorCode.FORBIDDEN -> InboxPostResult.Forbidden(inbox)
+                    status != null -> InboxPostResult.HttpError(inbox, status)
+                    else -> InboxPostResult.NetworkError(inbox, error.asException())
+                }
             }
-
-            is SolidNetworkResponse.Exception -> InboxPostResult.NetworkError(inbox, r.exception)
         }
     }
 

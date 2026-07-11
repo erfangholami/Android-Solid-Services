@@ -4,7 +4,8 @@ import android.util.Log
 import com.erfangholami.androidsolidservices.api.exceptions.SharingException
 import com.erfangholami.androidsolidservices.api.notifications.ShareNotificationProfile
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
@@ -115,14 +116,16 @@ internal class InboxReader(
         val container = when (
             val r = rm.read(webId, inboxUri, SolidContainer::class.java)
         ) {
-            is SolidNetworkResponse.Success -> r.data
-            is SolidNetworkResponse.Error -> when (r.errorCode) {
-                401 -> throw SharingException.InboxUnauthorized(inboxUri.toString())
-                403 -> throw SharingException.InboxForbidden(inboxUri.toString())
+            is SolidResult.Success -> r.value
+            is SolidResult.Failure -> when (r.error.code) {
+                SolidErrorCode.UNAUTHORIZED ->
+                    throw SharingException.InboxUnauthorized(inboxUri.toString())
+
+                SolidErrorCode.FORBIDDEN ->
+                    throw SharingException.InboxForbidden(inboxUri.toString())
+
                 else -> return emptyList()
             }
-
-            is SolidNetworkResponse.Exception -> return emptyList()
         }
         return container.getContained().mapNotNull { ref ->
             runCatching { URI.create(ref.identifier) }
@@ -242,7 +245,7 @@ internal class InboxReader(
             .getOrNull() ?: return false
 
         val ownerFromHeaders = runCatching {
-            (rm.head(readerWebId, resource) as? SolidNetworkResponse.Success)?.data?.ownerUri
+            (rm.head(readerWebId, resource) as? SolidResult.Success)?.value?.ownerUri
         }.onFailure { t ->
             Log.w(
                 INBOX_LOG_TAG,
@@ -358,7 +361,7 @@ internal class InboxReader(
         val key = IriUtils.canonical(webId)
         if (cache.containsKey(key)) return cache[key]
         val profile =
-            (rm.readPublic(webIdUri, WebId::class.java) as? SolidNetworkResponse.Success)?.data
+            (rm.readPublic(webIdUri, WebId::class.java) as? SolidResult.Success)?.value
                 ?: runCatching {
                     rm.read(viaWebId, webIdUri, WebId::class.java).getOrThrow()
                 }.onFailure { t ->

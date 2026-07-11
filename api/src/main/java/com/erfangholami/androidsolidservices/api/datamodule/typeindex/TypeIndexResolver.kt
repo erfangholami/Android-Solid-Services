@@ -1,7 +1,8 @@
 package com.erfangholami.androidsolidservices.api.datamodule.typeindex
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
@@ -118,7 +119,7 @@ internal object TypeIndexResolver {
         val container = resourceUri.toString().substringBeforeLast('/') + "/"
         val containerUri = URI.create(container)
         val missing = resourceManager.head(ownerWebId, containerUri).let {
-            it is SolidNetworkResponse.Error && it.errorCode == 404
+            it is SolidResult.Failure && it.error.code == SolidErrorCode.NOT_FOUND
         }
         if (missing) {
             resourceManager.create(ownerWebId, SolidContainer(containerUri)).getOrThrow()

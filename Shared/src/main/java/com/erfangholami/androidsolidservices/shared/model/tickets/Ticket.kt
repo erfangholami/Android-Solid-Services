@@ -230,8 +230,8 @@ public data class TicketSummary(
 ) : Parcelable
 
 /**
- * A list of [TicketSummary] rows, wrapped so it can be carried by a
- * `DataModuleResult` (which requires a [Parcelable] payload).
+ * A list of [TicketSummary] rows, wrapped as a single [Parcelable] payload so it
+ * can cross the AIDL IPC boundary.
  */
 @Parcelize
 public data class TicketList(

@@ -3,7 +3,7 @@ package com.erfangholami.androidsolidservices.api.notifications
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.notifications.implementation.NotificationsManagerImplementation
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
@@ -59,7 +59,7 @@ public interface NotificationsManager {
      */
     public suspend fun listNotifications(
         webId: String,
-    ): SolidNetworkResponse<List<ShareNotification>>
+    ): SolidResult<List<ShareNotification>>
 
     /**
      * Lists every `interop:AccessRequest` (or legacy `solidshare:AccessRequest`)
@@ -68,7 +68,7 @@ public interface NotificationsManager {
      */
     public suspend fun listRequests(
         webId: String,
-    ): SolidNetworkResponse<List<ShareRequest>>
+    ): SolidResult<List<ShareRequest>>
 
     /**
      * Compacts the user's LDN inbox by deleting items that are no longer
@@ -90,7 +90,7 @@ public interface NotificationsManager {
     public suspend fun compactInbox(
         webId: String,
         olderThanIso: String? = null,
-    ): SolidNetworkResponse<Int>
+    ): SolidResult<Int>
 
     /**
      * Deletes a single inbox item by URI. Used to dismiss a notification
@@ -102,7 +102,7 @@ public interface NotificationsManager {
     public suspend fun deleteNotification(
         webId: String,
         notificationUri: String,
-    ): SolidNetworkResponse<Boolean>
+    ): SolidResult<Boolean>
 
     /**
      * Ensures [webId] has a discoverable, append-enabled LDN inbox so it can
@@ -130,7 +130,7 @@ public interface NotificationsManager {
      *
      * Idempotent and best-effort: safe to call on every account activation.
      */
-    public suspend fun ensureInbox(webId: String): SolidNetworkResponse<String>
+    public suspend fun ensureInbox(webId: String): SolidResult<String>
 
     /**
      * Posts an `as:Offer` to [receiverWebId]'s inbox. Used by
@@ -143,7 +143,7 @@ public interface NotificationsManager {
         receiverWebId: String,
         resourceUri: String,
         mode: ShareMode,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Posts an `as:Undo` to [receiverWebId]'s inbox indicating that access
@@ -155,7 +155,7 @@ public interface NotificationsManager {
         ownerWebId: String,
         receiverWebId: String,
         resourceUri: String,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Posts an `as:Update` to [receiverWebId]'s inbox indicating that the access
@@ -171,7 +171,7 @@ public interface NotificationsManager {
         receiverWebId: String,
         resourceUri: String,
         mode: ShareMode,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Posts a `solidshare:AccessRequest` to [ownerWebId]'s inbox asking
@@ -187,7 +187,7 @@ public interface NotificationsManager {
         resourceUri: String,
         requestedMode: ShareMode,
         summary: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Posts an `as:Reject` to [requesterWebId]'s inbox declining their
@@ -199,7 +199,7 @@ public interface NotificationsManager {
         requesterWebId: String,
         resourceUri: String,
         reason: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Posts an `as:Accept` to [requesterWebId]'s inbox confirming their
@@ -216,7 +216,7 @@ public interface NotificationsManager {
         resourceUri: String,
         mode: ShareMode,
         requestUri: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Posts a read-only record into **[ownerWebId]'s own** inbox noting that
@@ -235,7 +235,7 @@ public interface NotificationsManager {
         resourceUri: String,
         mode: ShareMode,
         requestUri: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Posts a read-only record into **[ownerWebId]'s own** inbox noting that
@@ -251,5 +251,5 @@ public interface NotificationsManager {
         resourceUri: String,
         mode: ShareMode? = null,
         reason: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 }

@@ -4,9 +4,9 @@ package com.erfangholami.androidsolidservices.shared.result
  * The result of every library operation: either a [Success] carrying the value,
  * or a [Failure] carrying a typed [SolidError].
  *
- * This is the one result shape across the whole library, replacing the historical
- * mix of `SolidNetworkResponse`, `DataModuleResult`, thrown exceptions, nullable
- * returns, and `Success(empty)`-on-failure. Because failure is a typed [SolidError]
+ * This is the one result shape across the whole library, replacing the former
+ * mix of per-feature result types, thrown exceptions, nullable returns, and
+ * `Success(empty)`-on-failure. Because failure is a typed [SolidError]
  * — not a status int or a prose string — callers branch on [SolidError.code] and
  * never string-parse an error.
  *

@@ -4,7 +4,9 @@ import com.erfangholami.androidsolidservices.api.exceptions.SharingException
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.model.access.AclAuthorization
 import com.erfangholami.androidsolidservices.shared.model.access.SolidACLResource
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
@@ -266,16 +268,14 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
         val metadata = rm.head(webId, container).getOrThrow()
         val aclUri = metadata.aclUri ?: return emptyList()
         return when (val existing = rm.head(webId, aclUri)) {
-            is SolidNetworkResponse.Success -> {
+            is SolidResult.Success -> {
                 val acl = rm.read(webId, aclUri, SolidACLResource::class.java).getOrThrow()
                 acl.getAuthorizations().filter { it.default.isNotEmpty() }
             }
 
-            is SolidNetworkResponse.Error ->
-                if (existing.isMissing()) emptyList()
-                else error("ACL read for $aclUri failed: ${existing.errorCode} ${existing.errorMessage}")
-
-            is SolidNetworkResponse.Exception -> throw existing.exception
+            is SolidResult.Failure ->
+                if (existing.error.isMissing()) emptyList()
+                else error("ACL read for $aclUri failed: ${existing.error.message}")
         }
     }
 
@@ -293,24 +293,22 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
         val aclUri = metadata.aclUri
             ?: error("Resource $resourceUri does not advertise an acl link")
         return when (val existing = rm.head(webId, aclUri)) {
-            is SolidNetworkResponse.Success -> {
+            is SolidResult.Success -> {
                 val acl = rm.read(webId, aclUri, SolidACLResource::class.java).getOrThrow()
-                AclRead(aclUri, acl, existing.data.etag)
+                AclRead(aclUri, acl, existing.value.etag)
             }
 
-            is SolidNetworkResponse.Error ->
-                if (existing.isMissing()) {
+            is SolidResult.Failure ->
+                if (existing.error.isMissing()) {
                     AclRead(aclUri, SolidACLResource(aclUri), etag = null)
                 } else {
-                    error("ACL read for $aclUri failed: ${existing.errorCode} ${existing.errorMessage}")
+                    error("ACL read for $aclUri failed: ${existing.error.message}")
                 }
-
-            is SolidNetworkResponse.Exception -> throw existing.exception
         }
     }
 
-    private fun SolidNetworkResponse.Error<*>.isMissing(): Boolean =
-        errorCode == 404 || errorCode == 410
+    private fun SolidError.isMissing(): Boolean =
+        code == SolidErrorCode.NOT_FOUND
 
     private suspend fun writeAcl(
         webId: String,
@@ -328,15 +326,13 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
             linkHeader = null,
         )
         when (result) {
-            is SolidNetworkResponse.Success -> Unit
-            is SolidNetworkResponse.Error -> {
-                if (result.errorCode == 412) {
+            is SolidResult.Success -> Unit
+            is SolidResult.Failure -> {
+                if (result.error.code == SolidErrorCode.PRECONDITION_FAILED) {
                     throw SharingException.StaleAcl(aclUri.toString())
                 }
-                error("ACL write failed: ${result.errorCode} ${result.errorMessage}")
+                error("ACL write failed: ${result.error.message}")
             }
-
-            is SolidNetworkResponse.Exception -> throw result.exception
         }
     }
 

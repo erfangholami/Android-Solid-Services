@@ -1,7 +1,7 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts
 
 import com.erfangholami.androidsolidservices.shared.model.contacts.FullGroup
-import com.erfangholami.androidsolidservices.shared.result.DataModuleResult
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 /**
  * Manages the contact groups (`vcard:Group`) of an address book and their
@@ -18,32 +18,32 @@ public interface GroupStore {
         addressBookUri: String,
         title: String,
         contactUris: List<String> = emptyList(),
-    ): DataModuleResult<FullGroup>
+    ): SolidResult<FullGroup>
 
     /** Reads the group at [groupUri] with its member summaries. */
     public suspend fun get(
         ownerWebId: String,
         groupUri: String,
-    ): DataModuleResult<FullGroup>
+    ): SolidResult<FullGroup>
 
     /** Deletes the group at [groupUri] from the address book at [addressBookUri]. */
     public suspend fun delete(
         ownerWebId: String,
         addressBookUri: String,
         groupUri: String,
-    ): DataModuleResult<FullGroup>
+    ): SolidResult<FullGroup>
 
     /** Adds the contact at [contactUri] to the group at [groupUri]. */
     public suspend fun addMember(
         ownerWebId: String,
         groupUri: String,
         contactUri: String,
-    ): DataModuleResult<FullGroup>
+    ): SolidResult<FullGroup>
 
     /** Removes the contact at [contactUri] from the group at [groupUri]. */
     public suspend fun removeMember(
         ownerWebId: String,
         groupUri: String,
         contactUri: String,
-    ): DataModuleResult<FullGroup>
+    ): SolidResult<FullGroup>
 }

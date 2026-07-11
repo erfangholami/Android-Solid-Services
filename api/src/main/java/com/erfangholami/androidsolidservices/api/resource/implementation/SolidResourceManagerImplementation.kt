@@ -5,7 +5,9 @@ import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.auth.implementation.asSession
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
@@ -53,7 +55,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     override suspend fun head(
         webid: String,
         uri: URI,
-    ): SolidNetworkResponse<SolidMetadata> = withContext(Dispatchers.IO) {
+    ): SolidResult<SolidMetadata> = withContext(Dispatchers.IO) {
         solidHttpClient.head(webid, uri)
     }
 
@@ -61,32 +63,23 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         webid: String,
         resource: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+    ): SolidResult<T> = withContext(Dispatchers.IO) {
         val result = solidHttpClient.get(webid, resource, clazz)
-        if (result is SolidNetworkResponse.Success && result.data is SolidContainer) {
-            val container = result.data as SolidContainer
+        if (result is SolidResult.Success && result.value is SolidContainer) {
+            val container = result.value as SolidContainer
             val enriched = coroutineScope {
                 container.getContained().map { ref ->
                     async {
                         when (val headResult =
                             solidHttpClient.head(webid, URI.create(ref.identifier))) {
-                            is SolidNetworkResponse.Success -> ref.copy(headMetadata = headResult.data)
-                            is SolidNetworkResponse.Error -> {
+                            is SolidResult.Success -> ref.copy(headMetadata = headResult.value)
+                            is SolidResult.Failure -> {
                                 Log.w(
                                     RESOURCE_LOG_TAG,
                                     "read: HEAD failed for ${ref.identifier} " +
-                                            "(${headResult.errorCode}: ${headResult.errorMessage}); " +
+                                            "(${headResult.error.code}: ${headResult.error.message}); " +
                                             "returning ref without metadata.",
-                                )
-                                ref
-                            }
-
-                            is SolidNetworkResponse.Exception -> {
-                                Log.w(
-                                    RESOURCE_LOG_TAG,
-                                    "read: HEAD threw for ${ref.identifier}; " +
-                                            "returning ref without metadata.",
-                                    headResult.exception,
+                                    headResult.error.cause,
                                 )
                                 ref
                             }
@@ -102,16 +95,19 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     override suspend fun <T : Resource> create(
         webid: String,
         resource: T,
-    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+    ): SolidResult<T> = withContext(Dispatchers.IO) {
         try {
             val response = solidHttpClient.put(webid, resource, ifNoneMatchStar = true)
-            if (response is SolidNetworkResponse.Error && response.errorCode == 412) {
-                SolidNetworkResponse.Error(409, "Resource already exists")
+            if (response is SolidResult.Failure &&
+                response.error.code == SolidErrorCode.PRECONDITION_FAILED
+            ) {
+                SolidResult.Failure(SolidError.fromHttp(409, "Resource already exists"))
             } else {
                 response
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 
@@ -119,11 +115,12 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         webid: String,
         newResource: T,
         ifMatch: String?,
-    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+    ): SolidResult<T> = withContext(Dispatchers.IO) {
         try {
             solidHttpClient.put(webid, newResource, ifMatch = ifMatch)
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 
@@ -132,7 +129,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = withContext(Dispatchers.IO) {
+    ): SolidResult<Unit> = withContext(Dispatchers.IO) {
         solidHttpClient.patch(webid, uri, patch, ifMatch)
     }
 
@@ -141,14 +138,14 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         uri: URI,
         n3Body: String,
         ifMatch: String?,
-    ): SolidNetworkResponse<Unit> = withContext(Dispatchers.IO) {
+    ): SolidResult<Unit> = withContext(Dispatchers.IO) {
         solidHttpClient.patchRaw(webid, uri, n3Body, ifMatch)
     }
 
     override suspend fun <T : Resource> delete(
         webid: String,
         resource: T,
-    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+    ): SolidResult<T> = withContext(Dispatchers.IO) {
         try {
             val uri = resource.getIdentifier()
             val deleteResult = if (resource is SolidContainer || uri.toString().endsWith("/")) {
@@ -157,23 +154,19 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
                 solidHttpClient.delete(webid, uri)
             }
             when (deleteResult) {
-                is SolidNetworkResponse.Success -> SolidNetworkResponse.Success(resource)
-                is SolidNetworkResponse.Error -> SolidNetworkResponse.Error(
-                    deleteResult.errorCode,
-                    deleteResult.errorMessage
-                )
-
-                is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(deleteResult.exception)
+                is SolidResult.Success -> SolidResult.Success(resource)
+                is SolidResult.Failure -> deleteResult
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 
     override suspend fun delete(
         webid: String,
         resourceUri: URI,
-    ): SolidNetworkResponse<Boolean> = withContext(Dispatchers.IO) {
+    ): SolidResult<Boolean> = withContext(Dispatchers.IO) {
         try {
             if (resourceUri.toString().endsWith("/")) {
                 deleteRecursive(webid, resourceUri, Semaphore(MAX_CONCURRENT_DELETES))
@@ -181,7 +174,8 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
                 solidHttpClient.delete(webid, resourceUri)
             }
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 
@@ -191,7 +185,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidNetworkResponse<URI?> = withContext(Dispatchers.IO) {
+    ): SolidResult<URI?> = withContext(Dispatchers.IO) {
         solidHttpClient.post(webid, uri, contentType, body, additionalHeaders)
     }
 
@@ -199,11 +193,12 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         webid: String,
         containerUri: URI,
         resource: T,
-    ): SolidNetworkResponse<URI?> = withContext(Dispatchers.IO) {
+    ): SolidResult<URI?> = withContext(Dispatchers.IO) {
         try {
             solidHttpClient.postResource(webid, containerUri, resource)
         } catch (e: Exception) {
-            SolidNetworkResponse.Exception(e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            SolidResult.Failure(SolidError.fromThrowable(e))
         }
     }
 
@@ -214,18 +209,18 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         body: ByteArray,
         ifMatch: String?,
         linkHeader: String?,
-    ): SolidNetworkResponse<Unit> = withContext(Dispatchers.IO) {
+    ): SolidResult<Unit> = withContext(Dispatchers.IO) {
         solidHttpClient.putRaw(webid, uri, contentType, body, ifMatch, linkHeader)
     }
 
     override suspend fun <T : Resource> readPublic(
         uri: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T> = withContext(Dispatchers.IO) {
+    ): SolidResult<T> = withContext(Dispatchers.IO) {
         solidHttpClient.getPublic(uri, clazz)
     }
 
-    override suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> =
+    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> =
         withContext(Dispatchers.IO) { solidHttpClient.headPublic(uri) }
 
     /**
@@ -240,7 +235,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
      * shared permit budget for the whole tree) so a large container cannot flood the server with
      * hundreds of simultaneous requests. A failed child does **not** cancel its siblings: every
      * child is attempted, transient failures are retried ([deleteWithRetry]), and if any resource
-     * still cannot be deleted the container is left intact and an aggregate [SolidNetworkResponse.Error]
+     * still cannot be deleted the container is left intact and an aggregate [SolidResult.Failure]
      * is returned — the caller can safely retry (already-gone resources report `404`, treated as
      * success) without leaving the container half-emptied yet deregistered.
      */
@@ -248,23 +243,20 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         webid: String,
         containerUri: URI,
         gate: Semaphore,
-    ): SolidNetworkResponse<Boolean> {
+    ): SolidResult<Boolean> {
         val containerResult = solidHttpClient.get(webid, containerUri, SolidContainer::class.java)
-        if (containerResult !is SolidNetworkResponse.Success) {
-            return when (containerResult) {
-                is SolidNetworkResponse.Error ->
-                    if (containerResult.errorCode == 404) {
-                        SolidNetworkResponse.Success(true)
-                    } else {
-                        SolidNetworkResponse.Error(containerResult.errorCode, containerResult.errorMessage)
-                    }
-
-                is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(containerResult.exception)
-            }
+        val container = when (containerResult) {
+            is SolidResult.Success -> containerResult.value
+            is SolidResult.Failure ->
+                return if (containerResult.error.code == SolidErrorCode.NOT_FOUND) {
+                    SolidResult.Success(true)
+                } else {
+                    containerResult
+                }
         }
 
         val failures = coroutineScope {
-            containerResult.data.getContained().map { ref ->
+            container.getContained().map { ref ->
                 async {
                     val childUri = URI.create(ref.identifier)
                     val isChildContainer = ref.isContainerByUri() ||
@@ -277,16 +269,18 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
                     } else {
                         deleteWithRetry(webid, childUri, gate)
                     }
-                    if (childResult is SolidNetworkResponse.Success) null else childUri.toString()
+                    if (childResult is SolidResult.Success) null else childUri.toString()
                 }
             }.awaitAll().filterNotNull()
         }
 
         if (failures.isNotEmpty()) {
-            return SolidNetworkResponse.Error(
-                409,
-                "Could not delete ${failures.size} contained resource(s) under $containerUri; " +
-                        "container left intact",
+            return SolidResult.Failure(
+                SolidError.fromHttp(
+                    409,
+                    "Could not delete ${failures.size} contained resource(s) under $containerUri; " +
+                            "container left intact",
+                )
             )
         }
 
@@ -303,15 +297,15 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         webid: String,
         uri: URI,
         gate: Semaphore,
-    ): SolidNetworkResponse<Boolean> {
+    ): SolidResult<Boolean> {
         var attempt = 0
         while (true) {
             val result = gate.withPermit { solidHttpClient.delete(webid, uri) }
             when {
-                result is SolidNetworkResponse.Success -> return result
+                result is SolidResult.Success -> return result
 
-                result is SolidNetworkResponse.Error && result.errorCode == 404 ->
-                    return SolidNetworkResponse.Success(true)
+                result is SolidResult.Failure && result.error.code == SolidErrorCode.NOT_FOUND ->
+                    return SolidResult.Success(true)
 
                 attempt < MAX_DELETE_ATTEMPTS - 1 && result.isTransientFailure() -> {
                     delay(DELETE_RETRY_BASE_DELAY_MS shl attempt)
@@ -323,9 +317,11 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         }
     }
 
-    private fun SolidNetworkResponse<Boolean>.isTransientFailure(): Boolean = when (this) {
-        is SolidNetworkResponse.Exception -> true
-        is SolidNetworkResponse.Error -> errorCode in TRANSIENT_DELETE_STATUS_CODES
-        is SolidNetworkResponse.Success -> false
+    private fun SolidResult<Boolean>.isTransientFailure(): Boolean = when (this) {
+        is SolidResult.Success -> false
+        is SolidResult.Failure -> {
+            val status = error.httpStatus
+            status == null || status in TRANSIENT_DELETE_STATUS_CODES
+        }
     }
 }

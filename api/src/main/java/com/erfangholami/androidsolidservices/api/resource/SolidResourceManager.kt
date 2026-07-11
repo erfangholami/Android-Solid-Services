@@ -3,7 +3,7 @@ package com.erfangholami.androidsolidservices.api.resource
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidResourceManagerImplementation
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
-import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import java.net.URI
@@ -12,7 +12,7 @@ import java.net.URI
  * Performs authenticated CRUD operations on Solid pod resources on behalf of a specific user.
  *
  * All operations require the user identified by `webid` to have an active, authorized
- * [Authenticator] session.  Results are wrapped in [SolidNetworkResponse] so callers can
+ * [Authenticator] session.  Results are wrapped in [SolidResult] so callers can
  * distinguish HTTP errors from unexpected exceptions without catching throwables.
  *
  * Obtain an instance via [SolidResourceManager.getInstance].
@@ -55,25 +55,25 @@ public interface SolidResourceManager {
      *
      * @param webid The WebID of the authenticated user making the request.
      * @param uri   The URI of the resource to HEAD.
-     * @return [SolidNetworkResponse.Success] with [SolidMetadata], or an error/exception variant.
+     * @return [SolidResult.Success] with [SolidMetadata], or a [SolidResult.Failure] carrying a typed [SolidError].
      */
     public suspend fun head(
         webid: String,
         uri: URI,
-    ): SolidNetworkResponse<SolidMetadata>
+    ): SolidResult<SolidMetadata>
 
     /**
      * Reads a resource from the pod.
      * @param webid The WebID of the authenticated user making the request.
      * @param resource The URI of the resource to read.
      * @param clazz The expected resource type (e.g. [com.erfangholami.androidsolidservices.shared.model.resource.RDFResource]).
-     * @return [SolidNetworkResponse.Success] with the resource, or an error/exception variant.
+     * @return [SolidResult.Success] with the resource, or a [SolidResult.Failure] carrying a typed [SolidError].
      */
     public suspend fun <T : Resource> read(
         webid: String,
         resource: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T>
+    ): SolidResult<T>
 
     /**
      * Creates a new resource on the pod via conditional PUT (`If-None-Match: *`).
@@ -82,12 +82,12 @@ public interface SolidResourceManager {
      *
      * @param webid The WebID of the authenticated user making the request.
      * @param resource The resource to create; its identifier determines the target URI.
-     * @return [SolidNetworkResponse.Success] with the created resource.
+     * @return [SolidResult.Success] with the created resource.
      */
     public suspend fun <T : Resource> create(
         webid: String,
         resource: T
-    ): SolidNetworkResponse<T>
+    ): SolidResult<T>
 
     /**
      * Writes a resource via HTTP PUT.
@@ -112,13 +112,13 @@ public interface SolidResourceManager {
      * @param webid    The WebID of the authenticated user making the request.
      * @param newResource The updated resource; its identifier determines the target URI.
      * @param ifMatch  See above. Defaults to `null` (unconditional PUT).
-     * @return [SolidNetworkResponse.Success] with the updated resource.
+     * @return [SolidResult.Success] with the updated resource.
      */
     public suspend fun <T : Resource> update(
         webid: String,
         newResource: T,
         ifMatch: String? = null,
-    ): SolidNetworkResponse<T>
+    ): SolidResult<T>
 
     /**
      * Applies an N3 Patch to an RDF resource on the pod via HTTP PATCH.
@@ -137,14 +137,14 @@ public interface SolidResourceManager {
      * @param uri     The URI of the RDF resource to patch.
      * @param patch   The patch to apply.
      * @param ifMatch Optional ETag for a conditional PATCH.
-     * @return [SolidNetworkResponse.Success] with [Unit] on success.
+     * @return [SolidResult.Success] with [Unit] on success.
      */
     public suspend fun patch(
         webid: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Applies a pre-built N3 Patch body to an RDF resource on the pod via HTTP PATCH.
@@ -160,14 +160,14 @@ public interface SolidResourceManager {
      * @param uri       The URI of the RDF resource to patch.
      * @param n3Body    The full `text/n3` patch document body.
      * @param ifMatch   Optional ETag for a conditional PATCH.
-     * @return [SolidNetworkResponse.Success] with [Unit] on success.
+     * @return [SolidResult.Success] with [Unit] on success.
      */
     public suspend fun patchRaw(
         webid: String,
         uri: URI,
         n3Body: String,
         ifMatch: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * Deletes a resource or container from the pod.
@@ -177,12 +177,12 @@ public interface SolidResourceManager {
      *
      * @param webid The WebID of the authenticated user making the request.
      * @param resource The resource to delete.
-     * @return [SolidNetworkResponse.Success] with the deleted resource.
+     * @return [SolidResult.Success] with the deleted resource.
      */
     public suspend fun <T : Resource> delete(
         webid: String,
         resource: T,
-    ): SolidNetworkResponse<T>
+    ): SolidResult<T>
 
     /**
      * Deletes a resource or container from the pod by URI.
@@ -192,12 +192,12 @@ public interface SolidResourceManager {
      *
      * @param webid The WebID of the authenticated user making the request.
      * @param resourceUri The URI of the resource or container to delete.
-     * @return [SolidNetworkResponse.Success] with `true` on success.
+     * @return [SolidResult.Success] with `true` on success.
      */
     public suspend fun delete(
         webid: String,
         resourceUri: URI,
-    ): SolidNetworkResponse<Boolean>
+    ): SolidResult<Boolean>
 
     /**
      * Reads a **public** resource without any authentication. Use this for
@@ -216,7 +216,7 @@ public interface SolidResourceManager {
     public suspend fun <T : Resource> readPublic(
         uri: URI,
         clazz: Class<T>,
-    ): SolidNetworkResponse<T>
+    ): SolidResult<T>
 
     /**
      * HEADs a **public** resource without any authentication. Used as a
@@ -226,7 +226,7 @@ public interface SolidResourceManager {
      *
      * @param uri The URI of the resource to HEAD.
      */
-    public suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata>
+    public suspend fun headPublic(uri: URI): SolidResult<SolidMetadata>
 
     /**
      * PUTs an opaque body to [uri] as a DPoP-authenticated user.
@@ -254,7 +254,7 @@ public interface SolidResourceManager {
         body: ByteArray,
         ifMatch: String? = null,
         linkHeader: String? = null,
-    ): SolidNetworkResponse<Unit>
+    ): SolidResult<Unit>
 
     /**
      * POSTs an opaque body to [uri] as a DPoP-authenticated user.
@@ -269,9 +269,9 @@ public interface SolidResourceManager {
      * @param contentType The media type of [body].
      * @param body The bytes to send.
      * @param additionalHeaders Extra HTTP headers (e.g. `Slug`).
-     * @return [SolidNetworkResponse.Success] with the server-allocated
+     * @return [SolidResult.Success] with the server-allocated
      *   resource's `Location` URI on 2xx (may be null if the server didn't
-     *   return one), or an error/exception variant.
+     *   return one), or a [SolidResult.Failure] carrying a typed [SolidError].
      */
     public suspend fun post(
         webid: String,
@@ -279,7 +279,7 @@ public interface SolidResourceManager {
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String> = emptyMap(),
-    ): SolidNetworkResponse<URI?>
+    ): SolidResult<URI?>
 
     /**
      * Creates a new member inside the container at [containerUri] by POSTing
@@ -298,12 +298,12 @@ public interface SolidResourceManager {
      * @param containerUri The container to POST the new member into.
      * @param resource The resource to create; its content and content-type are sent,
      *   its identifier supplies only a `Slug` hint.
-     * @return [SolidNetworkResponse.Success] with the server-allocated member URI
+     * @return [SolidResult.Success] with the server-allocated member URI
      *   (its `Location`), which may be `null` if the server did not return one.
      */
     public suspend fun <T : Resource> createInContainer(
         webid: String,
         containerUri: URI,
         resource: T,
-    ): SolidNetworkResponse<URI?>
+    ): SolidResult<URI?>
 }
