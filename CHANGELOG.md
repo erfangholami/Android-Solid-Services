@@ -58,6 +58,13 @@ Correctness and data-integrity hardening on top of the in-progress 0.6.0 contact
   force-refresh, conditional-write status, redirects, header propagation); the `createShare` index
   write/rollback contract; the `ShareMode`/collapse logic; and the inbox access-request gate. Adds
   `mockwebserver` + `mockito-core` test dependencies.
+- **Codec & server-quirk shields pinned** — round-trip/escaping tests for the RDF codecs that carry
+  user-controlled and cross-server data: `N3Patch` (literal escaping so a contact name/note can't
+  inject triples; N3 + SPARQL-Update rendering; `fromDiff`), the hand-rolled `NTriples` writer/parser
+  (typed/language/control-character literals, blank nodes, relative-IRI resolution), the `InruptAcrJson`
+  quirk parser (maps Inrupt's remote-`@context` ACR straight to ACP quads instead of an empty set, and
+  declines non-Inrupt bodies), and the `GivenSharesIndexRDF` reified-share/legacy-row reader. Adds an
+  `org.json` test dependency.
 
 ## [0.5.1] — June 2026
 
