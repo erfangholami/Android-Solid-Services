@@ -1,10 +1,19 @@
 package com.erfangholami.androidsolidservices.shared.rdf.contacts
 
 import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.model.contacts.AddressEntry
+import com.erfangholami.androidsolidservices.shared.model.contacts.AddressType
+import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
 import com.erfangholami.androidsolidservices.shared.model.contacts.Email
+import com.erfangholami.androidsolidservices.shared.model.contacts.EmailEntry
+import com.erfangholami.androidsolidservices.shared.model.contacts.EmailType
+import com.erfangholami.androidsolidservices.shared.model.contacts.Gender
 import com.erfangholami.androidsolidservices.shared.model.contacts.Name
+import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneNumber
+import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneType
 import com.erfangholami.androidsolidservices.shared.model.contacts.URLType
+import com.erfangholami.androidsolidservices.shared.model.contacts.UrlEntry
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
@@ -33,7 +42,7 @@ public class ContactRDF : SolidRDFResource {
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     init {
-        addQuad(getIdentifier().toString(), RDF.TYPE, VCARD.INDIVIDUAL)
+        ensureType(getIdentifier().toString(), VCARD.INDIVIDUAL)
     }
 
     /** Returns the contact's formatted display name (`vcard:fn`). */
@@ -110,26 +119,14 @@ public class ContactRDF : SolidRDFResource {
             }
 
     /**
-     * Adds [newPhoneNumber] to this contact's quad list as a `vcard:hasTelephone` entry.
-     *
-     * The value is stored with a `tel:` URI prefix. Does nothing and returns `false` if
-     * [newPhoneNumber] is null, empty, or already present.
+     * Adds [newPhoneNumber] to this contact's quad list as an untyped `vcard:hasTelephone`
+     * entry. Delegates to [addPhone] with [PhoneType.OTHER].
      *
      * @return `true` if the phone number was added, `false` if it was a no-op.
      */
     public fun addPhoneNumber(newPhoneNumber: String?): Boolean {
         if (newPhoneNumber.isNullOrEmpty()) return false
-        val telValue = "tel:$newPhoneNumber"
-        if (quads.any { it.predicate == VCARD.VALUE && it.`object` == telValue }) return false
-        val blankNode = "_:$newPhoneNumber"
-        addQuad(
-            getIdentifier().toString(),
-            VCARD.HAS_TELEPHONE,
-            blankNode,
-            maxNumber = Int.MAX_VALUE
-        )
-        addQuadLiteral(blankNode, VCARD.VALUE, telValue, null)
-        return true
+        return addPhone(newPhoneNumber, PhoneType.OTHER)
     }
 
     /** Returns all email addresses (`vcard:hasEmail`) stored for this contact. */
@@ -142,21 +139,14 @@ public class ContactRDF : SolidRDFResource {
             }
 
     /**
-     * Adds [newEmailAddress] to this contact's quad list as a `vcard:hasEmail` entry.
-     *
-     * The value is stored with a `mailto:` URI prefix. Does nothing and returns `false` if
-     * [newEmailAddress] is null, empty, or already present.
+     * Adds [newEmailAddress] to this contact's quad list as an untyped `vcard:hasEmail`
+     * entry. Delegates to [addEmail] with [EmailType.OTHER].
      *
      * @return `true` if the email address was added, `false` if it was a no-op.
      */
     public fun addEmailAddress(newEmailAddress: String?): Boolean {
         if (newEmailAddress.isNullOrEmpty()) return false
-        val mailtoValue = "mailto:$newEmailAddress"
-        if (quads.any { it.predicate == VCARD.VALUE && it.`object` == mailtoValue }) return false
-        val blankNode = "_:$newEmailAddress"
-        addQuad(getIdentifier().toString(), VCARD.HAS_EMAIL, blankNode, maxNumber = Int.MAX_VALUE)
-        addQuadLiteral(blankNode, VCARD.VALUE, mailtoValue, null)
-        return true
+        return addEmail(newEmailAddress, EmailType.OTHER)
     }
 
     /**
@@ -191,5 +181,552 @@ public class ContactRDF : SolidRDFResource {
         quads.remove(valueQuad)
         if (hasEmailQuad != null) quads.remove(hasEmailQuad)
         return true
+    }
+
+    /**
+     * Sets (or clears) the contact's structured name (`vcard:hasName`).
+     *
+     * The name parts are written to the fragment node `{document}#name`; passing `null`
+     * or a [Name] with no non-null components removes the node and its link entirely.
+     * Read back with [getName].
+     */
+    public fun setName(name: Name?) {
+        val selfUri = getIdentifier().toString()
+        quads.find { it.subject == selfUri && it.predicate == VCARD.HAS_NAME }?.let { link ->
+            quads.removeAll { it.subject == link.`object` }
+        }
+        clearProperties(VCARD.HAS_NAME, selfUri)
+        if (name == null) return
+        val parts = listOfNotNull(
+            name.familyName?.let { VCARD.FAMILY_NAME to it },
+            name.givenName?.let { VCARD.GIVEN_NAME to it },
+            name.additionalName?.let { VCARD.ADDITIONAL_NAME to it },
+            name.honorificPrefix?.let { VCARD.HONORIFIC_PREFIX to it },
+            name.honorificSuffix?.let { VCARD.HONORIFIC_SUFFIX to it },
+        )
+        if (parts.isEmpty()) return
+        val nameNode = "${selfUri.substringBefore('#')}#name"
+        addQuad(selfUri, VCARD.HAS_NAME, nameNode)
+        parts.forEach { (predicate, value) ->
+            addQuadLiteral(nameNode, predicate, value, XSD.STRING)
+        }
+    }
+
+    /** Returns the contact's birthday (`vcard:bday`) as its raw lexical value, or `null` if absent. */
+    public fun getBirthday(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.BIRTHDAY)
+
+    /**
+     * Sets (or clears, when `null`) the contact's birthday (`vcard:bday`).
+     *
+     * [birthday] is stored verbatim, typed `xsd:dateTime` when it contains a time
+     * component (`T`) and `xsd:date` otherwise.
+     */
+    public fun setBirthday(birthday: String?) {
+        val selfUri = getIdentifier().toString()
+        if (birthday.isNullOrBlank()) {
+            clearProperties(VCARD.BIRTHDAY, selfUri)
+            return
+        }
+        addQuadLiteral(selfUri, VCARD.BIRTHDAY, birthday, XSD.dateTypeFor(birthday))
+    }
+
+    /** Returns the contact's organization name (`vcard:organization-name`), or `null` if absent. */
+    public fun getOrganizationName(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.ORGANIZATION_NAME)
+
+    /** Sets (or clears, when `null`) the contact's organization name (`vcard:organization-name`). */
+    public fun setOrganizationName(organizationName: String?) {
+        setOptionalLiteral(VCARD.ORGANIZATION_NAME, organizationName)
+    }
+
+    /** Returns the contact's role (`vcard:role`), or `null` if absent. */
+    public fun getRole(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.ROLE)
+
+    /** Sets (or clears, when `null`) the contact's role (`vcard:role`). */
+    public fun setRole(role: String?) {
+        setOptionalLiteral(VCARD.ROLE, role)
+    }
+
+    /** Returns the contact's job title (`vcard:title`), or `null` if absent. */
+    public fun getJobTitle(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.TITLE)
+
+    /** Sets (or clears, when `null`) the contact's job title (`vcard:title`). */
+    public fun setJobTitle(jobTitle: String?) {
+        setOptionalLiteral(VCARD.TITLE, jobTitle)
+    }
+
+    /** Returns the contact's note (`vcard:note`), or `null` if absent. */
+    public fun getNote(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.NOTE)
+
+    /** Sets (or clears, when `null`) the contact's note (`vcard:note`). */
+    public fun setNote(note: String?) {
+        setOptionalLiteral(VCARD.NOTE, note)
+    }
+
+    /**
+     * Adds [url] to this contact as a typed `vcard:url` entry.
+     *
+     * The entry is a counter-labelled blank node (URL text is not a safe blank-node
+     * label) typed with the vocabulary class for [type] and carrying the URL as its
+     * `vcard:value`. Does nothing and returns `false` if [url] is blank or already present.
+     *
+     * @return `true` if the URL was added, `false` if it was a no-op.
+     */
+    public fun addUrl(type: URLType, url: String): Boolean {
+        if (url.isBlank()) return false
+        if (getUrls().any { it.second == url }) return false
+        var counter = 0
+        while (quads.any { it.subject == "_:url$counter" }) counter++
+        val blankNode = "_:url$counter"
+        addQuad(getIdentifier().toString(), VCARD.URL, blankNode, maxNumber = Int.MAX_VALUE)
+        addQuad(blankNode, RDF.TYPE, vocabularyFor(type))
+        addQuad(blankNode, VCARD.VALUE, url)
+        return true
+    }
+
+    /**
+     * Removes the `vcard:url` entry whose value is [url] from this contact's quad list.
+     *
+     * @return `true` if the entry was found and removed, `false` if it was not present.
+     */
+    public fun removeUrl(url: String): Boolean {
+        val selfUri = getIdentifier().toString()
+        val link = quads
+            .filter { it.subject == selfUri && it.predicate == VCARD.URL }
+            .find { urlLink ->
+                quads.any {
+                    it.subject == urlLink.`object` && it.predicate == VCARD.VALUE && it.`object` == url
+                }
+            } ?: return false
+        quads.removeAll { it.subject == link.`object` }
+        quads.remove(link)
+        return true
+    }
+
+    /**
+     * Sets the contact's photo link (`vcard:hasPhoto`) to [photoUri].
+     *
+     * Only the link is written; uploading the binary itself is the contacts data
+     * module's responsibility.
+     */
+    public fun setPhoto(photoUri: String) {
+        addQuad(getIdentifier().toString(), VCARD.HAS_PHOTO, photoUri)
+    }
+
+    /**
+     * Removes the contact's photo link (`vcard:hasPhoto`).
+     *
+     * @return `true` if a link was present and removed, `false` otherwise.
+     */
+    public fun removePhoto(): Boolean {
+        if (getPhotoUrl() == null) return false
+        clearProperties(VCARD.HAS_PHOTO, getIdentifier().toString())
+        return true
+    }
+
+    /**
+     * Returns all phone numbers with their vCard classification. Untyped legacy nodes
+     * and nodes carrying unrecognized types read as [PhoneType.OTHER]; a leading `tel:`
+     * scheme is stripped from the value.
+     */
+    public fun getPhoneEntries(): List<PhoneEntry> =
+        entryNodes(VCARD.HAS_TELEPHONE).mapNotNull { node ->
+            nodeValue(node)?.let { value ->
+                PhoneEntry(percentDecode(value.removePrefix("tel:")), phoneTypeOf(node))
+            }
+        }
+
+    /**
+     * Adds a typed `vcard:hasTelephone` entry on a counter-labelled blank node
+     * (`_:phone{n}`). [PhoneType.OTHER] entries are written without a type triple,
+     * byte-compatible with legacy writers. Does nothing and returns `false` when
+     * [number] is blank or already present.
+     *
+     * The stored value is a valid `tel:` IRI: RFC 3966 visual separators (spaces,
+     * parentheses, dots, hyphens, slashes) are stripped and any remaining
+     * IRI-illegal character is percent-encoded, so `"+31 6 12 34 56 78"` is stored
+     * as `tel:+31612345678`.
+     */
+    public fun addPhone(number: String, type: PhoneType = PhoneType.OTHER): Boolean {
+        if (number.isBlank()) return false
+        val telValue = telIri(number)
+        if (quads.any { it.predicate == VCARD.VALUE && normalizedTel(it.`object`) == telValue }) return false
+        val node = freshBlankNode("phone")
+        addQuad(getIdentifier().toString(), VCARD.HAS_TELEPHONE, node, maxNumber = Int.MAX_VALUE)
+        phoneTypeIri(type)?.let { addQuad(node, RDF.TYPE, it) }
+        addQuadLiteral(node, VCARD.VALUE, telValue, null)
+        return true
+    }
+
+    /**
+     * Returns all email addresses with their vCard classification. Untyped legacy nodes
+     * read as [EmailType.OTHER]; a leading `mailto:` scheme is stripped from the value.
+     */
+    public fun getEmailEntries(): List<EmailEntry> =
+        entryNodes(VCARD.HAS_EMAIL).mapNotNull { node ->
+            nodeValue(node)?.let { value ->
+                EmailEntry(percentDecode(value.removePrefix("mailto:")), emailTypeOf(node))
+            }
+        }
+
+    /**
+     * Adds a typed `vcard:hasEmail` entry on a counter-labelled blank node (`_:email{n}`).
+     * [EmailType.OTHER] entries are written without a type triple. Does nothing and
+     * returns `false` when [address] is blank or already present.
+     *
+     * The stored value is a valid `mailto:` IRI: the address is trimmed and any
+     * IRI-illegal character is percent-encoded.
+     */
+    public fun addEmail(address: String, type: EmailType = EmailType.OTHER): Boolean {
+        if (address.isBlank()) return false
+        val mailtoValue = mailtoIri(address)
+        if (quads.any { it.predicate == VCARD.VALUE && it.`object` == mailtoValue }) return false
+        val node = freshBlankNode("email")
+        addQuad(getIdentifier().toString(), VCARD.HAS_EMAIL, node, maxNumber = Int.MAX_VALUE)
+        emailTypeIri(type)?.let { addQuad(node, RDF.TYPE, it) }
+        addQuadLiteral(node, VCARD.VALUE, mailtoValue, null)
+        return true
+    }
+
+    /**
+     * Returns all postal addresses (`vcard:hasAddress`). Nodes missing the
+     * `vcard:Address` class type still parse; entries with no address part are skipped.
+     */
+    public fun getAddresses(): List<AddressEntry> =
+        entryNodes(VCARD.HAS_ADDRESS).mapNotNull { node ->
+            val entry = AddressEntry(
+                street = findPropertyForSubject(node, VCARD.STREET_ADDRESS),
+                locality = findPropertyForSubject(node, VCARD.LOCALITY),
+                region = findPropertyForSubject(node, VCARD.REGION),
+                postalCode = findPropertyForSubject(node, VCARD.POSTAL_CODE),
+                countryName = findPropertyForSubject(node, VCARD.COUNTRY_NAME),
+                poBox = findPropertyForSubject(node, VCARD.POST_OFFICE_BOX),
+                type = addressTypeOf(node),
+            )
+            entry.takeIf { !it.isEmpty() }
+        }
+
+    /**
+     * Adds a postal address on a counter-labelled blank node (`_:addr{n}`), always typed
+     * `vcard:Address` plus `vcard:Home`/`vcard:Work` when classified. Does nothing and
+     * returns `false` when [entry] has no non-blank part.
+     */
+    public fun addAddress(entry: AddressEntry): Boolean {
+        if (entry.isEmpty()) return false
+        val node = freshBlankNode("addr")
+        addQuad(getIdentifier().toString(), VCARD.HAS_ADDRESS, node, maxNumber = Int.MAX_VALUE)
+        addQuad(node, RDF.TYPE, VCARD.ADDRESS, maxNumber = Int.MAX_VALUE)
+        when (entry.type) {
+            AddressType.HOME -> addQuad(node, RDF.TYPE, VCARD.HOME, maxNumber = Int.MAX_VALUE)
+            AddressType.WORK -> addQuad(node, RDF.TYPE, VCARD.WORK, maxNumber = Int.MAX_VALUE)
+            AddressType.OTHER -> Unit
+        }
+        entry.street?.let { addQuadLiteral(node, VCARD.STREET_ADDRESS, it, XSD.STRING) }
+        entry.locality?.let { addQuadLiteral(node, VCARD.LOCALITY, it, XSD.STRING) }
+        entry.region?.let { addQuadLiteral(node, VCARD.REGION, it, XSD.STRING) }
+        entry.postalCode?.let { addQuadLiteral(node, VCARD.POSTAL_CODE, it, XSD.STRING) }
+        entry.countryName?.let { addQuadLiteral(node, VCARD.COUNTRY_NAME, it, XSD.STRING) }
+        entry.poBox?.let { addQuadLiteral(node, VCARD.POST_OFFICE_BOX, it, XSD.STRING) }
+        return true
+    }
+
+    /** Returns all typed URLs as [UrlEntry] values (wrapper over [getUrls]). */
+    public fun getUrlEntries(): List<UrlEntry> =
+        getUrls().map { UrlEntry(it.first, it.second) }
+
+    /** Returns the contact's nickname (`vcard:nickname`), or `null` if absent. */
+    public fun getNickname(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.NICKNAME)
+
+    /** Sets (or clears, when `null`) the contact's nickname (`vcard:nickname`). */
+    public fun setNickname(nickname: String?) {
+        setOptionalLiteral(VCARD.NICKNAME, nickname)
+    }
+
+    /** Returns the contact's anniversary (`vcard:anniversary`) raw lexical value, or `null`. */
+    public fun getAnniversary(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.ANNIVERSARY)
+
+    /**
+     * Sets (or clears, when `null`) the contact's anniversary (`vcard:anniversary`),
+     * typed `xsd:dateTime` when the value contains a time component and `xsd:date` otherwise.
+     */
+    public fun setAnniversary(anniversary: String?) {
+        val selfUri = getIdentifier().toString()
+        if (anniversary.isNullOrBlank()) {
+            clearProperties(VCARD.ANNIVERSARY, selfUri)
+            return
+        }
+        addQuadLiteral(selfUri, VCARD.ANNIVERSARY, anniversary, XSD.dateTypeFor(anniversary))
+    }
+
+    /** Returns the contact's organizational unit (`vcard:organization-unit`), or `null`. */
+    public fun getOrganizationUnit(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.ORGANIZATION_UNIT)
+
+    /** Sets (or clears, when `null`) the contact's organizational unit. */
+    public fun setOrganizationUnit(unit: String?) {
+        setOptionalLiteral(VCARD.ORGANIZATION_UNIT, unit)
+    }
+
+    /**
+     * Returns the contact's persistent identifier (`vcard:hasUID`), or `null`.
+     *
+     * A value that [setUid] wrapped as `urn:uid:…` (because it was not an absolute
+     * IRI) is unwrapped back to the original string, so set/get round-trips.
+     */
+    public fun getUid(): String? =
+        findPropertyForSubject(getIdentifier().toString(), VCARD.HAS_UID)?.let { stored ->
+            if (stored.startsWith(UID_URN_PREFIX)) {
+                percentDecode(stored.removePrefix(UID_URN_PREFIX))
+            } else {
+                stored
+            }
+        }
+
+    /**
+     * Sets (or clears, when `null`) the contact's persistent identifier
+     * (`vcard:hasUID`, IRI). A value that is already an absolute IRI (`urn:uuid:…`,
+     * `https://…`) is stored verbatim; anything else (e.g. a bare UID from a `.vcf`
+     * import) is wrapped as `urn:uid:{percent-encoded value}` so the stored object
+     * is always a valid IRI.
+     */
+    public fun setUid(uid: String?) {
+        val selfUri = getIdentifier().toString()
+        if (uid.isNullOrBlank()) {
+            clearProperties(VCARD.HAS_UID, selfUri)
+        } else {
+            val trimmed = uid.trim()
+            val iri = if (ABSOLUTE_IRI_SCHEME.containsMatchIn(trimmed)) {
+                trimmed
+            } else {
+                UID_URN_PREFIX + percentEncodeIriSuffix(trimmed)
+            }
+            addQuad(selfUri, VCARD.HAS_UID, iri)
+        }
+    }
+
+    /** The contact's category tags (`vcard:hasCategory` literals). */
+    public fun getCategories(): List<String> =
+        findAllPropertiesForSubject(getIdentifier().toString(), VCARD.HAS_CATEGORY)
+
+    /** Replaces the contact's category tags with [categories] (trimmed, de-duplicated, blanks dropped). */
+    public fun setCategories(categories: List<String>) {
+        val selfUri = getIdentifier().toString()
+        clearProperties(VCARD.HAS_CATEGORY, selfUri)
+        categories.map { it.trim() }.filter { it.isNotBlank() }.distinct().forEach {
+            addQuadLiteral(selfUri, VCARD.HAS_CATEGORY, it, XSD.STRING, maxNumber = Int.MAX_VALUE)
+        }
+    }
+
+    /** The contact's gender (`vcard:hasGender`, an ontology gender-class IRI), or `null`. */
+    public fun getGender(): Gender? =
+        when (findPropertyForSubject(getIdentifier().toString(), VCARD.HAS_GENDER)) {
+            null -> null
+            VCARD.MALE -> Gender.MALE
+            VCARD.FEMALE -> Gender.FEMALE
+            VCARD.GENDER_OTHER -> Gender.OTHER
+            VCARD.GENDER_NONE -> Gender.NONE
+            else -> Gender.UNKNOWN
+        }
+
+    /** Sets (or clears, when `null`) the contact's gender (`vcard:hasGender`, an IRI). */
+    public fun setGender(gender: Gender?) {
+        val selfUri = getIdentifier().toString()
+        clearProperties(VCARD.HAS_GENDER, selfUri)
+        val iri = when (gender) {
+            Gender.MALE -> VCARD.MALE
+            Gender.FEMALE -> VCARD.FEMALE
+            Gender.OTHER -> VCARD.GENDER_OTHER
+            Gender.NONE -> VCARD.GENDER_NONE
+            Gender.UNKNOWN -> VCARD.GENDER_UNKNOWN
+            null -> null
+        }
+        if (iri != null) addQuad(selfUri, VCARD.HAS_GENDER, iri)
+    }
+
+    /**
+     * Rewrites this contact's writable state from [data] with replace semantics: every
+     * multi-valued entry (phones, emails, addresses, URLs) and every optional literal is
+     * replaced by the snapshot's content; properties absent from [data] are removed.
+     * The photo link (`vcard:hasPhoto`) is left untouched.
+     */
+    public fun setContactData(data: ContactData) {
+        clearEntryNodes(VCARD.HAS_TELEPHONE)
+        clearEntryNodes(VCARD.HAS_EMAIL)
+        clearEntryNodes(VCARD.HAS_ADDRESS)
+        clearEntryNodes(VCARD.URL)
+        data.effectiveFullName().takeIf { it.isNotBlank() }?.let { setFullName(it) }
+            ?: clearProperties(VCARD.FN, getIdentifier().toString())
+        setName(data.name)
+        setNickname(data.nickname)
+        data.phones.forEach { addPhone(it.number, it.type) }
+        data.emails.forEach { addEmail(it.address, it.type) }
+        data.addresses.forEach { addAddress(it) }
+        setBirthday(data.birthday)
+        setAnniversary(data.anniversary)
+        setOrganizationName(data.organizationName)
+        setOrganizationUnit(data.organizationUnit)
+        setRole(data.role)
+        setJobTitle(data.title)
+        setNote(data.note)
+        setCategories(data.categories)
+        setGender(data.gender)
+        data.urls.forEach { addUrl(it.type, it.value) }
+        setUid(data.uid)
+    }
+
+    /** Reads this contact's complete writable state into a [ContactData] snapshot. */
+    public fun toContactData(): ContactData = ContactData(
+        fullName = quads.find {
+            it.subject == getIdentifier().toString() && it.predicate == VCARD.FN
+        }?.`object`,
+        name = getName(),
+        nickname = getNickname(),
+        phones = getPhoneEntries(),
+        emails = getEmailEntries(),
+        addresses = getAddresses(),
+        birthday = getBirthday(),
+        anniversary = getAnniversary(),
+        organizationName = getOrganizationName(),
+        organizationUnit = getOrganizationUnit(),
+        role = getRole(),
+        title = getJobTitle(),
+        note = getNote(),
+        categories = getCategories(),
+        gender = getGender(),
+        urls = getUrlEntries(),
+        uid = getUid(),
+    )
+
+    private fun entryNodes(linkPredicate: String): List<String> =
+        quads
+            .filter { it.subject == getIdentifier().toString() && it.predicate == linkPredicate }
+            .map { it.`object` }
+
+    private fun nodeValue(node: String): String? =
+        findPropertyForSubject(node, VCARD.VALUE)
+
+    private fun nodeTypes(node: String): List<String> =
+        findAllPropertiesForSubject(node, RDF.TYPE)
+
+    private fun phoneTypeOf(node: String): PhoneType {
+        val types = nodeTypes(node)
+        return when {
+            VCARD.CELL in types -> PhoneType.CELL
+            VCARD.HOME in types -> PhoneType.HOME
+            VCARD.WORK in types -> PhoneType.WORK
+            VCARD.FAX in types -> PhoneType.FAX
+            VCARD.PAGER in types -> PhoneType.PAGER
+            VCARD.VOICE in types -> PhoneType.VOICE
+            VCARD.TEXT in types -> PhoneType.TEXT
+            VCARD.VIDEO in types -> PhoneType.VIDEO
+            VCARD.TEXT_PHONE in types -> PhoneType.TEXT_PHONE
+            else -> PhoneType.OTHER
+        }
+    }
+
+    private fun phoneTypeIri(type: PhoneType): String? = when (type) {
+        PhoneType.CELL -> VCARD.CELL
+        PhoneType.HOME -> VCARD.HOME
+        PhoneType.WORK -> VCARD.WORK
+        PhoneType.FAX -> VCARD.FAX
+        PhoneType.PAGER -> VCARD.PAGER
+        PhoneType.VOICE -> VCARD.VOICE
+        PhoneType.TEXT -> VCARD.TEXT
+        PhoneType.VIDEO -> VCARD.VIDEO
+        PhoneType.TEXT_PHONE -> VCARD.TEXT_PHONE
+        PhoneType.OTHER -> null
+    }
+
+    private fun emailTypeOf(node: String): EmailType {
+        val types = nodeTypes(node)
+        return when {
+            VCARD.HOME in types -> EmailType.HOME
+            VCARD.WORK in types -> EmailType.WORK
+            else -> EmailType.OTHER
+        }
+    }
+
+    private fun emailTypeIri(type: EmailType): String? = when (type) {
+        EmailType.HOME -> VCARD.HOME
+        EmailType.WORK -> VCARD.WORK
+        EmailType.OTHER -> null
+    }
+
+    private fun addressTypeOf(node: String): AddressType {
+        val types = nodeTypes(node)
+        return when {
+            VCARD.HOME in types -> AddressType.HOME
+            VCARD.WORK in types -> AddressType.WORK
+            else -> AddressType.OTHER
+        }
+    }
+
+    private fun freshBlankNode(prefix: String): String {
+        var counter = 0
+        while (quads.any { it.subject == "_:$prefix$counter" }) counter++
+        return "_:$prefix$counter"
+    }
+
+    private fun clearEntryNodes(linkPredicate: String) {
+        val selfUri = getIdentifier().toString()
+        val nodes = entryNodes(linkPredicate)
+        nodes.forEach { node -> quads.removeAll { it.subject == node } }
+        quads.removeAll { it.subject == selfUri && it.predicate == linkPredicate }
+    }
+
+    private fun setOptionalLiteral(predicate: String, value: String?) {
+        val selfUri = getIdentifier().toString()
+        if (value.isNullOrBlank()) {
+            clearProperties(predicate, selfUri)
+        } else {
+            addQuadLiteral(selfUri, predicate, value, XSD.STRING)
+        }
+    }
+
+    private fun vocabularyFor(type: URLType): String = when (type) {
+        URLType.Home -> VCARD.HOME
+        URLType.Work -> VCARD.WORK
+        URLType.Homepage -> VCARD.HOMEPAGE
+        URLType.WebId -> VCARD.WEB_ID
+        URLType.PublicId -> VCARD.PUBLIC_ID
+    }
+
+    private fun telIri(number: String): String =
+        "tel:" + percentEncodeIriSuffix(number.trim().replace(TEL_VISUAL_SEPARATORS, ""))
+
+    private fun normalizedTel(storedValue: String): String =
+        telIri(storedValue.removePrefix("tel:"))
+
+    private fun mailtoIri(address: String): String =
+        "mailto:" + percentEncodeIriSuffix(address.trim())
+
+    private companion object {
+        private val TEL_VISUAL_SEPARATORS = Regex("""[\s().\-/]""")
+        private val ABSOLUTE_IRI_SCHEME = Regex("^[A-Za-z][A-Za-z0-9+.\\-]*:")
+        private const val UID_URN_PREFIX = "urn:uid:"
+        private const val IRI_SAFE_PUNCTUATION = "-._~!$&'()*+,;=:@"
+
+        private fun percentEncodeIriSuffix(value: String): String = buildString {
+            value.toByteArray(Charsets.UTF_8).forEach { byte ->
+                val code = byte.toInt() and 0xFF
+                val char = code.toChar()
+                if (code < 0x80 && (char.isLetterOrDigit() || char in IRI_SAFE_PUNCTUATION)) {
+                    append(char)
+                } else {
+                    append('%')
+                    append("%02X".format(code))
+                }
+            }
+        }
+
+        private fun percentDecode(value: String): String =
+            runCatching { java.net.URLDecoder.decode(value.replace("+", "%2B"), "UTF-8") }
+                .getOrDefault(value)
     }
 }

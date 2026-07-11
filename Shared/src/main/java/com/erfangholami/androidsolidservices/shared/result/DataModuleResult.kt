@@ -42,3 +42,15 @@ public fun <T : Parcelable> DataModuleResult<T>.getOrThrow(): T = when (this) {
 public fun <T : Parcelable> DataModuleResult<T>.getOrNull(): T? =
     if (this is DataModuleResult.Success) data else null
 
+/**
+ * Maps a [DataModuleResult.Success] payload with [transform]; failure variants are
+ * propagated unchanged.
+ */
+public inline fun <T : Parcelable, R : Parcelable> DataModuleResult<T>.map(
+    transform: (T) -> R,
+): DataModuleResult<R> = when (this) {
+    is DataModuleResult.Success -> DataModuleResult.Success(transform(data))
+    is DataModuleResult.Error -> DataModuleResult.Error(errorMessage)
+    is DataModuleResult.Exception -> DataModuleResult.Exception(exception)
+}
+

@@ -43,4 +43,30 @@ public object SolidShare {
 
     /** The owner WebID on a received-share [SHARE] record. */
     public const val OWNER: String = "${NAMESPACE}owner"
+
+    /**
+     * Barcode symbology literal on a `schema:Ticket` (the name of a
+     * `TicketBarcodeFormat` constant, e.g. `"QR_CODE"`, `"AZTEC"`).
+     * Together with `schema:ticketToken` it lets the exact barcode the
+     * issuer produced be re-rendered for gate scanners.
+     */
+    public const val BARCODE_FORMAT: String = "${NAMESPACE}barcodeFormat"
+
+    /** Ticket category literal (the name of a `TicketCategory` constant, e.g. `"EVENT"`). */
+    public const val CATEGORY: String = "${NAMESPACE}category"
+
+    /** Provenance literal on a ticket (the name of a `TicketSource` constant, e.g. `"PKPASS"`). */
+    public const val SOURCE: String = "${NAMESPACE}source"
+
+    /** Links a `schema:Ticket` to its embedded `schema:Event` node. */
+    public const val EVENT: String = "${NAMESPACE}event"
+
+    /**
+     * Links a ticket to the original imported artifact it was created from
+     * (e.g. the `.pkpass` file), stored as a sibling binary resource.
+     */
+    public const val ARTIFACT: String = "${NAMESPACE}artifact"
+
+    /** Cached issuer display name on a tickets-index row. */
+    public const val ISSUER: String = "${NAMESPACE}issuer"
 }

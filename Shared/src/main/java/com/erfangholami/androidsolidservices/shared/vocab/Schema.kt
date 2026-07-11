@@ -65,4 +65,25 @@ public object Schema {
     public const val LOCATION: String = "${NAMESPACE}location"
     public const val ORGANIZER: String = "${NAMESPACE}organizer"
     public const val ATTENDEE: String = "${NAMESPACE}attendee"
+
+    // Ticket types
+    public const val TICKET: String = "${NAMESPACE}Ticket"
+    public const val SEAT: String = "${NAMESPACE}Seat"
+
+    // Ticket predicates
+    public const val TICKET_NUMBER: String = "${NAMESPACE}ticketNumber"
+
+    /** The opaque token/payload encoded in the ticket's barcode. */
+    public const val TICKET_TOKEN: String = "${NAMESPACE}ticketToken"
+    public const val ISSUED_BY: String = "${NAMESPACE}issuedBy"
+    public const val UNDER_NAME: String = "${NAMESPACE}underName"
+    public const val TICKETED_SEAT: String = "${NAMESPACE}ticketedSeat"
+    public const val SEAT_NUMBER: String = "${NAMESPACE}seatNumber"
+    public const val SEAT_ROW: String = "${NAMESPACE}seatRow"
+    public const val SEAT_SECTION: String = "${NAMESPACE}seatSection"
+    public const val TOTAL_PRICE: String = "${NAMESPACE}totalPrice"
+    public const val PRICE_CURRENCY: String = "${NAMESPACE}priceCurrency"
+    public const val DATE_ISSUED: String = "${NAMESPACE}dateIssued"
+    public const val VALID_FROM: String = "${NAMESPACE}validFrom"
+    public const val VALID_THROUGH: String = "${NAMESPACE}validThrough"
 }

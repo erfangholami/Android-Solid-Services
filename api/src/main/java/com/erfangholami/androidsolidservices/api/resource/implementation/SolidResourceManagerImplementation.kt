@@ -14,6 +14,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.net.URI
 
@@ -21,6 +24,11 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
 
     companion object {
         private const val RESOURCE_LOG_TAG = "SolidResourceManager"
+
+        private const val MAX_CONCURRENT_DELETES = 6
+        private const val MAX_DELETE_ATTEMPTS = 4
+        private const val DELETE_RETRY_BASE_DELAY_MS = 500L
+        private val TRANSIENT_DELETE_STATUS_CODES = setOf(408, 429, 500, 502, 503, 504)
 
         @Volatile
         private var INSTANCE: SolidResourceManager? = null
@@ -144,7 +152,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         try {
             val uri = resource.getIdentifier()
             val deleteResult = if (resource is SolidContainer || uri.toString().endsWith("/")) {
-                deleteRecursive(webid, uri)
+                deleteRecursive(webid, uri, Semaphore(MAX_CONCURRENT_DELETES))
             } else {
                 solidHttpClient.delete(webid, uri)
             }
@@ -168,7 +176,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     ): SolidNetworkResponse<Boolean> = withContext(Dispatchers.IO) {
         try {
             if (resourceUri.toString().endsWith("/")) {
-                deleteRecursive(webid, resourceUri)
+                deleteRecursive(webid, resourceUri, Semaphore(MAX_CONCURRENT_DELETES))
             } else {
                 solidHttpClient.delete(webid, resourceUri)
             }
@@ -220,38 +228,104 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     override suspend fun headPublic(uri: URI): SolidNetworkResponse<SolidMetadata> =
         withContext(Dispatchers.IO) { solidHttpClient.headPublic(uri) }
 
+    /**
+     * Deletes a container and everything under it.
+     *
+     * Solid has no single-call recursive delete: a `DELETE` on a non-empty container returns `409`
+     * (Solid Protocol §5.4), so the tree must be emptied leaf-first, client-side. This empties the
+     * container by deleting its contained resources — recursing into child containers — before
+     * deleting the container itself.
+     *
+     * Deletes are bounded to [MAX_CONCURRENT_DELETES] in-flight requests via [gate] (a single
+     * shared permit budget for the whole tree) so a large container cannot flood the server with
+     * hundreds of simultaneous requests. A failed child does **not** cancel its siblings: every
+     * child is attempted, transient failures are retried ([deleteWithRetry]), and if any resource
+     * still cannot be deleted the container is left intact and an aggregate [SolidNetworkResponse.Error]
+     * is returned — the caller can safely retry (already-gone resources report `404`, treated as
+     * success) without leaving the container half-emptied yet deregistered.
+     */
     private suspend fun deleteRecursive(
         webid: String,
-        containerUri: URI
+        containerUri: URI,
+        gate: Semaphore,
     ): SolidNetworkResponse<Boolean> {
         val containerResult = solidHttpClient.get(webid, containerUri, SolidContainer::class.java)
         if (containerResult !is SolidNetworkResponse.Success) {
             return when (containerResult) {
-                is SolidNetworkResponse.Error -> SolidNetworkResponse.Error(
-                    containerResult.errorCode,
-                    containerResult.errorMessage
-                )
+                is SolidNetworkResponse.Error ->
+                    if (containerResult.errorCode == 404) {
+                        SolidNetworkResponse.Success(true)
+                    } else {
+                        SolidNetworkResponse.Error(containerResult.errorCode, containerResult.errorMessage)
+                    }
 
                 is SolidNetworkResponse.Exception -> SolidNetworkResponse.Exception(containerResult.exception)
             }
         }
-        coroutineScope {
+
+        val failures = coroutineScope {
             containerResult.data.getContained().map { ref ->
                 async {
+                    val childUri = URI.create(ref.identifier)
                     val isChildContainer = ref.isContainerByUri() ||
                             ref.types.contains(LDP.BASIC_CONTAINER) ||
                             ref.types.contains(LDP.CONTAINER) ||
                             ref.types.contains(LDP.DIRECT_CONTAINER) ||
                             ref.types.contains(LDP.INDIRECT_CONTAINER)
-                    if (isChildContainer) {
-                        deleteRecursive(webid, URI.create(ref.identifier)).getOrThrow()
+                    val childResult = if (isChildContainer) {
+                        deleteRecursive(webid, childUri, gate)
                     } else {
-                        solidHttpClient.delete(webid, URI.create(ref.identifier)).getOrThrow()
+                        deleteWithRetry(webid, childUri, gate)
                     }
+                    if (childResult is SolidNetworkResponse.Success) null else childUri.toString()
                 }
-            }.awaitAll()
+            }.awaitAll().filterNotNull()
         }
 
-        return solidHttpClient.delete(webid, containerUri)
+        if (failures.isNotEmpty()) {
+            return SolidNetworkResponse.Error(
+                409,
+                "Could not delete ${failures.size} contained resource(s) under $containerUri; " +
+                        "container left intact",
+            )
+        }
+
+        return deleteWithRetry(webid, containerUri, gate)
+    }
+
+    /**
+     * Deletes a single resource, holding a [gate] permit for the request and retrying transient
+     * failures (network errors and [TRANSIENT_DELETE_STATUS_CODES] responses) with exponential
+     * backoff, up to [MAX_DELETE_ATTEMPTS] attempts. A `404` is treated as success (the resource is
+     * already gone), which makes a re-run of a partially-completed delete idempotent.
+     */
+    private suspend fun deleteWithRetry(
+        webid: String,
+        uri: URI,
+        gate: Semaphore,
+    ): SolidNetworkResponse<Boolean> {
+        var attempt = 0
+        while (true) {
+            val result = gate.withPermit { solidHttpClient.delete(webid, uri) }
+            when {
+                result is SolidNetworkResponse.Success -> return result
+
+                result is SolidNetworkResponse.Error && result.errorCode == 404 ->
+                    return SolidNetworkResponse.Success(true)
+
+                attempt < MAX_DELETE_ATTEMPTS - 1 && result.isTransientFailure() -> {
+                    delay(DELETE_RETRY_BASE_DELAY_MS shl attempt)
+                    attempt++
+                }
+
+                else -> return result
+            }
+        }
+    }
+
+    private fun SolidNetworkResponse<Boolean>.isTransientFailure(): Boolean = when (this) {
+        is SolidNetworkResponse.Exception -> true
+        is SolidNetworkResponse.Error -> errorCode in TRANSIENT_DELETE_STATUS_CODES
+        is SolidNetworkResponse.Success -> false
     }
 }

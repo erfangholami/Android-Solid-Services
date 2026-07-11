@@ -52,6 +52,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 kotlin {
@@ -66,6 +71,7 @@ dependencies {
 
     implementation(libs.androidx.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.jetbrains.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
 
@@ -97,7 +103,7 @@ mavenPublishing {
             variant = "release",
         )
     )
-    coordinates("com.erfangholami.androidsolidservices", "api", "0.5.1")
+    coordinates("com.erfangholami.androidsolidservices", "api", "0.6.0")
 
     pom {
         name.set("Android Solid Services - API")

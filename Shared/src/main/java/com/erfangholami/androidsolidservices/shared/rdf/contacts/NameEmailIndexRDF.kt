@@ -56,6 +56,21 @@ public class NameEmailIndexRDF : SolidRDFResource {
     }
 
     /**
+     * Rewrites the cached `vcard:fn` for [contactUri] to [newName].
+     *
+     * @return `true` if the contact is listed in this index and its cached name was
+     *   updated, `false` if the contact was not found.
+     */
+    public fun updateContactName(contactUri: String, newName: String): Boolean {
+        val listed = quads.any {
+            it.predicate == VCARD.IN_ADDRESS_BOOK && it.`object` == contactUri
+        }
+        if (!listed) return false
+        addQuadLiteral(contactUri, VCARD.FN, newName, XSD.STRING)
+        return true
+    }
+
+    /**
      * Removes all index entries for [contactUri] (both the `vcard:inAddressBook` link and
      * the contact's own cached triples).
      *

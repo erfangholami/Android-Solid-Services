@@ -45,6 +45,11 @@ android {
     buildFeatures {
         aidl = true
     }
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 kotlin {
@@ -59,6 +64,7 @@ dependencies {
 
     implementation(libs.jetbrains.kotlinx.serialization.json)
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
 
@@ -78,7 +84,7 @@ mavenPublishing {
             variant = "release",
         )
     )
-    coordinates("com.erfangholami.androidsolidservices", "shared", "0.5.1")
+    coordinates("com.erfangholami.androidsolidservices", "shared", "0.6.0")
 
     pom {
         name.set("Android Solid Services - Shared")

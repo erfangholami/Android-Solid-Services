@@ -5,6 +5,7 @@ import com.erfangholami.androidsolidservices.api.access.AcpBackend
 import com.erfangholami.androidsolidservices.api.access.WacBackend
 import com.erfangholami.androidsolidservices.api.access.pickBackend
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
+import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.http.SolidNetworkResponse
@@ -24,6 +25,7 @@ import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
+import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import java.net.URI
@@ -31,6 +33,8 @@ import java.security.MessageDigest
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.Random
+import kotlinx.coroutines.delay
 
 /**
  * Low-level helpers for the sharing pipeline:
@@ -49,6 +53,8 @@ internal class SharingManagerHelper {
 
     companion object {
         private const val MAX_INDEX_PATCH_ATTEMPTS = 3
+        private const val INDEX_PATCH_BACKOFF_MS = 100L
+        private const val INDEX_PATCH_JITTER_MS = 150L
 
         @Volatile
         private var INSTANCE: SharingManagerHelper? = null
@@ -119,7 +125,23 @@ internal class SharingManagerHelper {
         )
         ensureEmptyRdf(webId, givenSharesUri(podRoot))
         ensureEmptyRdf(webId, receivedSharesUri(podRoot))
+        runCatching { registerSharesContainer(webId, containerUri) }
         sharesContainerReady[webId] = true
+    }
+
+    /**
+     * Registers the shares container as a `solid:instanceContainer` for
+     * `solidshare:Share` in the owner's private type index, so the shares
+     * bookkeeping is discoverable there (alongside contacts and tickets)
+     * rather than only at the fixed `solidshare/` path. Idempotent, and
+     * best-effort: a failure here never blocks the sharing flow.
+     */
+    private suspend fun registerSharesContainer(webId: String, containerUri: URI) {
+        val typeIndex = TypeIndexResolver.getPrivateTypeIndex(rm, webId)
+        val target = containerUri.toString()
+        if (typeIndex.containsResource(target)) return
+        typeIndex.addInstanceContainer(SolidShare.SHARE, target)
+        rm.update(webId, typeIndex).getOrThrow()
     }
 
     suspend fun ensureSolidshareContainer(webId: String, podRoot: URI) {
@@ -539,7 +561,10 @@ internal class SharingManagerHelper {
             when (val r = rm.patch(webId, uri, patch, ifMatch = etag)) {
                 is SolidNetworkResponse.Success -> return
                 is SolidNetworkResponse.Error -> {
-                    if (r.errorCode == 412 && ++attempt < MAX_INDEX_PATCH_ATTEMPTS) continue
+                    if (r.errorCode == 412 && ++attempt < MAX_INDEX_PATCH_ATTEMPTS) {
+                        delay(INDEX_PATCH_BACKOFF_MS * attempt + Random.nextLong(INDEX_PATCH_JITTER_MS))
+                        continue
+                    }
                     error("Index patch for $uri failed: ${r.errorCode} ${r.errorMessage}")
                 }
 

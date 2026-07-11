@@ -23,6 +23,27 @@ public object VCARD {
     public const val HOME: String = "${NAMESPACE}Home"
     public const val WORK: String = "${NAMESPACE}Work"
 
+    /** Telephone feature/type classes asserted on `hasTelephone` nodes. */
+    public const val CELL: String = "${NAMESPACE}Cell"
+    public const val FAX: String = "${NAMESPACE}Fax"
+    public const val PAGER: String = "${NAMESPACE}Pager"
+    public const val TEXT: String = "${NAMESPACE}Text"
+    public const val TEXT_PHONE: String = "${NAMESPACE}TextPhone"
+    public const val VIDEO: String = "${NAMESPACE}Video"
+    public const val VOICE: String = "${NAMESPACE}Voice"
+
+    /** Postal address class asserted on `hasAddress` nodes. */
+    public const val ADDRESS: String = "${NAMESPACE}Address"
+    public const val STREET_ADDRESS: String = "${NAMESPACE}street-address"
+    public const val LOCALITY: String = "${NAMESPACE}locality"
+    public const val REGION: String = "${NAMESPACE}region"
+    public const val POSTAL_CODE: String = "${NAMESPACE}postal-code"
+    public const val COUNTRY_NAME: String = "${NAMESPACE}country-name"
+    public const val POST_OFFICE_BOX: String = "${NAMESPACE}post-office-box"
+
+    public const val NICKNAME: String = "${NAMESPACE}nickname"
+    public const val ORGANIZATION_UNIT: String = "${NAMESPACE}organization-unit"
+
     /** Links an address book to a resource listing name/email pairs for fast lookup. */
     public const val NAME_EMAIL_INDEX: String = "${NAMESPACE}nameEmailIndex"
 
@@ -63,4 +84,13 @@ public object VCARD {
     public const val NOTE: String = "${NAMESPACE}note"
     public const val VALUE: String = "${NAMESPACE}value"
     public const val HAS_MEMBER: String = "${NAMESPACE}hasMember"
+
+    public const val HAS_CATEGORY: String = "${NAMESPACE}hasCategory"
+
+    public const val HAS_GENDER: String = "${NAMESPACE}hasGender"
+    public const val MALE: String = "${NAMESPACE}Male"
+    public const val FEMALE: String = "${NAMESPACE}Female"
+    public const val GENDER_OTHER: String = "${NAMESPACE}Other"
+    public const val GENDER_NONE: String = "${NAMESPACE}None"
+    public const val GENDER_UNKNOWN: String = "${NAMESPACE}Unknown"
 }

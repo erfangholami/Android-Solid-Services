@@ -31,7 +31,7 @@ public class GroupRDF : SolidRDFResource {
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     init {
-        addQuad(getIdentifier().toString(), RDF.TYPE, VCARD.GROUP)
+        ensureType(getIdentifier().toString(), VCARD.GROUP)
     }
 
     /** Returns the group's display name (`vcard:fn`). */
@@ -90,6 +90,26 @@ public class GroupRDF : SolidRDFResource {
             maxNumber = Int.MAX_VALUE
         )
         addQuadLiteral(contact.getIdentifier().toString(), VCARD.FN, contact.getFullName(), XSD.STRING)
+    }
+
+    /**
+     * Rewrites the cached member `vcard:fn` for [contactUri] to [newName].
+     *
+     * Membership is matched directly or through an `owl:sameAs` alias (the same
+     * aliasing [getContacts] resolves).
+     *
+     * @return `true` if [contactUri] is a member of this group and its cached name
+     *   was updated, `false` if it is not a member.
+     */
+    public fun updateMemberName(contactUri: String, newName: String): Boolean {
+        val member = quads.any {
+            it.subject == getIdentifier().toString() &&
+                    it.predicate == VCARD.HAS_MEMBER &&
+                    it.`object` == contactUri
+        } || quads.any { it.predicate == OWL.SAME_AS && it.`object` == contactUri }
+        if (!member) return false
+        addQuadLiteral(contactUri, VCARD.FN, newName, XSD.STRING)
+        return true
     }
 
     /**

@@ -81,6 +81,12 @@ internal class FakeSolidResourceManager(
         linkHeader: String?,
     ): SolidNetworkResponse<Unit> = notImplemented()
 
+    override suspend fun <T : Resource> createInContainer(
+        webid: String,
+        containerUri: URI,
+        resource: T,
+    ): SolidNetworkResponse<URI?> = notImplemented()
+
     companion object {
         private fun <T> notImplemented(): SolidNetworkResponse<T> =
             SolidNetworkResponse.Exception(NotImplementedError("not exercised by this test"))
