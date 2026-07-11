@@ -32,7 +32,7 @@ public class AddressBookRDF : SolidRDFResource {
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     init {
-        addQuad(getIdentifier().toString(), RDF.TYPE, VCARD.ADDRESS_BOOK)
+        ensureType(getIdentifier().toString(), VCARD.ADDRESS_BOOK)
     }
 
     /** Returns the WebID of the address-book owner (`acl:owner`). */

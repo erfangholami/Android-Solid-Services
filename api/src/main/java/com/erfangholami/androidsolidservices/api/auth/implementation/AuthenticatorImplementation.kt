@@ -288,17 +288,8 @@ internal class AuthenticatorImplementation internal constructor(
     ): Map<String, String> {
         profileManager.awaitInit()
         val profile = profileManager.getProfile(webId)
-        val tokenResponse = profile.authState.lastTokenResponse
+        return buildTokenAuthHeaders(profile, httpMethod, uri)
             ?: throw IllegalStateException("No token available for $webId. Call getLastTokenResponse first.")
-        val headers = mutableMapOf<String, String>()
-        headers[HTTPHeaderName.AUTHORIZATION] =
-            "${tokenResponse.tokenType} ${tokenResponse.accessToken}"
-        if (tokenResponse.tokenType?.equals(HTTPHeaderName.DPOP, true) == true) {
-            headers[HTTPHeaderName.DPOP] = DPoPGenerator
-                .getInstance(profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!, profile.dpopKeyId)
-                .generateProof(httpMethod, uri, tokenResponse.accessToken)
-        }
-        return headers
     }
 
     override fun updateDPoPNonce(webId: String, resourceUri: String, nonce: String) {
@@ -605,11 +596,19 @@ internal class AuthenticatorImplementation internal constructor(
 
     private fun buildInProgressAuthHeaders(httpMethod: String, uri: String): Map<String, String> {
         val profile = inProgressAuth.get() ?: return emptyMap()
-        val tokenResponse = profile.authState.lastTokenResponse ?: return emptyMap()
+        return buildTokenAuthHeaders(profile, httpMethod, uri) ?: emptyMap()
+    }
+
+    private fun buildTokenAuthHeaders(
+        profile: Profile,
+        httpMethod: String,
+        uri: String,
+    ): Map<String, String>? {
+        val tokenResponse = profile.authState.lastTokenResponse ?: return null
         val headers = mutableMapOf<String, String>()
         headers[HTTPHeaderName.AUTHORIZATION] =
             "${tokenResponse.tokenType} ${tokenResponse.accessToken}"
-        if (tokenResponse.tokenType?.equals(HTTPHeaderName.DPOP) == true) {
+        if (tokenResponse.tokenType?.equals(HTTPHeaderName.DPOP, ignoreCase = true) == true) {
             headers[HTTPHeaderName.DPOP] = DPoPGenerator
                 .getInstance(profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!, profile.dpopKeyId)
                 .generateProof(httpMethod, uri, tokenResponse.accessToken)

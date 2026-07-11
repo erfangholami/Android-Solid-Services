@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: Unit tests & lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run library unit tests
+        run: >-
+          ./gradlew
+          :Shared:testDebugUnitTest
+          :api:testDebugUnitTest
+          :client:testDebugUnitTest
+          -Dorg.gradle.java.installations.auto-detect=false
+          -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
+
+      - name: Lint
+        run: >-
+          ./gradlew :Shared:lintDebug :api:lintDebug :client:lintDebug
+          -Dorg.gradle.java.installations.auto-detect=false
+          -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/build/reports/tests/'
+          if-no-files-found: ignore

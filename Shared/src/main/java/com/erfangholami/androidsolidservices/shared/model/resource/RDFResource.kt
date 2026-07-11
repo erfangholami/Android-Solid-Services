@@ -220,6 +220,24 @@ public open class RDFResource : Resource {
     }
 
     /**
+     * Ensures [subject] carries an `rdf:type` triple with [typeIri], preserving any
+     * other type triples already present.
+     *
+     * Unlike `addQuad(subject, RDF.TYPE, typeIri)` — whose default single-value
+     * semantics would replace every existing `rdf:type` — this appends only when the
+     * type is absent, so types written by other applications survive a parse/serialize
+     * round trip.
+     */
+    public fun ensureType(subject: String, typeIri: String) {
+        val present = quads.any {
+            it.subject == subject && it.predicate == RDF.TYPE && it.`object` == typeIri
+        }
+        if (!present) {
+            addQuad(subject, RDF.TYPE, typeIri, maxNumber = Int.MAX_VALUE)
+        }
+    }
+
+    /**
      * Removes every triple with the given [predicate] for [subject].
      *
      * @param subject the subject to clear; defaults to this resource's primary subject.

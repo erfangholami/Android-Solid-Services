@@ -366,20 +366,36 @@ internal class SharingManagerImplementation : SharingManager {
         val uri = encodeUriString(resourceUri)
         val canonicalUri = uri.toString()
         val canonicalReceiver = canonicalizeReceiver(webId, receiver)
+        val hadGrantBefore = runCatching {
+            helper.getSharesFromAcl(webId, uri).any {
+                it.receiver.toRdfSubject() == canonicalReceiver.toRdfSubject()
+            }
+        }.getOrDefault(false)
         helper.grantAccess(webId, uri, mode, canonicalReceiver)
         writeOwnerProvenance(webId, uri)
         val share = GivenShare(canonicalReceiver, mode, canonicalUri, createdAt = nowIsoDateTime())
         runCatching {
             helper.replaceGivenShare(webId, podRoot, share)
         }.onFailure { t ->
-            runCatching { helper.revokeAccess(webId, uri, canonicalReceiver) }.onFailure { rb ->
-                Log.e(
+            if (hadGrantBefore) {
+                Log.w(
                     SHARING_LOG_TAG,
-                    "createShare: index write FAILED and rollback of the WAC grant for " +
-                            "$resourceUri also failed — ACL and index are now divergent; a " +
-                            "rebuildGivenIndex is required to reconcile.",
-                    rb,
+                    "createShare: index write FAILED for $resourceUri, but the receiver held " +
+                            "access before this call (mode change) — keeping the live grant " +
+                            "rather than revoking it; the index will reconcile on the next " +
+                            "successful write or rebuildGivenIndex.",
+                    t,
                 )
+            } else {
+                runCatching { helper.revokeAccess(webId, uri, canonicalReceiver) }.onFailure { rb ->
+                    Log.e(
+                        SHARING_LOG_TAG,
+                        "createShare: index write FAILED and rollback of the WAC grant for " +
+                                "$resourceUri also failed — ACL and index are now divergent; a " +
+                                "rebuildGivenIndex is required to reconcile.",
+                        rb,
+                    )
+                }
             }
             throw t
         }

@@ -281,6 +281,26 @@ public interface SolidResourceManager {
         additionalHeaders: Map<String, String> = emptyMap(),
     ): SolidNetworkResponse<URI?>
 
+    /**
+     * Creates a new member inside the container at [containerUri] by POSTing
+     * [resource] to the container, letting the **server** allocate the child URI.
+     *
+     * Prefer this over [create] when writing into a container you do not own but
+     * have been granted **Add** (`acl:Append`) access to: [create] issues a PUT to a
+     * fixed URI, which requires **Write**, whereas POSTing a new member only requires
+     * Append — so an add-only recipient can contribute to a shared container without
+     * being able to overwrite existing resources.
+     *
+     * The [resource]'s identifier is used only to derive a `Slug` hint for the
+     * server; the authoritative URI is the one the server returns.
+     *
+     * @param webid The WebID of the authenticated user making the request.
+     * @param containerUri The container to POST the new member into.
+     * @param resource The resource to create; its content and content-type are sent,
+     *   its identifier supplies only a `Slug` hint.
+     * @return [SolidNetworkResponse.Success] with the server-allocated member URI
+     *   (its `Location`), which may be `null` if the server did not return one.
+     */
     public suspend fun <T : Resource> createInContainer(
         webid: String,
         containerUri: URI,

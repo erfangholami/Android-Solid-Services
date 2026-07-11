@@ -6,6 +6,7 @@ import com.erfangholami.androidsolidservices.shared.util.encodeUri
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import kotlinx.serialization.json.Json
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.UncheckedIOException
@@ -24,6 +25,10 @@ import java.net.URI
  *
  * The backing stream is consumed when the body is read or the resource is parcelled, so
  * an instance is single-use; close it (or read it) exactly once.
+ *
+ * Parcelling buffers the entire body as raw bytes, so binary content survives IPC
+ * unchanged. Android's binder transaction buffer is roughly 1 MB per process; sending a
+ * larger body over AIDL fails with a `TransactionTooLargeException`.
  *
  * See the Solid Protocol (https://solidproject.org/TR/protocol) and LDP
  * (http://www.w3.org/TR/ldp/) for the non-RDF source model.
@@ -53,7 +58,7 @@ public open class NonRDFResource : Resource {
         this.identifier = encodeUriString(inParcel.readString()!!)
         this.contentType = inParcel.readString()!!
         this.headers = SolidHeaders(Json.decodeFromString<Map<String, List<String>>>(inParcel.readString()!!))
-        this.entity = inParcel.readString()!!.byteInputStream()
+        this.entity = ByteArrayInputStream(inParcel.createByteArray() ?: ByteArray(0))
     }
 
     public constructor(
@@ -106,6 +111,6 @@ public open class NonRDFResource : Resource {
         dest.writeString(identifier.toString())
         dest.writeString(contentType)
         dest.writeString(Json.encodeToString(headers.toMultimap()))
-        dest.writeString(getEntity().bufferedReader().use { it.readText() })
+        dest.writeByteArray(getEntity().use { it.readBytes() })
     }
 }

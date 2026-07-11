@@ -37,6 +37,7 @@ lifecycleRuntime = "2.10.0"
 vanniktechMavenPublish = "0.36.0"
 jjwt = "0.13.0"
 binaryCompatibilityValidator = "0.18.1"
+robolectric = "4.15.1"
 
 [libraries]
 jetbrains-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
@@ -122,6 +123,8 @@ io-jsonwebtoken-orgjson = { group = "io.jsonwebtoken", name = "jjwt-orgjson", ve
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidXEspresso" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+jetbrains-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinXCoroutine" }
 androidx-lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime", version.ref = "lifecycleRuntime" }
 
 [plugins]

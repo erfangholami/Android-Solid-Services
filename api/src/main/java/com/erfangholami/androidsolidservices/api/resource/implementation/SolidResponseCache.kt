@@ -2,7 +2,10 @@ package com.erfangholami.androidsolidservices.api.resource.implementation
 
 import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import okhttp3.Headers
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
@@ -218,6 +221,8 @@ internal class SolidResponseCache(
             }
             try {
                 return leader.await()
+            } catch (cancellation: CancellationException) {
+                currentCoroutineContext().ensureActive()
             } catch (_: Throwable) {
             }
         }

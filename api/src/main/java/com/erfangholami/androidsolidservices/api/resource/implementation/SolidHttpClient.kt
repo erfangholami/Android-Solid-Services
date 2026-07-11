@@ -96,7 +96,7 @@ internal class SolidHttpClient(
             if (response.isSuccessful()) {
                 SolidNetworkResponse.Success(SolidResourceParser.parse(response, clazz))
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -131,7 +131,8 @@ internal class SolidHttpClient(
                 invalidate(resource.getIdentifier())
                 SolidNetworkResponse.Success(resource)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                if (response.statusCode == 412) invalidate(resource.getIdentifier())
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -157,7 +158,8 @@ internal class SolidHttpClient(
                 invalidate(uri)
                 SolidNetworkResponse.Success(Unit)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                if (response.statusCode == 412) invalidate(uri)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -183,7 +185,8 @@ internal class SolidHttpClient(
                 invalidate(uri)
                 SolidNetworkResponse.Success(Unit)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                if (response.statusCode == 412) invalidate(uri)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -226,7 +229,7 @@ internal class SolidHttpClient(
             if (response.isSuccessful()) {
                 SolidNetworkResponse.Success(SolidResourceParser.parse(response, clazz))
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -277,7 +280,8 @@ internal class SolidHttpClient(
                 invalidate(uri)
                 SolidNetworkResponse.Success(Unit)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                if (response.statusCode == 412) invalidate(uri)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -306,7 +310,7 @@ internal class SolidHttpClient(
                     ?.let { runCatching { URI.create(it) }.getOrNull() }
                 SolidNetworkResponse.Success(location)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -342,7 +346,7 @@ internal class SolidHttpClient(
                     ?.let { runCatching { URI.create(it) }.getOrNull() }
                 SolidNetworkResponse.Success(location)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -366,7 +370,8 @@ internal class SolidHttpClient(
                 invalidate(uri)
                 SolidNetworkResponse.Success(true)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                if (response.statusCode == 412) invalidate(uri)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)
@@ -389,7 +394,7 @@ internal class SolidHttpClient(
                 invalidate(destinationUri)
                 SolidNetworkResponse.Success(true)
             } else {
-                SolidNetworkResponse.Error(response.statusCode, response.body)
+                SolidNetworkResponse.Error(response.statusCode, response.errorDetail())
             }
         } catch (e: Exception) {
             SolidNetworkResponse.Exception(e)

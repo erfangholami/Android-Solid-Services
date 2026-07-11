@@ -38,6 +38,9 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
+      - name: Run library unit tests
+        run: ./gradlew :Shared:testDebugUnitTest :api:testDebugUnitTest :client:testDebugUnitTest -Dorg.gradle.java.installations.auto-detect=false -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
+
       - name: Decode keystore
         run: |
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > ${{ runner.temp }}/release.jks

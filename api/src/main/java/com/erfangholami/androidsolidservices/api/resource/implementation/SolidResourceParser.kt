@@ -139,8 +139,32 @@ internal object SolidResourceParser {
         clazz: Class<T>,
         contentType: String
     ): T {
-        return clazz
-            .getConstructor(URI::class.java, String::class.java, InputStream::class.java)
-            .newInstance(response.uri, contentType, response.bodyBytes.inputStream())
+        val headers = SolidHeaders(response.headers.toMultimap())
+        val body = response.bodyBytes.inputStream()
+        return try {
+            clazz
+                .getConstructor(
+                    URI::class.java,
+                    String::class.java,
+                    InputStream::class.java,
+                    SolidHeaders::class.java
+                )
+                .newInstance(response.uri, contentType, body, headers)
+        } catch (_: NoSuchMethodException) {
+            try {
+                clazz
+                    .getConstructor(
+                        URI::class.java,
+                        String::class.java,
+                        SolidHeaders::class.java,
+                        InputStream::class.java
+                    )
+                    .newInstance(response.uri, contentType, headers, body)
+            } catch (_: NoSuchMethodException) {
+                clazz
+                    .getConstructor(URI::class.java, String::class.java, InputStream::class.java)
+                    .newInstance(response.uri, contentType, body)
+            }
+        }
     }
 }

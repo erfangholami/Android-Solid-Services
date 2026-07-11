@@ -254,22 +254,19 @@ internal class InboxReader(
             return IriUtils.sameIri(ownerFromHeaders.toString(), claimedActor)
         }
 
-        if (resourceUnderOwnedStorage(
-                readerWebId,
-                ownerWebId = claimedActor,
-                resource = resource,
-                profileCache = profileCache,
-            )
-        ) {
-            return true
-        }
-
-        val actorUri = runCatching { URI.create(claimedActor) }
-            .onFailure { t ->
-                Log.w(INBOX_LOG_TAG, "actorMatchesOwner: malformed actor '$claimedActor'.", t)
-            }
-            .getOrNull() ?: return false
-        return resource.host != null && resource.host == actorUri.host
+        // Authoritative-header check failed to name an owner; fall back to the
+        // actor's self-declared pim:storage. There is deliberately NO bare
+        // "same host as the actor's WebID" fallback: on a path-based multi-tenant
+        // pod (…/alice/, …/bob/ under one host) every user shares the host, so
+        // that fallback let any user forge an Offer for any other user's resource.
+        // A claim now only passes if the resource actually sits under a storage
+        // the actor declares in their own profile.
+        return resourceUnderOwnedStorage(
+            readerWebId,
+            ownerWebId = claimedActor,
+            resource = resource,
+            profileCache = profileCache,
+        )
     }
 
     private suspend fun resourceBelongsToReader(
@@ -323,9 +320,21 @@ internal class InboxReader(
         val canonicalResource = IriUtils.canonical(resource.toString())
         return profile.getStorages().any { storage ->
             val root = IriUtils.canonical(IriUtils.toContainerIri(storagePathRoot(storage)))
-            canonicalResource.startsWith(root) && sameSite(ownerUri.host, storage.host)
+            // The resource must sit under the storage container AND be served from
+            // the very same host as that storage (exact, case-insensitive) — a
+            // storage on one host can never own a resource on another. `sameSite`
+            // is used only for the looser WebID↔storage relation, where a provider
+            // legitimately splits identity and storage across sibling subdomains
+            // (e.g. id.inrupt.com vs storage.inrupt.com).
+            canonicalResource.startsWith(root) &&
+                    sameHost(resource.host, storage.host) &&
+                    sameSite(ownerUri.host, storage.host)
         }
     }
+
+    private fun sameHost(hostA: String?, hostB: String?): Boolean =
+        !hostA.isNullOrBlank() && !hostB.isNullOrBlank() &&
+                hostA.equals(hostB, ignoreCase = true)
 
     /**
      * Reads the WebID profile at [webIdUri] (caching the result, including a null) so the

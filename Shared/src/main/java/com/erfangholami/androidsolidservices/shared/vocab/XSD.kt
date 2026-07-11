@@ -58,4 +58,14 @@ public object XSD {
     //Binary
     public const val BASE64_BINARY: String = "${NAMESPACE}base64Binary"
     public const val HEX_BINARY: String = "${NAMESPACE}hexBinary"
+
+    /**
+     * Returns the XSD datatype matching an ISO-8601 lexical [value]: [DATE_TIME] when
+     * it carries a time component (`T` separator), [DATE] for a date-only value.
+     *
+     * Use this when persisting user-supplied ISO-8601 strings so date-only values are
+     * not mistyped as `xsd:dateTime` (an ill-typed literal some servers reject).
+     */
+    public fun dateTypeFor(value: String): String =
+        if (value.contains('T')) DATE_TIME else DATE
 }

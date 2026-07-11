@@ -2,6 +2,55 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+Correctness and data-integrity hardening on top of the in-progress 0.6.0 contacts/tickets work.
+**Source-compatible** — no public signatures change; behaviour becomes more correct.
+
+### Fixed
+
+- **Binary resources no longer corrupt over IPC**: `NonRDFResource` parcels its body as raw bytes
+  instead of round-tripping through a UTF-8 string, so images, PDFs, and `.pkpass` files survive AIDL
+  transport byte-for-byte. The ~1 MB binder limit is now documented on the type.
+- **Binary reads carry their metadata**: `SolidResourceManager.read(...)` on a non-RDF resource now
+  returns the server's response headers (ETag, `Content-Length`, `WAC-Allow`, …) instead of empty
+  metadata, so conditional requests and size/last-modified are available without a separate `HEAD`.
+- **Foreign RDF types are preserved**: the contacts/tickets/address-book/group codecs no longer strip
+  an `rdf:type` written by another application (e.g. `foaf:Person`) when re-serialising a document; a
+  new `RDFResource.ensureType(...)` appends the codec's own type without clobbering others.
+- **Safer contact/ticket deletes**: the pod resource is deleted first and the result is checked, then
+  the index row is removed — a failed delete now surfaces as a failure and leaves the index
+  consistent instead of reporting success and leaving a ghost row. `404`/`410` are treated as
+  already-deleted.
+- **Contact UID is preserved on update**: updating a contact without an explicit `uid` carries the
+  existing persistent identifier forward instead of erasing it.
+- **Valid `tel:` / `mailto:` IRIs**: phone numbers are stripped of RFC 3966 visual separators and
+  remaining illegal characters are percent-encoded, so ordinary formatted numbers no longer produce
+  malformed IRIs; a non-IRI contact UID is wrapped as `urn:uid:` and unwrapped on read.
+- **Correct date typing**: date-only values (birthday, anniversary, ticket/event dates) are typed
+  `xsd:date` rather than `xsd:dateTime`.
+- **URI encoding preserves reserved characters**: `encodeUri` / `encodeUriString` now rebuild from the
+  raw components and only percent-encode genuinely-illegal characters, so an identifier containing an
+  encoded `%2F` / `%23` is no longer corrupted; the operation is idempotent.
+- **Optimistic-concurrency cache correctness**: a `412 Precondition Failed` on write now invalidates
+  the response cache so a compare-and-swap retry reads fresh state; share-index patch retries add
+  randomised backoff, and a failed `updateShare` index write no longer revokes a receiver's existing
+  live access.
+- **Cancellation is honoured**: the response-cache single-flight follower and the contacts/tickets
+  result wrappers rethrow `CancellationException` instead of swallowing it (which previously let a
+  cancelled reader busy-spin).
+- **Notification impersonation gate hardened**: an inbound share offer is dropped unless its actor is
+  provably the resource owner; the bare "same host as the actor's WebID" fallback that let any user on
+  a shared multi-tenant pod forge an offer for another user's resource has been removed.
+- Tickets reject a blank title; blank seat parts are dropped; group documents are named by UUID rather
+  than a title-derived path (so a `#`/`/` in a group name can't corrupt the target URI). The
+  in-progress DPoP token-type check is now case-insensitive, matching the post-login path.
+
+### Internal
+
+- Library unit tests now run in CI (`.github/workflows/ci.yml`) and as a gate before release; added a
+  Robolectric + coroutines-test harness and ~40 new tests covering the fixes above.
+
 ## [0.5.1] — June 2026
 
 Added consumer and proguard rules. 
