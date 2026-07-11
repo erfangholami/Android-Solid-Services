@@ -38,6 +38,7 @@ vanniktechMavenPublish = "0.36.0"
 jjwt = "0.13.0"
 binaryCompatibilityValidator = "0.18.1"
 robolectric = "4.15.1"
+mockito = "5.14.2"
 
 [libraries]
 jetbrains-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
@@ -125,6 +126,8 @@ androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espres
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 jetbrains-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinXCoroutine" }
+okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 androidx-lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime", version.ref = "lifecycleRuntime" }
 
 [plugins]

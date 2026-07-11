@@ -1,0 +1,151 @@
+package com.erfangholami.androidsolidservices.api.access
+
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
+import com.erfangholami.androidsolidservices.shared.vocab.ACL
+import com.erfangholami.androidsolidservices.shared.vocab.ACP
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import java.net.URI
+
+/**
+ * Behavioural tests for [AcpBackend] — the Access Control Policy backend used by
+ * ESS/CSS pods in ACP mode. Grants are observed through [AcpBackend.listShares]
+ * (the round-trip a caller sees) and, where structure matters, by inspecting the
+ * ACR quads the backend PUT.
+ */
+class AcpBackendTest {
+
+    private val alice = "https://alice.pod/profile/card#me"
+    private val bob = "https://bob.pod/profile/card#me"
+    private val carol = "https://carol.pod/profile/card#me"
+    private val resource = URI.create("https://alice.pod/notes/n1")
+    private val container = URI.create("https://alice.pod/shared/")
+
+    private lateinit var pod: InMemoryAccessPod
+    private lateinit var backend: AcpBackend
+
+    @Before
+    fun setUp() {
+        pod = InMemoryAccessPod()
+        backend = AcpBackend(pod)
+    }
+
+    private fun grant(res: URI, mode: ShareMode, receiver: ShareReceiver, container: Boolean = false) =
+        runBlocking { backend.grant(alice, res, mode, receiver, isContainer = container) }
+
+    private fun shares(res: URI) = runBlocking { backend.listShares(alice, res) }
+
+    private fun acrQuadsOf(res: URI) = runBlocking {
+        pod.read(alice, pod.aclUriFor(res), SolidRDFResource::class.java).getOrThrow().getAllQuads()
+    }
+
+    private fun hasOwnerControl(res: URI): Boolean {
+        val quads = acrQuadsOf(res)
+        val ownerMatches = quads.any { it.predicate == ACP.AGENT && it.`object` == alice }
+        val controlAllowed = quads.any { it.predicate == ACP.ALLOW && it.`object` == ACL.CONTROL }
+        return ownerMatches && controlAllowed
+    }
+
+    /** The `acp:allow` modes of the policy whose matcher targets `acp:PublicAgent`. */
+    private fun publicPolicyModes(res: URI): Set<String> {
+        val quads = acrQuadsOf(res)
+        val publicMatchers = quads
+            .filter { it.predicate == ACP.AGENT && it.`object` == ACP.PUBLIC_AGENT }
+            .map { it.subject }
+            .toSet()
+        val policies = quads
+            .filter { it.predicate == ACP.ALL_OF && it.`object` in publicMatchers }
+            .map { it.subject }
+            .toSet()
+        return quads
+            .filter { it.subject in policies && it.predicate == ACP.ALLOW }
+            .map { it.`object` }
+            .toSet()
+    }
+
+    @Test
+    fun `grant Edit surfaces as a single Edit row for the receiver`() {
+        grant(resource, ShareMode.WRITE, ShareReceiver.WebIdReceiver(bob))
+
+        val list = shares(resource)
+        assertEquals(1, list.size)
+        assertEquals(ShareMode.WRITE, list.single().mode)
+        assertEquals(ShareReceiver.WebIdReceiver(bob), list.single().receiver)
+        assertTrue("owner self-control policy must be present", hasOwnerControl(resource))
+    }
+
+    @Test
+    fun `container grant adds acp memberAccessControl for inheritance`() {
+        grant(container, ShareMode.READ, ShareReceiver.WebIdReceiver(bob), container = true)
+        assertTrue(
+            "a container grant must mirror accessControl as memberAccessControl",
+            acrQuadsOf(container).any { it.predicate == ACP.MEMBER_ACCESS_CONTROL },
+        )
+    }
+
+    @Test
+    fun `append-only grant with implied modes off allows only Append`() {
+        runBlocking {
+            backend.grant(
+                alice, container, ShareMode.APPEND, ShareReceiver.Public,
+                isContainer = true, includeImpliedModes = false,
+            )
+        }
+        val publicShare = shares(container).single { it.receiver == ShareReceiver.Public }
+        assertEquals(ShareMode.APPEND, publicShare.mode)
+        assertEquals(
+            "the public policy must allow only Append, with no implied Read",
+            setOf(ACL.APPEND),
+            publicPolicyModes(container),
+        )
+    }
+
+    @Test
+    fun `public grant round-trips as the Public receiver`() {
+        grant(resource, ShareMode.READ, ShareReceiver.Public)
+        assertEquals(ShareReceiver.Public, shares(resource).single().receiver)
+    }
+
+    @Test
+    fun `re-granting a receiver replaces their policy without duplicate rows`() {
+        grant(resource, ShareMode.READ, ShareReceiver.WebIdReceiver(bob))
+        grant(resource, ShareMode.WRITE, ShareReceiver.WebIdReceiver(bob))
+
+        val list = shares(resource)
+        assertEquals(1, list.size)
+        assertEquals(ShareMode.WRITE, list.single().mode)
+    }
+
+    @Test
+    fun `two receivers each get their own policy`() {
+        grant(resource, ShareMode.READ, ShareReceiver.WebIdReceiver(bob))
+        grant(resource, ShareMode.WRITE, ShareReceiver.WebIdReceiver(carol))
+
+        val byReceiver = shares(resource).associate { it.receiver to it.mode }
+        assertEquals(ShareMode.READ, byReceiver[ShareReceiver.WebIdReceiver(bob)])
+        assertEquals(ShareMode.WRITE, byReceiver[ShareReceiver.WebIdReceiver(carol)])
+    }
+
+    @Test
+    fun `revoke removes the receiver policy but keeps owner control`() {
+        grant(resource, ShareMode.READ, ShareReceiver.WebIdReceiver(bob))
+        runBlocking { backend.revoke(alice, resource, ShareReceiver.WebIdReceiver(bob), isContainer = false) }
+
+        assertTrue(shares(resource).isEmpty())
+        assertTrue("revoke must not strip the owner's own control", hasOwnerControl(resource))
+    }
+
+    @Test
+    fun `revoking one of two receivers leaves the other intact`() {
+        grant(resource, ShareMode.READ, ShareReceiver.WebIdReceiver(bob))
+        grant(resource, ShareMode.WRITE, ShareReceiver.WebIdReceiver(carol))
+        runBlocking { backend.revoke(alice, resource, ShareReceiver.WebIdReceiver(bob), isContainer = false) }
+
+        assertEquals(ShareReceiver.WebIdReceiver(carol), shares(resource).single().receiver)
+    }
+}

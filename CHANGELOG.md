@@ -50,6 +50,14 @@ Correctness and data-integrity hardening on top of the in-progress 0.6.0 contact
 
 - Library unit tests now run in CI (`.github/workflows/ci.yml`) and as a gate before release; added a
   Robolectric + coroutines-test harness and ~40 new tests covering the fixes above.
+- **Test safety net for the untested core** — added ~40 more tests pinning the behaviour of the code
+  that grants access and moves bytes, all of which previously had zero coverage: `WacBackend` and
+  `AcpBackend` grant/revoke/list matrices (implied modes, owner re-assertion, append-only, container
+  inheritance, 412 retry) against an in-memory ACL/ACR pod that round-trips through the N-Triples
+  codec; `SolidHttpClient` over a real `MockWebServer` (DPoP-nonce retry, expired-token
+  force-refresh, conditional-write status, redirects, header propagation); the `createShare` index
+  write/rollback contract; the `ShareMode`/collapse logic; and the inbox access-request gate. Adds
+  `mockwebserver` + `mockito-core` test dependencies.
 
 ## [0.5.1] — June 2026
 
