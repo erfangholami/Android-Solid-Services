@@ -13,7 +13,6 @@ import com.erfangholami.androidsolidservices.api.exceptions.toSolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.CancellationException
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrant
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrantDirection
@@ -36,13 +35,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.net.URI
 import java.time.Instant
@@ -50,14 +42,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.concurrent.ConcurrentHashMap
 
 internal class SharingManagerImplementation : SharingManager {
 
     companion object {
         private const val SHARING_LOG_TAG = "SharingManager"
-
-        private const val MAX_CONCURRENT_NODE_READS = 8
 
         @Volatile
         private var INSTANCE: SharingManager? = null
@@ -92,8 +81,8 @@ internal class SharingManagerImplementation : SharingManager {
     private val helper: SharingManagerHelper
     private val notifications: NotificationsManager
     private val saiReader: SaiAccessGrantReader
-
-    private val receivedIndexLocks = ConcurrentHashMap<String, Mutex>()
+    private val receivedEngine: ReceivedSharesEngine
+    private val scanner: PodShareScanner
 
     private constructor(resourceManager: SolidResourceManager, profile: SharingProfile) {
         this.rm = resourceManager
@@ -101,10 +90,9 @@ internal class SharingManagerImplementation : SharingManager {
         this.helper = SharingManagerHelper.getInstance(rm, profile)
         this.notifications = NotificationsManager.getInstance(rm)
         this.saiReader = SaiAccessGrantReader(rm)
+        this.receivedEngine = ReceivedSharesEngine(rm, helper)
+        this.scanner = PodShareScanner(rm, helper, profile)
     }
-
-    private fun receivedIndexLock(webId: String): Mutex =
-        receivedIndexLocks.computeIfAbsent(webId) { Mutex() }
 
     override suspend fun getStoredGivenShares(
         webId: String,
@@ -187,7 +175,7 @@ internal class SharingManagerImplementation : SharingManager {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
 
-        val scan = scanPod(webId, podRoot)
+        val scan = scanner.scanPod(webId, podRoot)
         if (!scan.complete) {
             Log.w(
                 SHARING_LOG_TAG,
@@ -207,7 +195,7 @@ internal class SharingManagerImplementation : SharingManager {
             // Observed rows are re-asserted from the live ACL below; excluded rows
             // are dropped outright (and never re-added). Anything else — an
             // unreadable or unreached resource — keeps its row.
-            val prune = resourceUri in scan.observedResources || isExcludedFromScan(resourceUri)
+            val prune = resourceUri in scan.observedResources || scanner.isExcludedFromScan(resourceUri)
             if (!prune) return@forEach
             val receiver = previous.first {
                 it.receiver.toRdfSubject() == pair.first && it.resourceUri == resourceUri
@@ -239,127 +227,6 @@ internal class SharingManagerImplementation : SharingManager {
         resourceUri: String,
     ): SolidResult<Unit> = wrap {
         helper.makeOwnerOnly(webId, encodeUriString(resourceUri))
-    }
-
-    private data class NodeObservation(
-        /** Share observations read from this node's effective ACL. */
-        val shares: List<GivenShare>,
-        /** Child URIs to enqueue as the next BFS frontier (empty for non-containers). */
-        val children: List<URI>,
-        /**
-         * `true` if this node's effective ACL was read authoritatively (a 2xx
-         * ACL, or a positive 404/410 meaning "no own ACL"). Only such resources
-         * are eligible for index pruning; a node we couldn't read stays `false`
-         * so its stored index rows are preserved. A successful ACL read counts
-         * as observed even if a subsequent container listing fails.
-         */
-        val observed: Boolean,
-        /** `false` if any part of this node's observation was incomplete. */
-        val complete: Boolean,
-    )
-
-    private data class PodScan(
-        /** Every share observed across the entire tree. */
-        val shares: List<GivenShare>,
-        /**
-         * URIs whose effective ACL was read authoritatively. Only these are
-         * reconciled against the stored index; unread resources keep their rows.
-         */
-        val observedResources: Set<String>,
-        /**
-         * `true` only if the entire tree was fully observed. A single unreadable
-         * branch flips it to `false`, allowing [rebuildGivenIndex] to log the gap.
-         */
-        val complete: Boolean,
-    )
-
-    /**
-     * Whether [resourceUri] matches one of the active profile's excluded scan
-     * paths (the engine's own bookkeeping, the inbox, the public profile
-     * document). Drives both halves of the exclusion: the walk never descends
-     * into such a resource, and a rebuild prunes any index row already stored for
-     * one instead of treating it as a user-managed share.
-     */
-    private fun isExcludedFromScan(resourceUri: String): Boolean =
-        profile.storageLayout.excludedScanPaths().any { resourceUri.contains(it) }
-
-    private suspend fun scanPod(webId: String, root: URI): PodScan =
-        scanFrontier(webId, listOf(root), Semaphore(MAX_CONCURRENT_NODE_READS))
-
-    private suspend fun scanFrontier(
-        webId: String,
-        frontier: List<URI>,
-        gate: Semaphore,
-    ): PodScan {
-        if (frontier.isEmpty()) return PodScan(emptyList(), emptySet(), complete = true)
-
-        val observations = coroutineScope {
-            frontier.map { node ->
-                async { gate.withPermit { visitNode(webId, node) } }
-            }.awaitAll()
-        }
-
-        val observedHere = frontier.zip(observations)
-            .filter { (_, obs) -> obs.observed }
-            .map { (node, _) -> node.toString() }
-            .toSet()
-
-        val deeper = scanFrontier(webId, observations.flatMap { it.children }, gate)
-        return PodScan(
-            shares = observations.flatMap { it.shares } + deeper.shares,
-            observedResources = observedHere + deeper.observedResources,
-            complete = observations.all { it.complete } && deeper.complete,
-        )
-    }
-
-    private suspend fun visitNode(webId: String, node: URI): NodeObservation {
-        val nodeStr = node.toString()
-        if (isExcludedFromScan(nodeStr)) {
-            return NodeObservation(emptyList(), emptyList(), observed = false, complete = true)
-        }
-
-        var complete = true
-        var observed = true
-        val live = runCatching { helper.getSharesFromAcl(webId, node) }
-            .onFailure { t ->
-                Log.w(
-                    SHARING_LOG_TAG,
-                    "scanPod: ACL read failed for $nodeStr (e.g. 403 from a deleted/" +
-                            "locked ACL); skipping this resource and preserving its stored " +
-                            "index rows. The rest of the pod is still walked.",
-                    t,
-                )
-                complete = false
-                observed = false
-            }
-            .getOrDefault(emptyList())
-
-        if (!nodeStr.endsWith("/")) return NodeObservation(live, emptyList(), observed, complete)
-
-        val container = runCatching {
-            rm.read(webId, node, SolidContainer::class.java).getOrThrow()
-        }.onFailure { t ->
-            Log.w(
-                SHARING_LOG_TAG,
-                "scanPod: container listing failed for $nodeStr; its subtree is " +
-                        "unobserved (scan is partial), but the rest of the pod is still walked.",
-                t,
-            )
-        }.getOrNull() ?: return NodeObservation(live, emptyList(), observed, complete = false)
-
-        val children = container.getContained().mapNotNull { ref ->
-            runCatching { URI.create(ref.identifier) }
-                .onFailure { t ->
-                    Log.w(
-                        SHARING_LOG_TAG,
-                        "scanPod: malformed child URI '${ref.identifier}'; scan is partial.",
-                        t,
-                    )
-                    complete = false
-                }
-                .getOrNull()
-        }
-        return NodeObservation(live, children, observed, complete)
     }
 
     override suspend fun createShare(
@@ -544,188 +411,28 @@ internal class SharingManagerImplementation : SharingManager {
         }
     }
 
-    override suspend fun getStoredReceivedShares(
-        webId: String,
-    ): SolidResult<List<ReceivedShare>> = wrap {
-        val podRoot = helper.getPodRoot(webId)
-        helper.ensurePrivateSharesContainer(webId, podRoot)
-        helper.readReceivedShares(webId, podRoot)
-    }
+    override suspend fun getStoredReceivedShares(webId: String): SolidResult<List<ReceivedShare>> =
+        receivedEngine.getStoredReceivedShares(webId)
 
-    override suspend fun refreshReceivedShares(
-        webId: String,
-    ): SolidResult<List<ReceivedShare>> = wrap {
-        receivedIndexLock(webId).withLock {
-        val podRoot = helper.getPodRoot(webId)
-        helper.ensurePrivateSharesContainer(webId, podRoot)
-        val stored = helper.readReceivedShares(webId, podRoot)
-        val verified = mutableListOf<ReceivedShare>()
-        stored.forEach { share ->
-            val access = runCatching {
-                helper.probeReceivedAccess(webId, encodeUriString(share.resourceUri))
-            }.getOrElse { t ->
-                Log.w(
-                    SHARING_LOG_TAG,
-                    "refreshReceivedShares: probe threw for ${share.resourceUri}; " +
-                            "keeping stored row to avoid losing index entry on transient failure.",
-                    t,
-                )
-                ReceivedAccess.Unknown
-            }
-            when (access) {
-                is ReceivedAccess.Granted -> {
-                    val refreshed = ReceivedShare(
-                        ownerWebId = access.owner ?: share.ownerWebId,
-                        mode = access.mode,
-                        resourceUri = share.resourceUri,
-                        addedAt = share.addedAt,
-                    )
-                    verified += refreshed
-                    helper.replaceReceivedShare(webId, podRoot, refreshed)
-                }
-
-                ReceivedAccess.Denied -> {
-                    helper.removeReceivedShare(
-                        webId, podRoot, share.resourceUri, share.ownerWebId,
-                    )
-                }
-
-                ReceivedAccess.Unknown -> verified += share
-            }
-        }
-        verified
-        }
-    }
+    override suspend fun refreshReceivedShares(webId: String): SolidResult<List<ReceivedShare>> =
+        receivedEngine.refreshReceivedShares(webId)
 
     override suspend fun addReceivedShare(
         webId: String,
         resourceUri: String,
         ownerHint: String?,
-    ): SolidResult<ReceivedShare?> = wrap {
-        receivedIndexLock(webId).withLock {
-        val podRoot = helper.getPodRoot(webId)
-        helper.ensurePrivateSharesContainer(webId, podRoot)
-        val uri = encodeUriString(resourceUri)
-        val canonicalUri = uri.toString()
-        val hintedOwner = ownerHint?.takeIf { IriUtils.isValid(it) }
-        when (val access = helper.probeReceivedAccess(webId, uri)) {
-            is ReceivedAccess.Granted -> {
-                val ownerWebId = hintedOwner ?: access.owner ?: resolveOwner(webId, uri)
-                val share = ReceivedShare(
-                    ownerWebId = ownerWebId,
-                    mode = access.mode,
-                    resourceUri = canonicalUri,
-                    addedAt = nowIsoDateTime(),
-                )
-                helper.replaceReceivedShare(webId, podRoot, share)
-                share
-            }
-
-            ReceivedAccess.Denied -> {
-                val stored = helper.readReceivedShares(webId, podRoot)
-                val matching = stored.filter { it.resourceUri == canonicalUri }
-                if (matching.isEmpty()) {
-                    throw SharingException.AccessDenied(
-                        resourceUri = canonicalUri,
-                        ownerWebId = resolveOwner(webId, uri),
-                    )
-                }
-                matching.forEach { row ->
-                    helper.removeReceivedShare(
-                        webId, podRoot, row.resourceUri, row.ownerWebId,
-                    )
-                }
-                null
-            }
-
-            ReceivedAccess.Unknown -> {
-                helper.readReceivedShares(webId, podRoot)
-                    .firstOrNull { it.resourceUri == canonicalUri }
-                    ?: throw SharingException.AccessIndeterminate(canonicalUri)
-            }
-        }
-        }
-    }
+    ): SolidResult<ReceivedShare?> = receivedEngine.addReceivedShare(webId, resourceUri, ownerHint)
 
     override suspend fun removeReceivedShare(
         webId: String,
         resourceUri: String,
         ownerWebId: String,
-    ): SolidResult<Unit> = wrap {
-        receivedIndexLock(webId).withLock {
-            val podRoot = helper.getPodRoot(webId)
-            helper.ensurePrivateSharesContainer(webId, podRoot)
-            helper.removeReceivedShare(
-                webId, podRoot, encodeUriString(resourceUri).toString(), ownerWebId,
-            )
-        }
-    }
+    ): SolidResult<Unit> = receivedEngine.removeReceivedShare(webId, resourceUri, ownerWebId)
 
     override suspend fun syncReceivedShares(
         webId: String,
         notifications: List<ShareNotification>,
-    ): SolidResult<List<ReceivedShare>> = wrap {
-        receivedIndexLock(webId).withLock {
-            val podRoot = helper.getPodRoot(webId)
-            helper.ensurePrivateSharesContainer(webId, podRoot)
-            collapseToTerminalReceivedNotifications(notifications).forEach { n ->
-                applyReceivedShareNotification(webId, podRoot, n)
-            }
-            helper.readReceivedShares(webId, podRoot)
-        }
-    }
-
-    private suspend fun applyReceivedShareNotification(
-        webId: String,
-        podRoot: URI,
-        n: ShareNotification,
-    ) {
-        when (n.type) {
-            ShareNotificationType.OFFER,
-            ShareNotificationType.ACCEPTED,
-            ShareNotificationType.UPDATED,
-                -> runCatching {
-                val resourceUri = encodeUriString(n.resourceUri)
-                val access = helper.probeReceivedAccess(webId, resourceUri)
-                if (access is ReceivedAccess.Denied) return@runCatching
-                val granted = access as? ReceivedAccess.Granted
-                helper.replaceReceivedShare(
-                    webId, podRoot,
-                    ReceivedShare(
-                        ownerWebId = granted?.owner ?: n.ownerWebId,
-                        mode = n.mode ?: granted?.mode ?: ShareMode.READ,
-                        resourceUri = resourceUri.toString(),
-                        addedAt = n.publishedAt ?: nowIsoDateTime(),
-                    ),
-                )
-            }.onFailure { t ->
-                Log.w(
-                    SHARING_LOG_TAG,
-                    "syncReceivedShares: grant sync failed for ${n.resourceUri}; " +
-                            "received-index may be stale until next refreshReceivedShares.",
-                    t,
-                )
-            }
-
-            ShareNotificationType.UNDO -> runCatching {
-                helper.removeReceivedShare(
-                    webId, podRoot, encodeUriString(n.resourceUri).toString(), n.ownerWebId,
-                )
-            }.onFailure { t ->
-                Log.w(
-                    SHARING_LOG_TAG,
-                    "syncReceivedShares: UNDO sync failed for ${n.resourceUri}; " +
-                            "received-index may still list this share.",
-                    t,
-                )
-            }
-
-            ShareNotificationType.REJECT,
-            ShareNotificationType.DECISION_GRANTED,
-            ShareNotificationType.DECISION_REJECTED,
-                -> Unit
-        }
-    }
+    ): SolidResult<List<ReceivedShare>> = receivedEngine.syncReceivedShares(webId, notifications)
 
     override suspend fun getAccessGrants(
         webId: String,
@@ -955,55 +662,7 @@ internal class SharingManagerImplementation : SharingManager {
     override fun getShareBareUrl(resourceUri: String): String =
         profile.linkCodec.bareUrl(resourceUri)
 
-    private suspend fun <T> wrap(block: suspend () -> T): SolidResult<T> =
-        withContext(Dispatchers.IO) {
-            try {
-                SolidResult.Success(block())
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                SolidResult.Failure(e.toSolidError())
-            }
-        }
-
-    private suspend fun resolveOwner(webId: String, resourceUri: URI): String {
-        runCatching {
-            val rdf = rm.read(webId, resourceUri, SolidRDFResource::class.java).getOrThrow()
-            rdf.getAllQuads().firstOrNull { it.predicate == DC.CREATOR }?.`object`
-        }.onFailure { t ->
-            Log.w(
-                SHARING_LOG_TAG,
-                "resolveOwner: dcterms:creator lookup failed for $resourceUri; falling through.",
-                t,
-            )
-        }.getOrNull()?.takeIf { IriUtils.isValid(it) }?.let { return it }
-
-        runCatching {
-            val head = rm.head(webId, resourceUri)
-            val storageDescUri = (head as? SolidResult.Success)?.value
-                ?.storageDescriptionUri ?: return@runCatching null
-            val storageRdf = rm.read(webId, storageDescUri, SolidRDFResource::class.java)
-                .getOrThrow()
-            storageRdf.getAllQuads()
-                .firstOrNull { it.predicate == Solid.OWNER }
-                ?.`object`
-        }.onFailure { t ->
-            Log.w(
-                SHARING_LOG_TAG,
-                "resolveOwner: solid:owner lookup failed for $resourceUri; " +
-                        "falling back to scheme://authority guess.",
-                t,
-            )
-        }.getOrNull()?.takeIf { IriUtils.isValid(it) }?.let { return it }
-
-        val origin = "${resourceUri.scheme}://${resourceUri.authority}"
-        Log.w(
-            SHARING_LOG_TAG,
-            "resolveOwner: no WebID signal for $resourceUri; using pod origin '$origin' as a " +
-                    "display-only owner identifier (not a real WebID).",
-        )
-        return origin
-    }
+    private suspend fun <T> wrap(block: suspend () -> T): SolidResult<T> = wrapSharing(block)
 
     private suspend fun writeOwnerProvenance(webId: String, resourceUri: URI) {
         runCatching {
@@ -1024,6 +683,22 @@ internal class SharingManagerImplementation : SharingManager {
     }
 
 }
+
+/**
+ * Runs a sharing operation on [Dispatchers.IO], returning its value as [SolidResult.Success] or
+ * mapping a thrown exception to a typed [SolidResult.Failure] (cancellation propagates). Shared by
+ * the sharing facade and its engines so every operation has one failure contract.
+ */
+internal suspend fun <T> wrapSharing(block: suspend () -> T): SolidResult<T> =
+    withContext(Dispatchers.IO) {
+        try {
+            SolidResult.Success(block())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            SolidResult.Failure(e.toSolidError())
+        }
+    }
 
 private val PRESENCE_CHANGING_TYPES = setOf(
     ShareNotificationType.OFFER,
