@@ -2,10 +2,8 @@ package com.erfangholami.androidsolidservices.api.datamodule.typeindex
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
-import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
@@ -149,23 +147,16 @@ internal object TypeIndexResolver {
     }
 
     /**
-     * Ensures the parent container of [resourceUri] exists, creating it as an LDP
-     * BasicContainer when a HEAD reports it missing (404). Servers that do not
-     * auto-create intermediate containers on PUT would otherwise reject the type-index
-     * bootstrap write on a freshly provisioned pod.
+     * Ensures the parent container of [resourceUri] (and any missing ancestors) exists so a
+     * freshly provisioned pod accepts the type-index bootstrap write, delegating to
+     * [SolidResourceManager.ensureContainer].
      */
     private suspend fun ensureContainer(
         resourceManager: SolidResourceManager,
         ownerWebId: String,
         resourceUri: URI,
     ) {
-        val container = resourceUri.toString().substringBeforeLast('/') + "/"
-        val containerUri = URI.create(container)
-        val missing = resourceManager.head(ownerWebId, containerUri).let {
-            it is SolidResult.Failure && it.error.code == SolidErrorCode.NOT_FOUND
-        }
-        if (missing) {
-            resourceManager.create(ownerWebId, SolidContainer(containerUri)).getOrThrow()
-        }
+        val containerUri = URI.create(resourceUri.toString().substringBeforeLast('/') + "/")
+        resourceManager.ensureContainer(ownerWebId, containerUri).getOrThrow()
     }
 }

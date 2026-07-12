@@ -3,9 +3,12 @@ package com.erfangholami.androidsolidservices.api.resource
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidResourceManagerImplementation
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import java.net.URI
 
 /**
@@ -61,6 +64,89 @@ public interface SolidResourceManager {
         webid: String,
         uri: URI,
     ): SolidResult<SolidMetadata>
+
+    /**
+     * Reports whether a resource exists at [uri].
+     *
+     * A HEAD that resolves (2xx) → `Success(true)`; a `404 Not Found` → `Success(false)`.
+     * Any other outcome (403, auth, network, 5xx) is *indeterminate* and surfaces as
+     * [SolidResult.Failure] rather than being collapsed to `false`, so callers don't
+     * mistake "couldn't tell" for "absent".
+     *
+     * @param webid The WebID of the authenticated user making the request.
+     * @param uri   The URI to probe.
+     */
+    public suspend fun exists(webid: String, uri: URI): SolidResult<Boolean> =
+        when (val head = head(webid, uri)) {
+            is SolidResult.Success -> SolidResult.Success(true)
+            is SolidResult.Failure ->
+                if (head.error.code == SolidErrorCode.NOT_FOUND) SolidResult.Success(false)
+                else SolidResult.Failure(head.error)
+        }
+
+    /**
+     * Ensures the container at [containerUri] exists, creating it — and any missing
+     * ancestor containers, bottom-up — as LDP BasicContainers. Idempotent: a no-op when
+     * the container is already present. This covers servers that do not auto-create
+     * intermediate containers on `PUT`; the recursion stops at the first existing
+     * ancestor (the storage root always exists).
+     *
+     * [containerUri] should be a container URI (trailing `/`).
+     *
+     * @param webid The WebID of the authenticated user making the request.
+     * @param containerUri The container to ensure, including any missing parents.
+     */
+    public suspend fun ensureContainer(webid: String, containerUri: URI): SolidResult<Unit> {
+        when (val head = head(webid, containerUri)) {
+            is SolidResult.Success -> return SolidResult.Success(Unit)
+            is SolidResult.Failure ->
+                if (head.error.code != SolidErrorCode.NOT_FOUND) return SolidResult.Failure(head.error)
+        }
+        parentContainerOfUri(containerUri)?.let { parent ->
+            val parentResult = ensureContainer(webid, parent)
+            if (parentResult is SolidResult.Failure) return parentResult
+        }
+        return create(webid, SolidContainer(containerUri)).map { }
+    }
+
+    /**
+     * Reports the access the current user effectively holds on [uri], read from the
+     * `WAC-Allow` header of a HEAD.
+     *
+     * `Success(`[AccessProbe.Accessible]`)` when reachable (carrying the granted modes and
+     * `solid:owner`); `Success(`[AccessProbe.Denied]`)` for a definitive `403`/`404`; and
+     * [SolidResult.Failure] for an *indeterminate* outcome (401 refresh blip, 5xx, transport
+     * error) — a caller must not treat that as denial (e.g. keep, don't prune, stored rows).
+     * A reachable resource that advertises no `WAC-Allow` is reported as View access.
+     *
+     * @param webid The WebID of the authenticated user making the request.
+     * @param uri   The resource whose access to probe.
+     */
+    public suspend fun probeAccess(webid: String, uri: URI): SolidResult<AccessProbe> {
+        val metadata = when (val head = head(webid, uri)) {
+            is SolidResult.Success -> head.value
+            is SolidResult.Failure ->
+                return if (head.error.code == SolidErrorCode.FORBIDDEN ||
+                    head.error.code == SolidErrorCode.NOT_FOUND
+                ) {
+                    SolidResult.Success(AccessProbe.Denied)
+                } else {
+                    SolidResult.Failure(head.error)
+                }
+        }
+        val owner = metadata.ownerUri?.toString()
+        val wac = metadata.wacAllow
+            ?: return SolidResult.Success(AccessProbe.Accessible(setOf(ShareMode.READ), owner))
+        val combined = wac.userModes + wac.publicModes
+        val modes = buildSet {
+            if ("read" in combined) add(ShareMode.READ)
+            if ("append" in combined) add(ShareMode.APPEND)
+            if ("write" in combined) add(ShareMode.WRITE)
+        }
+        return SolidResult.Success(
+            if (modes.isEmpty()) AccessProbe.Denied else AccessProbe.Accessible(modes, owner),
+        )
+    }
 
     /**
      * Reads a resource from the pod.
@@ -322,4 +408,19 @@ public interface SolidResourceManager {
         containerUri: URI,
         resource: T,
     ): SolidResult<URI?>
+}
+
+/**
+ * The parent container URI of [uri] (with a trailing `/`), or `null` when [uri] is the
+ * storage root or has no parent path segment. Drives [SolidResourceManager.ensureContainer]'s
+ * bottom-up recursion.
+ */
+private fun parentContainerOfUri(uri: URI): URI? {
+    val text = uri.toString()
+    val schemeEnd = text.indexOf("://")
+    if (schemeEnd < 0) return null
+    val trimmed = text.trimEnd('/')
+    val lastSlash = trimmed.lastIndexOf('/')
+    if (lastSlash <= schemeEnd + 2) return null
+    return runCatching { URI.create(trimmed.substring(0, lastSlash + 1)) }.getOrNull()
 }

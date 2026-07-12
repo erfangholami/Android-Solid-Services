@@ -8,7 +8,6 @@ import com.erfangholami.androidsolidservices.api.resource.implementation.casUpda
 import com.erfangholami.androidsolidservices.api.sharing.implementation.nowIsoDateTime
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TICKETS_DIRECTORY_SUFFIX
@@ -234,12 +233,7 @@ internal class SolidTicketsDataModuleHelper {
             ?: error("Could not discover a storage for $ownerWebId")
 
     private suspend fun ensureContainer(ownerWebId: String, containerUri: URI) {
-        val missing = solidResourceManager.head(ownerWebId, containerUri).let {
-            it is SolidResult.Failure && it.error.code == SolidErrorCode.NOT_FOUND
-        }
-        if (missing) {
-            solidResourceManager.create(ownerWebId, SolidContainer(containerUri)).getOrThrow()
-        }
+        solidResourceManager.ensureContainer(ownerWebId, containerUri).getOrThrow()
     }
 
     private suspend fun deleteTolerant(ownerWebId: String, uri: URI) {

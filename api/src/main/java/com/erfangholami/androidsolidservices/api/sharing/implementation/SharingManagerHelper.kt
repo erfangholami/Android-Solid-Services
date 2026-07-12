@@ -6,6 +6,7 @@ import com.erfangholami.androidsolidservices.api.access.WacBackend
 import com.erfangholami.androidsolidservices.api.access.pickBackend
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
+import com.erfangholami.androidsolidservices.api.resource.AccessProbe
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
@@ -13,7 +14,6 @@ import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.api.sharing.SharingProfile
 import com.erfangholami.androidsolidservices.api.sharing.SolidShareProfile
@@ -158,12 +158,7 @@ internal class SharingManagerHelper {
     }
 
     private suspend fun ensureContainer(webId: String, containerUri: URI) {
-        when (val head = rm.head(webId, containerUri)) {
-            is SolidResult.Success -> return
-            is SolidResult.Failure ->
-                if (!head.error.isMissing()) throw head.error.asException()
-        }
-        rm.create(webId, SolidContainer(containerUri)).getOrThrow()
+        rm.ensureContainer(webId, containerUri).getOrThrow()
     }
 
     private suspend fun ensureEmptyRdf(webId: String, uri: URI) {
@@ -584,25 +579,13 @@ internal class SharingManagerHelper {
     suspend fun probeReceivedAccess(
         webId: String,
         resourceUri: URI,
-    ): ReceivedAccess {
-        val metadata = when (val head = rm.head(webId, resourceUri)) {
-            is SolidResult.Success -> head.value
-            is SolidResult.Failure ->
-                return if (head.error.code == SolidErrorCode.FORBIDDEN || head.error.isMissing()) {
-                    ReceivedAccess.Denied
-                } else {
-                    ReceivedAccess.Unknown
-                }
-        }
-        val owner = metadata.ownerUri?.toString()
-        val wac = metadata.wacAllow
-            ?: return ReceivedAccess.Granted(ShareMode.READ, owner)
-        val combined = wac.userModes + wac.publicModes
-        return when {
-            combined.contains("write") -> ReceivedAccess.Granted(ShareMode.WRITE, owner)
-            combined.contains("append") -> ReceivedAccess.Granted(ShareMode.APPEND, owner)
-            combined.contains("read") -> ReceivedAccess.Granted(ShareMode.READ, owner)
-            else -> ReceivedAccess.Denied
+    ): ReceivedAccess = when (val probe = rm.probeAccess(webId, resourceUri)) {
+        is SolidResult.Failure -> ReceivedAccess.Unknown
+        is SolidResult.Success -> when (val access = probe.value) {
+            is AccessProbe.Accessible ->
+                ReceivedAccess.Granted(ShareMode.strongest(access.modes) ?: ShareMode.READ, access.ownerWebId)
+
+            AccessProbe.Denied -> ReceivedAccess.Denied
         }
     }
 }

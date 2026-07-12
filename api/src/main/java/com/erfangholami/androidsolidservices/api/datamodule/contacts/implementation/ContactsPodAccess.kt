@@ -3,7 +3,6 @@ package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementa
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.AddressBookRDF
@@ -62,31 +61,11 @@ internal class ContactsPodAccess(
         solidResourceManager.read(ownerWebId, uri, GroupsIndexRDF::class.java).dataOrNullIfMissing()
 
     /**
-     * Ensures the container at [containerUri] and its whole parent chain exist, creating each
-     * missing level as an LDP BasicContainer (bottom stops as soon as a HEAD reports an existing
-     * ancestor — the pod storage root always exists). Needed for pods whose server does not
-     * auto-create intermediate containers on PUT. No-op when [containerUri] already exists; other
-     * HEAD errors are ignored so the subsequent write surfaces the real failure.
+     * Ensures the container at [containerUri] and its whole parent chain exist (delegates to
+     * [SolidResourceManager.ensureContainer]). No-op when it already exists.
      */
     suspend fun ensureContainer(ownerWebId: String, containerUri: URI) {
-        val missing = solidResourceManager.head(ownerWebId, containerUri).let {
-            it is SolidResult.Failure && it.error.code == SolidErrorCode.NOT_FOUND
-        }
-        if (!missing) return
-        parentContainer(containerUri)?.let { ensureContainer(ownerWebId, it) }
-        solidResourceManager.create(ownerWebId, SolidContainer(containerUri)).getOrThrow()
-    }
-
-    private fun parentContainer(containerUri: URI): URI? {
-        val text = containerUri.toString()
-        val schemeIdx = text.indexOf("://")
-        if (schemeIdx < 0) return null
-        val firstPathSlash = text.indexOf('/', schemeIdx + 3)
-        if (firstPathSlash < 0) return null
-        val trimmed = text.trimEnd('/')
-        val lastSlash = trimmed.lastIndexOf('/')
-        if (lastSlash <= firstPathSlash) return null
-        return URI.create(trimmed.substring(0, lastSlash + 1))
+        solidResourceManager.ensureContainer(ownerWebId, containerUri).getOrThrow()
     }
 
     suspend fun contact(ownerWebId: String, uri: URI): ContactRDF =
