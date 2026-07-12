@@ -64,7 +64,7 @@ public open class RDFResource : Resource {
     private val contentType: String
     protected var quads: MutableList<RdfQuad>
     protected val itselfSubject: String
-    protected val contextDocument: JsonDocument? = JsonDocument.of(
+    private val contextDocument: JsonDocument? = JsonDocument.of(
         MediaType.JSON,
         JsonProvider.provider().createObjectBuilder().apply {
             add("rdf", RDF.NAMESPACE)

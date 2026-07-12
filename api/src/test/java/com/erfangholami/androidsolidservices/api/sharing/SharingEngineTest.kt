@@ -24,7 +24,7 @@ import java.net.URI
  * access the index simply failed to record.
  *
  * The engine's three collaborators are process-global singletons, reset here
- * via reflection so the test's in-memory pod is used.
+ * via their `resetForTest` seam so the test's in-memory pod is used.
  */
 class SharingEngineTest {
 
@@ -37,13 +37,9 @@ class SharingEngineTest {
 
     @Before
     fun setUp() {
-        listOf(
-            SharingManagerImplementation::class.java,
-            SharingManagerHelper::class.java,
-            NotificationsManagerImplementation::class.java,
-        ).forEach { cls ->
-            cls.getDeclaredField("INSTANCE").apply { isAccessible = true; set(null, null) }
-        }
+        SharingManagerImplementation.resetForTest()
+        SharingManagerHelper.resetForTest()
+        NotificationsManagerImplementation.resetForTest()
         pod = InMemorySharingPod(alice, podRoot)
     }
 

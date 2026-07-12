@@ -28,31 +28,47 @@ internal class NotificationTransportImplementation private constructor(
     private val wsClient: WebSocketChannel2023Client? =
         auth?.let { WebSocketChannel2023Client(it, ioDispatcher) }
 
+    /** `true` when this instance can authenticate (built from an [Authenticator]) — needed for [subscribe]. */
+    internal val hasAuth: Boolean get() = wsClient != null
+
     companion object {
         private const val SLUG_HEADER = "Slug"
 
         @Volatile
-        private var INSTANCE: NotificationTransport? = null
+        private var INSTANCE: NotificationTransportImplementation? = null
 
-        fun getInstance(authenticator: Authenticator): NotificationTransport =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: create(
+        /**
+         * The authenticated instance always wins: if the cached singleton was built without auth
+         * (via the [SolidResourceManager] path, e.g. in a test), it is replaced with an
+         * auth-capable one rather than returned — otherwise a later `getInstance(authenticator)`
+         * would silently yield an instance whose [subscribe] can never negotiate a channel.
+         */
+        fun getInstance(authenticator: Authenticator): NotificationTransport {
+            INSTANCE?.takeIf { it.hasAuth }?.let { return it }
+            return synchronized(this) {
+                INSTANCE?.takeIf { it.hasAuth } ?: create(
                     SolidResourceManager.getInstance(authenticator),
                     auth = authenticator.asSession(),
                 ).also { INSTANCE = it }
             }
+        }
 
         fun getInstance(resourceManager: SolidResourceManager): NotificationTransport =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: create(resourceManager).also { INSTANCE = it }
             }
 
+        /** Clears the process-global singleton so a test gets a fresh, isolated instance. */
+        internal fun resetForTest() {
+            INSTANCE = null
+        }
+
         fun create(
             resourceManager: SolidResourceManager,
             discovery: InboxDiscovery = InboxDiscovery(resourceManager),
             ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
             auth: AuthSession? = null,
-        ): NotificationTransport =
+        ): NotificationTransportImplementation =
             NotificationTransportImplementation(resourceManager, discovery, ioDispatcher, auth)
     }
 

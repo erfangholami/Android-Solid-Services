@@ -39,6 +39,11 @@ internal class NotificationsManagerImplementation private constructor(
         @Volatile
         private var INSTANCE: NotificationsManager? = null
 
+        /** Clears the process-global singleton so a test gets a fresh, isolated instance. */
+        internal fun resetForTest() {
+            INSTANCE = null
+        }
+
         fun getInstance(
             authenticator: Authenticator,
             profile: ShareNotificationProfile = SolidShareNotificationProfile,
