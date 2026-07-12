@@ -100,6 +100,7 @@ internal class InMemoryAccessPod : SolidResourceManager {
         webid: String,
         newResource: T,
         ifMatch: String?,
+        ifUnmodifiedSince: String?,
     ): SolidResult<T> = notImplemented()
 
     override suspend fun patch(
@@ -116,8 +117,11 @@ internal class InMemoryAccessPod : SolidResourceManager {
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
-    override suspend fun delete(webid: String, resourceUri: URI): SolidResult<Boolean> =
-        notImplemented()
+    override suspend fun delete(
+        webid: String,
+        resourceUri: URI,
+        ifMatch: String?,
+    ): SolidResult<Boolean> = notImplemented()
 
     override suspend fun <T : Resource> delete(webid: String, resource: T): SolidResult<T> =
         notImplemented()

@@ -2,6 +2,7 @@ package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementa
 
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
@@ -110,20 +111,79 @@ internal class ContactsPodAccess(
         contactUri: String,
         newName: String,
     ) {
-        val addressBookRDF = addressBook(ownerWebId, URI.create(addressBookUri))
-        val peopleIndexRDF =
-            peopleIndex(ownerWebId, URI.create(addressBookRDF.getNameEmailIndex()))
-        if (peopleIndexRDF.updateContactName(contactUri, newName)) {
-            solidResourceManager.update(ownerWebId, peopleIndexRDF).getOrThrow()
+        updatePeopleIndex(ownerWebId, addressBookUri) {
+            it.updateContactName(contactUri, newName)
         }
-        val groupsIndexRDF =
-            groupsIndex(ownerWebId, URI.create(addressBookRDF.getGroupsIndex()))
+        val groupsIndexRDF = groupsIndex(
+            ownerWebId,
+            URI.create(addressBook(ownerWebId, URI.create(addressBookUri)).getGroupsIndex()),
+        )
         groupsIndexRDF.getGroups(addressBookUri).forEach { groupSummary ->
-            val groupRdf = group(ownerWebId, URI.create(groupSummary.uri))
-            if (groupRdf.updateMemberName(contactUri, newName)) {
-                solidResourceManager.update(ownerWebId, groupRdf).getOrThrow()
-            }
+            val groupUri = URI.create(groupSummary.uri)
+            solidResourceManager.casUpdate(
+                ownerWebId,
+                read = { solidResourceManager.read(ownerWebId, groupUri, GroupRDF::class.java) },
+                mutate = { it.updateMemberName(contactUri, newName) },
+            ).getOrThrow()
         }
+    }
+
+    /**
+     * Compare-and-swap read-modify-write of the address book's people (name-email)
+     * index: [mutate] the fresh index in place (return `false` to skip a no-op write),
+     * with `If-Match` + retry so a concurrent contact add/remove can't be lost.
+     */
+    suspend fun updatePeopleIndex(
+        ownerWebId: String,
+        addressBookUri: String,
+        mutate: (NameEmailIndexRDF) -> Boolean,
+    ) {
+        val peopleUri = URI.create(
+            addressBook(ownerWebId, URI.create(addressBookUri)).getNameEmailIndex(),
+        )
+        solidResourceManager.casUpdate(
+            ownerWebId,
+            read = { solidResourceManager.read(ownerWebId, peopleUri, NameEmailIndexRDF::class.java) },
+            mutate = mutate,
+        ).getOrThrow()
+    }
+
+    /**
+     * Compare-and-swap read-modify-write of the address book's groups index:
+     * [mutate] the fresh index in place (return `false` to skip a no-op write),
+     * with `If-Match` + retry so a concurrent group add/remove can't be lost.
+     */
+    suspend fun updateGroupsIndex(
+        ownerWebId: String,
+        addressBookUri: String,
+        mutate: (GroupsIndexRDF) -> Boolean,
+    ) {
+        val groupsUri = URI.create(
+            addressBook(ownerWebId, URI.create(addressBookUri)).getGroupsIndex(),
+        )
+        solidResourceManager.casUpdate(
+            ownerWebId,
+            read = { solidResourceManager.read(ownerWebId, groupsUri, GroupsIndexRDF::class.java) },
+            mutate = mutate,
+        ).getOrThrow()
+    }
+
+    /**
+     * Compare-and-swap read-modify-write of a single group document: [mutate] the
+     * fresh group in place (return `false` to skip a no-op write), with `If-Match` +
+     * retry so a concurrent membership or title edit can't be lost.
+     */
+    suspend fun updateGroup(
+        ownerWebId: String,
+        groupUri: String,
+        mutate: (GroupRDF) -> Boolean,
+    ) {
+        val uri = URI.create(groupUri)
+        solidResourceManager.casUpdate(
+            ownerWebId,
+            read = { solidResourceManager.read(ownerWebId, uri, GroupRDF::class.java) },
+            mutate = mutate,
+        ).getOrThrow()
     }
 
     private fun <T> SolidResult<T>.dataOrNullIfMissing(): T? = when (this) {

@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.api.datamodule.tickets.implementat
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
 import com.erfangholami.androidsolidservices.api.sharing.implementation.nowIsoDateTime
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
@@ -121,9 +122,10 @@ internal class SolidTicketsDataModuleHelper {
 
         val created = solidResourceManager.create(ownerWebId, ticketRdf).getOrThrow()
 
-        val index = getIndex(ownerWebId, ticketsContainer)
-        index.addTicket(created)
-        solidResourceManager.update(ownerWebId, index).getOrThrow()
+        updateIndex(ownerWebId, ticketsContainer) {
+            it.addTicket(created)
+            true
+        }
         return created
     }
 
@@ -132,26 +134,22 @@ internal class SolidTicketsDataModuleHelper {
         ticketUri: URI,
         updated: NewTicket,
     ): TicketRDF {
-        val old = getTicket(ownerWebId, ticketUri)
-        val fresh = TicketRDF(
-            identifier = ticketUri,
-            contentType = "application/ld+json",
-            quads = null,
-            headers = null
-        ).apply {
-            applyNewTicket(this, updated)
-            setCreated(old.getCreated() ?: nowIsoDateTime())
-            setModified(nowIsoDateTime())
-            old.getArtifactUri()?.let { setArtifactUri(it) }
-        }
-        solidResourceManager.update(ownerWebId, fresh).getOrThrow()
+        val fresh = solidResourceManager.casUpdate(
+            ownerWebId,
+            read = { solidResourceManager.read(ownerWebId, ticketUri, TicketRDF::class.java) },
+            mutate = { ticketRdf ->
+                applyNewTicket(ticketRdf, updated)
+                if (ticketRdf.getCreated() == null) ticketRdf.setCreated(nowIsoDateTime())
+                ticketRdf.setModified(nowIsoDateTime())
+                true
+            },
+        ).getOrThrow()
 
         val ticketsContainer = containerOf(ticketUri.toString())
-        val index = getIndex(ownerWebId, ticketsContainer)
-        if (!index.updateTicket(fresh)) {
-            index.addTicket(fresh)
+        updateIndex(ownerWebId, ticketsContainer) {
+            if (!it.updateTicket(fresh)) it.addTicket(fresh)
+            true
         }
-        solidResourceManager.update(ownerWebId, index).getOrThrow()
         return fresh
     }
 
@@ -171,9 +169,8 @@ internal class SolidTicketsDataModuleHelper {
             }
         }
 
-        val index = getIndex(ownerWebId, ticketsContainer)
-        if (index.removeTicket(ticketUriString)) {
-            solidResourceManager.update(ownerWebId, index).getOrThrow()
+        updateIndex(ownerWebId, ticketsContainer) {
+            it.removeTicket(ticketUriString)
         }
         return old ?: TicketRDF(identifier = ticketUri).apply { setTitle("") }
     }
@@ -255,6 +252,24 @@ internal class SolidTicketsDataModuleHelper {
             ownerWebId,
             URI.create("${containerUri}${TICKETS_INDEX_FILE_NAME}"),
             TicketsIndexRDF::class.java
+        ).getOrThrow()
+    }
+
+    /**
+     * Compare-and-swap read-modify-write of a container's tickets index: [mutate] the
+     * fresh index in place (return `false` to skip a no-op write), with `If-Match` +
+     * retry so a concurrent ticket add/update/remove can't be lost.
+     */
+    private suspend fun updateIndex(
+        ownerWebId: String,
+        containerUri: String,
+        mutate: (TicketsIndexRDF) -> Boolean,
+    ) {
+        val indexUri = URI.create("${containerUri}${TICKETS_INDEX_FILE_NAME}")
+        solidResourceManager.casUpdate(
+            ownerWebId,
+            read = { solidResourceManager.read(ownerWebId, indexUri, TicketsIndexRDF::class.java) },
+            mutate = mutate,
         ).getOrThrow()
     }
 

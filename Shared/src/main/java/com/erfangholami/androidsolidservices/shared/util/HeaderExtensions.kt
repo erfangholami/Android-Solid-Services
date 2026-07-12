@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.shared.util
 
 import com.erfangholami.androidsolidservices.shared.model.access.WacAllow
+import com.erfangholami.androidsolidservices.shared.http.EntityTag
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.http.HTTPLinkRelation
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
@@ -118,11 +119,20 @@ public fun SolidHeaders.isStorage(): Boolean {
  * weak ETags for RDF resources; reporting `null` here makes those writes fall
  * back to unconditional, which is the correct behaviour for a weak validator.
  */
-public fun SolidHeaders.getETag(): String? {
-    val raw = get(HTTPHeaderName.ETAG)?.trim() ?: return null
-    if (raw.startsWith("W/", ignoreCase = true)) return null
-    return raw.removeSurrounding("\"")
-}
+public fun SolidHeaders.getETag(): String? =
+    getEntityTag()?.takeIf { !it.weak }?.value
+
+/**
+ * Returns the full [EntityTag] from the `ETag` response header — including a **weak**
+ * validator (`W/"..."`), unlike [getETag] which reports only strong tags. Returns
+ * `null` when the header is absent or blank.
+ *
+ * Use this when the strength matters: a strong tag drives an `If-Match` conditional
+ * write, while a weak tag (all Node Solid Server emits for RDF) can't satisfy
+ * `If-Match` and the caller should fall back to `If-Unmodified-Since` instead.
+ */
+public fun SolidHeaders.getEntityTag(): EntityTag? =
+    EntityTag.parse(get(HTTPHeaderName.ETAG))
 
 /**
  * Returns the `Last-Modified` header value, or `null` if absent.

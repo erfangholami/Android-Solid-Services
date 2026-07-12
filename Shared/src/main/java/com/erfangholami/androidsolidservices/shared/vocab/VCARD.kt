@@ -78,6 +78,7 @@ public object VCARD {
     public const val ANNIVERSARY: String = "${NAMESPACE}anniversary"
     public const val HAS_EMAIL: String = "${NAMESPACE}hasEmail"
     public const val HAS_TELEPHONE: String = "${NAMESPACE}hasTelephone"
+    public const val HAS_INSTANT_MESSAGE: String = "${NAMESPACE}hasInstantMessage"
     public const val ORGANIZATION_NAME: String = "${NAMESPACE}organization-name"
     public const val ROLE: String = "${NAMESPACE}role"
     public const val TITLE: String = "${NAMESPACE}title"

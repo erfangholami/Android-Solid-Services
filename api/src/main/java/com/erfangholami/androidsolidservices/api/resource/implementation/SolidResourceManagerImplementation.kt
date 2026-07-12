@@ -115,9 +115,15 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         webid: String,
         newResource: T,
         ifMatch: String?,
+        ifUnmodifiedSince: String?,
     ): SolidResult<T> = withContext(Dispatchers.IO) {
         try {
-            solidHttpClient.put(webid, newResource, ifMatch = ifMatch)
+            solidHttpClient.put(
+                webid,
+                newResource,
+                ifMatch = ifMatch,
+                ifUnmodifiedSince = ifUnmodifiedSince,
+            )
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
             SolidResult.Failure(SolidError.fromThrowable(e))
@@ -166,12 +172,13 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     override suspend fun delete(
         webid: String,
         resourceUri: URI,
+        ifMatch: String?,
     ): SolidResult<Boolean> = withContext(Dispatchers.IO) {
         try {
             if (resourceUri.toString().endsWith("/")) {
                 deleteRecursive(webid, resourceUri, Semaphore(MAX_CONCURRENT_DELETES))
             } else {
-                solidHttpClient.delete(webid, resourceUri)
+                solidHttpClient.delete(webid, resourceUri, ifMatch)
             }
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e

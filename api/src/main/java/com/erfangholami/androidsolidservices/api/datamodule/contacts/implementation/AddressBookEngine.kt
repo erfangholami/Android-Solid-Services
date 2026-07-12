@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation
 
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.AddressBookStore
+import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList
 import com.erfangholami.androidsolidservices.shared.model.contacts.CONTACTS_DIRECTORY_SUFFIX
@@ -64,11 +65,19 @@ internal class AddressBookEngine(
         addressBookUri: String,
         newName: String,
     ): SolidResult<AddressBook> = runResult {
-        val addressBookRdf = pod.addressBook(ownerWebId, URI.create(addressBookUri))
-        if (addressBookRdf.getTitle() != newName) {
-            addressBookRdf.setTitle(newName)
-            pod.solidResourceManager.update(ownerWebId, addressBookRdf).getOrThrow()
-        }
+        val uri = URI.create(addressBookUri)
+        pod.solidResourceManager.casUpdate(
+            ownerWebId,
+            read = { pod.solidResourceManager.read(ownerWebId, uri, AddressBookRDF::class.java) },
+            mutate = { book ->
+                if (book.getTitle() == newName) {
+                    false
+                } else {
+                    book.setTitle(newName)
+                    true
+                }
+            },
+        ).getOrThrow()
         readBook(ownerWebId, addressBookUri)
     }
 

@@ -41,6 +41,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         webid: String,
         newResource: T,
         ifMatch: String?,
+        ifUnmodifiedSince: String?,
     ): SolidResult<T> {
         put(newResource)
         return SolidResult.Success(newResource)
@@ -49,6 +50,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     override suspend fun delete(
         webid: String,
         resourceUri: URI,
+        ifMatch: String?,
     ): SolidResult<Boolean> {
         val uri = resourceUri.toString()
         if (uri in failDeletesFor) {

@@ -5,6 +5,8 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.AddressType
 import com.erfangholami.androidsolidservices.shared.model.contacts.EmailEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.EmailType
 import com.erfangholami.androidsolidservices.shared.model.contacts.Gender
+import com.erfangholami.androidsolidservices.shared.model.contacts.ImEntry
+import com.erfangholami.androidsolidservices.shared.model.contacts.ImType
 import com.erfangholami.androidsolidservices.shared.model.contacts.Name
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneType
@@ -42,6 +44,8 @@ class ContactRDFDataTest {
         phone("+31201234567", PhoneType.WORK)
         email("jane@example.com", EmailType.HOME)
         email("jane@work.example", EmailType.WORK)
+        impp("xmpp:jane@jabber.example", ImType.HOME)
+        impp("skype:jane.doe", ImType.WORK)
         address(AddressType.HOME) {
             street = "Kerkstraat 1"
             locality = "Amsterdam"
@@ -132,9 +136,58 @@ class ContactRDFDataTest {
         copy(
             phones = phones.sortedBy { it.number },
             emails = emails.sortedBy { it.address },
+            impps = impps.sortedBy { it.handle },
             addresses = addresses.sortedBy { it.street ?: "" },
             urls = urls.sortedBy { it.value },
         )
+
+    @Test
+    fun `instant-messaging handles round-trip with type and verbatim value`() {
+        val contact = ContactRDF(contactUri).apply {
+            setContactData(
+                contactData {
+                    fullName = "Jane"
+                    impp("xmpp:jane@jabber.example", ImType.HOME)
+                    impp("bare-handle-123", ImType.OTHER)
+                },
+            )
+        }
+        assertEquals(
+            listOf(
+                ImEntry("xmpp:jane@jabber.example", ImType.HOME),
+                ImEntry("bare-handle-123", ImType.OTHER),
+            ),
+            contact.toContactData().impps,
+        )
+        assertEquals(
+            2,
+            contact.getAllQuads().count { it.predicate == VCARD.HAS_INSTANT_MESSAGE },
+        )
+    }
+
+    @Test
+    fun `untyped legacy instant-message node reads as OTHER`() {
+        val self = contactUri.toString()
+        val quads = mutableListOf(
+            RdfQuad(self, VCARD.FN, "Legacy", XSD.STRING, null),
+            RdfQuad(self, VCARD.HAS_INSTANT_MESSAGE, "_:im0", null, null),
+            RdfQuad("_:im0", VCARD.VALUE, "xmpp:legacy@im.example", XSD.STRING, null),
+        )
+        val contact = ContactRDF(contactUri, quads = quads)
+        assertEquals(
+            listOf(ImEntry("xmpp:legacy@im.example", ImType.OTHER)),
+            contact.getImEntries(),
+        )
+    }
+
+    @Test
+    fun `setContactData clears stale instant-message nodes`() {
+        val contact = ContactRDF(contactUri).apply {
+            setContactData(contactData { fullName = "Jane"; impp("skype:old", ImType.WORK) })
+        }
+        contact.setContactData(contactData { fullName = "Jane" })
+        assertEquals(emptyList<ImEntry>(), contact.toContactData().impps)
+    }
 
     @Test
     fun `setContactData twice leaves no stale entry nodes`() {

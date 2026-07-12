@@ -34,11 +34,12 @@ internal class GroupEngine(
         }
         val created = pod.solidResourceManager.create(ownerWebId, groupRdf).getOrThrow()
 
-        val addressBookRdf = pod.addressBook(ownerWebId, URI.create(addressBookUri))
-        val groupsIndexRdf =
-            pod.groupsIndex(ownerWebId, URI.create(addressBookRdf.getGroupsIndex()))
-        groupsIndexRdf.addGroup(addressBookRdf.getIdentifier().toString(), created)
-        pod.solidResourceManager.update(ownerWebId, groupsIndexRdf).getOrThrow()
+        val bookIdentifier =
+            pod.addressBook(ownerWebId, URI.create(addressBookUri)).getIdentifier().toString()
+        pod.updateGroupsIndex(ownerWebId, addressBookUri) {
+            it.addGroup(bookIdentifier, created)
+            true
+        }
 
         contactUris.forEach { contactUri ->
             addMemberInternal(
@@ -62,12 +63,13 @@ internal class GroupEngine(
         addressBookUri: String,
         groupUri: String,
     ): SolidResult<FullGroup> = runResult {
-        val addressBookRdf = pod.addressBook(ownerWebId, URI.create(addressBookUri))
         val groupRdf = pod.group(ownerWebId, URI.create(groupUri))
-        val groupsIndexRdf =
-            pod.groupsIndex(ownerWebId, URI.create(addressBookRdf.getGroupsIndex()))
-        if (groupsIndexRdf.removeGroup(URI.create(groupUri))) {
-            pod.solidResourceManager.update(ownerWebId, groupsIndexRdf).getOrThrow()
+        var removed = false
+        pod.updateGroupsIndex(ownerWebId, addressBookUri) {
+            removed = it.removeGroup(URI.create(groupUri))
+            removed
+        }
+        if (removed) {
             pod.solidResourceManager.delete(ownerWebId, groupRdf).getOrThrow()
         }
         FullGroup.createFromRdf(groupRdf)
@@ -97,9 +99,10 @@ internal class GroupEngine(
         groupUri: String,
         contact: ContactRDF,
     ) {
-        val groupRdf = pod.group(ownerWebId, URI.create(groupUri))
-        groupRdf.addMember(contact)
-        pod.solidResourceManager.update(ownerWebId, groupRdf).getOrThrow()
+        pod.updateGroup(ownerWebId, groupUri) {
+            it.addMember(contact)
+            true
+        }
     }
 
     internal suspend fun removeMemberInternal(
@@ -107,9 +110,8 @@ internal class GroupEngine(
         groupUri: String,
         contactUri: String,
     ) {
-        val groupRdf = pod.group(ownerWebId, URI.create(groupUri))
-        if (groupRdf.removeMember(URI.create(contactUri))) {
-            pod.solidResourceManager.update(ownerWebId, groupRdf).getOrThrow()
+        pod.updateGroup(ownerWebId, groupUri) {
+            it.removeMember(URI.create(contactUri))
         }
     }
 }

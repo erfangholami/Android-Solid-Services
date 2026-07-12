@@ -120,6 +120,7 @@ internal class InMemorySharingPod(
         webid: String,
         newResource: T,
         ifMatch: String?,
+        ifUnmodifiedSince: String?,
     ): SolidResult<T> = SolidResult.Success(newResource)
 
     override suspend fun <T : Resource> readPublic(
@@ -136,8 +137,11 @@ internal class InMemorySharingPod(
         ifMatch: String?,
     ): SolidResult<Unit> = SolidResult.Success(Unit)
 
-    override suspend fun delete(webid: String, resourceUri: URI): SolidResult<Boolean> =
-        SolidResult.Success(true)
+    override suspend fun delete(
+        webid: String,
+        resourceUri: URI,
+        ifMatch: String?,
+    ): SolidResult<Boolean> = SolidResult.Success(true)
 
     override suspend fun <T : Resource> delete(webid: String, resource: T): SolidResult<T> =
         SolidResult.Success(resource)

@@ -108,6 +108,7 @@ internal class SolidHttpClient(
         webId: String,
         resource: T,
         ifMatch: String? = null,
+        ifUnmodifiedSince: String? = null,
         ifNoneMatchStar: Boolean = false,
     ): SolidResult<T> {
         return try {
@@ -126,6 +127,7 @@ internal class SolidHttpClient(
                 linkHeader = linkType,
                 body = bodyBytes,
                 ifMatch = ifMatch,
+                ifUnmodifiedSince = ifUnmodifiedSince,
                 ifNoneMatchStar = ifNoneMatchStar,
             )
             if (response.isSuccessful()) {
@@ -440,6 +442,7 @@ internal class SolidHttpClient(
         linkHeader: String? = null,
         body: ByteArray? = null,
         ifMatch: String? = null,
+        ifUnmodifiedSince: String? = null,
         ifNoneMatchStar: Boolean = false,
         additionalHeaders: Map<String, String> = emptyMap(),
     ): SolidRawResponse {
@@ -451,6 +454,9 @@ internal class SolidHttpClient(
                 putAll(buildAuthHeaders(webId, method, uri.toString()))
                 putAll(additionalHeaders)
                 if (ifMatch != null) put(HTTPHeaderName.IF_MATCH, if (ifMatch == "*") "*" else "\"$ifMatch\"")
+                if (ifMatch == null && ifUnmodifiedSince != null) {
+                    put(HTTPHeaderName.IF_UNMODIFIED_SINCE, ifUnmodifiedSince)
+                }
                 if (ifNoneMatchStar) put(HTTPHeaderName.IF_NONE_MATCH, "*")
             }
 

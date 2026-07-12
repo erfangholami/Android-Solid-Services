@@ -44,8 +44,11 @@ internal class FakeSolidResourceManager(
         additionalHeaders: Map<String, String>,
     ): SolidResult<URI?> = onPost(uri)
 
-    override suspend fun delete(webid: String, resourceUri: URI): SolidResult<Boolean> =
-        onDelete(resourceUri)
+    override suspend fun delete(
+        webid: String,
+        resourceUri: URI,
+        ifMatch: String?,
+    ): SolidResult<Boolean> = onDelete(resourceUri)
 
     override suspend fun <T : Resource> create(webid: String, resource: T): SolidResult<T> =
         notImplemented()
@@ -54,6 +57,7 @@ internal class FakeSolidResourceManager(
         webid: String,
         newResource: T,
         ifMatch: String?,
+        ifUnmodifiedSince: String?,
     ): SolidResult<T> = notImplemented()
 
     override suspend fun patch(

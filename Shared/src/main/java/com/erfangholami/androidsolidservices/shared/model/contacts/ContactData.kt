@@ -9,6 +9,8 @@ public enum class EmailType { HOME, WORK, OTHER }
 
 public enum class AddressType { HOME, WORK, OTHER }
 
+public enum class ImType { HOME, WORK, OTHER }
+
 /**
  * vCard 4.0 `GENDER` (W3C vCard ontology `vcard:hasGender`), mapped to the ontology's gender
  * classes: `vcard:Male`, `vcard:Female`, `vcard:Other`, `vcard:None`, `vcard:Unknown`.
@@ -47,6 +49,17 @@ public data class UrlEntry(
     val value: String,
 ) : Parcelable
 
+/**
+ * An instant-messaging handle (vCard `IMPP` / `vcard:hasInstantMessage`). [handle] is
+ * stored verbatim — a scheme-qualified URI (`xmpp:alice@example.com`) or a bare
+ * protocol handle — so it round-trips whatever a device or `.vcf` provides.
+ */
+@Parcelize
+public data class ImEntry(
+    val handle: String,
+    val type: ImType = ImType.OTHER,
+) : Parcelable
+
 @Parcelize
 public data class ContactData(
     val fullName: String? = null,
@@ -54,6 +67,7 @@ public data class ContactData(
     val nickname: String? = null,
     val phones: List<PhoneEntry> = emptyList(),
     val emails: List<EmailEntry> = emptyList(),
+    val impps: List<ImEntry> = emptyList(),
     val addresses: List<AddressEntry> = emptyList(),
     val birthday: String? = null,
     val anniversary: String? = null,
@@ -114,6 +128,7 @@ public class ContactDataBuilder internal constructor(seed: ContactData? = null) 
     private var structuredName: Name? = seed?.name
     private val phones: MutableList<PhoneEntry> = seed?.phones.orEmpty().toMutableList()
     private val emails: MutableList<EmailEntry> = seed?.emails.orEmpty().toMutableList()
+    private val impps: MutableList<ImEntry> = seed?.impps.orEmpty().toMutableList()
     private val addresses: MutableList<AddressEntry> = seed?.addresses.orEmpty().toMutableList()
     private val categories: MutableList<String> = seed?.categories.orEmpty().toMutableList()
     private val urls: MutableList<UrlEntry> = seed?.urls.orEmpty().toMutableList()
@@ -128,6 +143,10 @@ public class ContactDataBuilder internal constructor(seed: ContactData? = null) 
 
     public fun email(address: String, type: EmailType = EmailType.OTHER) {
         if (address.isNotBlank()) emails.add(EmailEntry(address.trim(), type))
+    }
+
+    public fun impp(handle: String, type: ImType = ImType.OTHER) {
+        if (handle.isNotBlank()) impps.add(ImEntry(handle.trim(), type))
     }
 
     public fun address(type: AddressType = AddressType.OTHER, block: AddressBuilder.() -> Unit) {
@@ -154,6 +173,7 @@ public class ContactDataBuilder internal constructor(seed: ContactData? = null) 
         nickname = nickname?.takeIf { it.isNotBlank() },
         phones = phones.toList(),
         emails = emails.toList(),
+        impps = impps.toList(),
         addresses = addresses.toList(),
         birthday = birthday?.takeIf { it.isNotBlank() },
         anniversary = anniversary?.takeIf { it.isNotBlank() },

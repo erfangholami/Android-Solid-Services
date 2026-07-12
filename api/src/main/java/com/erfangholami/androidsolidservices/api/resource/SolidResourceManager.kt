@@ -109,15 +109,23 @@ public interface SolidResourceManager {
      *
      * A 412 response is surfaced as-is on the result (no longer masked to 404).
      *
+     * [ifUnmodifiedSince] is a coarser fallback for servers that only emit **weak**
+     * ETags (e.g. Node Solid Server), where [ifMatch] can never match: pass the
+     * `Last-Modified` value from the read to send `If-Unmodified-Since`, giving
+     * one-second-granularity optimistic concurrency instead of none. It is applied
+     * only when [ifMatch] is `null`; a strong ETag always takes precedence.
+     *
      * @param webid    The WebID of the authenticated user making the request.
      * @param newResource The updated resource; its identifier determines the target URI.
      * @param ifMatch  See above. Defaults to `null` (unconditional PUT).
+     * @param ifUnmodifiedSince Optional `Last-Modified` value for a weak-ETag fallback; see above.
      * @return [SolidResult.Success] with the updated resource.
      */
     public suspend fun <T : Resource> update(
         webid: String,
         newResource: T,
         ifMatch: String? = null,
+        ifUnmodifiedSince: String? = null,
     ): SolidResult<T>
 
     /**
@@ -190,13 +198,21 @@ public interface SolidResourceManager {
      * When [resourceUri] ends with `/`, the target is treated as a container and all
      * contained resources are deleted recursively before the container itself is removed.
      *
+     * Pass [ifMatch] (an ETag from a previous [read] or [head]) for an optimistic-concurrency
+     * delete that fails with [SolidError.PreconditionFailed] (HTTP 412) if the resource changed
+     * since it was read — so a delete can't silently discard a concurrent edit. [ifMatch] is
+     * honoured only for a single (non-container) resource; a recursive container delete can't be
+     * performed atomically under one precondition, so it is ignored for container URIs.
+     *
      * @param webid The WebID of the authenticated user making the request.
      * @param resourceUri The URI of the resource or container to delete.
+     * @param ifMatch Optional ETag for a conditional delete of a single resource.
      * @return [SolidResult.Success] with `true` on success.
      */
     public suspend fun delete(
         webid: String,
         resourceUri: URI,
+        ifMatch: String? = null,
     ): SolidResult<Boolean>
 
     /**

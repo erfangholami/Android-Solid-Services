@@ -8,6 +8,8 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.Email
 import com.erfangholami.androidsolidservices.shared.model.contacts.EmailEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.EmailType
 import com.erfangholami.androidsolidservices.shared.model.contacts.Gender
+import com.erfangholami.androidsolidservices.shared.model.contacts.ImEntry
+import com.erfangholami.androidsolidservices.shared.model.contacts.ImType
 import com.erfangholami.androidsolidservices.shared.model.contacts.Name
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneNumber
@@ -393,6 +395,33 @@ public class ContactRDF : SolidRDFResource {
     }
 
     /**
+     * Returns all instant-messaging handles (`vcard:hasInstantMessage`) with their
+     * vCard classification. Untyped legacy nodes read as [ImType.OTHER].
+     */
+    public fun getImEntries(): List<ImEntry> =
+        entryNodes(VCARD.HAS_INSTANT_MESSAGE).mapNotNull { node ->
+            nodeValue(node)?.let { value -> ImEntry(value, imTypeOf(node)) }
+        }
+
+    /**
+     * Adds a typed `vcard:hasInstantMessage` entry on a counter-labelled blank node
+     * (`_:im{n}`). [ImType.OTHER] entries are written without a type triple. The handle
+     * is stored verbatim as an `xsd:string` value — instant-messaging identifiers span
+     * many schemes and bare forms, so it is kept exactly as provided. Does nothing and
+     * returns `false` when [handle] is blank or already present.
+     */
+    public fun addImpp(handle: String, type: ImType = ImType.OTHER): Boolean {
+        if (handle.isBlank()) return false
+        val value = handle.trim()
+        if (entryNodes(VCARD.HAS_INSTANT_MESSAGE).any { nodeValue(it) == value }) return false
+        val node = freshBlankNode("im")
+        addQuad(getIdentifier().toString(), VCARD.HAS_INSTANT_MESSAGE, node, maxNumber = Int.MAX_VALUE)
+        imTypeIri(type)?.let { addQuad(node, RDF.TYPE, it) }
+        addQuadLiteral(node, VCARD.VALUE, value, XSD.STRING)
+        return true
+    }
+
+    /**
      * Returns all postal addresses (`vcard:hasAddress`). Nodes missing the
      * `vcard:Address` class type still parse; entries with no address part are skipped.
      */
@@ -551,13 +580,14 @@ public class ContactRDF : SolidRDFResource {
 
     /**
      * Rewrites this contact's writable state from [data] with replace semantics: every
-     * multi-valued entry (phones, emails, addresses, URLs) and every optional literal is
-     * replaced by the snapshot's content; properties absent from [data] are removed.
-     * The photo link (`vcard:hasPhoto`) is left untouched.
+     * multi-valued entry (phones, emails, instant messages, addresses, URLs) and every
+     * optional literal is replaced by the snapshot's content; properties absent from
+     * [data] are removed. The photo link (`vcard:hasPhoto`) is left untouched.
      */
     public fun setContactData(data: ContactData) {
         clearEntryNodes(VCARD.HAS_TELEPHONE)
         clearEntryNodes(VCARD.HAS_EMAIL)
+        clearEntryNodes(VCARD.HAS_INSTANT_MESSAGE)
         clearEntryNodes(VCARD.HAS_ADDRESS)
         clearEntryNodes(VCARD.URL)
         data.effectiveFullName().takeIf { it.isNotBlank() }?.let { setFullName(it) }
@@ -566,6 +596,7 @@ public class ContactRDF : SolidRDFResource {
         setNickname(data.nickname)
         data.phones.forEach { addPhone(it.number, it.type) }
         data.emails.forEach { addEmail(it.address, it.type) }
+        data.impps.forEach { addImpp(it.handle, it.type) }
         data.addresses.forEach { addAddress(it) }
         setBirthday(data.birthday)
         setAnniversary(data.anniversary)
@@ -589,6 +620,7 @@ public class ContactRDF : SolidRDFResource {
         nickname = getNickname(),
         phones = getPhoneEntries(),
         emails = getEmailEntries(),
+        impps = getImEntries(),
         addresses = getAddresses(),
         birthday = getBirthday(),
         anniversary = getAnniversary(),
@@ -656,6 +688,21 @@ public class ContactRDF : SolidRDFResource {
         EmailType.HOME -> VCARD.HOME
         EmailType.WORK -> VCARD.WORK
         EmailType.OTHER -> null
+    }
+
+    private fun imTypeOf(node: String): ImType {
+        val types = nodeTypes(node)
+        return when {
+            VCARD.HOME in types -> ImType.HOME
+            VCARD.WORK in types -> ImType.WORK
+            else -> ImType.OTHER
+        }
+    }
+
+    private fun imTypeIri(type: ImType): String? = when (type) {
+        ImType.HOME -> VCARD.HOME
+        ImType.WORK -> VCARD.WORK
+        ImType.OTHER -> null
     }
 
     private fun addressTypeOf(node: String): AddressType {
