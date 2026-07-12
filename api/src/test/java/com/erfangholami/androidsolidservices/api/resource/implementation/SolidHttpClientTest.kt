@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
 import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.runBlocking
 import net.openid.appauth.TokenResponse
@@ -9,6 +10,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -164,7 +166,7 @@ class SolidHttpClientTest {
     }
 
     @Test
-    fun `a redirect is followed transparently`() {
+    fun `a same-origin redirect is followed and re-attaches credentials for the new location`() {
         server.enqueue(
             MockResponse().setResponseCode(307).addHeader("Location", server.url("/moved").toString()),
         )
@@ -174,6 +176,61 @@ class SolidHttpClientTest {
 
         assertTrue(result is SolidResult.Success)
         assertEquals(2, server.requestCount)
+        server.takeRequest()
+        val followed = server.takeRequest()
+        assertEquals("/moved", followed.path)
+        assertEquals("DELETE", followed.method)
+        assertEquals(
+            "credentials must be re-attached (and DPoP re-signed) on a same-origin hop",
+            "DPoP token-123", followed.getHeader("Authorization"),
+        )
+        assertEquals("proof-initial", followed.getHeader("DPoP"))
+    }
+
+    @Test
+    fun `a cross-origin redirect is followed without forwarding credentials`() {
+        val other = MockWebServer().apply { start() }
+        try {
+            server.enqueue(
+                MockResponse().setResponseCode(308).addHeader("Location", other.url("/r").toString()),
+            )
+            other.enqueue(MockResponse().setResponseCode(200))
+
+            val result = runBlocking { client.delete(webId, url("/r")) }
+
+            assertTrue(result is SolidResult.Success)
+            server.takeRequest()
+            val followed = other.takeRequest()
+            assertNull(
+                "a cross-origin hop must not forward the Authorization header",
+                followed.getHeader("Authorization"),
+            )
+            assertNull("nor the DPoP proof", followed.getHeader("DPoP"))
+        } finally {
+            other.shutdown()
+        }
+    }
+
+    @Test
+    fun `a 415 on a sparql-update PATCH falls back to a text-n3 PATCH`() {
+        server.enqueue(MockResponse().setResponseCode(415))
+        server.enqueue(MockResponse().setResponseCode(205))
+
+        val patch = N3Patch.build {
+            insert("https://alice.pod/r#it", "https://example.org/p", "https://example.org/o")
+        }
+        val result = runBlocking { client.patch(webId, url("/r"), patch) }
+
+        assertTrue(result is SolidResult.Success)
+        assertEquals(2, server.requestCount)
+        assertTrue(
+            "first attempt uses application/sparql-update",
+            server.takeRequest().getHeader("Content-Type").orEmpty().startsWith("application/sparql-update"),
+        )
+        assertTrue(
+            "the 415 retry falls back to text/n3",
+            server.takeRequest().getHeader("Content-Type").orEmpty().startsWith("text/n3"),
+        )
     }
 
     @Test

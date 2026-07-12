@@ -1,12 +1,15 @@
 package com.erfangholami.androidsolidservices.api.datamodule.typeindex
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import java.net.URI
 
 /**
@@ -39,10 +42,13 @@ internal object TypeIndexResolver {
             privateTypeIndexUri = extendedProfile.getPrivateTypeIndex()
 
             if (privateTypeIndexUri == null) {
-                extendedProfile.setPrivateTypeIndex(webIdString, webId.getStorages()[0].toString())
-                resourceManager.update(webIdString, extendedProfile).getOrThrow()
+                extendedProfile.setPrivateTypeIndex(webIdString, resolveStorage(resourceManager, webIdString, webId))
                 privateTypeIndexUri = extendedProfile.getPrivateTypeIndex()
                 val indexUri = requireNotNull(privateTypeIndexUri)
+                registerTypeIndexLink(
+                    resourceManager, webIdString, extendedProfile.getIdentifier(),
+                    Solid.PRIVATE_TYPE_INDEX, indexUri,
+                )
                 ensureContainer(resourceManager, webIdString, indexUri)
                 resourceManager.create(
                     webIdString,
@@ -81,10 +87,13 @@ internal object TypeIndexResolver {
             publicTypeIndexUri = extendedProfile.getPublicTypeIndex()
 
             if (publicTypeIndexUri == null) {
-                extendedProfile.setPublicTypeIndex(webIdString, webId.getStorages()[0].toString())
-                resourceManager.update(webIdString, extendedProfile).getOrThrow()
+                extendedProfile.setPublicTypeIndex(webIdString, resolveStorage(resourceManager, webIdString, webId))
                 publicTypeIndexUri = extendedProfile.getPublicTypeIndex()
                 val indexUri = requireNotNull(publicTypeIndexUri)
+                registerTypeIndexLink(
+                    resourceManager, webIdString, extendedProfile.getIdentifier(),
+                    Solid.PUBLIC_TYPE_INDEX, indexUri,
+                )
                 ensureContainer(resourceManager, webIdString, indexUri)
                 resourceManager.create(
                     webIdString,
@@ -103,6 +112,40 @@ internal object TypeIndexResolver {
             publicTypeIndexUri,
             PublicTypeIndex::class.java
         ).getOrThrow()
+    }
+
+    /**
+     * Resolves the storage root the type index is allocated under, preferring the
+     * profile's own `pim:storage` and falling back to [StorageDiscovery] (extended
+     * profiles + a walk-up HEAD probe). Fails with a clear message instead of the old
+     * `getStorages()[0]` `IndexOutOfBoundsException` when no storage can be found.
+     */
+    private suspend fun resolveStorage(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        profile: WebId,
+    ): String =
+        (profile.getStorages().firstOrNull()
+            ?: StorageDiscovery.discover(resourceManager, webIdString))?.toString()
+            ?: error("No pim:storage could be discovered for $webIdString")
+
+    /**
+     * Registers a type-index link on the profile via a targeted N3 PATCH that inserts
+     * only the single `solid:privateTypeIndex` / `solid:publicTypeIndex` triple, rather
+     * than a full-document PUT. A PUT would re-serialise and overwrite the whole profile
+     * — silently dropping any concurrent or server-managed triple it can't round-trip —
+     * and would need `acl:Write` on the entire document; the PATCH needs only to append
+     * one triple.
+     */
+    private suspend fun registerTypeIndexLink(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        profileDocUri: URI,
+        predicate: String,
+        indexUri: URI,
+    ) {
+        val patch = N3Patch.build { insert(webIdString, predicate, indexUri.toString()) }
+        resourceManager.patch(webIdString, profileDocUri, patch).getOrThrow()
     }
 
     /**

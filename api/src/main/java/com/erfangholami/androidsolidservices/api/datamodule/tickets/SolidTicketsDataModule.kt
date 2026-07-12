@@ -62,7 +62,8 @@ public interface SolidTicketsDataModule {
      * container, its index, and the type-index registration on first use.
      *
      * @param storage The pod storage (root) URL the tickets container is allocated
-     *   under when none is registered yet.
+     *   under when none is registered yet; may be omitted (`null`) to have it
+     *   discovered from the profile / container hierarchy.
      * @param artifact Optional original imported artifact (e.g. the `.pkpass`
      *   file bytes), stored as a sibling binary and linked via `solidshare:artifact`.
      * @param artifactContentType The media type of [artifact]; required when
@@ -74,7 +75,7 @@ public interface SolidTicketsDataModule {
      */
     public suspend fun createTicket(
         ownerWebId: String,
-        storage: String,
+        storage: String? = null,
         newTicket: NewTicket,
         artifact: ByteArray? = null,
         artifactContentType: String? = null,

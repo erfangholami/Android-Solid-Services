@@ -26,15 +26,22 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.URI
 
-private fun defaultHttpClient(): OkHttpClient =
-    OkHttpClient.Builder()
-        .followRedirects(true)
-        .build()
+private fun defaultHttpClient(): OkHttpClient = OkHttpClient.Builder().build()
 
 internal class SolidHttpClient(
     private val auth: AuthSession? = null,
-    private val httpClient: OkHttpClient = defaultHttpClient(),
+    httpClient: OkHttpClient = defaultHttpClient(),
 ) {
+
+    /**
+     * Redirects are handled manually in [executeAuthenticated] so each hop can re-sign
+     * its DPoP proof for the new URL (a transparently-followed redirect would reuse the
+     * proof bound to the original `htu` and get a `401`), and so credentials are only
+     * re-sent to a same-origin target. The transport is therefore forced to surface
+     * `3xx` responses rather than chase them.
+     */
+    private val httpClient: OkHttpClient =
+        httpClient.newBuilder().followRedirects(false).followSslRedirects(false).build()
 
     private val cache = SolidResponseCache()
 
@@ -149,7 +156,7 @@ internal class SolidHttpClient(
         ifMatch: String? = null
     ): SolidResult<Unit> {
         return try {
-            val response = executeAuthenticated(
+            var response = executeAuthenticated(
                 method = "PATCH",
                 webId = webId,
                 uri = uri,
@@ -157,6 +164,19 @@ internal class SolidHttpClient(
                 body = patch.toSparqlUpdate().toByteArray(Charsets.UTF_8),
                 ifMatch = ifMatch,
             )
+            if (response.statusCode == HTTP_UNSUPPORTED_MEDIA_TYPE) {
+                // The Solid Protocol mandates text/n3 PATCH support, but some servers accept
+                // only one of the two formats. We prefer the more widely accepted sparql-update
+                // and fall back to the spec-required text/n3 when the server 415s it.
+                response = executeAuthenticated(
+                    method = "PATCH",
+                    webId = webId,
+                    uri = uri,
+                    contentType = HTTPAcceptType.N3,
+                    body = patch.toN3String().toByteArray(Charsets.UTF_8),
+                    ifMatch = ifMatch,
+                )
+            }
             if (response.isSuccessful()) {
                 invalidate(uri)
                 SolidResult.Success(Unit)
@@ -446,12 +466,56 @@ internal class SolidHttpClient(
         ifNoneMatchStar: Boolean = false,
         additionalHeaders: Map<String, String> = emptyMap(),
     ): SolidRawResponse {
+        var currentMethod = method
+        var currentUri = uri
+        var currentBody = body
+        var hops = 0
+        while (true) {
+            // Credentials (and their DPoP proof, bound to the target's htu) are re-attached
+            // only for a same-origin hop, so a redirect can't forward the token to a foreign host.
+            val attachAuth = sameOrigin(uri, currentUri)
+            val response = sendWithAuthRetry(
+                currentMethod, webId, currentUri, contentType, accept, linkHeader,
+                currentBody, ifMatch, ifUnmodifiedSince, ifNoneMatchStar, additionalHeaders,
+                attachAuth,
+            )
+
+            val target = redirectTarget(response, currentUri)
+            if (target == null || hops++ >= MAX_REDIRECTS) return response
+
+            if (response.statusCode == HTTP_SEE_OTHER && currentMethod != "GET" && currentMethod != "HEAD") {
+                currentMethod = "GET"
+                currentBody = null
+            }
+            currentUri = target
+        }
+    }
+
+    /**
+     * Sends one request to a fixed [uri], applying the DPoP-nonce retry and the single
+     * expired-token force-refresh. [attachAuth] is `false` for a cross-origin redirect
+     * hop — no credentials are sent and the response is returned as-is (no auth retry).
+     */
+    private suspend fun sendWithAuthRetry(
+        method: String,
+        webId: String,
+        uri: URI,
+        contentType: String?,
+        accept: String?,
+        linkHeader: String?,
+        body: ByteArray?,
+        ifMatch: String?,
+        ifUnmodifiedSince: String?,
+        ifNoneMatchStar: Boolean,
+        additionalHeaders: Map<String, String>,
+        attachAuth: Boolean,
+    ): SolidRawResponse {
         var lastResponse: SolidRawResponse? = null
         var didForceRefresh = false
 
         repeat(MAX_AUTH_ATTEMPTS) {
             val attemptHeaders = buildMap {
-                putAll(buildAuthHeaders(webId, method, uri.toString()))
+                if (attachAuth) putAll(buildAuthHeaders(webId, method, uri.toString()))
                 putAll(additionalHeaders)
                 if (ifMatch != null) put(HTTPHeaderName.IF_MATCH, if (ifMatch == "*") "*" else "\"$ifMatch\"")
                 if (ifMatch == null && ifUnmodifiedSince != null) {
@@ -461,12 +525,14 @@ internal class SolidHttpClient(
             }
 
             val response = send(method, uri, contentType, accept, linkHeader, body, attemptHeaders)
-            response.headers[HTTPHeaderName.DPOP_NONCE]?.let { nonce ->
-                requireAuth().updateDPoPNonce(webId, uri.toString(), nonce)
+            if (attachAuth) {
+                response.headers[HTTPHeaderName.DPOP_NONCE]?.let { nonce ->
+                    requireAuth().updateDPoPNonce(webId, uri.toString(), nonce)
+                }
             }
             lastResponse = response
 
-            if (response.statusCode != 401) return response
+            if (response.statusCode != 401 || !attachAuth) return response
 
             val wwwAuth = response.headers[HTTPHeaderName.WWW_AUTHENTICATE] ?: ""
             val isPureNonceChallenge = wwwAuth.contains("use_dpop_nonce", ignoreCase = true) &&
@@ -485,8 +551,35 @@ internal class SolidHttpClient(
         return lastResponse!!
     }
 
+    /**
+     * The redirect target for a `3xx` [response] with a `Location`, resolved against
+     * [from] (so a relative `Location` works), or `null` when this is not a redirect
+     * the client follows.
+     */
+    private fun redirectTarget(response: SolidRawResponse, from: URI): URI? {
+        if (response.statusCode !in REDIRECT_CODES) return null
+        val location = response.headers[HTTPHeaderName.LOCATION]?.takeIf { it.isNotBlank() } ?: return null
+        return runCatching { from.resolve(location) }.getOrNull()
+    }
+
+    private fun sameOrigin(a: URI, b: URI): Boolean =
+        a.scheme.equals(b.scheme, ignoreCase = true) &&
+                a.authority.equals(b.authority, ignoreCase = true)
+
     internal companion object {
         const val MAX_AUTH_ATTEMPTS = 3
+
+        /** HTTP 415 — the server rejected the request body's media type (drives the PATCH format fallback). */
+        const val HTTP_UNSUPPORTED_MEDIA_TYPE = 415
+
+        /** HTTP 303 — a redirect that turns the follow-up request into a `GET`. */
+        const val HTTP_SEE_OTHER = 303
+
+        /** Redirect status codes this client follows manually (re-signing DPoP per hop). */
+        val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
+
+        /** Cap on redirect hops before giving up and returning the last `3xx` response. */
+        const val MAX_REDIRECTS = 5
 
         /** Freshness window for ordinary data resources — served from memory without a network call. */
         const val TTL_DATA_MS = 5_000L

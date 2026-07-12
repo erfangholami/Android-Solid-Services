@@ -15,6 +15,9 @@ internal class FakeSolidResourceManager(
     var onHeadPublic: (URI) -> SolidResult<SolidMetadata> = { SolidResult.Success(SolidMetadata.EMPTY) },
     var onPost: (URI) -> SolidResult<URI?> = { SolidResult.Success(null) },
     var onDelete: (URI) -> SolidResult<Boolean> = { SolidResult.Success(true) },
+    var onCreate: (Resource) -> SolidResult<out Resource> = { SolidResult.Success(it) },
+    var onUpdate: (Resource) -> SolidResult<out Resource> = { notImplemented() },
+    var onPatch: (URI, N3Patch) -> SolidResult<Unit> = { _, _ -> SolidResult.Success(Unit) },
 ) : SolidResourceManager {
 
     @Suppress("UNCHECKED_CAST")
@@ -50,22 +53,24 @@ internal class FakeSolidResourceManager(
         ifMatch: String?,
     ): SolidResult<Boolean> = onDelete(resourceUri)
 
+    @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> create(webid: String, resource: T): SolidResult<T> =
-        notImplemented()
+        onCreate(resource) as SolidResult<T>
 
+    @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> update(
         webid: String,
         newResource: T,
         ifMatch: String?,
         ifUnmodifiedSince: String?,
-    ): SolidResult<T> = notImplemented()
+    ): SolidResult<T> = onUpdate(newResource) as SolidResult<T>
 
     override suspend fun patch(
         webid: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
-    ): SolidResult<Unit> = notImplemented()
+    ): SolidResult<Unit> = onPatch(uri, patch)
 
     override suspend fun patchRaw(
         webid: String,

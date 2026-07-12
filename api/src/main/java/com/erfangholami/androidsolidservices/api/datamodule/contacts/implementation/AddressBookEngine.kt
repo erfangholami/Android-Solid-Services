@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation
 
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.AddressBookStore
+import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
 import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList
@@ -25,10 +26,11 @@ internal class AddressBookEngine(
 
     override suspend fun ensureContainer(
         ownerWebId: String,
-        storage: String,
+        storage: String?,
         container: String?,
     ): SolidResult<AddressBookList> = runResult {
-        val targetContainer = container ?: "${storage}${CONTACTS_DIRECTORY_SUFFIX}"
+        val targetContainer =
+            container ?: "${requireStorage(ownerWebId, storage)}${CONTACTS_DIRECTORY_SUFFIX}"
         pod.ensureContainer(ownerWebId, URI.create(targetContainer))
         readBookList(ownerWebId)
     }
@@ -53,7 +55,7 @@ internal class AddressBookEngine(
         ownerWebId: String,
         title: String,
         isPrivate: Boolean,
-        storage: String,
+        storage: String?,
         container: String?,
     ): SolidResult<AddressBook> = runResult {
         val bookUri = createBook(ownerWebId, title, isPrivate, storage, container)
@@ -111,7 +113,7 @@ internal class AddressBookEngine(
 
     override suspend fun ensureDefault(
         ownerWebId: String,
-        storage: String,
+        storage: String?,
         title: String,
     ): SolidResult<AddressBook> = runResult {
         val firstPrivate = pod.privateTypeIndex(ownerWebId).getAddressBooks().firstOrNull()
@@ -124,6 +126,11 @@ internal class AddressBookEngine(
         )
         readBook(ownerWebId, bookUri)
     }
+
+    private suspend fun requireStorage(ownerWebId: String, storage: String?): String =
+        storage
+            ?: StorageDiscovery.discover(pod.solidResourceManager, ownerWebId)?.toString()
+            ?: error("Could not discover a storage for $ownerWebId")
 
     private suspend fun readBook(ownerWebId: String, addressBookUri: String): AddressBook {
         val addressBookRdf = pod.addressBook(ownerWebId, URI.create(addressBookUri))
@@ -140,10 +147,11 @@ internal class AddressBookEngine(
         ownerWebId: String,
         title: String,
         isPrivate: Boolean,
-        storage: String,
+        storage: String?,
         container: String?,
     ): String {
-        val targetContainer = container ?: "${storage}${CONTACTS_DIRECTORY_SUFFIX}"
+        val targetContainer =
+            container ?: "${requireStorage(ownerWebId, storage)}${CONTACTS_DIRECTORY_SUFFIX}"
         val id = UUID.randomUUID().toString()
         val bookContainer = "${targetContainer}${id}/"
         pod.ensureContainer(ownerWebId, URI.create(bookContainer))

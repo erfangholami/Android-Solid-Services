@@ -59,7 +59,7 @@ internal class SolidTicketsDataModuleImplementation : SolidTicketsDataModule {
 
     override suspend fun createTicket(
         ownerWebId: String,
-        storage: String,
+        storage: String?,
         newTicket: NewTicket,
         artifact: ByteArray?,
         artifactContentType: String?,

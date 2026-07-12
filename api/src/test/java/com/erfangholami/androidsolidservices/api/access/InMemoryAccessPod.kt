@@ -32,6 +32,13 @@ internal class InMemoryAccessPod : SolidResourceManager {
     /** When set, the next [putRaw] returns `412` once, then clears itself. */
     var failNextPutWith412: Boolean = false
 
+    /**
+     * URIs whose stored body is treated as unreadable: `HEAD` still succeeds (the
+     * document exists, with an ETag) but `read` fails — modelling an ACR the parser
+     * can't handle (e.g. a Turtle-serialised ACR, or malformed JSON-LD).
+     */
+    val unreadable: MutableSet<String> = mutableSetOf()
+
     /** Records every [putRaw] (target URI + the `If-Match` sent) for assertions. */
     val putLog: MutableList<Pair<String, String?>> = mutableListOf()
 
@@ -56,6 +63,9 @@ internal class InMemoryAccessPod : SolidResourceManager {
         resource: URI,
         clazz: Class<T>,
     ): SolidResult<T> {
+        if (resource.toString() in unreadable) {
+            return SolidResult.Failure(SolidError.fromHttp(200, "unreadable body (test)"))
+        }
         val doc = stored[resource.toString()]
             ?: return SolidResult.Failure(SolidError.fromHttp(404, "not found: $resource"))
         val quads = NTriples.parse(String(doc.body, Charsets.UTF_8), resource)

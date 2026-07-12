@@ -7,6 +7,7 @@ import com.erfangholami.androidsolidservices.api.access.pickBackend
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
@@ -102,7 +103,8 @@ internal class SharingManagerHelper {
         podRootCache[webId]?.let { return it }
         val profile = rm.read(webId, URI.create(webId), WebId::class.java).getOrThrow()
         val storage = profile.getStorages().firstOrNull()
-            ?: error("WebID profile has no pim:storage entry")
+            ?: StorageDiscovery.discover(rm, webId)
+            ?: error("Could not discover a storage for $webId")
         return URI.create(storage.toString().ensureTrailingSlash())
             .also { podRootCache[webId] = it }
     }

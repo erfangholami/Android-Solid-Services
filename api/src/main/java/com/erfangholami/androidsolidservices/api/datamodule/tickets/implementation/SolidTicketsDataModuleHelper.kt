@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.api.datamodule.tickets.implementat
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
 import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
 import com.erfangholami.androidsolidservices.api.sharing.implementation.nowIsoDateTime
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
@@ -80,7 +81,7 @@ internal class SolidTicketsDataModuleHelper {
 
     suspend fun createTicket(
         ownerWebId: String,
-        storage: String,
+        storage: String?,
         newTicket: NewTicket,
         artifact: ByteArray?,
         artifactContentType: String?,
@@ -188,14 +189,14 @@ internal class SolidTicketsDataModuleHelper {
 
     private suspend fun ensureTicketsContainer(
         ownerWebId: String,
-        storage: String,
+        storage: String?,
         isPrivate: Boolean,
         container: String?,
     ): String {
         val registered = resolveTicketContainers(ownerWebId)
         val target = container
             ?: registered.firstOrNull()
-            ?: "${storage}${TICKETS_DIRECTORY_SUFFIX}"
+            ?: "${requireStorage(ownerWebId, storage)}${TICKETS_DIRECTORY_SUFFIX}"
         if (target in registered) return target
 
         ensureContainer(ownerWebId, URI.create(target))
@@ -226,6 +227,11 @@ internal class SolidTicketsDataModuleHelper {
         }
         return target
     }
+
+    private suspend fun requireStorage(ownerWebId: String, storage: String?): String =
+        storage
+            ?: StorageDiscovery.discover(solidResourceManager, ownerWebId)?.toString()
+            ?: error("Could not discover a storage for $ownerWebId")
 
     private suspend fun ensureContainer(ownerWebId: String, containerUri: URI) {
         val missing = solidResourceManager.head(ownerWebId, containerUri).let {

@@ -1,5 +1,6 @@
 package com.erfangholami.androidsolidservices.api.access
 
+import com.erfangholami.androidsolidservices.api.exceptions.SharingException
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
@@ -7,6 +8,7 @@ import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.ACP
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -147,5 +149,42 @@ class AcpBackendTest {
         runBlocking { backend.revoke(alice, resource, ShareReceiver.WebIdReceiver(bob), isContainer = false) }
 
         assertEquals(ShareReceiver.WebIdReceiver(carol), shares(resource).single().receiver)
+    }
+
+    @Test
+    fun `grant fails fast on an unreadable ACR instead of wiping co-shares`() {
+        grant(resource, ShareMode.READ, ShareReceiver.WebIdReceiver(bob))
+        pod.unreadable += pod.aclUriFor(resource).toString()
+        val putsBefore = pod.putLog.size
+
+        assertThrows(SharingException.UnsupportedAuthBackend::class.java) {
+            grant(resource, ShareMode.READ, ShareReceiver.WebIdReceiver(carol))
+        }
+        assertEquals(
+            "an indeterminate ACR must not be overwritten (which would drop Bob's grant)",
+            putsBefore, pod.putLog.size,
+        )
+    }
+
+    @Test
+    fun `revoke fails fast on an unreadable ACR`() {
+        grant(resource, ShareMode.READ, ShareReceiver.WebIdReceiver(bob))
+        pod.unreadable += pod.aclUriFor(resource).toString()
+        val putsBefore = pod.putLog.size
+
+        assertThrows(SharingException.UnsupportedAuthBackend::class.java) {
+            runBlocking {
+                backend.revoke(alice, resource, ShareReceiver.WebIdReceiver(bob), isContainer = false)
+            }
+        }
+        assertEquals(putsBefore, pod.putLog.size)
+    }
+
+    @Test
+    fun `grant rejects a group receiver on ACP and writes nothing`() {
+        assertThrows(SharingException.UnsupportedAuthBackend::class.java) {
+            grant(resource, ShareMode.READ, ShareReceiver.GroupReceiver("https://alice.pod/groups/friends#this"))
+        }
+        assertTrue("no ACR may be written for a rejected group grant", pod.putLog.isEmpty())
     }
 }

@@ -43,8 +43,10 @@ private const val TAG = "AcpBackend"
  * ```
  *
  * Owner self-rules use `acp:agent <ownerWebId>` and grant the full WAC
- * mode set. Public matchers use `acp:agent acp:PublicAgent`. Groups go
- * via `acp:vc <groupUri>`; group support varies across servers.
+ * mode set. Public matchers use `acp:agent acp:PublicAgent`. ACP has no
+ * native agent-group primitive (unlike WAC's `acl:agentGroup`), so group
+ * receivers are rejected here rather than written as an `acp:vc` matcher
+ * that would grant no one; share to explicit member WebIDs instead.
  *
  * Containers add an `acp:memberAccessControl <#ac-…>` triple to the ACR
  * mirroring `acp:accessControl`, so descendants inherit the same policies.
@@ -64,7 +66,8 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         isContainer: Boolean,
         includeImpliedModes: Boolean,
     ) {
-        val read = readAcr(webId, resourceUri)
+        rejectUnsupportedReceiver(receiver, resourceUri)
+        val read = readAcr(webId, resourceUri).orThrowIfUnparseable(resourceUri)
         val keep = read.acr.getAllQuads().toMutableList()
 
         val priorMatcherSubjects = keep
@@ -124,7 +127,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         receiver: ShareReceiver,
         isContainer: Boolean,
     ) {
-        val read = readAcr(webId, resourceUri)
+        val read = readAcr(webId, resourceUri).orThrowIfUnparseable(resourceUri)
         val quads = read.acr.getAllQuads().toMutableList()
 
         val matcherSubjects = quads
@@ -166,12 +169,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         webId: String,
         resourceUri: URI,
     ): List<GivenShare> {
-        val read = readAcr(webId, resourceUri)
-        if (read.parseFailed) {
-            throw SharingException.UnsupportedAuthBackend(
-                resourceUri.toString(), backend = "ACP (unreadable ACR)",
-            )
-        }
+        val read = readAcr(webId, resourceUri).orThrowIfUnparseable(resourceUri)
         val quads = read.acr.getAllQuads()
         val shares = mutableListOf<GivenShare>()
 
@@ -219,7 +217,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
             isAlreadyOwnerOnly(metadataResp.value.wacAllow)
         ) return
 
-        val read = readAcr(webId, targetUri)
+        val read = readAcr(webId, targetUri).orThrowIfUnparseable(targetUri)
         if (hasOwnerSelfControl(read.acr.getAllQuads(), webId)) return
         appendPolicy(
             acr = read.acr,
@@ -237,7 +235,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         targetUri: URI,
         isContainer: Boolean,
     ) {
-        val read = readAcr(webId, targetUri)
+        val read = readAcr(webId, targetUri).orThrowIfUnparseable(targetUri)
         if (hasOwnerSelfControl(read.acr.getAllQuads(), webId)) return
         appendPolicy(
             acr = read.acr,
@@ -256,14 +254,43 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         val etag: String?,
         /**
          * `true` when the ACR endpoint returned a body we could **not** parse
-         * (so [acr] is an empty placeholder). Write paths (grant / revoke /
-         * ensureOwnerOnly) tolerate this and PUT a fresh document, but read
-         * paths ([listShares]) MUST treat it as *indeterminate* rather than
-         * "no shares" — otherwise refreshGivenShares would prune live rows
-         * for a resource whose real policies we simply failed to read.
+         * (so [acr] is an empty placeholder). An existing-but-unparseable ACR is
+         * *indeterminate*, not "empty": both read ([listShares]) and write
+         * (grant / revoke / ensureOwnerOnly / reclaimOwnerControl) paths
+         * fail-fast via [orThrowIfUnparseable] rather than act on it. Reading it
+         * as "no shares" would prune live rows; writing a fresh document over it
+         * would silently strip every co-receiver's grant.
          */
         val parseFailed: Boolean = false,
     )
+
+    /**
+     * Guards against acting on an ACR that exists but could not be parsed (e.g.
+     * a Turtle-serialised ACR before the Turtle reader lands, or malformed
+     * JSON-LD). Surfaces a typed failure instead of silently dropping grants.
+     */
+    private fun AcrRead.orThrowIfUnparseable(resourceUri: URI): AcrRead {
+        if (parseFailed) {
+            throw SharingException.UnsupportedAuthBackend(
+                resourceUri.toString(), backend = "ACP (unreadable ACR)",
+            )
+        }
+        return this
+    }
+
+    /**
+     * ACP has no native agent-group primitive (unlike WAC's `acl:agentGroup`),
+     * so a group receiver can't be expressed as a matcher that actually grants
+     * its members access. Reject it explicitly rather than write an `acp:vc`
+     * matcher that matches no one.
+     */
+    private fun rejectUnsupportedReceiver(receiver: ShareReceiver, resourceUri: URI) {
+        if (receiver is ShareReceiver.GroupReceiver) {
+            throw SharingException.UnsupportedAuthBackend(
+                resourceUri.toString(), backend = "ACP (group receivers)",
+            )
+        }
+    }
 
     private suspend fun readAcr(webId: String, resourceUri: URI): AcrRead {
         val metadata = rm.head(webId, resourceUri).getOrThrow()
@@ -357,7 +384,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
                 acr.addQuad(matcher, ACP.AGENT, receiver.webId, maxNumber = Int.MAX_VALUE)
 
             is ShareReceiver.GroupReceiver ->
-                acr.addQuad(matcher, ACP.VC, receiver.groupUri, maxNumber = Int.MAX_VALUE)
+                error("ACP group receivers are rejected in grant() before reaching appendPolicy")
 
             is ShareReceiver.Public ->
                 acr.addQuad(matcher, ACP.AGENT, ACP.PUBLIC_AGENT, maxNumber = Int.MAX_VALUE)
@@ -430,8 +457,8 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
             if (agent == ACP.PUBLIC_AGENT) add(ShareReceiver.Public)
             else add(ShareReceiver.WebIdReceiver(agent))
         }
-        quads
-            .filter { it.subject == matcher && it.predicate == ACP.VC }
-            .forEach { add(ShareReceiver.GroupReceiver(it.`object`)) }
+        // acp:vc is the verifiable-credential matcher, not an agent group: it is
+        // deliberately not surfaced as a receiver (mapping it to a group both
+        // misrepresents a real VC matcher and resurrects legacy no-op group rows).
     }
 }

@@ -49,10 +49,11 @@ internal class InboxDiscovery(private val rm: SolidResourceManager) {
             }
         }
 
-        profile?.getStorages()?.firstOrNull()?.let { storage ->
-            val root = storage.toString().let { if (it.endsWith("/")) it else "$it/" }
-            return URI.create("${root}inbox/")
-        }
+        // No `{storage}inbox/` fabrication: the inbox is discovered only where the target
+        // actually advertises it (ldp:inbox triple or Link header, on the profile or an
+        // extended-profile doc). Guessing a URL the target never declared would post
+        // notifications into a container that may not exist or belong to the inbox — so,
+        // like resolveOwnInbox, return null when nothing is advertised.
         return null
     }
 

@@ -21,10 +21,13 @@ public interface AddressBookStore {
      * LDP BasicContainer when missing — and returns the current (possibly empty) address-book
      * list. Safe to call on every read: it never fails on an unprovisioned pod and provisions
      * the container that later writes (contacts, groups) depend on.
+     *
+     * [storage] may be omitted (`null`); when it is, and no explicit [container] is given, the
+     * storage root is discovered from the profile / container hierarchy.
      */
     public suspend fun ensureContainer(
         ownerWebId: String,
-        storage: String,
+        storage: String? = null,
         container: String? = null,
     ): SolidResult<AddressBookList>
 
@@ -37,13 +40,14 @@ public interface AddressBookStore {
     /**
      * Creates an address book titled [title] under [container] (default
      * `{storage}contacts/`) and registers it in the private (default) or public
-     * type index.
+     * type index. [storage] may be omitted (`null`); when it is, and no explicit
+     * [container] is given, the storage root is discovered.
      */
     public suspend fun create(
         ownerWebId: String,
         title: String,
         isPrivate: Boolean = true,
-        storage: String,
+        storage: String? = null,
         container: String? = null,
     ): SolidResult<AddressBook>
 
@@ -66,11 +70,12 @@ public interface AddressBookStore {
     /**
      * Returns the user's default address book: the first book registered in the
      * private type index, or a newly created private book titled [title] under
-     * [storage] when none exists yet.
+     * [storage] when none exists yet. [storage] may be omitted (`null`) to have the
+     * storage root discovered.
      */
     public suspend fun ensureDefault(
         ownerWebId: String,
-        storage: String,
+        storage: String? = null,
         title: String = "Contacts",
     ): SolidResult<AddressBook>
 }

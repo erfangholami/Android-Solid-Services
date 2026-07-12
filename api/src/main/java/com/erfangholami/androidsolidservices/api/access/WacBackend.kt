@@ -125,7 +125,13 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
     ): List<GivenShare> {
         val read = readAcl(webId, resourceUri)
         val shares = mutableListOf<GivenShare>()
-        read.acl.getAuthorizations().forEach { auth ->
+        // When the resource has no ACL of its own, effective access is defined by the
+        // nearest ancestor container's acl:default authorizations (WAC inheritance);
+        // baseAuthorizations returns those, mapped onto this resource, in that case.
+        val authorizations = baseAuthorizations(
+            webId, resourceUri, read, isContainer = resourceUri.toString().endsWith("/"),
+        )
+        authorizations.forEach { auth ->
             val applies =
                 auth.accessTo.any { IriUtils.sameIri(it.toString(), resourceUri.toString()) } ||
                         auth.default.any { IriUtils.sameIri(it.toString(), resourceUri.toString()) }

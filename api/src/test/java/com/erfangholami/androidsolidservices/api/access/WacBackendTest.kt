@@ -77,6 +77,18 @@ class WacBackendTest {
     }
 
     @Test
+    fun `listShares on a child with no own ACL surfaces the container's inherited default grant`() {
+        grant(container, ShareMode.READ, ShareReceiver.WebIdReceiver(bob), container = true)
+
+        val child = URI.create("${container}note-x")
+        val list = runBlocking { backend.listShares(alice, child) }
+
+        assertEquals(1, list.size)
+        assertEquals(ShareReceiver.WebIdReceiver(bob), list.single().receiver)
+        assertEquals(ShareMode.READ, list.single().mode)
+    }
+
+    @Test
     fun `append-only grant with implied modes off writes Append with no Read`() {
         runBlocking {
             backend.grant(
