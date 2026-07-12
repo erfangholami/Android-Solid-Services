@@ -21,7 +21,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> read(
-        webid: String,
+        webId: String,
         resource: URI,
         clazz: Class<T>,
     ): SolidResult<T> =
@@ -30,7 +30,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
             ?: SolidResult.Failure(SolidError.fromHttp(404, "not found: $resource"))
 
     override suspend fun <T : Resource> create(
-        webid: String,
+        webId: String,
         resource: T,
     ): SolidResult<T> {
         put(resource)
@@ -38,7 +38,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     }
 
     override suspend fun <T : Resource> update(
-        webid: String,
+        webId: String,
         newResource: T,
         ifMatch: String?,
         ifUnmodifiedSince: String?,
@@ -48,7 +48,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     }
 
     override suspend fun delete(
-        webid: String,
+        webId: String,
         resourceUri: URI,
         ifMatch: String?,
     ): SolidResult<Boolean> {
@@ -66,15 +66,15 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     }
 
     override suspend fun <T : Resource> delete(
-        webid: String,
+        webId: String,
         resource: T,
     ): SolidResult<T> {
-        delete(webid, resource.getIdentifier())
+        delete(webId, resource.getIdentifier())
         return SolidResult.Success(resource)
     }
 
     override suspend fun putRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
@@ -85,7 +85,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         return SolidResult.Success(Unit)
     }
 
-    override suspend fun head(webid: String, uri: URI): SolidResult<SolidMetadata> =
+    override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> =
         if (store.containsKey(uri.toString())) {
             SolidResult.Success(SolidMetadata.EMPTY)
         } else {
@@ -101,21 +101,21 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     ): SolidResult<T> = read("", uri, clazz)
 
     override suspend fun patch(
-        webid: String,
+        webId: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
     override suspend fun patchRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
     override suspend fun post(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
@@ -123,7 +123,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     ): SolidResult<URI?> = notImplemented()
 
     override suspend fun <T : Resource> createInContainer(
-        webid: String,
+        webId: String,
         containerUri: URI,
         resource: T,
     ): SolidResult<URI?> = notImplemented()

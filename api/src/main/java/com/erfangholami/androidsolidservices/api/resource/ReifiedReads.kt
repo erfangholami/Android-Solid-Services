@@ -6,15 +6,15 @@ import java.net.URI
 
 /**
  * Reified conveniences for the `Class<T>`-token reads on [SolidResourceManager], so callers
- * write `rm.read<WebId>(webid, uri)` instead of `rm.read(webid, uri, WebId::class.java)`.
+ * write `rm.read<WebId>(webId, uri)` instead of `rm.read(webId, uri, WebId::class.java)`.
  * They forward verbatim to the token overloads — same behaviour, no Java-style class literal.
  */
 
 /** Reified [SolidResourceManager.read]. */
 public suspend inline fun <reified T : Resource> SolidResourceManager.read(
-    webid: String,
+    webId: String,
     uri: URI,
-): SolidResult<T> = read(webid, uri, T::class.java)
+): SolidResult<T> = read(webId, uri, T::class.java)
 
 /** Reified [SolidResourceManager.readPublic]. */
 public suspend inline fun <reified T : Resource> SolidResourceManager.readPublic(

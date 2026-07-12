@@ -15,7 +15,7 @@ import java.net.URI
  * during the login flow, before the main [Authenticator] state is ready. Auth headers
  * are provided via callbacks from the caller's in-progress auth state.
  *
- * Spec: https://solid.github.io/webid-profile/
+ * Spec: https://solid.github.io/webId-profile/
  *       https://solidproject.org/TR/oidc — WebID claim extraction
  */
 internal class WebIdResolver {

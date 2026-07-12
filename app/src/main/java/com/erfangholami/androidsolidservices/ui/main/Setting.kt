@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.erfangholami.androidsolidservices.R
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import com.erfangholami.androidsolidservices.ui.navigation.Login
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,7 +156,7 @@ fun Setting(
 
 @Composable
 private fun AccountRow(
-    profile: Profile,
+    profile: SolidAccount,
     isActive: Boolean,
     onClick: () -> Unit,
 ) {

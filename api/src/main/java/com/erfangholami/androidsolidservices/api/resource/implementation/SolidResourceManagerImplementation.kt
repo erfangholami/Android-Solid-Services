@@ -55,25 +55,25 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     }
 
     override suspend fun head(
-        webid: String,
+        webId: String,
         uri: URI,
     ): SolidResult<SolidMetadata> = withContext(Dispatchers.IO) {
-        solidHttpClient.head(webid, uri)
+        solidHttpClient.head(webId, uri)
     }
 
     override suspend fun <T : Resource> read(
-        webid: String,
+        webId: String,
         resource: URI,
         clazz: Class<T>,
     ): SolidResult<T> = withContext(Dispatchers.IO) {
-        val result = solidHttpClient.get(webid, resource, clazz)
+        val result = solidHttpClient.get(webId, resource, clazz)
         if (result is SolidResult.Success && result.value is SolidContainer) {
             val container = result.value as SolidContainer
             val enriched = coroutineScope {
                 container.getContained().map { ref ->
                     async {
                         when (val headResult =
-                            solidHttpClient.head(webid, URI.create(ref.identifier))) {
+                            solidHttpClient.head(webId, URI.create(ref.identifier))) {
                             is SolidResult.Success -> ref.copy(headMetadata = headResult.value)
                             is SolidResult.Failure -> {
                                 Log.w(
@@ -95,11 +95,11 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     }
 
     override suspend fun <T : Resource> create(
-        webid: String,
+        webId: String,
         resource: T,
     ): SolidResult<T> = withContext(Dispatchers.IO) {
         try {
-            val response = solidHttpClient.put(webid, resource, ifNoneMatchStar = true)
+            val response = solidHttpClient.put(webId, resource, ifNoneMatchStar = true)
             if (response is SolidResult.Failure &&
                 response.error.code == SolidErrorCode.PRECONDITION_FAILED
             ) {
@@ -114,14 +114,14 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     }
 
     override suspend fun <T : Resource> update(
-        webid: String,
+        webId: String,
         newResource: T,
         ifMatch: String?,
         ifUnmodifiedSince: String?,
     ): SolidResult<T> = withContext(Dispatchers.IO) {
         try {
             solidHttpClient.put(
-                webid,
+                webId,
                 newResource,
                 ifMatch = ifMatch,
                 ifUnmodifiedSince = ifUnmodifiedSince,
@@ -133,33 +133,33 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     }
 
     override suspend fun patch(
-        webid: String,
+        webId: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
     ): SolidResult<Unit> = withContext(Dispatchers.IO) {
-        solidHttpClient.patch(webid, uri, patch, ifMatch)
+        solidHttpClient.patch(webId, uri, patch, ifMatch)
     }
 
     override suspend fun patchRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = withContext(Dispatchers.IO) {
-        solidHttpClient.patchRaw(webid, uri, n3Body, ifMatch)
+        solidHttpClient.patchRaw(webId, uri, n3Body, ifMatch)
     }
 
     override suspend fun <T : Resource> delete(
-        webid: String,
+        webId: String,
         resource: T,
     ): SolidResult<T> = withContext(Dispatchers.IO) {
         try {
             val uri = resource.getIdentifier()
             val deleteResult = if (resource is SolidContainer || uri.toString().endsWith("/")) {
-                deleteRecursive(webid, uri, Semaphore(MAX_CONCURRENT_DELETES))
+                deleteRecursive(webId, uri, Semaphore(MAX_CONCURRENT_DELETES))
             } else {
-                solidHttpClient.delete(webid, uri)
+                solidHttpClient.delete(webId, uri)
             }
             when (deleteResult) {
                 is SolidResult.Success -> SolidResult.Success(resource)
@@ -172,15 +172,15 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     }
 
     override suspend fun delete(
-        webid: String,
+        webId: String,
         resourceUri: URI,
         ifMatch: String?,
     ): SolidResult<Boolean> = withContext(Dispatchers.IO) {
         try {
             if (resourceUri.toString().endsWith("/")) {
-                deleteRecursive(webid, resourceUri, Semaphore(MAX_CONCURRENT_DELETES))
+                deleteRecursive(webId, resourceUri, Semaphore(MAX_CONCURRENT_DELETES))
             } else {
-                solidHttpClient.delete(webid, resourceUri, ifMatch)
+                solidHttpClient.delete(webId, resourceUri, ifMatch)
             }
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
@@ -189,22 +189,22 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     }
 
     override suspend fun post(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
     ): SolidResult<URI?> = withContext(Dispatchers.IO) {
-        solidHttpClient.post(webid, uri, contentType, body, additionalHeaders)
+        solidHttpClient.post(webId, uri, contentType, body, additionalHeaders)
     }
 
     override suspend fun <T : Resource> createInContainer(
-        webid: String,
+        webId: String,
         containerUri: URI,
         resource: T,
     ): SolidResult<URI?> = withContext(Dispatchers.IO) {
         try {
-            solidHttpClient.postResource(webid, containerUri, resource)
+            solidHttpClient.postResource(webId, containerUri, resource)
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
             SolidResult.Failure(SolidError.fromThrowable(e))
@@ -212,21 +212,21 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     }
 
     override suspend fun putRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
         ifMatch: String?,
         linkHeader: String?,
     ): SolidResult<Unit> = withContext(Dispatchers.IO) {
-        solidHttpClient.putRaw(webid, uri, contentType, body, ifMatch, linkHeader)
+        solidHttpClient.putRaw(webId, uri, contentType, body, ifMatch, linkHeader)
     }
 
-    override suspend fun readStream(webid: String, uri: URI): SolidResult<StreamingResource> =
-        solidHttpClient.getStream(webid, uri)
+    override suspend fun readStream(webId: String, uri: URI): SolidResult<StreamingResource> =
+        solidHttpClient.getStream(webId, uri)
 
     override suspend fun writeStream(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         contentLength: Long?,
@@ -234,7 +234,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         onProgress: ((bytesWritten: Long, total: Long?) -> Unit)?,
         openSource: () -> InputStream,
     ): SolidResult<Unit> =
-        solidHttpClient.putStream(webid, uri, contentType, contentLength, ifMatch, onProgress, openSource)
+        solidHttpClient.putStream(webId, uri, contentType, contentLength, ifMatch, onProgress, openSource)
 
     override suspend fun <T : Resource> readPublic(
         uri: URI,
@@ -263,11 +263,11 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
      * success) without leaving the container half-emptied yet deregistered.
      */
     private suspend fun deleteRecursive(
-        webid: String,
+        webId: String,
         containerUri: URI,
         gate: Semaphore,
     ): SolidResult<Boolean> {
-        val containerResult = solidHttpClient.get(webid, containerUri, SolidContainer::class.java)
+        val containerResult = solidHttpClient.get(webId, containerUri, SolidContainer::class.java)
         val container = when (containerResult) {
             is SolidResult.Success -> containerResult.value
             is SolidResult.Failure ->
@@ -288,9 +288,9 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
                             ref.types.contains(LDP.DIRECT_CONTAINER) ||
                             ref.types.contains(LDP.INDIRECT_CONTAINER)
                     val childResult = if (isChildContainer) {
-                        deleteRecursive(webid, childUri, gate)
+                        deleteRecursive(webId, childUri, gate)
                     } else {
-                        deleteWithRetry(webid, childUri, gate)
+                        deleteWithRetry(webId, childUri, gate)
                     }
                     if (childResult is SolidResult.Success) null else childUri.toString()
                 }
@@ -307,7 +307,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
             )
         }
 
-        return deleteWithRetry(webid, containerUri, gate)
+        return deleteWithRetry(webId, containerUri, gate)
     }
 
     /**
@@ -317,13 +317,13 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
      * already gone), which makes a re-run of a partially-completed delete idempotent.
      */
     private suspend fun deleteWithRetry(
-        webid: String,
+        webId: String,
         uri: URI,
         gate: Semaphore,
     ): SolidResult<Boolean> {
         var attempt = 0
         while (true) {
-            val result = gate.withPermit { solidHttpClient.delete(webid, uri) }
+            val result = gate.withPermit { solidHttpClient.delete(webId, uri) }
             when {
                 result is SolidResult.Success -> return result
 

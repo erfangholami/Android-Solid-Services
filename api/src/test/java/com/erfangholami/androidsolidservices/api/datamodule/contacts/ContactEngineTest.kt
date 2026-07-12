@@ -213,13 +213,13 @@ class ContactEngineTest {
     @Test
     fun `getAll returns empty when the people index is missing`() = runBlocking {
         fake.store.remove(peopleUri)
-        assertTrue(contactEngine.getAll(webId, bookUri).getOrThrow().contacts.isEmpty())
+        assertTrue(contactEngine.list(webId, bookUri).getOrThrow().contacts.isEmpty())
     }
 
     @Test
     fun `getAll returns empty when the address book is missing`() = runBlocking {
         fake.store.remove(bookUri)
-        assertTrue(contactEngine.getAll(webId, bookUri).getOrThrow().contacts.isEmpty())
+        assertTrue(contactEngine.list(webId, bookUri).getOrThrow().contacts.isEmpty())
     }
 
     @Test

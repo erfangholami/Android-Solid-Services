@@ -54,7 +54,7 @@ class ContainerVerbsTest {
 
         @Suppress("UNCHECKED_CAST")
         override suspend fun <T : Resource> read(
-            webid: String,
+            webId: String,
             resource: URI,
             clazz: Class<T>,
         ): SolidResult<T> {
@@ -73,20 +73,20 @@ class ContainerVerbsTest {
             }
         }
 
-        override suspend fun head(webid: String, uri: URI): SolidResult<SolidMetadata> {
+        override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> {
             headCount++
             val s = uri.toString()
             return if (s in files || s in containers) SolidResult.Success(SolidMetadata.EMPTY)
             else SolidResult.Failure(SolidError.fromHttp(404, "not found: $s"))
         }
 
-        override suspend fun <T : Resource> create(webid: String, resource: T): SolidResult<T> {
+        override suspend fun <T : Resource> create(webId: String, resource: T): SolidResult<T> {
             if (resource is SolidContainer) containers += resource.getIdentifier().toString()
             return SolidResult.Success(resource)
         }
 
         override suspend fun putRaw(
-            webid: String,
+            webId: String,
             uri: URI,
             contentType: String,
             body: ByteArray,
@@ -97,7 +97,7 @@ class ContainerVerbsTest {
             return SolidResult.Success(Unit)
         }
 
-        override suspend fun delete(webid: String, resourceUri: URI, ifMatch: String?): SolidResult<Boolean> {
+        override suspend fun delete(webId: String, resourceUri: URI, ifMatch: String?): SolidResult<Boolean> {
             val uri = resourceUri.toString()
             files.remove(uri)
             containers.remove(uri)
@@ -108,18 +108,18 @@ class ContainerVerbsTest {
             return SolidResult.Success(true)
         }
 
-        override suspend fun <T : Resource> delete(webid: String, resource: T): SolidResult<T> {
-            delete(webid, resource.getIdentifier(), null)
+        override suspend fun <T : Resource> delete(webId: String, resource: T): SolidResult<T> {
+            delete(webId, resource.getIdentifier(), null)
             return SolidResult.Success(resource)
         }
 
         override suspend fun <T : Resource> readPublic(uri: URI, clazz: Class<T>) = read("", uri, clazz)
         override suspend fun headPublic(uri: URI) = head("", uri)
-        override suspend fun <T : Resource> update(webid: String, newResource: T, ifMatch: String?, ifUnmodifiedSince: String?) = notImpl<T>()
-        override suspend fun patch(webid: String, uri: URI, patch: N3Patch, ifMatch: String?) = notImpl<Unit>()
-        override suspend fun patchRaw(webid: String, uri: URI, n3Body: String, ifMatch: String?) = notImpl<Unit>()
-        override suspend fun post(webid: String, uri: URI, contentType: String, body: ByteArray, additionalHeaders: Map<String, String>) = notImpl<URI?>()
-        override suspend fun <T : Resource> createInContainer(webid: String, containerUri: URI, resource: T) = notImpl<URI?>()
+        override suspend fun <T : Resource> update(webId: String, newResource: T, ifMatch: String?, ifUnmodifiedSince: String?) = notImpl<T>()
+        override suspend fun patch(webId: String, uri: URI, patch: N3Patch, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun patchRaw(webId: String, uri: URI, n3Body: String, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun post(webId: String, uri: URI, contentType: String, body: ByteArray, additionalHeaders: Map<String, String>) = notImpl<URI?>()
+        override suspend fun <T : Resource> createInContainer(webId: String, containerUri: URI, resource: T) = notImpl<URI?>()
 
         private fun <T> notImpl(): SolidResult<T> =
             SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised")))

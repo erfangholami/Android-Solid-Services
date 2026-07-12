@@ -21,7 +21,7 @@ import java.net.URI
 /**
  * Performs authenticated CRUD operations on Solid pod resources on behalf of a specific user.
  *
- * All operations require the user identified by `webid` to have an active, authorized
+ * All operations require the user identified by `webId` to have an active, authorized
  * [Authenticator] session.  Results are wrapped in [SolidResult] so callers can
  * distinguish HTTP errors from unexpected exceptions without catching throwables.
  *
@@ -63,12 +63,12 @@ public interface SolidResourceManager {
      * No response body is transferred. Ideal for caching checks, permission discovery,
      * and auxiliary resource IRI resolution before committing to a full GET.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param uri   The URI of the resource to HEAD.
      * @return [SolidResult.Success] with [SolidMetadata], or a [SolidResult.Failure] carrying a typed [SolidError].
      */
     public suspend fun head(
-        webid: String,
+        webId: String,
         uri: URI,
     ): SolidResult<SolidMetadata>
 
@@ -80,11 +80,11 @@ public interface SolidResourceManager {
      * [SolidResult.Failure] rather than being collapsed to `false`, so callers don't
      * mistake "couldn't tell" for "absent".
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param uri   The URI to probe.
      */
-    public suspend fun exists(webid: String, uri: URI): SolidResult<Boolean> =
-        when (val head = head(webid, uri)) {
+    public suspend fun exists(webId: String, uri: URI): SolidResult<Boolean> =
+        when (val head = head(webId, uri)) {
             is SolidResult.Success -> SolidResult.Success(true)
             is SolidResult.Failure ->
                 if (head.error.code == SolidErrorCode.NOT_FOUND) SolidResult.Success(false)
@@ -100,20 +100,20 @@ public interface SolidResourceManager {
      *
      * [containerUri] should be a container URI (trailing `/`).
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param containerUri The container to ensure, including any missing parents.
      */
-    public suspend fun ensureContainer(webid: String, containerUri: URI): SolidResult<Unit> {
-        when (val head = head(webid, containerUri)) {
+    public suspend fun ensureContainer(webId: String, containerUri: URI): SolidResult<Unit> {
+        when (val head = head(webId, containerUri)) {
             is SolidResult.Success -> return SolidResult.Success(Unit)
             is SolidResult.Failure ->
                 if (head.error.code != SolidErrorCode.NOT_FOUND) return SolidResult.Failure(head.error)
         }
         parentContainerOfUri(containerUri)?.let { parent ->
-            val parentResult = ensureContainer(webid, parent)
+            val parentResult = ensureContainer(webId, parent)
             if (parentResult is SolidResult.Failure) return parentResult
         }
-        return create(webid, SolidContainer(containerUri)).map { }
+        return create(webId, SolidContainer(containerUri)).map { }
     }
 
     /**
@@ -126,11 +126,11 @@ public interface SolidResourceManager {
      * error) — a caller must not treat that as denial (e.g. keep, don't prune, stored rows).
      * A reachable resource that advertises no `WAC-Allow` is reported as View access.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param uri   The resource whose access to probe.
      */
-    public suspend fun probeAccess(webid: String, uri: URI): SolidResult<AccessProbe> {
-        val metadata = when (val head = head(webid, uri)) {
+    public suspend fun probeAccess(webId: String, uri: URI): SolidResult<AccessProbe> {
+        val metadata = when (val head = head(webId, uri)) {
             is SolidResult.Success -> head.value
             is SolidResult.Failure ->
                 return if (head.error.code == SolidErrorCode.FORBIDDEN ||
@@ -165,16 +165,16 @@ public interface SolidResourceManager {
      * to a few concurrent requests — filling [SolidSourceReference.headMetadata] for servers
      * that don't enrich the listing; leave it off (default) for the cheap single call.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param containerUri The container to list (trailing `/`).
      * @param enrichWithHead When `true`, HEAD each child (bounded concurrency) for full metadata.
      */
     public suspend fun listContainer(
-        webid: String,
+        webId: String,
         containerUri: URI,
         enrichWithHead: Boolean = false,
     ): SolidResult<List<SolidSourceReference>> {
-        val children = when (val r = read(webid, containerUri, SolidContainer::class.java)) {
+        val children = when (val r = read(webId, containerUri, SolidContainer::class.java)) {
             is SolidResult.Success -> r.value.getContained()
             is SolidResult.Failure -> return SolidResult.Failure(r.error)
         }
@@ -183,7 +183,7 @@ public interface SolidResourceManager {
             children.chunked(CONTAINER_FANOUT_LIMIT).flatMap { batch ->
                 batch.map { ref ->
                     async {
-                        head(webid, URI.create(ref.identifier)).getOrNull()
+                        head(webId, URI.create(ref.identifier)).getOrNull()
                             ?.let { ref.copy(headMetadata = it) } ?: ref
                     }
                 }.awaitAll()
@@ -204,10 +204,10 @@ public interface SolidResourceManager {
      *   transactional).
      */
     public suspend fun copy(
-        webid: String,
+        webId: String,
         sourceUri: URI,
         destinationUri: URI,
-    ): SolidResult<URI> = when (val result = copyTree(webid, sourceUri, destinationUri)) {
+    ): SolidResult<URI> = when (val result = copyTree(webId, sourceUri, destinationUri)) {
         is SolidResult.Success -> SolidResult.Success(destinationUri)
         is SolidResult.Failure -> result
     }
@@ -219,12 +219,12 @@ public interface SolidResourceManager {
      * can retry the delete.
      */
     public suspend fun move(
-        webid: String,
+        webId: String,
         sourceUri: URI,
         destinationUri: URI,
-    ): SolidResult<URI> = when (val copied = copy(webid, sourceUri, destinationUri)) {
+    ): SolidResult<URI> = when (val copied = copy(webId, sourceUri, destinationUri)) {
         is SolidResult.Failure -> copied
-        is SolidResult.Success -> when (val deleted = delete(webid, sourceUri)) {
+        is SolidResult.Success -> when (val deleted = delete(webId, sourceUri)) {
             is SolidResult.Success -> SolidResult.Success(destinationUri)
             is SolidResult.Failure -> deleted
         }
@@ -236,14 +236,14 @@ public interface SolidResourceManager {
      * has no parent (a storage root can't be renamed).
      */
     public suspend fun rename(
-        webid: String,
+        webId: String,
         sourceUri: URI,
         newName: String,
     ): SolidResult<URI> {
         val isContainer = sourceUri.toString().endsWith("/")
         val parent = parentContainerOfUri(sourceUri) ?: return SolidResult.Success(sourceUri)
         val name = if (isContainer && !newName.endsWith("/")) "$newName/" else newName
-        return move(webid, sourceUri, URI.create("$parent$name"))
+        return move(webId, sourceUri, URI.create("$parent$name"))
     }
 
     /**
@@ -255,11 +255,11 @@ public interface SolidResourceManager {
      * The default implementation falls back to a buffered [read]; the production manager
      * overrides it to stream straight off the network.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param uri   The resource to read.
      */
-    public suspend fun readStream(webid: String, uri: URI): SolidResult<StreamingResource> =
-        when (val r = read(webid, uri, SolidNonRDFResource::class.java)) {
+    public suspend fun readStream(webId: String, uri: URI): SolidResult<StreamingResource> =
+        when (val r = read(webId, uri, SolidNonRDFResource::class.java)) {
             is SolidResult.Success -> {
                 val res = r.value
                 val length = res.getSize().let { if (it > 0) it else -1L }
@@ -285,7 +285,7 @@ public interface SolidResourceManager {
      * @param openSource Factory returning a fresh body stream on each call.
      */
     public suspend fun writeStream(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         contentLength: Long? = null,
@@ -295,18 +295,18 @@ public interface SolidResourceManager {
     ): SolidResult<Unit> {
         val bytes = openSource().use { it.readBytes() }
         onProgress?.invoke(bytes.size.toLong(), bytes.size.toLong())
-        return putRaw(webid, uri, contentType, bytes, ifMatch, null)
+        return putRaw(webId, uri, contentType, bytes, ifMatch, null)
     }
 
     /**
      * Reads a resource from the pod.
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param resource The URI of the resource to read.
      * @param clazz The expected resource type (e.g. [com.erfangholami.androidsolidservices.shared.model.resource.RDFResource]).
      * @return [SolidResult.Success] with the resource, or a [SolidResult.Failure] carrying a typed [SolidError].
      */
     public suspend fun <T : Resource> read(
-        webid: String,
+        webId: String,
         resource: URI,
         clazz: Class<T>,
     ): SolidResult<T>
@@ -316,12 +316,12 @@ public interface SolidResourceManager {
      *
      * Fails with 409 Conflict if a resource already exists at the target URI.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param resource The resource to create; its identifier determines the target URI.
      * @return [SolidResult.Success] with the created resource.
      */
     public suspend fun <T : Resource> create(
-        webid: String,
+        webId: String,
         resource: T
     ): SolidResult<T>
 
@@ -351,14 +351,14 @@ public interface SolidResourceManager {
      * one-second-granularity optimistic concurrency instead of none. It is applied
      * only when [ifMatch] is `null`; a strong ETag always takes precedence.
      *
-     * @param webid    The WebID of the authenticated user making the request.
+     * @param webId    The WebID of the authenticated user making the request.
      * @param newResource The updated resource; its identifier determines the target URI.
      * @param ifMatch  See above. Defaults to `null` (unconditional PUT).
      * @param ifUnmodifiedSince Optional `Last-Modified` value for a weak-ETag fallback; see above.
      * @return [SolidResult.Success] with the updated resource.
      */
     public suspend fun <T : Resource> update(
-        webid: String,
+        webId: String,
         newResource: T,
         ifMatch: String? = null,
         ifUnmodifiedSince: String? = null,
@@ -377,14 +377,14 @@ public interface SolidResourceManager {
      * Pass [ifMatch] (the ETag from a previous [read] or [head] call) to issue a conditional
      * PATCH that fails with 412 if the resource was modified in the meantime.
      *
-     * @param webid   The WebID of the authenticated user making the request.
+     * @param webId   The WebID of the authenticated user making the request.
      * @param uri     The URI of the RDF resource to patch.
      * @param patch   The patch to apply.
      * @param ifMatch Optional ETag for a conditional PATCH.
      * @return [SolidResult.Success] with [Unit] on success.
      */
     public suspend fun patch(
-        webid: String,
+        webId: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String? = null,
@@ -400,14 +400,14 @@ public interface SolidResourceManager {
      * Pass [ifMatch] (the ETag from a previous [read] or [head] call) to issue a conditional
      * PATCH that fails with 412 if the resource was modified in the meantime.
      *
-     * @param webid     The WebID of the authenticated user making the request.
+     * @param webId     The WebID of the authenticated user making the request.
      * @param uri       The URI of the RDF resource to patch.
      * @param n3Body    The full `text/n3` patch document body.
      * @param ifMatch   Optional ETag for a conditional PATCH.
      * @return [SolidResult.Success] with [Unit] on success.
      */
     public suspend fun patchRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         n3Body: String,
         ifMatch: String? = null,
@@ -419,12 +419,12 @@ public interface SolidResourceManager {
      * When [resource] is a container (or its URI ends with `/`), all contained resources
      * are deleted recursively before the container itself is removed.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param resource The resource to delete.
      * @return [SolidResult.Success] with the deleted resource.
      */
     public suspend fun <T : Resource> delete(
-        webid: String,
+        webId: String,
         resource: T,
     ): SolidResult<T>
 
@@ -440,13 +440,13 @@ public interface SolidResourceManager {
      * honoured only for a single (non-container) resource; a recursive container delete can't be
      * performed atomically under one precondition, so it is ignored for container URIs.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param resourceUri The URI of the resource or container to delete.
      * @param ifMatch Optional ETag for a conditional delete of a single resource.
      * @return [SolidResult.Success] with `true` on success.
      */
     public suspend fun delete(
-        webid: String,
+        webId: String,
         resourceUri: URI,
         ifMatch: String? = null,
     ): SolidResult<Boolean>
@@ -490,7 +490,7 @@ public interface SolidResourceManager {
      * `application/n-triples`: no remote contexts, no compaction, no aliases
      * — just `<s> <p> <o> .` lines a Solid server can validate directly.
      *
-     * @param webid       The WebID of the authenticated user.
+     * @param webId       The WebID of the authenticated user.
      * @param uri         Target resource URI.
      * @param contentType Media type sent on `Content-Type`.
      * @param body        Bytes to send as the request body.
@@ -500,7 +500,7 @@ public interface SolidResourceManager {
      * @param linkHeader  Optional `Link:` header (e.g. for typed PUTs).
      */
     public suspend fun putRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
@@ -516,7 +516,7 @@ public interface SolidResourceManager {
      * container rather than a specific resource, and the server allocates
      * the new resource's URI.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param uri The container URI to POST to.
      * @param contentType The media type of [body].
      * @param body The bytes to send.
@@ -526,7 +526,7 @@ public interface SolidResourceManager {
      *   return one), or a [SolidResult.Failure] carrying a typed [SolidError].
      */
     public suspend fun post(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
@@ -546,7 +546,7 @@ public interface SolidResourceManager {
      * The [resource]'s identifier is used only to derive a `Slug` hint for the
      * server; the authoritative URI is the one the server returns.
      *
-     * @param webid The WebID of the authenticated user making the request.
+     * @param webId The WebID of the authenticated user making the request.
      * @param containerUri The container to POST the new member into.
      * @param resource The resource to create; its content and content-type are sent,
      *   its identifier supplies only a `Slug` hint.
@@ -554,7 +554,7 @@ public interface SolidResourceManager {
      *   (its `Location`), which may be `null` if the server did not return one.
      */
     public suspend fun <T : Resource> createInContainer(
-        webid: String,
+        webId: String,
         containerUri: URI,
         resource: T,
     ): SolidResult<URI?>
@@ -564,18 +564,18 @@ public interface SolidResourceManager {
      * a container is recreated and its children copied (bounded concurrency). Returns the
      * first failure, or `Success(Unit)` when the whole subtree copied.
      */
-    private suspend fun copyTree(webid: String, source: URI, dest: URI): SolidResult<Unit> {
+    private suspend fun copyTree(webId: String, source: URI, dest: URI): SolidResult<Unit> {
         if (!source.toString().endsWith("/")) {
-            val resource = when (val read = read(webid, source, SolidNonRDFResource::class.java)) {
+            val resource = when (val read = read(webId, source, SolidNonRDFResource::class.java)) {
                 is SolidResult.Success -> read.value
                 is SolidResult.Failure -> return SolidResult.Failure(read.error)
             }
             val bytes = resource.getEntity().use { it.readBytes() }
-            return putRaw(webid, dest, resource.getContentType(), bytes)
+            return putRaw(webId, dest, resource.getContentType(), bytes)
         }
-        val ensured = ensureContainer(webid, dest)
+        val ensured = ensureContainer(webId, dest)
         if (ensured is SolidResult.Failure) return ensured
-        val children = when (val list = listContainer(webid, source)) {
+        val children = when (val list = listContainer(webId, source)) {
             is SolidResult.Success -> list.value
             is SolidResult.Failure -> return SolidResult.Failure(list.error)
         }
@@ -586,7 +586,7 @@ public interface SolidResourceManager {
                 batch.map { child ->
                     async {
                         val rel = child.identifier.removePrefix(sourceStr)
-                        copyTree(webid, URI.create(child.identifier), URI.create("$destStr$rel"))
+                        copyTree(webId, URI.create(child.identifier), URI.create("$destStr$rel"))
                     }
                 }.awaitAll()
             }

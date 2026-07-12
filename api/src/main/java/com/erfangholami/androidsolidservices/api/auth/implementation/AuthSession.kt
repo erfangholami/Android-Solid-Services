@@ -27,9 +27,14 @@ internal interface AuthSession {
 }
 
 /**
- * Narrows a public [Authenticator] to its internal [AuthSession]. The library ships a single
- * [Authenticator] implementation, so this always succeeds for instances obtained from
- * [Authenticator.getInstance].
+ * Narrows a public [Authenticator] to its internal [AuthSession].
+ *
+ * This is a downcast, not a general conversion: it succeeds only for the library's own
+ * [Authenticator] (the one [Authenticator.getInstance] returns, which also implements
+ * [AuthSession]) and throws for any other implementation — e.g. a test double or mock. The
+ * transport layer is built exclusively from real instances, so within the library the cast is
+ * safe; the guard exists to fail loudly rather than silently mis-authenticate if that ever
+ * stops holding.
  */
 internal fun Authenticator.asSession(): AuthSession = this as? AuthSession
     ?: error("Authenticator must be obtained from Authenticator.getInstance(context).")

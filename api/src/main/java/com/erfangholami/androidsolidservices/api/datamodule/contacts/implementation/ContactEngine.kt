@@ -32,7 +32,7 @@ internal class ContactEngine(
         SolidContact.createFromRdf(pod.contact(ownerWebId, URI.create(contactUri)))
     }
 
-    override suspend fun getAll(
+    override suspend fun list(
         ownerWebId: String,
         addressBookUri: String,
     ): SolidResult<SolidContactList> = runResult {
@@ -140,7 +140,7 @@ internal class ContactEngine(
         val contactContainer = contactUri.substringBefore(INDEX_FILE_NAME)
         val photoUri = "${contactContainer}photo${extensionFor(contentType)}"
         pod.solidResourceManager.putRaw(
-            webid = ownerWebId,
+            webId = ownerWebId,
             uri = URI.create(photoUri),
             contentType = contentType,
             body = photo,

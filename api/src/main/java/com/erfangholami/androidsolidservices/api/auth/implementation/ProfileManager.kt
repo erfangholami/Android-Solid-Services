@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.api.auth.implementation
 import android.content.Context
 import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import com.erfangholami.androidsolidservices.shared.model.profile.ProfileList
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import com.erfangholami.androidsolidservices.api.repository.UserRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -63,6 +64,15 @@ internal class ProfileManager private constructor(
     val isAuthorizedFlow: StateFlow<Boolean> = loggedInProfilesFlow
         .map { it.isNotEmpty() }
         .stateIn(scope, SharingStarted.Eagerly, false)
+
+    /** Public, AppAuth-free projections of [activeProfileFlow] / [loggedInProfilesFlow]. */
+    val activeAccountFlow: StateFlow<SolidAccount?> = activeProfileFlow
+        .map { it?.toAccount() }
+        .stateIn(scope, SharingStarted.Eagerly, null)
+
+    val loggedInAccountsFlow: StateFlow<List<SolidAccount>> = loggedInProfilesFlow
+        .map { profiles -> profiles.map { it.toAccount() } }
+        .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     init {
         scope.launch {

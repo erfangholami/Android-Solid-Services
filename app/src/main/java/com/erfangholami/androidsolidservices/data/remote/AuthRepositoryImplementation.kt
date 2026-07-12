@@ -3,7 +3,7 @@ package com.erfangholami.androidsolidservices.data.remote
 import android.content.Intent
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.StateFlow
@@ -13,16 +13,16 @@ class AuthRepositoryImplementation @Inject constructor(
     private val authenticator: Authenticator,
 ) : AuthRepository {
 
-    override val activeProfileFlow: StateFlow<Profile?> = authenticator.activeProfileFlow
-    override val loggedInProfilesFlow: StateFlow<List<Profile>> = authenticator.loggedInProfilesFlow
+    override val activeProfileFlow: StateFlow<SolidAccount?> = authenticator.activeProfileFlow
+    override val loggedInProfilesFlow: StateFlow<List<SolidAccount>> = authenticator.loggedInProfilesFlow
     override val isAuthorizedFlow: StateFlow<Boolean> = authenticator.isAuthorizedFlow
     override val activeWebIdFlow: StateFlow<String?> = authenticator.activeWebIdFlow
 
     override fun isUserAuthorized(): Boolean = authenticator.isUserAuthorized()
 
-    override fun getAllLoggedInProfiles(): List<Profile> = authenticator.getAllLoggedInProfiles()
+    override fun getAllLoggedInProfiles(): List<SolidAccount> = authenticator.getAllLoggedInProfiles()
 
-    override fun getProfile(webId: String): Profile = authenticator.getProfile(webId)
+    override fun getProfile(webId: String): SolidAccount = authenticator.getProfile(webId)
 
     override suspend fun createAuthenticationIntent(
         webId: String?,

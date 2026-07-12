@@ -3,7 +3,7 @@ package com.erfangholami.androidsolidservices.api.auth
 import android.content.Context
 import android.content.Intent
 import com.erfangholami.androidsolidservices.api.auth.implementation.AuthenticatorImplementation
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -25,10 +25,10 @@ public interface Authenticator {
             AuthenticatorImplementation.getInstance(context)
     }
 
-    /** Emits the currently active [Profile], or `null` if no user is active. */
-    public val activeProfileFlow: StateFlow<Profile?>
-    /** Emits the list of all currently signed-in profiles. */
-    public val loggedInProfilesFlow: StateFlow<List<Profile>>
+    /** Emits the currently active [SolidAccount], or `null` if no user is active. */
+    public val activeProfileFlow: StateFlow<SolidAccount?>
+    /** Emits the list of all currently signed-in accounts. */
+    public val loggedInProfilesFlow: StateFlow<List<SolidAccount>>
     /** Emits `true` when at least one user is fully authorized. */
     public val isAuthorizedFlow: StateFlow<Boolean>
     /** Emits the WebID of the active user, or `null` if no user is active. */
@@ -83,27 +83,27 @@ public interface Authenticator {
 
     /** Returns `true` if at least one user is fully authorized. */
     public fun isUserAuthorized(): Boolean
-    /** Returns all currently signed-in profiles. */
-    public fun getAllLoggedInProfiles(): List<Profile>
-    /** Returns the profile for [webId]. Throws if not found. */
-    public fun getProfile(webId: String): Profile
-    /** Returns the currently active profile. Throws if no user is active. */
-    public fun getActiveProfile(): Profile
+    /** Returns all currently signed-in accounts. */
+    public fun getAllLoggedInProfiles(): List<SolidAccount>
+    /** Returns the account for [webId]. Throws if not found. */
+    public fun getProfile(webId: String): SolidAccount
+    /** Returns the currently active account. Throws if no user is active. */
+    public fun getActiveProfile(): SolidAccount
 
     /**
      * Re-fetches the WebID profile document for [webId] from the pod and
      * persists the refreshed [com.erfangholami.androidsolidservices.shared.model.profile.WebId]
-     * into the stored [Profile], leaving its auth state and user info untouched.
+     * into the stored account, leaving its auth state and user info untouched.
      *
      * Use this after writing changes to a user's own WebID document (e.g. an
-     * in-app profile edit) so the cached profile — and every flow derived from
+     * in-app profile edit) so the cached account — and every flow derived from
      * it ([activeProfileFlow], [loggedInProfilesFlow]) — reflects the new data
      * without requiring the user to sign out and back in.
      *
      * @param webId The WebID of an authorized, signed-in user.
-     * @return The updated [Profile].
+     * @return The updated [SolidAccount].
      */
-    public suspend fun reloadProfile(webId: String): Profile
+    public suspend fun reloadProfile(webId: String): SolidAccount
 
     /** Returns the WebID of the active user, or `null` if no user is active. */
     public suspend fun getActiveWebId(): String?

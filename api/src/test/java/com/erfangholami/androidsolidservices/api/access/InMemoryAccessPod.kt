@@ -46,7 +46,7 @@ internal class InMemoryAccessPod : SolidResourceManager {
 
     private fun isAclUri(s: String): Boolean = s.endsWith(".acl")
 
-    override suspend fun head(webid: String, uri: URI): SolidResult<SolidMetadata> {
+    override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> {
         val s = uri.toString()
         return if (isAclUri(s)) {
             stored[s]?.let {
@@ -59,7 +59,7 @@ internal class InMemoryAccessPod : SolidResourceManager {
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> read(
-        webid: String,
+        webId: String,
         resource: URI,
         clazz: Class<T>,
     ): SolidResult<T> {
@@ -79,7 +79,7 @@ internal class InMemoryAccessPod : SolidResourceManager {
     }
 
     override suspend fun putRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
@@ -103,41 +103,41 @@ internal class InMemoryAccessPod : SolidResourceManager {
 
     override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> = head("", uri)
 
-    override suspend fun <T : Resource> create(webid: String, resource: T): SolidResult<T> =
+    override suspend fun <T : Resource> create(webId: String, resource: T): SolidResult<T> =
         notImplemented()
 
     override suspend fun <T : Resource> update(
-        webid: String,
+        webId: String,
         newResource: T,
         ifMatch: String?,
         ifUnmodifiedSince: String?,
     ): SolidResult<T> = notImplemented()
 
     override suspend fun patch(
-        webid: String,
+        webId: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
     override suspend fun patchRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
     override suspend fun delete(
-        webid: String,
+        webId: String,
         resourceUri: URI,
         ifMatch: String?,
     ): SolidResult<Boolean> = notImplemented()
 
-    override suspend fun <T : Resource> delete(webid: String, resource: T): SolidResult<T> =
+    override suspend fun <T : Resource> delete(webId: String, resource: T): SolidResult<T> =
         notImplemented()
 
     override suspend fun post(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
@@ -145,7 +145,7 @@ internal class InMemoryAccessPod : SolidResourceManager {
     ): SolidResult<URI?> = notImplemented()
 
     override suspend fun <T : Resource> createInContainer(
-        webid: String,
+        webId: String,
         containerUri: URI,
         resource: T,
     ): SolidResult<URI?> = notImplemented()

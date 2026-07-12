@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.GrantAppAccessUseCase
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class ProfileSelectionUiState(
-    val profiles: List<Profile> = emptyList(),
+    val profiles: List<SolidAccount> = emptyList(),
 )
 
 @HiltViewModel

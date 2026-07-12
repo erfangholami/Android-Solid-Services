@@ -12,11 +12,11 @@ import org.json.JSONObject
  */
 internal object IdTokenClaims {
 
-    /** The caller's WebID: the `webid` claim, falling back to `sub`. */
+    /** The caller's WebID: the `webId` claim, falling back to `sub`. */
     fun webId(idToken: String): String =
         try {
             val claims = payload(idToken)
-            claims.optString("webid").takeIf { it.isNotEmpty() } ?: claims.getString("sub")
+            claims.optString("webId").takeIf { it.isNotEmpty() } ?: claims.getString("sub")
         } catch (ex: Exception) {
             throw IllegalStateException("Unable to parse ID token", ex)
         }

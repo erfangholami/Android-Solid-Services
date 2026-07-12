@@ -22,6 +22,7 @@ import com.erfangholami.androidsolidservices.api.auth.preferredTokenEndpointAuth
 import com.erfangholami.androidsolidservices.api.auth.supportsDPop
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
@@ -90,8 +91,8 @@ internal class AuthenticatorImplementation internal constructor(
      */
     private val recentRefresh = ConcurrentHashMap<String, Pair<Long, Profile>>()
 
-    override val activeProfileFlow: StateFlow<Profile?> get() = profileManager.activeProfileFlow
-    override val loggedInProfilesFlow: StateFlow<List<Profile>> get() = profileManager.loggedInProfilesFlow
+    override val activeProfileFlow: StateFlow<SolidAccount?> get() = profileManager.activeAccountFlow
+    override val loggedInProfilesFlow: StateFlow<List<SolidAccount>> get() = profileManager.loggedInAccountsFlow
     override val isAuthorizedFlow: StateFlow<Boolean> get() = profileManager.isAuthorizedFlow
     override val activeWebIdFlow: StateFlow<String?> get() = profileManager.activeWebIdFlow
 
@@ -216,7 +217,7 @@ internal class AuthenticatorImplementation internal constructor(
         // Solid-OIDC: the issuer that minted this token must be one the WebID document explicitly
         // authorizes via solid:oidcIssuer. If the profile declares none — or none that match — the
         // issuer cannot be trusted to speak for this WebID, so the login is rejected rather than
-        // accepting an unverified `webid` claim.
+        // accepting an unverified `webId` claim.
         val tokenIss = IdTokenClaims.issuer(idToken)?.trimEnd('/')
         val declaredIssuers = webIdProfile.getOidcIssuers().map { it.toString().trimEnd('/') }
         if (tokenIss == null || tokenIss !in declaredIssuers) {
@@ -301,11 +302,12 @@ internal class AuthenticatorImplementation internal constructor(
     }
 
     override fun isUserAuthorized(): Boolean = profileManager.isUserAuthorized()
-    override fun getAllLoggedInProfiles(): List<Profile> = profileManager.getAllLoggedInProfiles()
-    override fun getProfile(webId: String): Profile = profileManager.getProfile(webId)
-    override fun getActiveProfile(): Profile = profileManager.getActiveProfile()
+    override fun getAllLoggedInProfiles(): List<SolidAccount> =
+        profileManager.getAllLoggedInProfiles().map { it.toAccount() }
+    override fun getProfile(webId: String): SolidAccount = profileManager.getProfile(webId).toAccount()
+    override fun getActiveProfile(): SolidAccount = profileManager.getActiveProfile().toAccount()
 
-    override suspend fun reloadProfile(webId: String): Profile {
+    override suspend fun reloadProfile(webId: String): SolidAccount {
         profileManager.awaitInit()
         val profile = profileManager.getProfile(webId)
         getLastTokenResponse(webId)
@@ -317,7 +319,7 @@ internal class AuthenticatorImplementation internal constructor(
         )
         val updated = profileManager.getProfile(webId).copy(webId = refreshedWebId)
         profileManager.writeProfile(webId, updated)
-        return updated
+        return updated.toAccount()
     }
 
     override suspend fun getActiveWebId(): String? {

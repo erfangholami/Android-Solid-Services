@@ -14,7 +14,7 @@ internal object OidcConstants {
 
     internal const val AUTHORIZATION_REQUEST_PROMPT_CONSENT : String = "consent"
     internal const val AUTHORIZATION_REQUEST_PROMPT_LOGIN : String = "login"
-    internal const val AUTHORIZATION_REQUEST_SCOPE_WEBID : String = "webid"
+    internal const val AUTHORIZATION_REQUEST_SCOPE_WEBID : String = "webId"
     internal const val AUTHORIZATION_REQUEST_SCOPE_OPENID : String = "openid"
     internal const val AUTHORIZATION_REQUEST_SCOPE_OFFLINE_ACCESS : String = "offline_access"
 

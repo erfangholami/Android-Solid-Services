@@ -23,10 +23,10 @@ public interface ContactStore {
     ): SolidResult<SolidContact>
 
     /**
-     * Fetches every contact of the address book at [addressBookUri] with full detail.
+     * Lists every contact of the address book at [addressBookUri] with full detail.
      * Contact documents are fetched concurrently; the call is all-or-nothing.
      */
-    public suspend fun getAll(
+    public suspend fun list(
         ownerWebId: String,
         addressBookUri: String,
     ): SolidResult<SolidContactList>

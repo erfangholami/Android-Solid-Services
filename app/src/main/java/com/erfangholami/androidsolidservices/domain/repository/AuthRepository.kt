@@ -1,19 +1,19 @@
 package com.erfangholami.androidsolidservices.domain.repository
 
 import android.content.Intent
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import kotlinx.coroutines.flow.StateFlow
 
 interface AuthRepository {
 
-    val activeProfileFlow: StateFlow<Profile?>
-    val loggedInProfilesFlow: StateFlow<List<Profile>>
+    val activeProfileFlow: StateFlow<SolidAccount?>
+    val loggedInProfilesFlow: StateFlow<List<SolidAccount>>
     val isAuthorizedFlow: StateFlow<Boolean>
     val activeWebIdFlow: StateFlow<String?>
 
     fun isUserAuthorized(): Boolean
-    fun getAllLoggedInProfiles(): List<Profile>
-    fun getProfile(webId: String): Profile
+    fun getAllLoggedInProfiles(): List<SolidAccount>
+    fun getProfile(webId: String): SolidAccount
 
     suspend fun createAuthenticationIntent(
         webId: String? = null,

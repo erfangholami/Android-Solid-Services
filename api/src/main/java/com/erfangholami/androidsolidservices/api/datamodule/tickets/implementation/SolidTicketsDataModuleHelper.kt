@@ -110,7 +110,7 @@ internal class SolidTicketsDataModuleHelper {
             val artifactUri =
                 "${ticketsContainer}${ticketId}${artifactExtensionFor(contentType)}"
             solidResourceManager.putRaw(
-                webid = ownerWebId,
+                webId = ownerWebId,
                 uri = URI.create(artifactUri),
                 contentType = contentType,
                 body = artifact,

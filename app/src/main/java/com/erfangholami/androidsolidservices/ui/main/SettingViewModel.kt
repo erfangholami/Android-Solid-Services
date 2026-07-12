@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.LogoutAllUseCase
 import com.erfangholami.androidsolidservices.domain.usecase.LogoutUseCase
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SettingUiState(
-    val accounts: List<Profile> = emptyList(),
+    val accounts: List<SolidAccount> = emptyList(),
     val activeWebId: String = "",
     val logoutLoading: Boolean = false,
 )

@@ -61,7 +61,7 @@ class CasUpdateTest {
 
         @Suppress("UNCHECKED_CAST")
         override suspend fun <T : Resource> read(
-            webid: String,
+            webId: String,
             resource: URI,
             clazz: Class<T>,
         ): SolidResult<T> {
@@ -75,7 +75,7 @@ class CasUpdateTest {
         }
 
         override suspend fun <T : Resource> update(
-            webid: String,
+            webId: String,
             newResource: T,
             ifMatch: String?,
             ifUnmodifiedSince: String?,
@@ -97,16 +97,16 @@ class CasUpdateTest {
             return SolidResult.Success(newResource)
         }
 
-        override suspend fun <T : Resource> create(webid: String, resource: T) = notImpl<T>()
-        override suspend fun delete(webid: String, resourceUri: URI, ifMatch: String?) = notImpl<Boolean>()
-        override suspend fun <T : Resource> delete(webid: String, resource: T) = notImpl<T>()
-        override suspend fun head(webid: String, uri: URI) = notImpl<SolidMetadata>()
+        override suspend fun <T : Resource> create(webId: String, resource: T) = notImpl<T>()
+        override suspend fun delete(webId: String, resourceUri: URI, ifMatch: String?) = notImpl<Boolean>()
+        override suspend fun <T : Resource> delete(webId: String, resource: T) = notImpl<T>()
+        override suspend fun head(webId: String, uri: URI) = notImpl<SolidMetadata>()
         override suspend fun headPublic(uri: URI) = notImpl<SolidMetadata>()
         override suspend fun <T : Resource> readPublic(uri: URI, clazz: Class<T>) = notImpl<T>()
-        override suspend fun patch(webid: String, uri: URI, patch: N3Patch, ifMatch: String?) = notImpl<Unit>()
-        override suspend fun patchRaw(webid: String, uri: URI, n3Body: String, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun patch(webId: String, uri: URI, patch: N3Patch, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun patchRaw(webId: String, uri: URI, n3Body: String, ifMatch: String?) = notImpl<Unit>()
         override suspend fun putRaw(
-            webid: String,
+            webId: String,
             uri: URI,
             contentType: String,
             body: ByteArray,
@@ -115,7 +115,7 @@ class CasUpdateTest {
         ) = notImpl<Unit>()
 
         override suspend fun post(
-            webid: String,
+            webId: String,
             uri: URI,
             contentType: String,
             body: ByteArray,
@@ -123,7 +123,7 @@ class CasUpdateTest {
         ) = notImpl<URI?>()
 
         override suspend fun <T : Resource> createInContainer(
-            webid: String,
+            webId: String,
             containerUri: URI,
             resource: T,
         ) = notImpl<URI?>()

@@ -49,7 +49,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.erfangholami.androidsolidservices.R
 import com.erfangholami.androidsolidservices.services.PendingLoginRequests
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import com.erfangholami.androidsolidservices.ui.theme.ASSAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -122,7 +122,7 @@ class ProfileSelectionActivity : ComponentActivity() {
 private fun ProfileSelectionScreen(
     callerName: String,
     callerIcon: Bitmap?,
-    profiles: List<Profile>,
+    profiles: List<SolidAccount>,
     onProfileSelected: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {

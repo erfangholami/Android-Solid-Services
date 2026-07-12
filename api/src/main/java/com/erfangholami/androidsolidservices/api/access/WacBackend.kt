@@ -324,7 +324,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
     ) {
         val body = NTriples.serialize(acl.getAllQuads()).toByteArray(Charsets.UTF_8)
         val result = rm.putRaw(
-            webid = webId,
+            webId = webId,
             uri = aclUri,
             contentType = NTriples.MEDIA_TYPE,
             body = body,

@@ -33,7 +33,7 @@ import org.json.JSONObject
  *   "accessControl": [ { "id": "<ac>", "type": "AccessControl", "apply": [
  *     { "id": "<policy>", "type": "Policy", "allow": ["acl#Read", …],
  *       "allOf": [ { "id": "<matcher>", "type": "Matcher",
- *                    "agent": ["acp#PublicAgent" | "<webid>"] } ] } ] } ] }
+ *                    "agent": ["acp#PublicAgent" | "<webId>"] } ] } ] } ] }
  * ```
  */
 internal object InruptAcrJson {

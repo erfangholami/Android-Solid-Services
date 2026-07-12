@@ -100,19 +100,19 @@ internal class UserRepositoryImplementation private constructor(
         return context.preferencesDataStore.data.map { it[ACTIVE_WEB_ID_KEY] }
     }
 
-    override suspend fun writeProfile(webid: String, profile: Profile) {
+    override suspend fun writeProfile(webId: String, profile: Profile) {
         context.profilesDataStore.updateData {
             it.copy(profiles = it.profiles.toMutableMap().apply {
-                put(webid, profile)
+                put(webId, profile)
             })
         }
     }
 
-    override suspend fun removeProfile(webid: String) {
+    override suspend fun removeProfile(webId: String) {
         context.profilesDataStore.updateData {
-            if (it.contains(webid)) {
+            if (it.contains(webId)) {
                 it.copy(profiles = it.profiles.toMutableMap().apply {
-                    remove(webid)
+                    remove(webId)
                 })
             } else {
                 it

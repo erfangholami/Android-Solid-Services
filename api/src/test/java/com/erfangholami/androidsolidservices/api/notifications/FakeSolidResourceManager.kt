@@ -23,7 +23,7 @@ internal class FakeSolidResourceManager(
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> read(
-        webid: String,
+        webId: String,
         resource: URI,
         clazz: Class<T>,
     ): SolidResult<T> = onRead(resource) as SolidResult<T>
@@ -34,14 +34,14 @@ internal class FakeSolidResourceManager(
         clazz: Class<T>,
     ): SolidResult<T> = onReadPublic(uri) as SolidResult<T>
 
-    override suspend fun head(webid: String, uri: URI): SolidResult<SolidMetadata> =
+    override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> =
         onHead(uri)
 
     override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> =
         onHeadPublic(uri)
 
     override suspend fun post(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
@@ -49,42 +49,42 @@ internal class FakeSolidResourceManager(
     ): SolidResult<URI?> = onPost(uri)
 
     override suspend fun delete(
-        webid: String,
+        webId: String,
         resourceUri: URI,
         ifMatch: String?,
     ): SolidResult<Boolean> = onDelete(resourceUri)
 
     @Suppress("UNCHECKED_CAST")
-    override suspend fun <T : Resource> create(webid: String, resource: T): SolidResult<T> =
+    override suspend fun <T : Resource> create(webId: String, resource: T): SolidResult<T> =
         onCreate(resource) as SolidResult<T>
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> update(
-        webid: String,
+        webId: String,
         newResource: T,
         ifMatch: String?,
         ifUnmodifiedSince: String?,
     ): SolidResult<T> = onUpdate(newResource) as SolidResult<T>
 
     override suspend fun patch(
-        webid: String,
+        webId: String,
         uri: URI,
         patch: N3Patch,
         ifMatch: String?,
     ): SolidResult<Unit> = onPatch(uri, patch)
 
     override suspend fun patchRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
-    override suspend fun <T : Resource> delete(webid: String, resource: T): SolidResult<T> =
+    override suspend fun <T : Resource> delete(webId: String, resource: T): SolidResult<T> =
         notImplemented()
 
     override suspend fun putRaw(
-        webid: String,
+        webId: String,
         uri: URI,
         contentType: String,
         body: ByteArray,
@@ -93,7 +93,7 @@ internal class FakeSolidResourceManager(
     ): SolidResult<Unit> = onPutRaw(uri, body, contentType)
 
     override suspend fun <T : Resource> createInContainer(
-        webid: String,
+        webId: String,
         containerUri: URI,
         resource: T,
     ): SolidResult<URI?> = notImplemented()

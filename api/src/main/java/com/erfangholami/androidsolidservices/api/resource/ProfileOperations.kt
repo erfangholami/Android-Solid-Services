@@ -92,7 +92,7 @@ public suspend fun SolidResourceManager.setAvatar(
     val avatarUri = "${container}avatar${avatarExtension(contentType)}"
 
     val put = putRaw(
-        webid = webId,
+        webId = webId,
         uri = URI.create(avatarUri),
         contentType = contentType,
         body = avatar,
