@@ -4,6 +4,8 @@ import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.auth.implementation.asSession
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.api.resource.StreamingResource
+import java.io.InputStream
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
@@ -219,6 +221,20 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     ): SolidResult<Unit> = withContext(Dispatchers.IO) {
         solidHttpClient.putRaw(webid, uri, contentType, body, ifMatch, linkHeader)
     }
+
+    override suspend fun readStream(webid: String, uri: URI): SolidResult<StreamingResource> =
+        solidHttpClient.getStream(webid, uri)
+
+    override suspend fun writeStream(
+        webid: String,
+        uri: URI,
+        contentType: String,
+        contentLength: Long?,
+        ifMatch: String?,
+        onProgress: ((bytesWritten: Long, total: Long?) -> Unit)?,
+        openSource: () -> InputStream,
+    ): SolidResult<Unit> =
+        solidHttpClient.putStream(webid, uri, contentType, contentLength, ifMatch, onProgress, openSource)
 
     override suspend fun <T : Resource> readPublic(
         uri: URI,

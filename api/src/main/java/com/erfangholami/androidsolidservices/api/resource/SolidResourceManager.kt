@@ -15,6 +15,7 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import java.io.InputStream
 import java.net.URI
 
 /**
@@ -243,6 +244,58 @@ public interface SolidResourceManager {
         val parent = parentContainerOfUri(sourceUri) ?: return SolidResult.Success(sourceUri)
         val name = if (isContainer && !newName.endsWith("/")) "$newName/" else newName
         return move(webid, sourceUri, URI.create("$parent$name"))
+    }
+
+    /**
+     * Reads the resource at [uri] as an unbuffered [StreamingResource] — its body is exposed
+     * as a live stream rather than materialised into a `ByteArray`, so large downloads don't
+     * sit in memory. Track download progress by counting bytes as you read the stream. The
+     * caller **must** [StreamingResource.close] it (the network response stays open until then).
+     *
+     * The default implementation falls back to a buffered [read]; the production manager
+     * overrides it to stream straight off the network.
+     *
+     * @param webid The WebID of the authenticated user making the request.
+     * @param uri   The resource to read.
+     */
+    public suspend fun readStream(webid: String, uri: URI): SolidResult<StreamingResource> =
+        when (val r = read(webid, uri, SolidNonRDFResource::class.java)) {
+            is SolidResult.Success -> {
+                val res = r.value
+                val length = res.getSize().let { if (it > 0) it else -1L }
+                SolidResult.Success(StreamingResource(uri, res.getContentType(), length, res.getEntity()) {})
+            }
+            is SolidResult.Failure -> SolidResult.Failure(r.error)
+        }
+
+    /**
+     * Writes a resource at [uri] by streaming its body from [openSource] rather than holding
+     * it all in memory, invoking [onProgress] as bytes are sent.
+     *
+     * [openSource] must return a **fresh** stream each time it is called: the request may be
+     * re-sent (DPoP-nonce priming, token refresh), and each attempt re-opens the source. Pass
+     * [contentLength] when known (enables a definite `Content-Length` and a total in
+     * [onProgress]); omit it for chunked transfer. [ifMatch] applies the usual conditional-write
+     * precondition.
+     *
+     * The default implementation buffers [openSource] and delegates to [putRaw]; the production
+     * manager overrides it to stream straight to the network.
+     *
+     * @param onProgress Called with (bytes written so far, total or `null` when unknown).
+     * @param openSource Factory returning a fresh body stream on each call.
+     */
+    public suspend fun writeStream(
+        webid: String,
+        uri: URI,
+        contentType: String,
+        contentLength: Long? = null,
+        ifMatch: String? = null,
+        onProgress: ((bytesWritten: Long, total: Long?) -> Unit)? = null,
+        openSource: () -> InputStream,
+    ): SolidResult<Unit> {
+        val bytes = openSource().use { it.readBytes() }
+        onProgress?.invoke(bytes.size.toLong(), bytes.size.toLong())
+        return putRaw(webid, uri, contentType, bytes, ifMatch, null)
     }
 
     /**

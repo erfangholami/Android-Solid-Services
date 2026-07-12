@@ -234,6 +234,48 @@ class SolidHttpClientTest {
     }
 
     @Test
+    fun `getStream returns the response body as a live stream`() {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setHeader("Content-Type", "text/plain").setBody("streamed body"),
+        )
+
+        val body = runBlocking {
+            client.getStream(webId, url("/r")).getOrThrow().use { it.stream().readBytes().decodeToString() }
+        }
+
+        assertEquals("streamed body", body)
+    }
+
+    @Test
+    fun `putStream streams the body, reports progress, and re-opens the source on a nonce retry`() {
+        server.enqueue(
+            MockResponse().setResponseCode(401)
+                .addHeader("WWW-Authenticate", "DPoP error=\"use_dpop_nonce\"")
+                .addHeader("DPoP-Nonce", "n1"),
+        )
+        server.enqueue(MockResponse().setResponseCode(201))
+
+        var opens = 0
+        val progress = mutableListOf<Long>()
+        val result = runBlocking {
+            client.putStream(
+                webId, url("/r"), "text/plain",
+                contentLength = 5L, ifMatch = null, onProgress = { written, _ -> progress += written },
+            ) {
+                opens++
+                "hello".byteInputStream()
+            }
+        }
+
+        assertTrue(result is SolidResult.Success)
+        assertEquals(2, server.requestCount)
+        assertEquals("the source is re-opened for the retried request", 2, opens)
+        assertTrue("progress was reported", progress.isNotEmpty())
+        server.takeRequest()
+        assertEquals("the streamed body reaches the server", "hello", server.takeRequest().body.readUtf8())
+    }
+
+    @Test
     fun `post returns the server-allocated Location URI`() {
         server.enqueue(
             MockResponse().setResponseCode(201)
