@@ -2,13 +2,19 @@ package com.erfangholami.androidsolidservices.api.resource
 
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidResourceManagerImplementation
+import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidSourceReference
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.net.URI
 
 /**
@@ -146,6 +152,97 @@ public interface SolidResourceManager {
         return SolidResult.Success(
             if (modes.isEmpty()) AccessProbe.Denied else AccessProbe.Accessible(modes, owner),
         )
+    }
+
+    /**
+     * Lists the resources directly contained in the container at [containerUri].
+     *
+     * This is a **single** GET: each [SolidSourceReference] is built from the container's
+     * own representation (which Solid servers SHOULD enrich with `stat:size` /
+     * `dcterms:modified` / `rdf:type`), so it avoids the 1-GET-plus-N-HEAD fan-out of
+     * heading every child. Pass [enrichWithHead] to additionally HEAD each child — bounded
+     * to a few concurrent requests — filling [SolidSourceReference.headMetadata] for servers
+     * that don't enrich the listing; leave it off (default) for the cheap single call.
+     *
+     * @param webid The WebID of the authenticated user making the request.
+     * @param containerUri The container to list (trailing `/`).
+     * @param enrichWithHead When `true`, HEAD each child (bounded concurrency) for full metadata.
+     */
+    public suspend fun listContainer(
+        webid: String,
+        containerUri: URI,
+        enrichWithHead: Boolean = false,
+    ): SolidResult<List<SolidSourceReference>> {
+        val children = when (val r = read(webid, containerUri, SolidContainer::class.java)) {
+            is SolidResult.Success -> r.value.getContained()
+            is SolidResult.Failure -> return SolidResult.Failure(r.error)
+        }
+        if (!enrichWithHead || children.isEmpty()) return SolidResult.Success(children)
+        val enriched = coroutineScope {
+            children.chunked(CONTAINER_FANOUT_LIMIT).flatMap { batch ->
+                batch.map { ref ->
+                    async {
+                        head(webid, URI.create(ref.identifier)).getOrNull()
+                            ?.let { ref.copy(headMetadata = it) } ?: ref
+                    }
+                }.awaitAll()
+            }
+        }
+        return SolidResult.Success(enriched)
+    }
+
+    /**
+     * Copies the resource (or whole container tree) at [sourceUri] to [destinationUri].
+     *
+     * Server-agnostic — it reads each leaf's bytes and re-`PUT`s them verbatim (preserving
+     * content-type for both RDF and binary resources) rather than relying on the non-standard
+     * `COPY` verb; a container is recreated and its children copied (bounded concurrency).
+     *
+     * @return [SolidResult.Success] with [destinationUri] on a fully-copied tree, or the first
+     *   [SolidResult.Failure] encountered (a partially-copied tree may remain — the copy is not
+     *   transactional).
+     */
+    public suspend fun copy(
+        webid: String,
+        sourceUri: URI,
+        destinationUri: URI,
+    ): SolidResult<URI> = when (val result = copyTree(webid, sourceUri, destinationUri)) {
+        is SolidResult.Success -> SolidResult.Success(destinationUri)
+        is SolidResult.Failure -> result
+    }
+
+    /**
+     * Moves the resource (or container tree) at [sourceUri] to [destinationUri]: a [copy]
+     * followed by a [delete] of the source. **Not transactional** — if the copy succeeds but
+     * the source delete fails, both locations exist and the failure is returned so the caller
+     * can retry the delete.
+     */
+    public suspend fun move(
+        webid: String,
+        sourceUri: URI,
+        destinationUri: URI,
+    ): SolidResult<URI> = when (val copied = copy(webid, sourceUri, destinationUri)) {
+        is SolidResult.Failure -> copied
+        is SolidResult.Success -> when (val deleted = delete(webid, sourceUri)) {
+            is SolidResult.Success -> SolidResult.Success(destinationUri)
+            is SolidResult.Failure -> deleted
+        }
+    }
+
+    /**
+     * Renames the resource (or container) at [sourceUri] to [newName], keeping it in the same
+     * parent container — a [move] to the sibling URI. Returns the source URI unchanged when it
+     * has no parent (a storage root can't be renamed).
+     */
+    public suspend fun rename(
+        webid: String,
+        sourceUri: URI,
+        newName: String,
+    ): SolidResult<URI> {
+        val isContainer = sourceUri.toString().endsWith("/")
+        val parent = parentContainerOfUri(sourceUri) ?: return SolidResult.Success(sourceUri)
+        val name = if (isContainer && !newName.endsWith("/")) "$newName/" else newName
+        return move(webid, sourceUri, URI.create("$parent$name"))
     }
 
     /**
@@ -408,7 +505,45 @@ public interface SolidResourceManager {
         containerUri: URI,
         resource: T,
     ): SolidResult<URI?>
+
+    /**
+     * Recursively copies [source] to [dest]: a leaf is read as raw bytes and re-`PUT`,
+     * a container is recreated and its children copied (bounded concurrency). Returns the
+     * first failure, or `Success(Unit)` when the whole subtree copied.
+     */
+    private suspend fun copyTree(webid: String, source: URI, dest: URI): SolidResult<Unit> {
+        if (!source.toString().endsWith("/")) {
+            val resource = when (val read = read(webid, source, SolidNonRDFResource::class.java)) {
+                is SolidResult.Success -> read.value
+                is SolidResult.Failure -> return SolidResult.Failure(read.error)
+            }
+            val bytes = resource.getEntity().use { it.readBytes() }
+            return putRaw(webid, dest, resource.getContentType(), bytes)
+        }
+        val ensured = ensureContainer(webid, dest)
+        if (ensured is SolidResult.Failure) return ensured
+        val children = when (val list = listContainer(webid, source)) {
+            is SolidResult.Success -> list.value
+            is SolidResult.Failure -> return SolidResult.Failure(list.error)
+        }
+        val sourceStr = source.toString()
+        val destStr = dest.toString().let { if (it.endsWith("/")) it else "$it/" }
+        val results = coroutineScope {
+            children.chunked(CONTAINER_FANOUT_LIMIT).flatMap { batch ->
+                batch.map { child ->
+                    async {
+                        val rel = child.identifier.removePrefix(sourceStr)
+                        copyTree(webid, URI.create(child.identifier), URI.create("$destStr$rel"))
+                    }
+                }.awaitAll()
+            }
+        }
+        return results.firstOrNull { it is SolidResult.Failure } ?: SolidResult.Success(Unit)
+    }
 }
+
+/** Max concurrent per-child requests when listing (enriched) or copying a container. */
+private const val CONTAINER_FANOUT_LIMIT = 8
 
 /**
  * The parent container URI of [uri] (with a trailing `/`), or `null` when [uri] is the

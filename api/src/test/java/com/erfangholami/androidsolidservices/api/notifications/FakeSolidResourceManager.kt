@@ -18,6 +18,7 @@ internal class FakeSolidResourceManager(
     var onCreate: (Resource) -> SolidResult<out Resource> = { SolidResult.Success(it) },
     var onUpdate: (Resource) -> SolidResult<out Resource> = { notImplemented() },
     var onPatch: (URI, N3Patch) -> SolidResult<Unit> = { _, _ -> SolidResult.Success(Unit) },
+    var onPutRaw: (URI, ByteArray, String) -> SolidResult<Unit> = { _, _, _ -> SolidResult.Success(Unit) },
 ) : SolidResourceManager {
 
     @Suppress("UNCHECKED_CAST")
@@ -89,7 +90,7 @@ internal class FakeSolidResourceManager(
         body: ByteArray,
         ifMatch: String?,
         linkHeader: String?,
-    ): SolidResult<Unit> = notImplemented()
+    ): SolidResult<Unit> = onPutRaw(uri, body, contentType)
 
     override suspend fun <T : Resource> createInContainer(
         webid: String,
