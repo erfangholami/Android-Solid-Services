@@ -4,6 +4,7 @@ import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.notifications.implementation.NotificationTransportImplementation
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Pure Linked Data Notifications transport — the protocol layer for delivering
@@ -80,4 +81,26 @@ public interface NotificationTransport {
         webId: String,
         notificationUri: String,
     ): SolidResult<Boolean>
+
+    /**
+     * Subscribes to real-time change notifications for [resourceUri] over a Solid
+     * `WebSocketChannel2023` channel, returning a cold [Flow] of [RawNotification]s.
+     *
+     * Negotiation is done up front (this suspends until the channel is created): the resource's
+     * storage description is read for a WebSocket subscription service, a channel is requested for
+     * [resourceUri] as the topic, and the server's `notify:receiveFrom` WebSocket URL is opened.
+     * Each frame the pod pushes is decoded like an inbox notification.
+     *
+     * The WebSocket lives only while the returned Flow is collected — cancelling the collection
+     * closes the socket. **On Android, collect it only while a screen is active** (e.g. under
+     * `repeatOnLifecycle(STARTED)`): a persistent socket doesn't survive Doze and drains battery,
+     * so this complements — it does not replace — background inbox polling.
+     *
+     * Requires a transport built from an [Authenticator]; returns [SolidResult.Failure] when the
+     * pod advertises no WebSocket subscription service or when built without an authenticated session.
+     */
+    public suspend fun subscribe(
+        webId: String,
+        resourceUri: String,
+    ): SolidResult<Flow<RawNotification>>
 }
