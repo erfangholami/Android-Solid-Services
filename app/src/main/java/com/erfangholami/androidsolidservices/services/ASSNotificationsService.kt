@@ -5,11 +5,13 @@ import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.erfangholami.androidsolidservices.di.IoDispatcher
-import com.erfangholami.androidsolidservices.domain.repository.NotificationsRepository
+import com.erfangholami.androidsolidservices.api.notifications.NotificationsManager
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
 import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
 import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
+import com.erfangholami.androidsolidservices.shared.IASSStringCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareNotificationListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareRequestListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
@@ -21,7 +23,7 @@ import javax.inject.Inject
 class ASSNotificationsService : LifecycleService() {
 
     @Inject
-    lateinit var notificationsRepository: NotificationsRepository
+    lateinit var notificationsManager: NotificationsManager
 
     @Inject
     @IoDispatcher
@@ -39,7 +41,7 @@ class ASSNotificationsService : LifecycleService() {
             callback: IASSShareNotificationListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                notificationsRepository.listNotifications(webId)
+                notificationsManager.listNotifications(webId)
             }
         }
 
@@ -48,7 +50,7 @@ class ASSNotificationsService : LifecycleService() {
             callback: IASSShareRequestListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                notificationsRepository.listRequests(webId)
+                notificationsManager.listRequests(webId)
             }
         }
 
@@ -60,7 +62,7 @@ class ASSNotificationsService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                notificationsRepository.sendOffer(
+                notificationsManager.sendOffer(
                     ownerWebId, receiverWebId, resourceUri, ShareMode.entries[mode],
                 )
             }
@@ -73,7 +75,7 @@ class ASSNotificationsService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                notificationsRepository.sendUndo(ownerWebId, receiverWebId, resourceUri)
+                notificationsManager.sendUndo(ownerWebId, receiverWebId, resourceUri)
             }
         }
 
@@ -86,7 +88,7 @@ class ASSNotificationsService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                notificationsRepository.sendRequest(
+                notificationsManager.sendRequest(
                     requesterWebId, ownerWebId, resourceUri,
                     ShareMode.entries[requestedMode], summary,
                 )
@@ -101,7 +103,7 @@ class ASSNotificationsService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                notificationsRepository.sendReject(ownerWebId, requesterWebId, resourceUri, reason)
+                notificationsManager.sendReject(ownerWebId, requesterWebId, resourceUri, reason)
             }
         }
 
@@ -114,7 +116,98 @@ class ASSNotificationsService : LifecycleService() {
                 ioDispatcher,
                 callback::onError,
                 { callback.onResult() }) {
-                notificationsRepository.compactInbox(webId, olderThanIso)
+                notificationsManager.compactInbox(webId, olderThanIso)
+            }
+        }
+
+        override fun ensureInbox(webId: String, callback: IASSStringCallback) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                notificationsManager.ensureInbox(webId)
+            }
+        }
+
+        override fun deleteNotification(
+            webId: String,
+            notificationUri: String,
+            callback: IASSBooleanCallback,
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                notificationsManager.deleteNotification(webId, notificationUri)
+            }
+        }
+
+        override fun sendUpdate(
+            ownerWebId: String,
+            receiverWebId: String,
+            resourceUri: String,
+            mode: Int,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                notificationsManager.sendUpdate(
+                    ownerWebId,
+                    receiverWebId,
+                    resourceUri,
+                    ShareMode.entries[mode],
+                )
+            }
+        }
+
+        override fun sendAccept(
+            ownerWebId: String,
+            requesterWebId: String,
+            resourceUri: String,
+            mode: Int,
+            requestUri: String?,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                notificationsManager.sendAccept(
+                    ownerWebId,
+                    requesterWebId,
+                    resourceUri,
+                    ShareMode.entries[mode],
+                    requestUri,
+                )
+            }
+        }
+
+        override fun recordDecisionGranted(
+            ownerWebId: String,
+            requesterWebId: String,
+            resourceUri: String,
+            mode: Int,
+            requestUri: String?,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                notificationsManager.recordDecisionGranted(
+                    ownerWebId,
+                    requesterWebId,
+                    resourceUri,
+                    ShareMode.entries[mode],
+                    requestUri,
+                )
+            }
+        }
+
+        override fun recordDecisionRejected(
+            ownerWebId: String,
+            requesterWebId: String,
+            resourceUri: String,
+            mode: Int,
+            reason: String?,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                notificationsManager.recordDecisionRejected(
+                    ownerWebId,
+                    requesterWebId,
+                    resourceUri,
+                    // -1 is the wire encoding for "no mode applies" (the param is nullable).
+                    mode.takeIf { it >= 0 }?.let { ShareMode.entries[it] },
+                    reason,
+                )
             }
         }
     }

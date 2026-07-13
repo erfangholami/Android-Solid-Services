@@ -80,6 +80,18 @@ public class Solid {
         }
 
         /**
+         * Returns the [SolidTicketsDataModule] singleton.
+         *
+         * Use this module to manage the user's wallet — `schema:Ticket` resources stored on
+         * their Solid pod (event tickets, boarding passes, passes imported from `.pkpass`).
+         * Requires the user to be signed in via [getSignInClient].
+         * @param context Any [Context]; the application context is used internally.
+         */
+        public fun getTicketsDataModule(context: Context): SolidTicketsDataModule {
+            return SolidTicketsDataModule.getInstance(context)
+        }
+
+        /**
          * Returns the [SolidSharingClient] singleton.
          *
          * Use this client to create, list, and revoke shares of pod resources.

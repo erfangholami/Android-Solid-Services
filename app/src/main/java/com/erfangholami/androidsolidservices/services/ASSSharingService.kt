@@ -5,7 +5,7 @@ import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.erfangholami.androidsolidservices.di.IoDispatcher
-import com.erfangholami.androidsolidservices.domain.repository.SharingRepository
+import com.erfangholami.androidsolidservices.api.sharing.SharingManager
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
 import com.erfangholami.androidsolidservices.shared.IASSharingService
@@ -17,6 +17,7 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
@@ -28,7 +29,7 @@ import javax.inject.Inject
 class ASSSharingService : LifecycleService() {
 
     @Inject
-    lateinit var sharingRepository: SharingRepository
+    lateinit var sharingManager: SharingManager
 
     @Inject
     @IoDispatcher
@@ -46,7 +47,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSGivenShareListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.getStoredGivenShares(webId)
+                sharingManager.getStoredGivenShares(webId)
             }
         }
 
@@ -55,7 +56,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSGivenShareListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.refreshGivenShares(webId)
+                sharingManager.refreshGivenShares(webId)
             }
         }
 
@@ -65,7 +66,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSGivenShareListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.getGivenSharesForResource(webId, resourceUri)
+                sharingManager.getGivenSharesForResource(webId, resourceUri)
             }
         }
 
@@ -79,7 +80,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSGivenShareCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.createShare(
+                sharingManager.createShare(
                     webId = webId,
                     resourceUri = resourceUri,
                     mode = ShareMode.entries[mode],
@@ -98,7 +99,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSGivenShareCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.updateShare(
+                sharingManager.updateShare(
                     webId = webId,
                     resourceUri = resourceUri,
                     mode = ShareMode.entries[mode],
@@ -115,7 +116,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.revokeShare(
+                sharingManager.revokeShare(
                     webId = webId,
                     resourceUri = resourceUri,
                     receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
@@ -128,7 +129,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSReceivedShareListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.getStoredReceivedShares(webId)
+                sharingManager.getStoredReceivedShares(webId)
             }
         }
 
@@ -137,7 +138,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSReceivedShareListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.refreshReceivedShares(webId)
+                sharingManager.refreshReceivedShares(webId)
             }
         }
 
@@ -147,7 +148,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSReceivedShareCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.addReceivedShare(webId, resourceUri)
+                sharingManager.addReceivedShare(webId, resourceUri)
             }
         }
 
@@ -158,7 +159,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.removeReceivedShare(webId, resourceUri, ownerWebId)
+                sharingManager.removeReceivedShare(webId, resourceUri, ownerWebId)
             }
         }
 
@@ -167,7 +168,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSAccessGrantListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.getAccessGrants(webId)
+                sharingManager.getAccessGrants(webId)
             }
         }
 
@@ -177,7 +178,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSGivenShareCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.acceptShareRequest(webId, request)
+                sharingManager.acceptShareRequest(webId, request)
             }
         }
 
@@ -188,7 +189,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.rejectShareRequest(webId, request, reason)
+                sharingManager.rejectShareRequest(webId, request, reason)
             }
         }
 
@@ -197,7 +198,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSGivenShareListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.rebuildGivenIndex(webId)
+                sharingManager.rebuildGivenIndex(webId)
             }
         }
 
@@ -207,7 +208,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.publishCatalogEntry(webId, entry)
+                sharingManager.publishCatalogEntry(webId, entry)
             }
         }
 
@@ -217,7 +218,7 @@ class ASSSharingService : LifecycleService() {
             callback: IASSUnitCallback,
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.removeCatalogEntry(webId, resourceUri)
+                sharingManager.removeCatalogEntry(webId, resourceUri)
             }
         }
 
@@ -227,7 +228,37 @@ class ASSSharingService : LifecycleService() {
             callback: IASSCatalogEntryListCallback,
         ) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingRepository.getOwnerCatalog(viewerWebId, ownerWebId)
+                sharingManager.getOwnerCatalog(viewerWebId, ownerWebId)
+            }
+        }
+
+        override fun makePrivate(
+            webId: String,
+            resourceUri: String,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                sharingManager.makePrivate(webId, resourceUri)
+            }
+        }
+
+        override fun repairOwnerControl(
+            webId: String,
+            resourceUri: String,
+            callback: IASSUnitCallback,
+        ) {
+            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                sharingManager.repairOwnerControl(webId, resourceUri)
+            }
+        }
+
+        override fun syncReceivedShares(
+            webId: String,
+            notifications: MutableList<ShareNotification>?,
+            callback: IASSReceivedShareListCallback,
+        ) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                sharingManager.syncReceivedShares(webId, notifications.orEmpty())
             }
         }
     }

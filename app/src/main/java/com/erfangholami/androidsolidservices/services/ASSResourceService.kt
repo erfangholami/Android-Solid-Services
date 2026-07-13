@@ -1,19 +1,29 @@
 package com.erfangholami.androidsolidservices.services
 
 import android.content.Intent
+import android.os.Bundle
 import android.os.IBinder
+import android.os.ParcelFileDescriptor
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.erfangholami.androidsolidservices.di.IoDispatcher
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
-import com.erfangholami.androidsolidservices.domain.repository.SolidResourceRepository
+import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.domain.usecase.AccessCheck
 import com.erfangholami.androidsolidservices.domain.usecase.CheckResourceAccessUseCase
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
+import com.erfangholami.androidsolidservices.services.dispatch.handle
 import com.erfangholami.androidsolidservices.shared.IASSResourceService
 import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.NULL_WEBID
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSAccessProbeCallback
+import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSSourceReferenceListCallback
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSStreamCallback
+import com.erfangholami.androidsolidservices.shared.IASSStringCallback
 import com.erfangholami.androidsolidservices.shared.model.resource.IASSContainerCallback
 import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidMetadataCallback
 import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidNonRdfResourceCallback
@@ -22,7 +32,10 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidContaine
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -32,7 +45,7 @@ class ASSResourceService : LifecycleService() {
     lateinit var authRepository: AuthRepository
 
     @Inject
-    lateinit var solidResourceRepository: SolidResourceRepository
+    lateinit var resourceManager: SolidResourceManager
 
     @Inject
     lateinit var checkResourceAccess: CheckResourceAccessUseCase
@@ -78,7 +91,7 @@ class ASSResourceService : LifecycleService() {
                     callback::onError,
                     callback::onResult
                 ) {
-                    solidResourceRepository.head(webId, resourceUrl)
+                    resourceManager.head(webId, resourceUrl)
                 }
             }
         }
@@ -90,7 +103,7 @@ class ASSResourceService : LifecycleService() {
                     callback::onError,
                     callback::onResult
                 ) {
-                    solidResourceRepository.read(
+                    resourceManager.read(
                         webId,
                         containerUrl,
                         SolidContainer::class.java
@@ -109,7 +122,7 @@ class ASSResourceService : LifecycleService() {
                     ioDispatcher,
                     callback::onError,
                     { callback.onResult(resource) }) {
-                    solidResourceRepository.create(webId, resource)
+                    resourceManager.create(webId, resource)
                 }
             }
         }
@@ -120,7 +133,7 @@ class ASSResourceService : LifecycleService() {
                     ioDispatcher,
                     callback::onError,
                     { callback.onResult(resource) }) {
-                    solidResourceRepository.create(webId, resource)
+                    resourceManager.create(webId, resource)
                 }
             }
         }
@@ -132,7 +145,7 @@ class ASSResourceService : LifecycleService() {
                     callback::onError,
                     callback::onResult
                 ) {
-                    solidResourceRepository.read(
+                    resourceManager.read(
                         webId,
                         resourceUrl,
                         SolidNonRDFResource::class.java
@@ -148,7 +161,7 @@ class ASSResourceService : LifecycleService() {
                     callback::onError,
                     callback::onResult
                 ) {
-                    solidResourceRepository.read(
+                    resourceManager.read(
                         webId,
                         resourceUrl,
                         SolidRDFResource::class.java
@@ -168,7 +181,7 @@ class ASSResourceService : LifecycleService() {
                     ioDispatcher,
                     callback::onError,
                     { callback.onResult(resource) }) {
-                    solidResourceRepository.update(webId, resource, ifMatch)
+                    resourceManager.update(webId, resource, ifMatch)
                 }
             }
         }
@@ -184,7 +197,7 @@ class ASSResourceService : LifecycleService() {
                     ioDispatcher,
                     callback::onError,
                     { callback.onResult(resource) }) {
-                    solidResourceRepository.update(webId, resource, ifMatch)
+                    resourceManager.update(webId, resource, ifMatch)
                 }
             }
         }
@@ -192,7 +205,7 @@ class ASSResourceService : LifecycleService() {
         override fun patch(webId: String, resourceUrl: String, patchBody: String, callback: IASSUnitCallback) {
             guard(webId, callback::onError) {
                 lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                    solidResourceRepository.patchRaw(webId, resourceUrl, patchBody)
+                    resourceManager.patchRaw(webId, resourceUrl, patchBody)
                 }
             }
         }
@@ -207,7 +220,7 @@ class ASSResourceService : LifecycleService() {
                     ioDispatcher,
                     callback::onError,
                     { callback.onResult(resource) }) {
-                    solidResourceRepository.delete(webId, resource)
+                    resourceManager.delete(webId, resource)
                 }
             }
         }
@@ -218,7 +231,7 @@ class ASSResourceService : LifecycleService() {
                     ioDispatcher,
                     callback::onError,
                     { callback.onResult(resource) }) {
-                    solidResourceRepository.delete(webId, resource)
+                    resourceManager.delete(webId, resource)
                 }
             }
         }
@@ -229,7 +242,261 @@ class ASSResourceService : LifecycleService() {
                     ioDispatcher,
                     callback::onError,
                     { callback.onResult() }) {
-                    solidResourceRepository.delete(webId, containerUrl)
+                    resourceManager.delete(webId, containerUrl)
+                }
+            }
+        }
+
+        // ---- Derived verbs, executed server-side ----------------------------------
+        //
+        // Each of these is composed from several HTTP calls (a recursive copy walks a whole
+        // tree). Running them here costs the caller ONE IPC round trip instead of N.
+
+        override fun exists(webId: String, uri: String, callback: IASSBooleanCallback) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.exists(webId, uri)
+                }
+            }
+        }
+
+        override fun ensureContainer(
+            webId: String,
+            containerUri: String,
+            callback: IASSUnitCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                    resourceManager.ensureContainer(webId, containerUri)
+                }
+            }
+        }
+
+        override fun probeAccess(webId: String, uri: String, callback: IASSAccessProbeCallback) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.probeAccess(webId, uri)
+                }
+            }
+        }
+
+        override fun listContainer(
+            webId: String,
+            containerUri: String,
+            enrichWithHead: Boolean,
+            callback: IASSSourceReferenceListCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.listContainer(webId, containerUri, enrichWithHead)
+                }
+            }
+        }
+
+        override fun copy(
+            webId: String,
+            sourceUri: String,
+            destinationUri: String,
+            callback: IASSStringCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.copy(webId, sourceUri, destinationUri)
+                }
+            }
+        }
+
+        override fun move(
+            webId: String,
+            sourceUri: String,
+            destinationUri: String,
+            callback: IASSStringCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.move(webId, sourceUri, destinationUri)
+                }
+            }
+        }
+
+        override fun rename(
+            webId: String,
+            sourceUri: String,
+            newName: String,
+            callback: IASSStringCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.rename(webId, sourceUri, newName)
+                }
+            }
+        }
+
+        // ---- Unauthenticated reads -------------------------------------------------
+        //
+        // No WebID is involved and no token is sent, so there is nothing to guard: the
+        // caller could fetch the same world-readable document itself over plain HTTP.
+
+        override fun readPublicRdf(uri: String, callback: IASSSolidRdfResourceCallback) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                resourceManager.readPublic(uri, SolidRDFResource::class.java)
+            }
+        }
+
+        override fun readPublic(uri: String, callback: IASSSolidNonRdfResourceCallback) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                resourceManager.readPublic(uri, SolidNonRDFResource::class.java)
+            }
+        }
+
+        override fun headPublic(uri: String, callback: IASSSolidMetadataCallback) {
+            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                resourceManager.headPublic(uri)
+            }
+        }
+
+        // ---- Raw writes ------------------------------------------------------------
+
+        override fun putRaw(
+            webId: String,
+            uri: String,
+            contentType: String,
+            body: ByteArray,
+            ifMatch: String?,
+            linkHeader: String?,
+            callback: IASSUnitCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                    resourceManager.putRaw(webId, uri, contentType, body, ifMatch, linkHeader)
+                }
+            }
+        }
+
+        override fun post(
+            webId: String,
+            uri: String,
+            contentType: String,
+            body: ByteArray,
+            additionalHeaders: Bundle?,
+            callback: IASSStringCallback,
+        ) {
+            guard(webId, callback::onError) {
+                val headers = additionalHeaders
+                    ?.let { bundle ->
+                        bundle.keySet().associateWith { key -> bundle.getString(key).orEmpty() }
+                    }
+                    ?: emptyMap()
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.post(webId, uri, contentType, body, headers)
+                }
+            }
+        }
+
+        override fun createInContainer(
+            webId: String,
+            containerUri: String,
+            resource: SolidNonRDFResource,
+            callback: IASSStringCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.createInContainer(webId, containerUri, resource)
+                }
+            }
+        }
+
+        override fun createInContainerRdf(
+            webId: String,
+            containerUri: String,
+            resource: SolidRDFResource,
+            callback: IASSStringCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                    resourceManager.createInContainer(webId, containerUri, resource)
+                }
+            }
+        }
+
+        // ---- Streaming -------------------------------------------------------------
+        //
+        // Bodies never go through a parcel — they would not survive the ~1 MB Binder
+        // transaction limit. They travel through a pipe instead, so a multi-megabyte
+        // transfer is never materialised in memory on either side.
+
+        override fun readStream(webId: String, uri: String, callback: IASSStreamCallback) {
+            guard(webId, callback::onError) {
+                lifecycleScope.launch(ioDispatcher) {
+                    when (val opened = resourceManager.readStream(webId, uri)) {
+                        is SolidResult.Failure ->
+                            opened.handle({}, callback::onError)
+
+                        is SolidResult.Success -> {
+                            val body = opened.value
+                            val pipe = ParcelFileDescriptor.createPipe()
+                            val readEnd = pipe[0]
+                            val writeEnd = pipe[1]
+
+                            // Hand the read end over first (the descriptor is duplicated into
+                            // the parcel), then close our copy and pump the bytes across.
+                            readEnd.use { callback.onResult(it, body.contentType, body.contentLength) }
+
+                            launch(ioDispatcher) {
+                                runCatching {
+                                    ParcelFileDescriptor.AutoCloseOutputStream(writeEnd).use { sink ->
+                                        body.use { it.stream().copyTo(sink) }
+                                    }
+                                }.onFailure { t ->
+                                    // Surfaces to the reader as a broken pipe with a reason.
+                                    runCatching { writeEnd.closeWithError(t.message ?: "stream failed") }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        override fun writeStream(
+            webId: String,
+            uri: String,
+            contentType: String,
+            contentLength: Long,
+            source: ParcelFileDescriptor,
+            ifMatch: String?,
+            callback: IASSUnitCallback,
+        ) {
+            guard(webId, callback::onError) {
+                lifecycleScope.launch(ioDispatcher) {
+                    // A pipe can only be read ONCE, but `writeStream` requires openSource to
+                    // yield a FRESH stream on every attempt — the request is legitimately
+                    // re-sent on a DPoP-nonce challenge or a token refresh. So spool the
+                    // incoming bytes to a temp file and stream the upload from there: still
+                    // never fully in memory, but now re-openable.
+                    val spool = File.createTempFile("ass-upload-", null, cacheDir)
+                    try {
+                        ParcelFileDescriptor.AutoCloseInputStream(source).use { incoming ->
+                            spool.outputStream().use { out -> incoming.copyTo(out) }
+                        }
+                        val length = if (contentLength >= 0) contentLength else spool.length()
+                        resourceManager.writeStream(
+                            webId = webId,
+                            uri = uri,
+                            contentType = contentType,
+                            contentLength = length,
+                            ifMatch = ifMatch,
+                            openSource = { spool.inputStream() },
+                        ).handle({ callback.onResult() }, callback::onError)
+                    } catch (t: Throwable) {
+                        if (t is CancellationException) throw t
+                        callback.onError(
+                            ExceptionsErrorCode.UNKNOWN,
+                            t.message ?: t.toString(),
+                        )
+                    } finally {
+                        spool.delete()
+                    }
                 }
             }
         }

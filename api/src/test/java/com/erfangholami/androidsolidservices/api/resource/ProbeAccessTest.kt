@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.resource
 
 import com.erfangholami.androidsolidservices.api.notifications.FakeSolidResourceManager
+import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
 import com.erfangholami.androidsolidservices.shared.model.access.WacAllow
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode

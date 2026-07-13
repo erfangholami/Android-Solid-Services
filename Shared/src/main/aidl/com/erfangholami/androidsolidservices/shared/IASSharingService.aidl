@@ -5,6 +5,7 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry;
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare;
 import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare;
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest;
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification;
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSAccessGrantListCallback;
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSCatalogEntryListCallback;
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareCallback;
@@ -113,5 +114,21 @@ interface IASSharingService {
         String viewerWebId,
         String ownerWebId,
         IASSCatalogEntryListCallback callback
+    );
+
+    /** Strips every share from the resource, leaving it owner-only. */
+    void makePrivate(String webId, String resourceUri, IASSUnitCallback callback);
+
+    /** Re-asserts the owner's acl:Control on a resource whose ACL lost it. */
+    void repairOwnerControl(String webId, String resourceUri, IASSUnitCallback callback);
+
+    /**
+     * Reconciles the received-shares index against inbox notifications: an Offer/Accept adds
+     * a row, an Undo removes one. Returns the reconciled index.
+     */
+    void syncReceivedShares(
+        String webId,
+        in List<ShareNotification> notifications,
+        IASSReceivedShareListCallback callback
     );
 }

@@ -4,6 +4,7 @@ import android.accounts.AccountManager
 import android.content.Context
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.SolidContactsDataModule
+import com.erfangholami.androidsolidservices.api.datamodule.tickets.SolidTicketsDataModule
 import com.erfangholami.androidsolidservices.api.notifications.NotificationsManager
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.SharingManager
@@ -49,6 +50,12 @@ object ManagerModule {
     fun provideSolidContactsDataModule(
         authenticator: Authenticator,
     ): SolidContactsDataModule = SolidContactsDataModule.getInstance(authenticator)
+
+    @Provides
+    @Singleton
+    fun provideSolidTicketsDataModule(
+        authenticator: Authenticator,
+    ): SolidTicketsDataModule = SolidTicketsDataModule.getInstance(authenticator)
 
     @Provides
     @Singleton

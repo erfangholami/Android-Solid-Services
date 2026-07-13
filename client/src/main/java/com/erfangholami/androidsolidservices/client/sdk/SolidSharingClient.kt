@@ -16,6 +16,7 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedSh
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import kotlinx.coroutines.flow.Flow
@@ -207,6 +208,28 @@ public class SolidSharingClient private constructor(context: Context) {
         ownerWebId: String,
     ): List<CatalogEntry> =
         catalogList { service, cb -> service.getOwnerCatalog(viewerWebId, ownerWebId, cb) }
+
+    /** Strips every share from [resourceUri], leaving it owner-only. */
+    public suspend fun makePrivate(webId: String, resourceUri: String): Unit =
+        unit { service, cb -> service.makePrivate(webId, resourceUri, cb) }
+
+    /**
+     * Re-asserts the owner's `acl:Control` on a resource whose ACL lost it — the repair for
+     * a pod that dropped the owner rule and left the resource un-manageable.
+     */
+    public suspend fun repairOwnerControl(webId: String, resourceUri: String): Unit =
+        unit { service, cb -> service.repairOwnerControl(webId, resourceUri, cb) }
+
+    /**
+     * Reconciles the received-shares index against inbox notifications: an Offer/Accept adds
+     * a row, an Undo removes one. Returns the reconciled index.
+     */
+    public suspend fun syncReceivedShares(
+        webId: String,
+        notifications: List<ShareNotification>,
+    ): List<ReceivedShare> = receivedList { service, cb ->
+        service.syncReceivedShares(webId, notifications, cb)
+    }
 
     private suspend fun givenList(
         call: (IASSharingService, IASSGivenShareListCallback) -> Unit,

@@ -6,7 +6,7 @@ import com.erfangholami.androidsolidservices.api.access.WacBackend
 import com.erfangholami.androidsolidservices.api.access.pickBackend
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
-import com.erfangholami.androidsolidservices.api.resource.AccessProbe
+import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch

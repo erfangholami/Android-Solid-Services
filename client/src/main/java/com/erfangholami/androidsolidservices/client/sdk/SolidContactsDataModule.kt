@@ -2,31 +2,39 @@ package com.erfangholami.androidsolidservices.client.sdk
 
 import android.content.Context
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_DATA_MODULES_SERVICE
-import com.erfangholami.androidsolidservices.client.internal.CallbackBridge
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList
-import com.erfangholami.androidsolidservices.shared.model.contacts.FullContact
+import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
+import com.erfangholami.androidsolidservices.shared.model.contacts.ContactMatch
+import com.erfangholami.androidsolidservices.shared.model.contacts.ContactPhoto
 import com.erfangholami.androidsolidservices.shared.model.contacts.FullGroup
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookCallback
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookListCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullContactCallback
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactMatchCallback
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactPhotoCallback
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullGroupCallback
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactCallback
+import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactListCallback
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactsModuleInterface
-import com.erfangholami.androidsolidservices.shared.model.contacts.NewContact
+import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContact
+import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContactList
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Client SDK for the Solid Contacts data module: manage address books,
- * contacts and groups stored on the user's pod, following the Solid Contacts
- * model.
+ * Client SDK for the Solid Contacts data module: address books, contacts and groups stored
+ * on the user's pod.
  *
- * Calls are delegated over IPC to the Android Solid Services app. Obtain an
- * instance via [Solid.getContactsDataModule]. Collect
- * [contactsDataModuleServiceConnectionState] and wait for `true` before
- * issuing calls. All operations are `suspend` functions, return `null` when
- * the service yields no result, and throw [SolidException] on failure.
+ * The surface mirrors the in-process module — three role stores, [books], [contacts] and
+ * [groups] — and speaks the same write model, the immutable [ContactData] (full vCard 4.0
+ * coverage), so the same code shape works against either SDK.
+ *
+ * Calls are delegated over IPC to the Android Solid Services app, which owns the login and
+ * the tokens. Obtain an instance via [Solid.getContactsDataModule]. Collect
+ * [contactsDataModuleServiceConnectionState] and wait for `true` before issuing calls. All
+ * operations are `suspend` functions, return `null` when the service yields no result, and
+ * throw [SolidException] on failure.
  */
 public class SolidContactsDataModule private constructor(context: Context) {
 
@@ -48,101 +56,188 @@ public class SolidContactsDataModule private constructor(context: Context) {
     /** Hot [Flow] of the IPC service connection state; emits `true` once connected. */
     public fun contactsDataModuleServiceConnectionState(): Flow<Boolean> = connector.connectionState
 
-    /** Returns every address book that belongs to [webId]. */
-    public suspend fun getAddressBooks(webId: String): AddressBookList? =
-        addressBookList { contacts, cb -> contacts.getAddressBooks(webId, cb) }
+    /** Address books — the containers that hold contacts and groups. */
+    public val books: AddressBooks = AddressBooks()
 
-    /**
-     * Creates a new address book titled [title] on the user's pod.
-     *
-     * @param isPrivate When `true`, the address book is owner-only; when
-     *   `false`, it is publicly readable.
-     * @param storage Optional pod storage (root) URL to create under; when
-     *   `null`, the user's default storage is used.
-     * @param container Optional container URI to create the address book in.
-     */
-    public suspend fun createAddressBook(
-        webId: String,
-        title: String,
-        isPrivate: Boolean = true,
-        storage: String? = null,
-        ownerWebId: String? = null,
-        container: String? = null,
-    ): AddressBook? = addressBook { contacts, cb ->
-        contacts.createAddressBook(webId, title, isPrivate, cb, storage, ownerWebId, container)
+    /** The contacts inside an address book. */
+    public val contacts: Contacts = Contacts()
+
+    /** The groups inside an address book. */
+    public val groups: Groups = Groups()
+
+    /** Address-book operations. Reached via [books]. */
+    public inner class AddressBooks internal constructor() {
+
+        /** Returns every address book that belongs to [webId]. */
+        public suspend fun list(webId: String): AddressBookList? =
+            addressBookList { c, cb -> c.listAddressBooks(webId, cb) }
+
+        /** Bootstraps the address-book container if absent, then returns the books in it. */
+        public suspend fun ensureContainer(
+            webId: String,
+            storage: String? = null,
+            container: String? = null,
+        ): AddressBookList? =
+            addressBookList { c, cb -> c.ensureAddressBookContainer(webId, storage, container, cb) }
+
+        /** Reads the address book at [addressBookUri]. */
+        public suspend fun get(webId: String, addressBookUri: String): AddressBook? =
+            addressBook { c, cb -> c.getAddressBook(webId, addressBookUri, cb) }
+
+        /**
+         * Creates an address book titled [title].
+         *
+         * @param isPrivate When `true` (default) it is registered in the private type index;
+         *   when `false`, in the public one.
+         * @param storage Optional pod storage (root) URL; when `null` the default is used.
+         * @param container Optional container URI to create the address book in.
+         */
+        public suspend fun create(
+            webId: String,
+            title: String,
+            isPrivate: Boolean = true,
+            storage: String? = null,
+            container: String? = null,
+        ): AddressBook? = addressBook { c, cb ->
+            c.createAddressBook(webId, title, isPrivate, storage, container, cb)
+        }
+
+        /** Renames the address book at [addressBookUri]. */
+        public suspend fun rename(
+            webId: String,
+            addressBookUri: String,
+            newName: String,
+        ): AddressBook? = addressBook { c, cb ->
+            c.renameAddressBook(webId, addressBookUri, newName, cb)
+        }
+
+        /** Deletes the address book at [addressBookUri] and everything in it. */
+        public suspend fun delete(webId: String, addressBookUri: String): AddressBook? =
+            addressBook { c, cb -> c.deleteAddressBook(webId, addressBookUri, cb) }
+
+        /** Returns the user's default address book, creating it (titled [title]) if absent. */
+        public suspend fun ensureDefault(
+            webId: String,
+            storage: String? = null,
+            title: String = "Contacts",
+        ): AddressBook? = addressBook { c, cb ->
+            c.ensureDefaultAddressBook(webId, storage, title, cb)
+        }
     }
 
-    /** Reads the address book at [uri]. */
-    public suspend fun getAddressBook(webId: String, uri: String): AddressBook? =
-        addressBook { contacts, cb -> contacts.getAddressBook(webId, uri, cb) }
+    /** Contact operations. Reached via [contacts]. */
+    public inner class Contacts internal constructor() {
 
-    /** Deletes the address book at [addressBookUri] and returns the removed address book. */
-    public suspend fun deleteAddressBook(webId: String, addressBookUri: String): AddressBook? =
-        addressBook { contacts, cb -> contacts.deleteAddressBook(webId, addressBookUri, null, cb) }
+        /** Reads the contact at [contactUri]. */
+        public suspend fun get(webId: String, contactUri: String): SolidContact? =
+            solidContact { c, cb -> c.getContact(webId, contactUri, cb) }
 
-    /** Creates [newContact] in the address book at [addressBookUri], optionally adding it to the groups in [groupUris]. */
-    public suspend fun createNewContact(
-        webId: String,
-        addressBookUri: String,
-        newContact: NewContact,
-        groupUris: List<String> = emptyList(),
-    ): FullContact? = fullContact { contacts, cb ->
-        contacts.createNewContact(webId, addressBookUri, newContact, groupUris, cb)
+        /** Lists the contacts in the address book at [addressBookUri]. */
+        public suspend fun list(webId: String, addressBookUri: String): SolidContactList? =
+            solidContactList { c, cb -> c.listContacts(webId, addressBookUri, cb) }
+
+        /** Creates a contact from [data], optionally adding it to [groupUris]. */
+        public suspend fun create(
+            webId: String,
+            addressBookUri: String,
+            data: ContactData,
+            groupUris: List<String> = emptyList(),
+        ): SolidContact? = solidContact { c, cb ->
+            c.createContact(webId, addressBookUri, data, groupUris, cb)
+        }
+
+        /**
+         * Rewrites the contact at [contactUri] from [data] with replace semantics: properties
+         * absent from [data] are removed.
+         */
+        public suspend fun update(
+            webId: String,
+            addressBookUri: String,
+            contactUri: String,
+            data: ContactData,
+        ): SolidContact? = solidContact { c, cb ->
+            c.updateContact(webId, addressBookUri, contactUri, data, cb)
+        }
+
+        /** Deletes the contact at [contactUri] (and its photo, if any). */
+        public suspend fun delete(
+            webId: String,
+            addressBookUri: String,
+            contactUri: String,
+        ): SolidContact? = solidContact { c, cb ->
+            c.deleteContact(webId, addressBookUri, contactUri, cb)
+        }
+
+        /**
+         * Sets the contact's photo.
+         *
+         * The bytes travel inline over Binder, so this is subject to the ~1 MB transaction
+         * limit; a larger image will fail the call rather than be truncated.
+         */
+        public suspend fun setPhoto(
+            webId: String,
+            contactUri: String,
+            photo: ByteArray,
+            contentType: String,
+        ): SolidContact? = solidContact { c, cb ->
+            c.setContactPhoto(webId, contactUri, photo, contentType, cb)
+        }
+
+        /** Removes the contact's photo. */
+        public suspend fun removePhoto(webId: String, contactUri: String): SolidContact? =
+            solidContact { c, cb -> c.removeContactPhoto(webId, contactUri, cb) }
+
+        /** Reads a contact photo's bytes. Subject to the ~1 MB Binder transaction limit. */
+        public suspend fun getPhoto(webId: String, photoUri: String): ContactPhoto? =
+            contactPhoto { c, cb -> c.getContactPhoto(webId, photoUri, cb) }
+
+        /** Finds a contact by exact WebID — the duplicate check before adding someone. */
+        public suspend fun findByWebId(webId: String, targetWebId: String): ContactMatch? =
+            contactMatch { c, cb -> c.findContactByWebId(webId, targetWebId, cb) }
     }
 
-    /** Reads the full contact at [contactUri], including its names, e-mail addresses and phone numbers. */
-    public suspend fun getContact(webId: String, contactUri: String): FullContact? =
-        fullContact { contacts, cb -> contacts.getContact(webId, contactUri, cb) }
+    /** Group operations. Reached via [groups]. */
+    public inner class Groups internal constructor() {
 
-    /** Updates the formatted name of the contact at [contactUri] to [newName]. */
-    public suspend fun renameContact(webId: String, contactUri: String, newName: String): FullContact? =
-        fullContact { contacts, cb -> contacts.renameContact(webId, contactUri, newName, cb) }
+        /** Creates a group titled [title], optionally seeded with [contactUris]. */
+        public suspend fun create(
+            webId: String,
+            addressBookUri: String,
+            title: String,
+            contactUris: List<String> = emptyList(),
+        ): FullGroup? = fullGroup { c, cb ->
+            c.createGroup(webId, addressBookUri, title, contactUris, cb)
+        }
 
-    /** Adds [newPhoneNumber] to the contact at [contactUri]. */
-    public suspend fun addNewPhoneNumber(webId: String, contactUri: String, newPhoneNumber: String): FullContact? =
-        fullContact { contacts, cb -> contacts.addNewPhoneNumber(webId, contactUri, newPhoneNumber, cb) }
+        /** Reads the group at [groupUri]. */
+        public suspend fun get(webId: String, groupUri: String): FullGroup? =
+            fullGroup { c, cb -> c.getGroup(webId, groupUri, cb) }
 
-    /** Adds [newEmailAddress] to the contact at [contactUri]. */
-    public suspend fun addNewEmailAddress(webId: String, contactUri: String, newEmailAddress: String): FullContact? =
-        fullContact { contacts, cb -> contacts.addNewEmailAddress(webId, contactUri, newEmailAddress, cb) }
+        /** Deletes the group at [groupUri]. */
+        public suspend fun delete(
+            webId: String,
+            addressBookUri: String,
+            groupUri: String,
+        ): FullGroup? = fullGroup { c, cb ->
+            c.deleteGroup(webId, addressBookUri, groupUri, cb)
+        }
 
-    /** Removes [phoneNumber] from the contact at [contactUri]. */
-    public suspend fun removePhoneNumber(webId: String, contactUri: String, phoneNumber: String): FullContact? =
-        fullContact { contacts, cb -> contacts.removePhoneNumber(webId, contactUri, phoneNumber, cb) }
+        /** Adds the contact at [contactUri] to the group at [groupUri]. */
+        public suspend fun addMember(
+            webId: String,
+            groupUri: String,
+            contactUri: String,
+        ): FullGroup? = fullGroup { c, cb -> c.addGroupMember(webId, groupUri, contactUri, cb) }
 
-    /** Removes [emailAddress] from the contact at [contactUri]. */
-    public suspend fun removeEmailAddress(webId: String, contactUri: String, emailAddress: String): FullContact? =
-        fullContact { contacts, cb -> contacts.removeEmailAddress(webId, contactUri, emailAddress, cb) }
-
-    /** Deletes the contact at [contactUri] from the address book at [addressBookUri]. */
-    public suspend fun deleteContact(webId: String, addressBookUri: String, contactUri: String): FullContact? =
-        fullContact { contacts, cb -> contacts.deleteContact(webId, addressBookUri, contactUri, cb) }
-
-    /** Creates a new group titled [title] in the address book at [addressBookUri], optionally seeding it with [contactUris]. */
-    public suspend fun createNewGroup(
-        webId: String,
-        addressBookUri: String,
-        title: String,
-        contactUris: List<String> = emptyList(),
-    ): FullGroup? = fullGroup { contacts, cb ->
-        contacts.createNewGroup(webId, addressBookUri, title, contactUris, cb)
+        /** Removes the contact at [contactUri] from the group at [groupUri]. */
+        public suspend fun removeMember(
+            webId: String,
+            groupUri: String,
+            contactUri: String,
+        ): FullGroup? = fullGroup { c, cb -> c.removeGroupMember(webId, groupUri, contactUri, cb) }
     }
 
-    /** Reads the full group at [groupUri], including its member contacts. */
-    public suspend fun getGroup(webId: String, groupUri: String): FullGroup? =
-        fullGroup { contacts, cb -> contacts.getGroup(webId, groupUri, cb) }
-
-    /** Deletes the group at [groupUri] from the address book at [addressBookUri]. */
-    public suspend fun deleteGroup(webId: String, addressBookUri: String, groupUri: String): FullGroup? =
-        fullGroup { contacts, cb -> contacts.deleteGroup(webId, addressBookUri, groupUri, cb) }
-
-    /** Adds the contact at [contactUri] to the group at [groupUri]. */
-    public suspend fun addContactToGroup(webId: String, contactUri: String, groupUri: String): FullGroup? =
-        fullGroup { contacts, cb -> contacts.addContactToGroup(webId, contactUri, groupUri, cb) }
-
-    /** Removes the contact at [contactUri] from the group at [groupUri]. */
-    public suspend fun removeContactFromGroup(webId: String, contactUri: String, groupUri: String): FullGroup? =
-        fullGroup { contacts, cb -> contacts.removeContactFromGroup(webId, contactUri, groupUri, cb) }
+    // ------------------------------------------------------------- callback bridges
 
     private suspend fun addressBookList(
         call: (IASSContactsModuleInterface, IASSContactModuleAddressBookListCallback) -> Unit,
@@ -162,11 +257,38 @@ public class SolidContactsDataModule private constructor(context: Context) {
         })
     }
 
-    private suspend fun fullContact(
-        call: (IASSContactsModuleInterface, IASSContactModuleFullContactCallback) -> Unit,
-    ): FullContact? = connector.await { contacts, bridge ->
-        call(contacts, object : IASSContactModuleFullContactCallback.Stub() {
-            override fun onResult(fullContact: FullContact?) = bridge.onResult(fullContact)
+    private suspend fun solidContact(
+        call: (IASSContactsModuleInterface, IASSContactModuleSolidContactCallback) -> Unit,
+    ): SolidContact? = connector.await { contacts, bridge ->
+        call(contacts, object : IASSContactModuleSolidContactCallback.Stub() {
+            override fun onResult(contact: SolidContact?) = bridge.onResult(contact)
+            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+        })
+    }
+
+    private suspend fun solidContactList(
+        call: (IASSContactsModuleInterface, IASSContactModuleSolidContactListCallback) -> Unit,
+    ): SolidContactList? = connector.await { contacts, bridge ->
+        call(contacts, object : IASSContactModuleSolidContactListCallback.Stub() {
+            override fun onResult(contactList: SolidContactList?) = bridge.onResult(contactList)
+            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+        })
+    }
+
+    private suspend fun contactPhoto(
+        call: (IASSContactsModuleInterface, IASSContactModuleContactPhotoCallback) -> Unit,
+    ): ContactPhoto? = connector.await { contacts, bridge ->
+        call(contacts, object : IASSContactModuleContactPhotoCallback.Stub() {
+            override fun onResult(photo: ContactPhoto?) = bridge.onResult(photo)
+            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+        })
+    }
+
+    private suspend fun contactMatch(
+        call: (IASSContactsModuleInterface, IASSContactModuleContactMatchCallback) -> Unit,
+    ): ContactMatch? = connector.await { contacts, bridge ->
+        call(contacts, object : IASSContactModuleContactMatchCallback.Stub() {
+            override fun onResult(match: ContactMatch?) = bridge.onResult(match)
             override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
         })
     }

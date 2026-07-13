@@ -6,6 +6,8 @@ import com.erfangholami.androidsolidservices.client.internal.CallbackBridge
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
 import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.IASSStringCallback
+import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareNotificationListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareRequestListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
@@ -128,6 +130,82 @@ public class SolidNotificationsClient private constructor(context: Context) {
         olderThanIso: String? = null,
     ): Unit = connector.await { service, bridge ->
         service.compactInbox(webId, olderThanIso, unitCallback(bridge))
+    }
+
+    /**
+     * Ensures the user has an LDN inbox, creating and advertising it if absent.
+     * @return the inbox URI.
+     */
+    public suspend fun ensureInbox(webId: String): String = connector.await { service, bridge ->
+        service.ensureInbox(webId, object : IASSStringCallback.Stub() {
+            override fun onResult(value: String?) = bridge.onResult(value.orEmpty())
+            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+        })
+    }
+
+    /** Deletes a single message from the inbox. */
+    public suspend fun deleteNotification(webId: String, notificationUri: String): Boolean =
+        connector.await { service, bridge ->
+            service.deleteNotification(webId, notificationUri, object : IASSBooleanCallback.Stub() {
+                override fun onResult(value: Boolean) = bridge.onResult(value)
+                override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+            })
+        }
+
+    /**
+     * Tells a receiver their access level changed. This is an `as:Update` — deliberately not a
+     * re-Offer, so the receiver sees "X updated your access" rather than a fresh share.
+     */
+    public suspend fun sendUpdate(
+        ownerWebId: String,
+        receiverWebId: String,
+        resourceUri: String,
+        mode: ShareMode,
+    ): Unit = connector.await { service, bridge ->
+        service.sendUpdate(ownerWebId, receiverWebId, resourceUri, mode.ordinal, unitCallback(bridge))
+    }
+
+    /** Tells a requester that their access request was granted. */
+    public suspend fun sendAccept(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: String,
+        mode: ShareMode,
+        requestUri: String? = null,
+    ): Unit = connector.await { service, bridge ->
+        service.sendAccept(
+            ownerWebId, requesterWebId, resourceUri, mode.ordinal, requestUri, unitCallback(bridge),
+        )
+    }
+
+    /**
+     * Leaves a read-only record in the owner's OWN inbox that they granted a request — the
+     * "you approved sharing with X" row they see in their own history.
+     */
+    public suspend fun recordDecisionGranted(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: String,
+        mode: ShareMode,
+        requestUri: String? = null,
+    ): Unit = connector.await { service, bridge ->
+        service.recordDecisionGranted(
+            ownerWebId, requesterWebId, resourceUri, mode.ordinal, requestUri, unitCallback(bridge),
+        )
+    }
+
+    /** Leaves a read-only record in the owner's OWN inbox that they declined a request. */
+    public suspend fun recordDecisionRejected(
+        ownerWebId: String,
+        requesterWebId: String,
+        resourceUri: String,
+        mode: ShareMode? = null,
+        reason: String? = null,
+    ): Unit = connector.await { service, bridge ->
+        // -1 is the wire encoding for "no mode applies".
+        service.recordDecisionRejected(
+            ownerWebId, requesterWebId, resourceUri, mode?.ordinal ?: -1, reason, unitCallback(bridge),
+        )
     }
 
     private fun unitCallback(bridge: CallbackBridge<Unit>) = object : IASSUnitCallback.Stub() {
