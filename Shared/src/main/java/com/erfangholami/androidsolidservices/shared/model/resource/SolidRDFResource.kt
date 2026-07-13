@@ -5,7 +5,6 @@ import android.os.Parcelable
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.STAT
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * An [RDFResource] retrieved from a Solid server.
@@ -31,16 +30,16 @@ public open class SolidRDFResource : RDFResource, SolidResource {
 
     protected constructor(inParcel: Parcel) : super(inParcel)
 
-    public constructor(identifier: URI) : this(identifier, null)
+    public constructor(identifier: String) : this(identifier, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?) :
             this(identifier, quads, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?, headers: SolidHeaders?) :
             this(identifier, "application/ld+json", quads, headers)
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         quads: List<RdfQuad>?,
         headers: SolidHeaders?,
@@ -56,7 +55,7 @@ public open class SolidRDFResource : RDFResource, SolidResource {
      * (then `stat:mtime`) triple and falls back to the `Last-Modified` header. `null` when none is present.
      */
     public fun getLastModified(): Long? {
-        val subject = getIdentifier().toString()
+        val subject = getIdentifier()
         return findPropertyForSubject(subject, DC.MODIFIED)?.let(::parseIsoInstantMillis)
             ?: statSecondsToMillis(findPropertyForSubject(subject, STAT.MTIME)?.toLongOrNull())
             ?: parseHttpDateMillis(metadata.lastModified)
@@ -67,7 +66,7 @@ public open class SolidRDFResource : RDFResource, SolidResource {
      * (then `stat:ctime`) triple, or `null` when neither is present.
      */
     public fun getCreatedTime(): Long? {
-        val subject = getIdentifier().toString()
+        val subject = getIdentifier()
         return findPropertyForSubject(subject, DC.CREATED)?.let(::parseIsoInstantMillis)
             ?: statSecondsToMillis(findPropertyForSubject(subject, STAT.CTIME)?.toLongOrNull())
     }

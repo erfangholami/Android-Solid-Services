@@ -4,7 +4,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.io.InputStream
-import java.net.URI
 
 /**
  * A [NonRDFResource] (binary) retrieved from a Solid server.
@@ -31,13 +30,13 @@ public open class SolidNonRDFResource : NonRDFResource, SolidResource {
     protected constructor(inParcel: Parcel) : super(inParcel)
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         entity: InputStream,
     ) : this(identifier, contentType, entity, null)
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         entity: InputStream,
         headers: SolidHeaders?,

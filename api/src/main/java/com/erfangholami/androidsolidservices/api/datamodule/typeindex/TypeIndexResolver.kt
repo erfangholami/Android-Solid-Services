@@ -8,7 +8,6 @@ import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeI
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
-import java.net.URI
 
 /**
  * Resolves (and bootstraps, when missing) a user's Solid type indexes.
@@ -27,14 +26,14 @@ internal object TypeIndexResolver {
         webIdString: String,
     ): PrivateTypeIndex {
         val webId =
-            resourceManager.read(webIdString, URI.create(webIdString), WebId::class.java)
+            resourceManager.read(webIdString, webIdString, WebId::class.java)
                 .getOrThrow()
         var privateTypeIndexUri = webId.getPrivateTypeIndex()
 
         if (privateTypeIndexUri == null) {
             val extendedProfile = resourceManager.read(
                 webIdString,
-                webId.getPrimaryTopicDocuments().firstOrNull() ?: URI.create(webIdString),
+                webId.getPrimaryTopicDocuments().firstOrNull() ?: webIdString,
                 WebId::class.java
             ).getOrThrow()
             privateTypeIndexUri = extendedProfile.getPrivateTypeIndex()
@@ -62,7 +61,7 @@ internal object TypeIndexResolver {
 
         return resourceManager.read(
             webIdString,
-            privateTypeIndexUri,
+            privateTypeIndexUri.toString(),
             PrivateTypeIndex::class.java
         ).getOrThrow()
     }
@@ -72,14 +71,14 @@ internal object TypeIndexResolver {
         webIdString: String,
     ): PublicTypeIndex {
         val webId =
-            resourceManager.read(webIdString, URI.create(webIdString), WebId::class.java)
+            resourceManager.read(webIdString, webIdString, WebId::class.java)
                 .getOrThrow()
         var publicTypeIndexUri = webId.getPublicTypeIndex()
 
         if (publicTypeIndexUri == null) {
             val extendedProfile = resourceManager.read(
                 webIdString,
-                webId.getPrimaryTopicDocuments().firstOrNull() ?: URI.create(webIdString),
+                webId.getPrimaryTopicDocuments().firstOrNull() ?: webIdString,
                 WebId::class.java
             ).getOrThrow()
             publicTypeIndexUri = extendedProfile.getPublicTypeIndex()
@@ -107,7 +106,7 @@ internal object TypeIndexResolver {
 
         return resourceManager.read(
             webIdString,
-            publicTypeIndexUri,
+            publicTypeIndexUri.toString(),
             PublicTypeIndex::class.java
         ).getOrThrow()
     }
@@ -138,11 +137,11 @@ internal object TypeIndexResolver {
     private suspend fun registerTypeIndexLink(
         resourceManager: SolidResourceManager,
         webIdString: String,
-        profileDocUri: URI,
+        profileDocUri: String,
         predicate: String,
-        indexUri: URI,
+        indexUri: String,
     ) {
-        val patch = N3Patch.build { insert(webIdString, predicate, indexUri.toString()) }
+        val patch = N3Patch.build { insert(webIdString, predicate, indexUri) }
         resourceManager.patch(webIdString, profileDocUri, patch).getOrThrow()
     }
 
@@ -154,9 +153,9 @@ internal object TypeIndexResolver {
     private suspend fun ensureContainer(
         resourceManager: SolidResourceManager,
         ownerWebId: String,
-        resourceUri: URI,
+        resourceUri: String,
     ) {
-        val containerUri = URI.create(resourceUri.toString().substringBeforeLast('/') + "/")
+        val containerUri = resourceUri.substringBeforeLast('/') + "/"
         resourceManager.ensureContainer(ownerWebId, containerUri).getOrThrow()
     }
 }

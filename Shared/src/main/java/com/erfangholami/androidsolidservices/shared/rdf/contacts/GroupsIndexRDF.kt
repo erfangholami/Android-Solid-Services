@@ -8,7 +8,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF representation of the groups index document for a Solid address book.
@@ -23,7 +22,7 @@ import java.net.URI
 public class GroupsIndexRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null
@@ -49,7 +48,7 @@ public class GroupsIndexRDF : SolidRDFResource {
      * display name inline so the index can be rendered without fetching each group document.
      */
     public fun addGroup(addressBookUri: String, group: GroupRDF) {
-        val groupUri = group.getIdentifier().toString()
+        val groupUri = group.getIdentifier()
         addQuad(groupUri, RDF.TYPE, VCARD.GROUP)
         addQuadLiteral(groupUri, VCARD.FN, group.getTitle(), XSD.STRING)
         addQuad(addressBookUri, VCARD.INCLUDES_GROUP, groupUri, maxNumber = Int.MAX_VALUE)
@@ -60,8 +59,8 @@ public class GroupsIndexRDF : SolidRDFResource {
      *
      * @return `true` if any entries were removed, `false` if the group was not found.
      */
-    public fun removeGroup(groupUri: URI): Boolean {
-        val groupStr = groupUri.toString()
+    public fun removeGroup(groupUri: String): Boolean {
+        val groupStr = groupUri
         val affected = quads.filter { it.subject == groupStr || it.`object` == groupStr }
         if (affected.isEmpty()) return false
         quads.removeAll(affected)

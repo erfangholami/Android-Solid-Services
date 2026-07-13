@@ -13,7 +13,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.ShareVocabulary
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShareVocabulary
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF wrapper for `{podRoot}/solidshare/shares/given_shares.ttl`.
@@ -45,7 +44,7 @@ import java.net.URI
 public class GivenSharesIndexRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null,

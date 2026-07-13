@@ -8,7 +8,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF representation of the people (name-email) index document for a Solid address book.
@@ -23,7 +22,7 @@ import java.net.URI
 public class NameEmailIndexRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null
@@ -49,7 +48,7 @@ public class NameEmailIndexRDF : SolidRDFResource {
      * display name inline so the index can be rendered without fetching each contact document.
      */
     public fun addContact(addressBookUri: String, contact: ContactRDF) {
-        val contactUri = contact.getIdentifier().toString()
+        val contactUri = contact.getIdentifier()
         addQuad(addressBookUri, VCARD.IN_ADDRESS_BOOK, contactUri, maxNumber = Int.MAX_VALUE)
         addQuad(contactUri, RDF.TYPE, VCARD.INDIVIDUAL)
         addQuadLiteral(contactUri, VCARD.FN, contact.getFullName(), XSD.STRING)

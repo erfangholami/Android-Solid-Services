@@ -9,7 +9,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.ShareNotificationVocabulary
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShareNotificationVocabulary
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF wrapper for one item in an LDN inbox — read as an `as:Offer`,
@@ -41,7 +40,7 @@ public class ShareNotificationRDF : SolidRDFResource {
     }
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null,

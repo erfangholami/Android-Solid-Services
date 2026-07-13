@@ -24,8 +24,8 @@ class WacBackendTest {
     private val alice = "https://alice.pod/profile/card#me"
     private val bob = "https://bob.pod/profile/card#me"
     private val carol = "https://carol.pod/profile/card#me"
-    private val resource = URI.create("https://alice.pod/notes/n1")
-    private val container = URI.create("https://alice.pod/shared/")
+    private val resource = "https://alice.pod/notes/n1"
+    private val container = "https://alice.pod/shared/"
 
     private lateinit var pod: InMemoryAccessPod
     private lateinit var backend: WacBackend
@@ -36,11 +36,11 @@ class WacBackendTest {
         backend = WacBackend(pod)
     }
 
-    private fun aclOf(res: URI): SolidACLResource = runBlocking {
-        pod.read(alice, pod.aclUriFor(res), SolidACLResource::class.java).getOrThrow()
+    private fun aclOf(res: String): SolidACLResource = runBlocking {
+        pod.read(alice, pod.aclUriFor(res).toString(), SolidACLResource::class.java).getOrThrow()
     }
 
-    private fun grant(res: URI, mode: ShareMode, receiver: ShareReceiver, container: Boolean = false) =
+    private fun grant(res: String, mode: ShareMode, receiver: ShareReceiver, container: Boolean = false) =
         runBlocking { backend.grant(alice, res, mode, receiver, isContainer = container) }
 
     private fun List<AclAuthorization>.forAgent(webId: String) =
@@ -80,7 +80,7 @@ class WacBackendTest {
     fun `listShares on a child with no own ACL surfaces the container's inherited default grant`() {
         grant(container, ShareMode.READ, ShareReceiver.WebIdReceiver(bob), container = true)
 
-        val child = URI.create("${container}note-x")
+        val child = "${container}note-x"
         val list = runBlocking { backend.listShares(alice, child) }
 
         assertEquals(1, list.size)

@@ -35,7 +35,7 @@ class InboxReaderRequestsTest {
     private val requester = "https://bob.pod/profile/card#me"
 
     private fun readerProfile() = WebId(
-        URI.create(readerWebId),
+        readerWebId,
         listOf(
             RdfQuad(readerWebId, LDP.INBOX, inboxUri),
             RdfQuad(readerWebId, PIM.STORAGE, readerStorage),
@@ -43,13 +43,13 @@ class InboxReaderRequestsTest {
     )
 
     private fun inboxContainer(items: List<String>) = SolidContainer(
-        URI.create(inboxUri),
+        inboxUri,
         "application/ld+json",
         items.map { RdfQuad(inboxUri, LDP.CONTAINS, it) },
     )
 
     private fun request(resourceUri: String, typed: Boolean = true) = ShareRequestRDF(
-        URI.create(itemUri),
+        itemUri,
         quads = buildList {
             if (typed) add(RdfQuad("$itemUri#req", RDF.TYPE, SAI.ACCESS_REQUEST))
             add(RdfQuad("$itemUri#req", AS.ACTOR, requester))

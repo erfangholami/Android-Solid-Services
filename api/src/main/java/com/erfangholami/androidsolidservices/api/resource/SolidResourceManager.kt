@@ -12,11 +12,11 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidSourceReference
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import java.io.InputStream
-import java.net.URI
 
 /**
  * Performs authenticated CRUD operations on Solid pod resources on behalf of a specific user.
@@ -24,6 +24,10 @@ import java.net.URI
  * All operations require the user identified by `webId` to have an active, authorized
  * [Authenticator] session.  Results are wrapped in [SolidResult] so callers can
  * distinguish HTTP errors from unexpected exceptions without catching throwables.
+ *
+ * Resource locations are passed as plain `String` IRIs (matching `webId`); the library encodes
+ * them at the boundary via [encodeUriString] (idempotent), so callers store and pass decoded
+ * identifiers and never construct or pre-encode a java.net.URI themselves.
  *
  * Obtain an instance via [SolidResourceManager.getInstance].
  */
@@ -69,7 +73,7 @@ public interface SolidResourceManager {
      */
     public suspend fun head(
         webId: String,
-        uri: URI,
+        uri: String,
     ): SolidResult<SolidMetadata>
 
     /**
@@ -83,7 +87,7 @@ public interface SolidResourceManager {
      * @param webId The WebID of the authenticated user making the request.
      * @param uri   The URI to probe.
      */
-    public suspend fun exists(webId: String, uri: URI): SolidResult<Boolean> =
+    public suspend fun exists(webId: String, uri: String): SolidResult<Boolean> =
         when (val head = head(webId, uri)) {
             is SolidResult.Success -> SolidResult.Success(true)
             is SolidResult.Failure ->
@@ -103,7 +107,7 @@ public interface SolidResourceManager {
      * @param webId The WebID of the authenticated user making the request.
      * @param containerUri The container to ensure, including any missing parents.
      */
-    public suspend fun ensureContainer(webId: String, containerUri: URI): SolidResult<Unit> {
+    public suspend fun ensureContainer(webId: String, containerUri: String): SolidResult<Unit> {
         when (val head = head(webId, containerUri)) {
             is SolidResult.Success -> return SolidResult.Success(Unit)
             is SolidResult.Failure ->
@@ -129,7 +133,7 @@ public interface SolidResourceManager {
      * @param webId The WebID of the authenticated user making the request.
      * @param uri   The resource whose access to probe.
      */
-    public suspend fun probeAccess(webId: String, uri: URI): SolidResult<AccessProbe> {
+    public suspend fun probeAccess(webId: String, uri: String): SolidResult<AccessProbe> {
         val metadata = when (val head = head(webId, uri)) {
             is SolidResult.Success -> head.value
             is SolidResult.Failure ->
@@ -141,7 +145,7 @@ public interface SolidResourceManager {
                     SolidResult.Failure(head.error)
                 }
         }
-        val owner = metadata.ownerUri?.toString()
+        val owner = metadata.ownerUri
         val wac = metadata.wacAllow
             ?: return SolidResult.Success(AccessProbe.Accessible(setOf(ShareMode.READ), owner))
         val combined = wac.userModes + wac.publicModes
@@ -171,7 +175,7 @@ public interface SolidResourceManager {
      */
     public suspend fun listContainer(
         webId: String,
-        containerUri: URI,
+        containerUri: String,
         enrichWithHead: Boolean = false,
     ): SolidResult<List<SolidSourceReference>> {
         val children = when (val r = read(webId, containerUri, SolidContainer::class.java)) {
@@ -183,7 +187,7 @@ public interface SolidResourceManager {
             children.chunked(CONTAINER_FANOUT_LIMIT).flatMap { batch ->
                 batch.map { ref ->
                     async {
-                        head(webId, URI.create(ref.identifier)).getOrNull()
+                        head(webId, ref.identifier).getOrNull()
                             ?.let { ref.copy(headMetadata = it) } ?: ref
                     }
                 }.awaitAll()
@@ -205,10 +209,10 @@ public interface SolidResourceManager {
      */
     public suspend fun copy(
         webId: String,
-        sourceUri: URI,
-        destinationUri: URI,
-    ): SolidResult<URI> = when (val result = copyTree(webId, sourceUri, destinationUri)) {
-        is SolidResult.Success -> SolidResult.Success(destinationUri)
+        sourceUri: String,
+        destinationUri: String,
+    ): SolidResult<String> = when (val result = copyTree(webId, sourceUri, destinationUri)) {
+        is SolidResult.Success -> SolidResult.Success(encodeUriString(destinationUri).toString())
         is SolidResult.Failure -> result
     }
 
@@ -220,12 +224,12 @@ public interface SolidResourceManager {
      */
     public suspend fun move(
         webId: String,
-        sourceUri: URI,
-        destinationUri: URI,
-    ): SolidResult<URI> = when (val copied = copy(webId, sourceUri, destinationUri)) {
+        sourceUri: String,
+        destinationUri: String,
+    ): SolidResult<String> = when (val copied = copy(webId, sourceUri, destinationUri)) {
         is SolidResult.Failure -> copied
         is SolidResult.Success -> when (val deleted = delete(webId, sourceUri)) {
-            is SolidResult.Success -> SolidResult.Success(destinationUri)
+            is SolidResult.Success -> SolidResult.Success(encodeUriString(destinationUri).toString())
             is SolidResult.Failure -> deleted
         }
     }
@@ -237,13 +241,13 @@ public interface SolidResourceManager {
      */
     public suspend fun rename(
         webId: String,
-        sourceUri: URI,
+        sourceUri: String,
         newName: String,
-    ): SolidResult<URI> {
-        val isContainer = sourceUri.toString().endsWith("/")
-        val parent = parentContainerOfUri(sourceUri) ?: return SolidResult.Success(sourceUri)
+    ): SolidResult<String> {
+        val isContainer = sourceUri.endsWith("/")
+        val parent = parentContainerOfUri(sourceUri) ?: return SolidResult.Success(encodeUriString(sourceUri).toString())
         val name = if (isContainer && !newName.endsWith("/")) "$newName/" else newName
-        return move(webId, sourceUri, URI.create("$parent$name"))
+        return move(webId, sourceUri, "$parent$name")
     }
 
     /**
@@ -258,7 +262,7 @@ public interface SolidResourceManager {
      * @param webId The WebID of the authenticated user making the request.
      * @param uri   The resource to read.
      */
-    public suspend fun readStream(webId: String, uri: URI): SolidResult<StreamingResource> =
+    public suspend fun readStream(webId: String, uri: String): SolidResult<StreamingResource> =
         when (val r = read(webId, uri, SolidNonRDFResource::class.java)) {
             is SolidResult.Success -> {
                 val res = r.value
@@ -286,7 +290,7 @@ public interface SolidResourceManager {
      */
     public suspend fun writeStream(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         contentLength: Long? = null,
         ifMatch: String? = null,
@@ -307,7 +311,7 @@ public interface SolidResourceManager {
      */
     public suspend fun <T : Resource> read(
         webId: String,
-        resource: URI,
+        resource: String,
         clazz: Class<T>,
     ): SolidResult<T>
 
@@ -385,7 +389,7 @@ public interface SolidResourceManager {
      */
     public suspend fun patch(
         webId: String,
-        uri: URI,
+        uri: String,
         patch: N3Patch,
         ifMatch: String? = null,
     ): SolidResult<Unit>
@@ -408,7 +412,7 @@ public interface SolidResourceManager {
      */
     public suspend fun patchRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         n3Body: String,
         ifMatch: String? = null,
     ): SolidResult<Unit>
@@ -447,7 +451,7 @@ public interface SolidResourceManager {
      */
     public suspend fun delete(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         ifMatch: String? = null,
     ): SolidResult<Boolean>
 
@@ -466,7 +470,7 @@ public interface SolidResourceManager {
      * @param clazz The expected resource type.
      */
     public suspend fun <T : Resource> readPublic(
-        uri: URI,
+        uri: String,
         clazz: Class<T>,
     ): SolidResult<T>
 
@@ -478,7 +482,7 @@ public interface SolidResourceManager {
      *
      * @param uri The URI of the resource to HEAD.
      */
-    public suspend fun headPublic(uri: URI): SolidResult<SolidMetadata>
+    public suspend fun headPublic(uri: String): SolidResult<SolidMetadata>
 
     /**
      * PUTs an opaque body to [uri] as a DPoP-authenticated user.
@@ -501,7 +505,7 @@ public interface SolidResourceManager {
      */
     public suspend fun putRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         ifMatch: String? = null,
@@ -527,11 +531,11 @@ public interface SolidResourceManager {
      */
     public suspend fun post(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String> = emptyMap(),
-    ): SolidResult<URI?>
+    ): SolidResult<String?>
 
     /**
      * Creates a new member inside the container at [containerUri] by POSTing
@@ -555,17 +559,17 @@ public interface SolidResourceManager {
      */
     public suspend fun <T : Resource> createInContainer(
         webId: String,
-        containerUri: URI,
+        containerUri: String,
         resource: T,
-    ): SolidResult<URI?>
+    ): SolidResult<String?>
 
     /**
      * Recursively copies [source] to [dest]: a leaf is read as raw bytes and re-`PUT`,
      * a container is recreated and its children copied (bounded concurrency). Returns the
      * first failure, or `Success(Unit)` when the whole subtree copied.
      */
-    private suspend fun copyTree(webId: String, source: URI, dest: URI): SolidResult<Unit> {
-        if (!source.toString().endsWith("/")) {
+    private suspend fun copyTree(webId: String, source: String, dest: String): SolidResult<Unit> {
+        if (!source.endsWith("/")) {
             val resource = when (val read = read(webId, source, SolidNonRDFResource::class.java)) {
                 is SolidResult.Success -> read.value
                 is SolidResult.Failure -> return SolidResult.Failure(read.error)
@@ -579,14 +583,14 @@ public interface SolidResourceManager {
             is SolidResult.Success -> list.value
             is SolidResult.Failure -> return SolidResult.Failure(list.error)
         }
-        val sourceStr = source.toString()
-        val destStr = dest.toString().let { if (it.endsWith("/")) it else "$it/" }
+        val sourceStr = source
+        val destStr = dest.let { if (it.endsWith("/")) it else "$it/" }
         val results = coroutineScope {
             children.chunked(CONTAINER_FANOUT_LIMIT).flatMap { batch ->
                 batch.map { child ->
                     async {
                         val rel = child.identifier.removePrefix(sourceStr)
-                        copyTree(webId, URI.create(child.identifier), URI.create("$destStr$rel"))
+                        copyTree(webId, child.identifier, "$destStr$rel")
                     }
                 }.awaitAll()
             }
@@ -603,12 +607,11 @@ private const val CONTAINER_FANOUT_LIMIT = 8
  * storage root or has no parent path segment. Drives [SolidResourceManager.ensureContainer]'s
  * bottom-up recursion.
  */
-private fun parentContainerOfUri(uri: URI): URI? {
-    val text = uri.toString()
-    val schemeEnd = text.indexOf("://")
+private fun parentContainerOfUri(uri: String): String? {
+    val schemeEnd = uri.indexOf("://")
     if (schemeEnd < 0) return null
-    val trimmed = text.trimEnd('/')
+    val trimmed = uri.trimEnd('/')
     val lastSlash = trimmed.lastIndexOf('/')
     if (lastSlash <= schemeEnd + 2) return null
-    return runCatching { URI.create(trimmed.substring(0, lastSlash + 1)) }.getOrNull()
+    return trimmed.substring(0, lastSlash + 1)
 }

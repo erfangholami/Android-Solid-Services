@@ -10,7 +10,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.ShareVocabulary
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShareVocabulary
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF wrapper for `{podRoot}/solidshare/catalog.ttl`, the owner-published
@@ -35,7 +34,7 @@ import java.net.URI
 public class CatalogRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null,

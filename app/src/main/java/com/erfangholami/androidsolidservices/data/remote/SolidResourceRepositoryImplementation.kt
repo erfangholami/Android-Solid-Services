@@ -5,7 +5,6 @@ import com.erfangholami.androidsolidservices.domain.repository.SolidResourceRepo
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
-import java.net.URI
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,12 +13,12 @@ class SolidResourceRepositoryImplementation @Inject constructor(
     private val resourceManager: SolidResourceManager,
 ) : SolidResourceRepository {
 
-    override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> =
+    override suspend fun head(webId: String, uri: String): SolidResult<SolidMetadata> =
         resourceManager.head(webId, uri)
 
     override suspend fun <T : Resource> read(
         webId: String,
-        resource: URI,
+        resource: String,
         clazz: Class<T>,
     ): SolidResult<T> = resourceManager.read(webId, resource, clazz)
 
@@ -36,7 +35,7 @@ class SolidResourceRepositoryImplementation @Inject constructor(
 
     override suspend fun patchRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = resourceManager.patchRaw(webId, uri, n3Body, ifMatch)
@@ -46,6 +45,6 @@ class SolidResourceRepositoryImplementation @Inject constructor(
         resource: T,
     ): SolidResult<T> = resourceManager.delete(webId, resource)
 
-    override suspend fun delete(webId: String, resourceUri: URI): SolidResult<Boolean> =
+    override suspend fun delete(webId: String, resourceUri: String): SolidResult<Boolean> =
         resourceManager.delete(webId, resourceUri)
 }

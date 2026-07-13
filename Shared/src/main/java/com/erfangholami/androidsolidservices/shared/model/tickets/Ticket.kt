@@ -155,7 +155,7 @@ public data class Ticket(
          */
         public fun createFromRdf(ticketRdf: TicketRDF): Ticket {
             return Ticket(
-                uri = ticketRdf.getIdentifier().toString(),
+                uri = ticketRdf.getIdentifier(),
                 title = ticketRdf.getTitle(),
                 description = ticketRdf.getDescription(),
                 ticketNumber = ticketRdf.getTicketNumber(),

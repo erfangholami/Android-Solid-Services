@@ -25,7 +25,7 @@ class InboxDiscoveryTest {
     private val asWebId = "https://alice.pod/profile/card#me"
 
     private fun profile(vararg quads: RdfQuad): WebId =
-        WebId(URI.create(target), quads.toList())
+        WebId(target, quads.toList())
 
     @Test
     fun `resolveInboxOf returns null when the target advertises no inbox`() {
@@ -52,6 +52,6 @@ class InboxDiscoveryTest {
 
         val inbox = runBlocking { InboxDiscovery(rm).resolveInboxOf(target, asWebId) }
 
-        assertEquals(URI.create("https://carol.pod/inbox/"), inbox)
+        assertEquals("https://carol.pod/inbox/", inbox)
     }
 }

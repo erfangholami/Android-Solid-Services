@@ -20,13 +20,13 @@ public data class AddressBook(
             groupsIndexRdf: GroupsIndexRDF
         ): AddressBook {
             return AddressBook(
-                uri = addressBookRdf.getIdentifier().toString(),
+                uri = addressBookRdf.getIdentifier(),
                 title = addressBookRdf.getTitle(),
                 contacts = nameEmailIndexRdf.getContacts(
-                    addressBookRdf.getIdentifier().toString()
+                    addressBookRdf.getIdentifier()
                 ),
                 groups = groupsIndexRdf.getGroups(
-                    addressBookRdf.getIdentifier().toString()
+                    addressBookRdf.getIdentifier()
                 )
             )
         }

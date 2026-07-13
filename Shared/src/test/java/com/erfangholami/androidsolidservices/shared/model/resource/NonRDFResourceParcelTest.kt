@@ -8,7 +8,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.net.URI
 
 /**
  * Regression test for the binary-corruption bug: [NonRDFResource] used to parcel
@@ -19,7 +18,7 @@ import java.net.URI
 @Config(manifest = Config.NONE, sdk = [34])
 class NonRDFResourceParcelTest {
 
-    private val uri = URI.create("https://alice.pod/photo.png")
+    private val uri = "https://alice.pod/photo.png"
 
     // PNG magic + bytes that are NOT valid UTF-8 (0x89, 0xC0, 0xFF, 0xFE).
     private val binaryBody = byteArrayOf(

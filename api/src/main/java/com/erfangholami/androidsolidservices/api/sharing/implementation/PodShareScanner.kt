@@ -44,7 +44,7 @@ internal class PodShareScanner(
 
     private data class NodeObservation(
         val shares: List<GivenShare>,
-        val children: List<URI>,
+        val children: List<String>,
         val observed: Boolean,
         val complete: Boolean,
     )
@@ -58,12 +58,12 @@ internal class PodShareScanner(
     fun isExcludedFromScan(resourceUri: String): Boolean =
         profile.storageLayout.excludedScanPaths().any { resourceUri.contains(it) }
 
-    suspend fun scanPod(webId: String, root: URI): PodScan =
+    suspend fun scanPod(webId: String, root: String): PodScan =
         scanFrontier(webId, listOf(root), Semaphore(MAX_CONCURRENT_NODE_READS))
 
     private suspend fun scanFrontier(
         webId: String,
-        frontier: List<URI>,
+        frontier: List<String>,
         gate: Semaphore,
     ): PodScan {
         if (frontier.isEmpty()) return PodScan(emptyList(), emptySet(), complete = true)
@@ -76,7 +76,7 @@ internal class PodShareScanner(
 
         val observedHere = frontier.zip(observations)
             .filter { (_, obs) -> obs.observed }
-            .map { (node, _) -> node.toString() }
+            .map { (node, _) -> node }
             .toSet()
 
         val deeper = scanFrontier(webId, observations.flatMap { it.children }, gate)
@@ -87,9 +87,8 @@ internal class PodShareScanner(
         )
     }
 
-    private suspend fun visitNode(webId: String, node: URI): NodeObservation {
-        val nodeStr = node.toString()
-        if (isExcludedFromScan(nodeStr)) {
+    private suspend fun visitNode(webId: String, node: String): NodeObservation {
+        if (isExcludedFromScan(node)) {
             return NodeObservation(emptyList(), emptyList(), observed = false, complete = true)
         }
 
@@ -99,7 +98,7 @@ internal class PodShareScanner(
             .onFailure { t ->
                 Log.w(
                     TAG,
-                    "scanPod: ACL read failed for $nodeStr (e.g. 403 from a deleted/" +
+                    "scanPod: ACL read failed for $node (e.g. 403 from a deleted/" +
                             "locked ACL); skipping this resource and preserving its stored " +
                             "index rows. The rest of the pod is still walked.",
                     t,
@@ -109,25 +108,29 @@ internal class PodShareScanner(
             }
             .getOrDefault(emptyList())
 
-        if (!nodeStr.endsWith("/")) return NodeObservation(live, emptyList(), observed, complete)
+        if (!node.endsWith("/")) return NodeObservation(live, emptyList(), observed, complete)
 
         val container = runCatching {
             rm.read(webId, node, SolidContainer::class.java).getOrThrow()
         }.onFailure { t ->
             Log.w(
                 TAG,
-                "scanPod: container listing failed for $nodeStr; its subtree is " +
+                "scanPod: container listing failed for $node; its subtree is " +
                         "unobserved (scan is partial), but the rest of the pod is still walked.",
                 t,
             )
         }.getOrNull() ?: return NodeObservation(live, emptyList(), observed, complete = false)
 
+        // Children are walked as identifier strings; the parse is a validity check only, so a
+        // malformed entry in the container listing is skipped (and flips the scan to partial)
+        // rather than being handed to the resource manager.
         val children = container.getContained().mapNotNull { ref ->
             runCatching { URI.create(ref.identifier) }
                 .onFailure { t ->
                     Log.w(TAG, "scanPod: malformed child URI '${ref.identifier}'; scan is partial.", t)
                     complete = false
                 }
+                .map { ref.identifier }
                 .getOrNull()
         }
         return NodeObservation(live, children, observed, complete)

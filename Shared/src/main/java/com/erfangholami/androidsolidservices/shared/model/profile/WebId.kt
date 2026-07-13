@@ -21,7 +21,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * Represents a Solid WebID identity document — both for reading profile data
@@ -61,7 +60,7 @@ public open class WebId : SolidRDFResource {
         public fun writeToString(webId: WebId?): String? {
             webId ?: return null
             return buildJsonObject {
-                put(KEY_IDENTIFIER, webId.getIdentifier().toString())
+                put(KEY_IDENTIFIER, webId.getIdentifier())
                 put(KEY_TYPE, webId.getContentType())
                 put(KEY_DATASET, webId.getEntity().toPlainString())
             }.toString()
@@ -73,58 +72,58 @@ public open class WebId : SolidRDFResource {
         public fun readFromString(objectString: String): WebId {
             val obj = Json.parseToJsonElement(objectString).jsonObject
             return WebId(
-                identifier = URI.create(obj[KEY_IDENTIFIER]!!.jsonPrimitive.content),
+                identifier = obj[KEY_IDENTIFIER]!!.jsonPrimitive.content,
                 contentType = obj[KEY_TYPE]!!.jsonPrimitive.content,
                 quads = parseJsonLd(obj[KEY_DATASET]!!.jsonPrimitive.content),
             )
         }
     }
 
-    public constructor(identifier: URI, quads: List<RdfQuad>) :
+    public constructor(identifier: String, quads: List<RdfQuad>) :
             super(identifier, quads)
 
-    public constructor(identifier: URI, contentType: String, quads: List<RdfQuad>) :
+    public constructor(identifier: String, contentType: String, quads: List<RdfQuad>) :
             super(identifier, contentType, quads, null)
 
-    public constructor(identifier: URI, contentType: String, quads: List<RdfQuad>, headers: SolidHeaders?) :
+    public constructor(identifier: String, contentType: String, quads: List<RdfQuad>, headers: SolidHeaders?) :
             super(identifier, contentType, quads, headers)
 
     /** Returns all `rdf:type` values declared in this profile. */
-    public fun getTypes(): List<URI> =
-        findAllProperties(RDF.TYPE).map { URI.create(it) }
+    public fun getTypes(): List<String> =
+        findAllProperties(RDF.TYPE).mapNotNull { tryParseUri(it, "WebId.types")?.toString() }
 
     /** Returns the `pim:preferencesFile` URI, or `null` if not declared. */
-    public fun getPreferencesFile(): URI? =
-        findProperty(PIM.PREFERENCES_FILE)?.let { tryParseUri(it, "WebId.preferencesFile") }
+    public fun getPreferencesFile(): String? =
+        findProperty(PIM.PREFERENCES_FILE)?.let { tryParseUri(it, "WebId.preferencesFile")?.toString() }
 
     /** Returns all `pim:storage` root URIs declared in this profile. */
-    public fun getStorages(): List<URI> =
-        findAllProperties(PIM.STORAGE).mapNotNull { tryParseUri(it, "WebId.storages") }
+    public fun getStorages(): List<String> =
+        findAllProperties(PIM.STORAGE).mapNotNull { tryParseUri(it, "WebId.storages")?.toString() }
 
     /** Returns the `ldp:inbox` URI, or `null` if not declared. */
-    public fun getInbox(): URI? =
-        findProperty(LDP.INBOX)?.let { tryParseUri(it, "WebId.inbox") }
+    public fun getInbox(): String? =
+        findProperty(LDP.INBOX)?.let { tryParseUri(it, "WebId.inbox")?.toString() }
 
     /** Returns all `rdfs:seeAlso` (extended profile) document URIs. */
-    public fun getRelatedResources(): List<URI> =
-        findAllProperties(RDFS.SEE_ALSO).mapNotNull { tryParseUri(it, "WebId.seeAlso") }
+    public fun getRelatedResources(): List<String> =
+        findAllProperties(RDFS.SEE_ALSO).mapNotNull { tryParseUri(it, "WebId.seeAlso")?.toString() }
 
     /** Returns all `foaf:isPrimaryTopicOf` document URIs. */
-    public fun getPrimaryTopicDocuments(): List<URI> =
+    public fun getPrimaryTopicDocuments(): List<String> =
         findAllProperties(FOAF.IS_PRIMARY_TOPIC_OF)
-            .mapNotNull { tryParseUri(it, "WebId.primaryTopicOf") }
+            .mapNotNull { tryParseUri(it, "WebId.primaryTopicOf")?.toString() }
 
     /** Returns all `solid:oidcIssuer` URIs declared in this profile. */
-    public fun getOidcIssuers(): List<URI> =
-        findAllProperties(Solid.OIDC_ISSUER).mapNotNull { tryParseUri(it, "WebId.oidcIssuer") }
+    public fun getOidcIssuers(): List<String> =
+        findAllProperties(Solid.OIDC_ISSUER).mapNotNull { tryParseUri(it, "WebId.oidcIssuer")?.toString() }
 
     /** Returns the `solid:privateTypeIndex` URI, or `null` if not declared. */
-    public fun getPrivateTypeIndex(): URI? =
-        findProperty(Solid.PRIVATE_TYPE_INDEX)?.let { tryParseUri(it, "WebId.privateTypeIndex") }
+    public fun getPrivateTypeIndex(): String? =
+        findProperty(Solid.PRIVATE_TYPE_INDEX)?.let { tryParseUri(it, "WebId.privateTypeIndex")?.toString() }
 
     /** Returns the `solid:publicTypeIndex` URI, or `null` if not declared. */
-    public fun getPublicTypeIndex(): URI? =
-        findProperty(Solid.PUBLIC_TYPE_INDEX)?.let { tryParseUri(it, "WebId.publicTypeIndex") }
+    public fun getPublicTypeIndex(): String? =
+        findProperty(Solid.PUBLIC_TYPE_INDEX)?.let { tryParseUri(it, "WebId.publicTypeIndex")?.toString() }
 
     /** Returns the `foaf:name` literal, or `null` if not declared. */
     public fun getName(): String? = findProperty(FOAF.NAME)
@@ -136,22 +135,22 @@ public open class WebId : SolidRDFResource {
     public fun getFamilyName(): String? = findProperty(FOAF.FAMILY_NAME)
 
     /** Returns the `foaf:img` photo URI, or `null` if not declared. */
-    public fun getPhoto(): URI? =
-        findProperty(FOAF.IMG)?.let { tryParseUri(it, "WebId.photo") }
+    public fun getPhoto(): String? =
+        findProperty(FOAF.IMG)?.let { tryParseUri(it, "WebId.photo")?.toString() }
 
     /** Returns all `foaf:knows` WebID URIs listed in this profile. */
-    public fun getKnows(): List<URI> =
-        findAllProperties(FOAF.KNOWS).mapNotNull { tryParseUri(it, "WebId.knows") }
+    public fun getKnows(): List<String> =
+        findAllProperties(FOAF.KNOWS).mapNotNull { tryParseUri(it, "WebId.knows")?.toString() }
 
     /** Returns all `acl:trustedApp` URIs listed in this profile. */
-    public fun getTrustedApps(): List<URI> =
+    public fun getTrustedApps(): List<String> =
         findAllProperties(ACL.TRUSTED_APP)
-            .mapNotNull { tryParseUri(it, "WebId.trustedApps") }
+            .mapNotNull { tryParseUri(it, "WebId.trustedApps")?.toString() }
 
     /** Returns all `cert:key` public-key URIs listed in this profile. */
-    public fun getCertKeys(): List<URI> =
+    public fun getCertKeys(): List<String> =
         findAllProperties(Cert.KEY)
-            .mapNotNull { tryParseUri(it, "WebId.certKeys") }
+            .mapNotNull { tryParseUri(it, "WebId.certKeys")?.toString() }
 
     /**
      * Adds a `solid:privateTypeIndex` triple to this profile document.

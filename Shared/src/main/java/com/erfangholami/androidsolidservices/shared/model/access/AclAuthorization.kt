@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.shared.model.access
 
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
-import java.net.URI
 
 /**
  * A single WAC authorization rule (`acl:Authorization`).
@@ -18,13 +17,13 @@ public data class AclAuthorization(
     val subject: String,
 
     /** IRIs of specific resources this authorization applies to directly. */
-    val accessTo: List<URI> = emptyList(),
+    val accessTo: List<String> = emptyList(),
 
     /**
      * IRIs of containers whose members inherit this authorization
      * (acl:default).
      */
-    val default: List<URI> = emptyList(),
+    val default: List<String> = emptyList(),
 
     /**
      * Access modes granted (e.g. `acl:Read`, `acl:Write`, `acl:Append`,
@@ -33,24 +32,24 @@ public data class AclAuthorization(
     val modes: Set<String> = emptySet(),
 
     /** Individual agents granted access, identified by WebID. */
-    val agents: List<URI> = emptyList(),
+    val agents: List<String> = emptyList(),
 
     /**
      * Agent classes granted access.
      * Common values: `foaf:Agent` (public), `acl:AuthenticatedAgent`.
      */
-    val agentClasses: List<URI> = emptyList(),
+    val agentClasses: List<String> = emptyList(),
 
     /**
      * Group resources (`vcard:Group`) whose members are granted access.
      */
-    val agentGroups: List<URI> = emptyList(),
+    val agentGroups: List<String> = emptyList(),
 
     /**
      * HTTP Origins that are permitted for this authorization.
      * Empty means all origins are permitted.
      */
-    val origins: List<URI> = emptyList(),
+    val origins: List<String> = emptyList(),
 ) {
     public fun allowsRead(): Boolean = modes.contains(ACL.READ)
     public fun allowsWrite(): Boolean = modes.contains(ACL.WRITE)

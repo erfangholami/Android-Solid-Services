@@ -44,35 +44,35 @@ internal class InMemorySharingPod(
 
     private fun isAcl(s: String) = s.endsWith(".acl")
 
-    override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> {
+    override suspend fun head(webId: String, uri: String): SolidResult<SolidMetadata> {
         val s = uri.toString()
         return if (isAcl(s)) {
             acls[s]?.let { SolidResult.Success(SolidMetadata.EMPTY.copy(etag = it.etag)) }
                 ?: SolidResult.Failure(SolidError.fromHttp(404, "no ACL at $s"))
         } else {
-            SolidResult.Success(SolidMetadata.EMPTY.copy(aclUri = URI.create("$s.acl")))
+            SolidResult.Success(SolidMetadata.EMPTY.copy(aclUri = "$s.acl"))
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> read(
         webId: String,
-        resource: URI,
+        resource: String,
         clazz: Class<T>,
     ): SolidResult<T> {
-        val s = resource.toString()
+        val s = resource
         return when {
             WebId::class.java.isAssignableFrom(clazz) && s == ownerWebId ->
                 SolidResult.Success(
                     WebId(
-                        URI.create(ownerWebId),
+                        ownerWebId,
                         listOf(RdfQuad(ownerWebId, PIM.STORAGE, podRoot)),
                     ) as T,
                 )
 
             SolidACLResource::class.java.isAssignableFrom(clazz) -> {
                 val doc = acls[s] ?: return SolidResult.Failure(SolidError.fromHttp(404, "no ACL: $s"))
-                val quads = NTriples.parse(String(doc.body, Charsets.UTF_8), resource)
+                val quads = NTriples.parse(String(doc.body, Charsets.UTF_8), URI.create(resource))
                 SolidResult.Success(
                     SolidACLResource(resource, quads, SolidHeaders(mapOf("ETag" to listOf(doc.etag)))) as T,
                 )
@@ -89,7 +89,7 @@ internal class InMemorySharingPod(
 
     override suspend fun putRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         ifMatch: String?,
@@ -103,7 +103,7 @@ internal class InMemorySharingPod(
 
     override suspend fun patch(
         webId: String,
-        uri: URI,
+        uri: String,
         patch: N3Patch,
         ifMatch: String?,
     ): SolidResult<Unit> =
@@ -124,22 +124,22 @@ internal class InMemorySharingPod(
     ): SolidResult<T> = SolidResult.Success(newResource)
 
     override suspend fun <T : Resource> readPublic(
-        uri: URI,
+        uri: String,
         clazz: Class<T>,
     ): SolidResult<T> = read("", uri, clazz)
 
-    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> = head("", uri)
+    override suspend fun headPublic(uri: String): SolidResult<SolidMetadata> = head("", uri)
 
     override suspend fun patchRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = SolidResult.Success(Unit)
 
     override suspend fun delete(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         ifMatch: String?,
     ): SolidResult<Boolean> = SolidResult.Success(true)
 
@@ -148,15 +148,15 @@ internal class InMemorySharingPod(
 
     override suspend fun post(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidResult<URI?> = SolidResult.Success(null)
+    ): SolidResult<String?> = SolidResult.Success(null)
 
     override suspend fun <T : Resource> createInContainer(
         webId: String,
-        containerUri: URI,
+        containerUri: String,
         resource: T,
-    ): SolidResult<URI?> = SolidResult.Success(null)
+    ): SolidResult<String?> = SolidResult.Success(null)
 }

@@ -22,7 +22,7 @@ import java.io.InputStream
  * @property contentLength The `Content-Length` in bytes, or `-1` when the server did not report one.
  */
 public class StreamingResource internal constructor(
-    public val uri: java.net.URI,
+    public val uri: String,
     public val contentType: String,
     public val contentLength: Long,
     private val stream: InputStream,

@@ -13,6 +13,7 @@ import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -56,17 +57,17 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
 
     override suspend fun head(
         webId: String,
-        uri: URI,
+        uri: String,
     ): SolidResult<SolidMetadata> = withContext(Dispatchers.IO) {
-        solidHttpClient.head(webId, uri)
+        solidHttpClient.head(webId, encodeUriString(uri))
     }
 
     override suspend fun <T : Resource> read(
         webId: String,
-        resource: URI,
+        resource: String,
         clazz: Class<T>,
     ): SolidResult<T> = withContext(Dispatchers.IO) {
-        val result = solidHttpClient.get(webId, resource, clazz)
+        val result = solidHttpClient.get(webId, encodeUriString(resource), clazz)
         if (result is SolidResult.Success && result.value is SolidContainer) {
             val container = result.value as SolidContainer
             val enriched = coroutineScope {
@@ -134,20 +135,20 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
 
     override suspend fun patch(
         webId: String,
-        uri: URI,
+        uri: String,
         patch: N3Patch,
         ifMatch: String?,
     ): SolidResult<Unit> = withContext(Dispatchers.IO) {
-        solidHttpClient.patch(webId, uri, patch, ifMatch)
+        solidHttpClient.patch(webId, encodeUriString(uri), patch, ifMatch)
     }
 
     override suspend fun patchRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = withContext(Dispatchers.IO) {
-        solidHttpClient.patchRaw(webId, uri, n3Body, ifMatch)
+        solidHttpClient.patchRaw(webId, encodeUriString(uri), n3Body, ifMatch)
     }
 
     override suspend fun <T : Resource> delete(
@@ -155,7 +156,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         resource: T,
     ): SolidResult<T> = withContext(Dispatchers.IO) {
         try {
-            val uri = resource.getIdentifier()
+            val uri = encodeUriString(resource.getIdentifier())
             val deleteResult = if (resource is SolidContainer || uri.toString().endsWith("/")) {
                 deleteRecursive(webId, uri, Semaphore(MAX_CONCURRENT_DELETES))
             } else {
@@ -173,14 +174,15 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
 
     override suspend fun delete(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         ifMatch: String?,
     ): SolidResult<Boolean> = withContext(Dispatchers.IO) {
         try {
-            if (resourceUri.toString().endsWith("/")) {
-                deleteRecursive(webId, resourceUri, Semaphore(MAX_CONCURRENT_DELETES))
+            val uri = encodeUriString(resourceUri)
+            if (uri.toString().endsWith("/")) {
+                deleteRecursive(webId, uri, Semaphore(MAX_CONCURRENT_DELETES))
             } else {
-                solidHttpClient.delete(webId, resourceUri, ifMatch)
+                solidHttpClient.delete(webId, uri, ifMatch)
             }
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
@@ -190,21 +192,21 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
 
     override suspend fun post(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidResult<URI?> = withContext(Dispatchers.IO) {
-        solidHttpClient.post(webId, uri, contentType, body, additionalHeaders)
+    ): SolidResult<String?> = withContext(Dispatchers.IO) {
+        solidHttpClient.post(webId, encodeUriString(uri), contentType, body, additionalHeaders).map { it?.toString() }
     }
 
     override suspend fun <T : Resource> createInContainer(
         webId: String,
-        containerUri: URI,
+        containerUri: String,
         resource: T,
-    ): SolidResult<URI?> = withContext(Dispatchers.IO) {
+    ): SolidResult<String?> = withContext(Dispatchers.IO) {
         try {
-            solidHttpClient.postResource(webId, containerUri, resource)
+            solidHttpClient.postResource(webId, encodeUriString(containerUri), resource).map { it?.toString() }
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
             SolidResult.Failure(SolidError.fromThrowable(e))
@@ -213,38 +215,38 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
 
     override suspend fun putRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         ifMatch: String?,
         linkHeader: String?,
     ): SolidResult<Unit> = withContext(Dispatchers.IO) {
-        solidHttpClient.putRaw(webId, uri, contentType, body, ifMatch, linkHeader)
+        solidHttpClient.putRaw(webId, encodeUriString(uri), contentType, body, ifMatch, linkHeader)
     }
 
-    override suspend fun readStream(webId: String, uri: URI): SolidResult<StreamingResource> =
-        solidHttpClient.getStream(webId, uri)
+    override suspend fun readStream(webId: String, uri: String): SolidResult<StreamingResource> =
+        solidHttpClient.getStream(webId, encodeUriString(uri))
 
     override suspend fun writeStream(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         contentLength: Long?,
         ifMatch: String?,
         onProgress: ((bytesWritten: Long, total: Long?) -> Unit)?,
         openSource: () -> InputStream,
     ): SolidResult<Unit> =
-        solidHttpClient.putStream(webId, uri, contentType, contentLength, ifMatch, onProgress, openSource)
+        solidHttpClient.putStream(webId, encodeUriString(uri), contentType, contentLength, ifMatch, onProgress, openSource)
 
     override suspend fun <T : Resource> readPublic(
-        uri: URI,
+        uri: String,
         clazz: Class<T>,
     ): SolidResult<T> = withContext(Dispatchers.IO) {
-        solidHttpClient.getPublic(uri, clazz)
+        solidHttpClient.getPublic(encodeUriString(uri), clazz)
     }
 
-    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> =
-        withContext(Dispatchers.IO) { solidHttpClient.headPublic(uri) }
+    override suspend fun headPublic(uri: String): SolidResult<SolidMetadata> =
+        withContext(Dispatchers.IO) { solidHttpClient.headPublic(encodeUriString(uri)) }
 
     /**
      * Deletes a container and everything under it.

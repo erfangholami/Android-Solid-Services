@@ -74,7 +74,7 @@ internal class SolidTicketsDataModuleHelper {
         ownerWebId: String,
         ticketUri: URI
     ): TicketRDF {
-        return solidResourceManager.read(ownerWebId, ticketUri, TicketRDF::class.java)
+        return solidResourceManager.read(ownerWebId, ticketUri.toString(), TicketRDF::class.java)
             .getOrThrow()
     }
 
@@ -95,7 +95,7 @@ internal class SolidTicketsDataModuleHelper {
 
         val now = nowIsoDateTime()
         val ticketRdf = TicketRDF(
-            identifier = URI.create(ticketUri),
+            identifier = ticketUri,
             contentType = "application/ld+json",
             quads = null,
             headers = null
@@ -111,7 +111,7 @@ internal class SolidTicketsDataModuleHelper {
                 "${ticketsContainer}${ticketId}${artifactExtensionFor(contentType)}"
             solidResourceManager.putRaw(
                 webId = ownerWebId,
-                uri = URI.create(artifactUri),
+                uri = artifactUri,
                 contentType = contentType,
                 body = artifact,
                 ifMatch = null,
@@ -136,7 +136,7 @@ internal class SolidTicketsDataModuleHelper {
     ): TicketRDF {
         val fresh = solidResourceManager.casUpdate(
             ownerWebId,
-            read = { solidResourceManager.read(ownerWebId, ticketUri, TicketRDF::class.java) },
+            read = { solidResourceManager.read(ownerWebId, ticketUri.toString(), TicketRDF::class.java) },
             mutate = { ticketRdf ->
                 applyNewTicket(ticketRdf, updated)
                 if (ticketRdf.getCreated() == null) ticketRdf.setCreated(nowIsoDateTime())
@@ -163,16 +163,16 @@ internal class SolidTicketsDataModuleHelper {
 
         if (old != null) {
             val documentUri = ticketUriString.substringBefore('#')
-            solidResourceManager.delete(ownerWebId, URI.create(documentUri)).getOrThrow()
+            solidResourceManager.delete(ownerWebId, documentUri).getOrThrow()
             old.getArtifactUri()?.let { artifactUri ->
-                deleteTolerant(ownerWebId, URI.create(artifactUri))
+                deleteTolerant(ownerWebId, artifactUri)
             }
         }
 
         updateIndex(ownerWebId, ticketsContainer) {
             it.removeTicket(ticketUriString)
         }
-        return old ?: TicketRDF(identifier = ticketUri).apply { setTitle("") }
+        return old ?: TicketRDF(identifier = ticketUriString).apply { setTitle("") }
     }
 
     suspend fun getTicketArtifact(
@@ -180,7 +180,7 @@ internal class SolidTicketsDataModuleHelper {
         artifactUri: URI,
     ): TicketArtifact {
         val resource =
-            solidResourceManager.read(ownerWebId, artifactUri, SolidNonRDFResource::class.java)
+            solidResourceManager.read(ownerWebId, artifactUri.toString(), SolidNonRDFResource::class.java)
                 .getOrThrow()
         val bytes = resource.getEntity().use { it.readBytes() }
         return TicketArtifact(artifactUri.toString(), resource.getContentType(), bytes)
@@ -198,9 +198,9 @@ internal class SolidTicketsDataModuleHelper {
             ?: "${requireStorage(ownerWebId, storage)}${TICKETS_DIRECTORY_SUFFIX}"
         if (target in registered) return target
 
-        ensureContainer(ownerWebId, URI.create(target))
+        ensureContainer(ownerWebId, target)
         val index = TicketsIndexRDF(
-            identifier = URI.create("${target}${TICKETS_INDEX_FILE_NAME}"),
+            identifier = "${target}${TICKETS_INDEX_FILE_NAME}",
             contentType = "application/ld+json",
             quads = null,
             headers = null
@@ -232,11 +232,11 @@ internal class SolidTicketsDataModuleHelper {
             ?: StorageDiscovery.discover(solidResourceManager, ownerWebId)?.toString()
             ?: error("Could not discover a storage for $ownerWebId")
 
-    private suspend fun ensureContainer(ownerWebId: String, containerUri: URI) {
+    private suspend fun ensureContainer(ownerWebId: String, containerUri: String) {
         solidResourceManager.ensureContainer(ownerWebId, containerUri).getOrThrow()
     }
 
-    private suspend fun deleteTolerant(ownerWebId: String, uri: URI) {
+    private suspend fun deleteTolerant(ownerWebId: String, uri: String) {
         when (val result = solidResourceManager.delete(ownerWebId, uri)) {
             is SolidResult.Success -> Unit
             is SolidResult.Failure ->
@@ -250,7 +250,7 @@ internal class SolidTicketsDataModuleHelper {
     ): TicketsIndexRDF {
         return solidResourceManager.read(
             ownerWebId,
-            URI.create("${containerUri}${TICKETS_INDEX_FILE_NAME}"),
+            "${containerUri}${TICKETS_INDEX_FILE_NAME}",
             TicketsIndexRDF::class.java
         ).getOrThrow()
     }
@@ -265,7 +265,7 @@ internal class SolidTicketsDataModuleHelper {
         containerUri: String,
         mutate: (TicketsIndexRDF) -> Boolean,
     ) {
-        val indexUri = URI.create("${containerUri}${TICKETS_INDEX_FILE_NAME}")
+        val indexUri = "${containerUri}${TICKETS_INDEX_FILE_NAME}"
         solidResourceManager.casUpdate(
             ownerWebId,
             read = { solidResourceManager.read(ownerWebId, indexUri, TicketsIndexRDF::class.java) },

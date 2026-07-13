@@ -22,7 +22,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF representation of a single Solid contact (`vcard:Individual`).
@@ -37,26 +36,26 @@ import java.net.URI
 public class ContactRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     init {
-        ensureType(getIdentifier().toString(), VCARD.INDIVIDUAL)
+        ensureType(getIdentifier(), VCARD.INDIVIDUAL)
     }
 
     /** Returns the contact's formatted display name (`vcard:fn`). */
     public fun getFullName(): String =
         quads.find {
-            it.subject == getIdentifier().toString() && it.predicate == VCARD.FN
+            it.subject == getIdentifier() && it.predicate == VCARD.FN
         }?.`object`
             ?: error("Contact ${getIdentifier()} is missing a vcard:fn (formatted name)")
 
     /** Sets the contact's formatted display name. */
     public fun setFullName(name: String) {
-        addQuadLiteral(getIdentifier().toString(), VCARD.FN, name, XSD.STRING)
+        addQuadLiteral(getIdentifier(), VCARD.FN, name, XSD.STRING)
     }
 
     /**
@@ -64,7 +63,7 @@ public class ContactRDF : SolidRDFResource {
      */
     public fun getPhotoUrl(): String? =
         quads.find {
-            it.subject == getIdentifier().toString() && it.predicate == VCARD.HAS_PHOTO
+            it.subject == getIdentifier() && it.predicate == VCARD.HAS_PHOTO
         }?.`object`
 
     /**
@@ -72,7 +71,7 @@ public class ContactRDF : SolidRDFResource {
      * [URLType] classification. URLs without a recognized type default to [URLType.Home].
      */
     public fun getUrls(): List<Pair<URLType, String>> {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         return quads
             .filter { it.subject == selfUri && it.predicate == VCARD.URL }
             .mapNotNull { urlTriple ->
@@ -99,7 +98,7 @@ public class ContactRDF : SolidRDFResource {
      */
     public fun getName(): Name? {
         val hasNameQuad = quads.find {
-            it.subject == getIdentifier().toString() && it.predicate == VCARD.HAS_NAME
+            it.subject == getIdentifier() && it.predicate == VCARD.HAS_NAME
         } ?: return null
         val nameNode = hasNameQuad.`object`
         return Name(
@@ -114,7 +113,7 @@ public class ContactRDF : SolidRDFResource {
     /** Returns all phone numbers (`vcard:hasTelephone`) stored for this contact. */
     public fun getPhoneNumbers(): List<PhoneNumber> =
         quads
-            .filter { it.subject == getIdentifier().toString() && it.predicate == VCARD.HAS_TELEPHONE }
+            .filter { it.subject == getIdentifier() && it.predicate == VCARD.HAS_TELEPHONE }
             .mapNotNull { triple ->
                 quads.find { it.subject == triple.`object` && it.predicate == VCARD.VALUE }
                     ?.let { PhoneNumber(it.`object`) }
@@ -134,7 +133,7 @@ public class ContactRDF : SolidRDFResource {
     /** Returns all email addresses (`vcard:hasEmail`) stored for this contact. */
     public fun getEmails(): List<Email> =
         quads
-            .filter { it.subject == getIdentifier().toString() && it.predicate == VCARD.HAS_EMAIL }
+            .filter { it.subject == getIdentifier() && it.predicate == VCARD.HAS_EMAIL }
             .mapNotNull { triple ->
                 quads.find { it.subject == triple.`object` && it.predicate == VCARD.VALUE }
                     ?.let { Email(it.`object`) }
@@ -193,7 +192,7 @@ public class ContactRDF : SolidRDFResource {
      * Read back with [getName].
      */
     public fun setName(name: Name?) {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         quads.find { it.subject == selfUri && it.predicate == VCARD.HAS_NAME }?.let { link ->
             quads.removeAll { it.subject == link.`object` }
         }
@@ -216,7 +215,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** Returns the contact's birthday (`vcard:bday`) as its raw lexical value, or `null` if absent. */
     public fun getBirthday(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.BIRTHDAY)
+        findPropertyForSubject(getIdentifier(), VCARD.BIRTHDAY)
 
     /**
      * Sets (or clears, when `null`) the contact's birthday (`vcard:bday`).
@@ -225,7 +224,7 @@ public class ContactRDF : SolidRDFResource {
      * component (`T`) and `xsd:date` otherwise.
      */
     public fun setBirthday(birthday: String?) {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         if (birthday.isNullOrBlank()) {
             clearProperties(VCARD.BIRTHDAY, selfUri)
             return
@@ -235,7 +234,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** Returns the contact's organization name (`vcard:organization-name`), or `null` if absent. */
     public fun getOrganizationName(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.ORGANIZATION_NAME)
+        findPropertyForSubject(getIdentifier(), VCARD.ORGANIZATION_NAME)
 
     /** Sets (or clears, when `null`) the contact's organization name (`vcard:organization-name`). */
     public fun setOrganizationName(organizationName: String?) {
@@ -244,7 +243,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** Returns the contact's role (`vcard:role`), or `null` if absent. */
     public fun getRole(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.ROLE)
+        findPropertyForSubject(getIdentifier(), VCARD.ROLE)
 
     /** Sets (or clears, when `null`) the contact's role (`vcard:role`). */
     public fun setRole(role: String?) {
@@ -253,7 +252,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** Returns the contact's job title (`vcard:title`), or `null` if absent. */
     public fun getJobTitle(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.TITLE)
+        findPropertyForSubject(getIdentifier(), VCARD.TITLE)
 
     /** Sets (or clears, when `null`) the contact's job title (`vcard:title`). */
     public fun setJobTitle(jobTitle: String?) {
@@ -262,7 +261,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** Returns the contact's note (`vcard:note`), or `null` if absent. */
     public fun getNote(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.NOTE)
+        findPropertyForSubject(getIdentifier(), VCARD.NOTE)
 
     /** Sets (or clears, when `null`) the contact's note (`vcard:note`). */
     public fun setNote(note: String?) {
@@ -284,7 +283,7 @@ public class ContactRDF : SolidRDFResource {
         var counter = 0
         while (quads.any { it.subject == "_:url$counter" }) counter++
         val blankNode = "_:url$counter"
-        addQuad(getIdentifier().toString(), VCARD.URL, blankNode, maxNumber = Int.MAX_VALUE)
+        addQuad(getIdentifier(), VCARD.URL, blankNode, maxNumber = Int.MAX_VALUE)
         addQuad(blankNode, RDF.TYPE, vocabularyFor(type))
         addQuad(blankNode, VCARD.VALUE, url)
         return true
@@ -296,7 +295,7 @@ public class ContactRDF : SolidRDFResource {
      * @return `true` if the entry was found and removed, `false` if it was not present.
      */
     public fun removeUrl(url: String): Boolean {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         val link = quads
             .filter { it.subject == selfUri && it.predicate == VCARD.URL }
             .find { urlLink ->
@@ -316,7 +315,7 @@ public class ContactRDF : SolidRDFResource {
      * module's responsibility.
      */
     public fun setPhoto(photoUri: String) {
-        addQuad(getIdentifier().toString(), VCARD.HAS_PHOTO, photoUri)
+        addQuad(getIdentifier(), VCARD.HAS_PHOTO, photoUri)
     }
 
     /**
@@ -326,7 +325,7 @@ public class ContactRDF : SolidRDFResource {
      */
     public fun removePhoto(): Boolean {
         if (getPhotoUrl() == null) return false
-        clearProperties(VCARD.HAS_PHOTO, getIdentifier().toString())
+        clearProperties(VCARD.HAS_PHOTO, getIdentifier())
         return true
     }
 
@@ -358,7 +357,7 @@ public class ContactRDF : SolidRDFResource {
         val telValue = telIri(number)
         if (quads.any { it.predicate == VCARD.VALUE && normalizedTel(it.`object`) == telValue }) return false
         val node = freshBlankNode("phone")
-        addQuad(getIdentifier().toString(), VCARD.HAS_TELEPHONE, node, maxNumber = Int.MAX_VALUE)
+        addQuad(getIdentifier(), VCARD.HAS_TELEPHONE, node, maxNumber = Int.MAX_VALUE)
         phoneTypeIri(type)?.let { addQuad(node, RDF.TYPE, it) }
         addQuadLiteral(node, VCARD.VALUE, telValue, null)
         return true
@@ -388,7 +387,7 @@ public class ContactRDF : SolidRDFResource {
         val mailtoValue = mailtoIri(address)
         if (quads.any { it.predicate == VCARD.VALUE && it.`object` == mailtoValue }) return false
         val node = freshBlankNode("email")
-        addQuad(getIdentifier().toString(), VCARD.HAS_EMAIL, node, maxNumber = Int.MAX_VALUE)
+        addQuad(getIdentifier(), VCARD.HAS_EMAIL, node, maxNumber = Int.MAX_VALUE)
         emailTypeIri(type)?.let { addQuad(node, RDF.TYPE, it) }
         addQuadLiteral(node, VCARD.VALUE, mailtoValue, null)
         return true
@@ -415,7 +414,7 @@ public class ContactRDF : SolidRDFResource {
         val value = handle.trim()
         if (entryNodes(VCARD.HAS_INSTANT_MESSAGE).any { nodeValue(it) == value }) return false
         val node = freshBlankNode("im")
-        addQuad(getIdentifier().toString(), VCARD.HAS_INSTANT_MESSAGE, node, maxNumber = Int.MAX_VALUE)
+        addQuad(getIdentifier(), VCARD.HAS_INSTANT_MESSAGE, node, maxNumber = Int.MAX_VALUE)
         imTypeIri(type)?.let { addQuad(node, RDF.TYPE, it) }
         addQuadLiteral(node, VCARD.VALUE, value, XSD.STRING)
         return true
@@ -447,7 +446,7 @@ public class ContactRDF : SolidRDFResource {
     public fun addAddress(entry: AddressEntry): Boolean {
         if (entry.isEmpty()) return false
         val node = freshBlankNode("addr")
-        addQuad(getIdentifier().toString(), VCARD.HAS_ADDRESS, node, maxNumber = Int.MAX_VALUE)
+        addQuad(getIdentifier(), VCARD.HAS_ADDRESS, node, maxNumber = Int.MAX_VALUE)
         addQuad(node, RDF.TYPE, VCARD.ADDRESS, maxNumber = Int.MAX_VALUE)
         when (entry.type) {
             AddressType.HOME -> addQuad(node, RDF.TYPE, VCARD.HOME, maxNumber = Int.MAX_VALUE)
@@ -469,7 +468,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** Returns the contact's nickname (`vcard:nickname`), or `null` if absent. */
     public fun getNickname(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.NICKNAME)
+        findPropertyForSubject(getIdentifier(), VCARD.NICKNAME)
 
     /** Sets (or clears, when `null`) the contact's nickname (`vcard:nickname`). */
     public fun setNickname(nickname: String?) {
@@ -478,14 +477,14 @@ public class ContactRDF : SolidRDFResource {
 
     /** Returns the contact's anniversary (`vcard:anniversary`) raw lexical value, or `null`. */
     public fun getAnniversary(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.ANNIVERSARY)
+        findPropertyForSubject(getIdentifier(), VCARD.ANNIVERSARY)
 
     /**
      * Sets (or clears, when `null`) the contact's anniversary (`vcard:anniversary`),
      * typed `xsd:dateTime` when the value contains a time component and `xsd:date` otherwise.
      */
     public fun setAnniversary(anniversary: String?) {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         if (anniversary.isNullOrBlank()) {
             clearProperties(VCARD.ANNIVERSARY, selfUri)
             return
@@ -495,7 +494,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** Returns the contact's organizational unit (`vcard:organization-unit`), or `null`. */
     public fun getOrganizationUnit(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.ORGANIZATION_UNIT)
+        findPropertyForSubject(getIdentifier(), VCARD.ORGANIZATION_UNIT)
 
     /** Sets (or clears, when `null`) the contact's organizational unit. */
     public fun setOrganizationUnit(unit: String?) {
@@ -509,7 +508,7 @@ public class ContactRDF : SolidRDFResource {
      * IRI) is unwrapped back to the original string, so set/get round-trips.
      */
     public fun getUid(): String? =
-        findPropertyForSubject(getIdentifier().toString(), VCARD.HAS_UID)?.let { stored ->
+        findPropertyForSubject(getIdentifier(), VCARD.HAS_UID)?.let { stored ->
             if (stored.startsWith(UID_URN_PREFIX)) {
                 percentDecode(stored.removePrefix(UID_URN_PREFIX))
             } else {
@@ -525,7 +524,7 @@ public class ContactRDF : SolidRDFResource {
      * is always a valid IRI.
      */
     public fun setUid(uid: String?) {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         if (uid.isNullOrBlank()) {
             clearProperties(VCARD.HAS_UID, selfUri)
         } else {
@@ -541,11 +540,11 @@ public class ContactRDF : SolidRDFResource {
 
     /** The contact's category tags (`vcard:hasCategory` literals). */
     public fun getCategories(): List<String> =
-        findAllPropertiesForSubject(getIdentifier().toString(), VCARD.HAS_CATEGORY)
+        findAllPropertiesForSubject(getIdentifier(), VCARD.HAS_CATEGORY)
 
     /** Replaces the contact's category tags with [categories] (trimmed, de-duplicated, blanks dropped). */
     public fun setCategories(categories: List<String>) {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         clearProperties(VCARD.HAS_CATEGORY, selfUri)
         categories.map { it.trim() }.filter { it.isNotBlank() }.distinct().forEach {
             addQuadLiteral(selfUri, VCARD.HAS_CATEGORY, it, XSD.STRING, maxNumber = Int.MAX_VALUE)
@@ -554,7 +553,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** The contact's gender (`vcard:hasGender`, an ontology gender-class IRI), or `null`. */
     public fun getGender(): Gender? =
-        when (findPropertyForSubject(getIdentifier().toString(), VCARD.HAS_GENDER)) {
+        when (findPropertyForSubject(getIdentifier(), VCARD.HAS_GENDER)) {
             null -> null
             VCARD.MALE -> Gender.MALE
             VCARD.FEMALE -> Gender.FEMALE
@@ -565,7 +564,7 @@ public class ContactRDF : SolidRDFResource {
 
     /** Sets (or clears, when `null`) the contact's gender (`vcard:hasGender`, an IRI). */
     public fun setGender(gender: Gender?) {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         clearProperties(VCARD.HAS_GENDER, selfUri)
         val iri = when (gender) {
             Gender.MALE -> VCARD.MALE
@@ -591,7 +590,7 @@ public class ContactRDF : SolidRDFResource {
         clearEntryNodes(VCARD.HAS_ADDRESS)
         clearEntryNodes(VCARD.URL)
         data.effectiveFullName().takeIf { it.isNotBlank() }?.let { setFullName(it) }
-            ?: clearProperties(VCARD.FN, getIdentifier().toString())
+            ?: clearProperties(VCARD.FN, getIdentifier())
         setName(data.name)
         setNickname(data.nickname)
         data.phones.forEach { addPhone(it.number, it.type) }
@@ -614,7 +613,7 @@ public class ContactRDF : SolidRDFResource {
     /** Reads this contact's complete writable state into a [ContactData] snapshot. */
     public fun toContactData(): ContactData = ContactData(
         fullName = quads.find {
-            it.subject == getIdentifier().toString() && it.predicate == VCARD.FN
+            it.subject == getIdentifier() && it.predicate == VCARD.FN
         }?.`object`,
         name = getName(),
         nickname = getNickname(),
@@ -637,7 +636,7 @@ public class ContactRDF : SolidRDFResource {
 
     private fun entryNodes(linkPredicate: String): List<String> =
         quads
-            .filter { it.subject == getIdentifier().toString() && it.predicate == linkPredicate }
+            .filter { it.subject == getIdentifier() && it.predicate == linkPredicate }
             .map { it.`object` }
 
     private fun nodeValue(node: String): String? =
@@ -721,14 +720,14 @@ public class ContactRDF : SolidRDFResource {
     }
 
     private fun clearEntryNodes(linkPredicate: String) {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         val nodes = entryNodes(linkPredicate)
         nodes.forEach { node -> quads.removeAll { it.subject == node } }
         quads.removeAll { it.subject == selfUri && it.predicate == linkPredicate }
     }
 
     private fun setOptionalLiteral(predicate: String, value: String?) {
-        val selfUri = getIdentifier().toString()
+        val selfUri = getIdentifier()
         if (value.isNullOrBlank()) {
             clearProperties(predicate, selfUri)
         } else {

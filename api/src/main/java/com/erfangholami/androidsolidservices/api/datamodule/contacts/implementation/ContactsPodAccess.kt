@@ -14,7 +14,6 @@ import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.CancellationException
-import java.net.URI
 
 /**
  * Wraps a contacts-engine operation into a [SolidResult], mapping any thrown
@@ -39,39 +38,39 @@ internal class ContactsPodAccess(
     val solidResourceManager: SolidResourceManager,
 ) {
 
-    suspend fun addressBook(ownerWebId: String, uri: URI): AddressBookRDF =
+    suspend fun addressBook(ownerWebId: String, uri: String): AddressBookRDF =
         solidResourceManager.read(ownerWebId, uri, AddressBookRDF::class.java).getOrThrow()
 
-    suspend fun peopleIndex(ownerWebId: String, uri: URI): NameEmailIndexRDF =
+    suspend fun peopleIndex(ownerWebId: String, uri: String): NameEmailIndexRDF =
         solidResourceManager.read(ownerWebId, uri, NameEmailIndexRDF::class.java).getOrThrow()
 
-    suspend fun groupsIndex(ownerWebId: String, uri: URI): GroupsIndexRDF =
+    suspend fun groupsIndex(ownerWebId: String, uri: String): GroupsIndexRDF =
         solidResourceManager.read(ownerWebId, uri, GroupsIndexRDF::class.java).getOrThrow()
 
     /** Reads the address book at [uri], or `null` when it does not exist (404). */
-    suspend fun addressBookOrNull(ownerWebId: String, uri: URI): AddressBookRDF? =
+    suspend fun addressBookOrNull(ownerWebId: String, uri: String): AddressBookRDF? =
         solidResourceManager.read(ownerWebId, uri, AddressBookRDF::class.java).dataOrNullIfMissing()
 
     /** Reads the people index at [uri], or `null` when it does not exist (404). */
-    suspend fun peopleIndexOrNull(ownerWebId: String, uri: URI): NameEmailIndexRDF? =
+    suspend fun peopleIndexOrNull(ownerWebId: String, uri: String): NameEmailIndexRDF? =
         solidResourceManager.read(ownerWebId, uri, NameEmailIndexRDF::class.java).dataOrNullIfMissing()
 
     /** Reads the groups index at [uri], or `null` when it does not exist (404). */
-    suspend fun groupsIndexOrNull(ownerWebId: String, uri: URI): GroupsIndexRDF? =
+    suspend fun groupsIndexOrNull(ownerWebId: String, uri: String): GroupsIndexRDF? =
         solidResourceManager.read(ownerWebId, uri, GroupsIndexRDF::class.java).dataOrNullIfMissing()
 
     /**
      * Ensures the container at [containerUri] and its whole parent chain exist (delegates to
      * [SolidResourceManager.ensureContainer]). No-op when it already exists.
      */
-    suspend fun ensureContainer(ownerWebId: String, containerUri: URI) {
+    suspend fun ensureContainer(ownerWebId: String, containerUri: String) {
         solidResourceManager.ensureContainer(ownerWebId, containerUri).getOrThrow()
     }
 
-    suspend fun contact(ownerWebId: String, uri: URI): ContactRDF =
+    suspend fun contact(ownerWebId: String, uri: String): ContactRDF =
         solidResourceManager.read(ownerWebId, uri, ContactRDF::class.java).getOrThrow()
 
-    suspend fun group(ownerWebId: String, uri: URI): GroupRDF =
+    suspend fun group(ownerWebId: String, uri: String): GroupRDF =
         solidResourceManager.read(ownerWebId, uri, GroupRDF::class.java).getOrThrow()
 
     suspend fun privateTypeIndex(webId: String): PrivateTypeIndex =
@@ -95,10 +94,10 @@ internal class ContactsPodAccess(
         }
         val groupsIndexRDF = groupsIndex(
             ownerWebId,
-            URI.create(addressBook(ownerWebId, URI.create(addressBookUri)).getGroupsIndex()),
+            addressBook(ownerWebId, addressBookUri).getGroupsIndex(),
         )
         groupsIndexRDF.getGroups(addressBookUri).forEach { groupSummary ->
-            val groupUri = URI.create(groupSummary.uri)
+            val groupUri = groupSummary.uri
             solidResourceManager.casUpdate(
                 ownerWebId,
                 read = { solidResourceManager.read(ownerWebId, groupUri, GroupRDF::class.java) },
@@ -117,9 +116,7 @@ internal class ContactsPodAccess(
         addressBookUri: String,
         mutate: (NameEmailIndexRDF) -> Boolean,
     ) {
-        val peopleUri = URI.create(
-            addressBook(ownerWebId, URI.create(addressBookUri)).getNameEmailIndex(),
-        )
+        val peopleUri = addressBook(ownerWebId, addressBookUri).getNameEmailIndex()
         solidResourceManager.casUpdate(
             ownerWebId,
             read = { solidResourceManager.read(ownerWebId, peopleUri, NameEmailIndexRDF::class.java) },
@@ -137,9 +134,7 @@ internal class ContactsPodAccess(
         addressBookUri: String,
         mutate: (GroupsIndexRDF) -> Boolean,
     ) {
-        val groupsUri = URI.create(
-            addressBook(ownerWebId, URI.create(addressBookUri)).getGroupsIndex(),
-        )
+        val groupsUri = addressBook(ownerWebId, addressBookUri).getGroupsIndex()
         solidResourceManager.casUpdate(
             ownerWebId,
             read = { solidResourceManager.read(ownerWebId, groupsUri, GroupsIndexRDF::class.java) },
@@ -157,7 +152,7 @@ internal class ContactsPodAccess(
         groupUri: String,
         mutate: (GroupRDF) -> Boolean,
     ) {
-        val uri = URI.create(groupUri)
+        val uri = groupUri
         solidResourceManager.casUpdate(
             ownerWebId,
             read = { solidResourceManager.read(ownerWebId, uri, GroupRDF::class.java) },

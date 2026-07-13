@@ -6,7 +6,6 @@ import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
-import java.net.URI
 
 /**
  * Read/update conveniences for a user's WebID profile, layered over the core
@@ -22,21 +21,20 @@ import java.net.URI
  * profiles are world-readable and a foreign issuer's token is often rejected.
  */
 public suspend fun SolidResourceManager.readProfile(webId: String): SolidResult<WebId> {
-    val primaryUri = URI.create(webId)
-    val primary = when (val r = readPublic(primaryUri, WebId::class.java)) {
+    val primary = when (val r = readPublic(webId, WebId::class.java)) {
         is SolidResult.Success -> r.value
         is SolidResult.Failure -> return SolidResult.Failure(r.error)
     }
     val primaryDoc = webId.substringBefore('#')
     val extraDocs = (primary.getPrimaryTopicDocuments() + primary.getRelatedResources())
         .distinct()
-        .filter { it.toString().substringBefore('#') != primaryDoc }
+        .filter { it.substringBefore('#') != primaryDoc }
 
     val merged: MutableList<RdfQuad> = primary.getAllQuads().toMutableList()
     extraDocs.forEach { doc ->
         readPublic(doc, WebId::class.java).getOrNull()?.let { merged += it.getAllQuads() }
     }
-    return SolidResult.Success(WebId(primaryUri, merged.distinct()))
+    return SolidResult.Success(WebId(webId, merged.distinct()))
 }
 
 /**
@@ -51,8 +49,8 @@ public suspend fun SolidResourceManager.updateProfile(
     givenName: String? = null,
     familyName: String? = null,
 ): SolidResult<WebId> {
-    val docUri = URI.create(webId.substringBefore('#'))
-    val current = when (val r = read(webId, URI.create(webId), WebId::class.java)) {
+    val docUri = webId.substringBefore('#')
+    val current = when (val r = read(webId, webId, WebId::class.java)) {
         is SolidResult.Success -> r.value
         is SolidResult.Failure -> return SolidResult.Failure(r.error)
     }
@@ -74,7 +72,7 @@ public suspend fun SolidResourceManager.updateProfile(
     }
     return when (val patched = patch(webId, docUri, profilePatch)) {
         is SolidResult.Failure -> SolidResult.Failure(patched.error)
-        is SolidResult.Success -> read(webId, URI.create(webId), WebId::class.java)
+        is SolidResult.Success -> read(webId, webId, WebId::class.java)
     }
 }
 
@@ -93,14 +91,14 @@ public suspend fun SolidResourceManager.setAvatar(
 
     val put = putRaw(
         webId = webId,
-        uri = URI.create(avatarUri),
+        uri = avatarUri,
         contentType = contentType,
         body = avatar,
         linkHeader = "<${LDP.NON_RDF_SOURCE}>; rel=\"type\"",
     )
     if (put is SolidResult.Failure) return SolidResult.Failure(put.error)
 
-    val current = when (val r = read(webId, URI.create(webId), WebId::class.java)) {
+    val current = when (val r = read(webId, webId, WebId::class.java)) {
         is SolidResult.Success -> r.value
         is SolidResult.Failure -> return SolidResult.Failure(r.error)
     }
@@ -111,9 +109,9 @@ public suspend fun SolidResourceManager.setAvatar(
         }
         insert(webId, FOAF.IMG, avatarUri)
     }
-    return when (val patched = patch(webId, URI.create(docUri), profilePatch)) {
+    return when (val patched = patch(webId, docUri, profilePatch)) {
         is SolidResult.Failure -> SolidResult.Failure(patched.error)
-        is SolidResult.Success -> read(webId, URI.create(webId), WebId::class.java)
+        is SolidResult.Success -> read(webId, webId, WebId::class.java)
     }
 }
 

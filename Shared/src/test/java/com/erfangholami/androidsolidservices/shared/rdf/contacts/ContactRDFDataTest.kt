@@ -23,12 +23,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.net.URI
 
 class ContactRDFDataTest {
 
     private val contactUri =
-        URI.create("https://alice.pod/contacts/book1/Person/p1/index.ttl#this")
+        "https://alice.pod/contacts/book1/Person/p1/index.ttl#this"
 
     private val maximalData = contactData {
         fullName = "Dr. Jane A. Doe"
@@ -366,7 +365,7 @@ class ContactRDFDataTest {
     @Test
     fun `people index updates a cached name only for listed contacts`() {
         val index = NameEmailIndexRDF(
-            URI.create("https://alice.pod/contacts/book1/people.ttl"),
+            "https://alice.pod/contacts/book1/people.ttl",
         )
         val bookUri = "https://alice.pod/contacts/book1/index.ttl#this"
         index.addContact(bookUri, maximalContact())
@@ -378,7 +377,7 @@ class ContactRDFDataTest {
     @Test
     fun `group updates a cached member name only for members`() {
         val group = GroupRDF(
-            URI.create("https://alice.pod/contacts/book1/Group/friends.ttl"),
+            "https://alice.pod/contacts/book1/Group/friends.ttl",
         ).apply {
             setTitle("Friends")
             addMember(maximalContact())

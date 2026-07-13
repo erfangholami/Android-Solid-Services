@@ -13,7 +13,6 @@ import com.erfangholami.androidsolidservices.shared.rdf.contacts.AddressBookRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
-import java.net.URI
 import java.util.UUID
 
 internal class AddressBookEngine(
@@ -31,7 +30,7 @@ internal class AddressBookEngine(
     ): SolidResult<AddressBookList> = runResult {
         val targetContainer =
             container ?: "${requireStorage(ownerWebId, storage)}${CONTACTS_DIRECTORY_SUFFIX}"
-        pod.ensureContainer(ownerWebId, URI.create(targetContainer))
+        pod.ensureContainer(ownerWebId, targetContainer)
         readBookList(ownerWebId)
     }
 
@@ -67,10 +66,9 @@ internal class AddressBookEngine(
         addressBookUri: String,
         newName: String,
     ): SolidResult<AddressBook> = runResult {
-        val uri = URI.create(addressBookUri)
         pod.solidResourceManager.casUpdate(
             ownerWebId,
-            read = { pod.solidResourceManager.read(ownerWebId, uri, AddressBookRDF::class.java) },
+            read = { pod.solidResourceManager.read(ownerWebId, addressBookUri, AddressBookRDF::class.java) },
             mutate = { book ->
                 if (book.getTitle() == newName) {
                     false
@@ -94,7 +92,7 @@ internal class AddressBookEngine(
         // leaving orphaned contact documents behind, so a failed delete must abort here (getOrThrow)
         // — the book stays registered and findable, and the caller can safely retry.
         val bookContainer = addressBookUri.substring(0, addressBookUri.lastIndexOf("/") + 1)
-        pod.solidResourceManager.delete(ownerWebId, URI.create(bookContainer)).getOrThrow()
+        pod.solidResourceManager.delete(ownerWebId, bookContainer).getOrThrow()
 
         val privateTypeIndex = pod.privateTypeIndex(ownerWebId)
         if (privateTypeIndex.containsAddressBook(addressBookUri)) {
@@ -133,9 +131,9 @@ internal class AddressBookEngine(
             ?: error("Could not discover a storage for $ownerWebId")
 
     private suspend fun readBook(ownerWebId: String, addressBookUri: String): AddressBook {
-        val addressBookRdf = pod.addressBook(ownerWebId, URI.create(addressBookUri))
-        val peopleIndexUri = URI.create(addressBookRdf.getNameEmailIndex())
-        val groupsIndexUri = URI.create(addressBookRdf.getGroupsIndex())
+        val addressBookRdf = pod.addressBook(ownerWebId, addressBookUri)
+        val peopleIndexUri = addressBookRdf.getNameEmailIndex()
+        val groupsIndexUri = addressBookRdf.getGroupsIndex()
         val peopleIndexRdf = pod.peopleIndexOrNull(ownerWebId, peopleIndexUri)
             ?: NameEmailIndexRDF(peopleIndexUri)
         val groupsIndexRdf = pod.groupsIndexOrNull(ownerWebId, groupsIndexUri)
@@ -154,15 +152,15 @@ internal class AddressBookEngine(
             container ?: "${requireStorage(ownerWebId, storage)}${CONTACTS_DIRECTORY_SUFFIX}"
         val id = UUID.randomUUID().toString()
         val bookContainer = "${targetContainer}${id}/"
-        pod.ensureContainer(ownerWebId, URI.create(bookContainer))
+        pod.ensureContainer(ownerWebId, bookContainer)
         val bookUri = "${bookContainer}${INDEX_FILE_NAME}"
         val peopleIndexUri = "${bookContainer}${PEOPLE_FILE_NAME}"
         val groupsIndexUri = "${bookContainer}${GROUPS_FILE_NAME}"
 
-        val peopleIndex = NameEmailIndexRDF(URI.create(peopleIndexUri))
-        val groupsIndex = GroupsIndexRDF(URI.create(groupsIndexUri))
+        val peopleIndex = NameEmailIndexRDF(peopleIndexUri)
+        val groupsIndex = GroupsIndexRDF(groupsIndexUri)
         val addressBook = AddressBookRDF(
-            identifier = URI.create(bookUri),
+            identifier = bookUri,
             contentType = "application/ld+json",
             quads = null,
             headers = null,
@@ -179,13 +177,13 @@ internal class AddressBookEngine(
 
         if (isPrivate) {
             val typeIndex = pod.privateTypeIndex(ownerWebId)
-            typeIndex.addAddressBook(created.getIdentifier().toString())
+            typeIndex.addAddressBook(created.getIdentifier())
             pod.solidResourceManager.update(ownerWebId, typeIndex).getOrThrow()
         } else {
             val typeIndex = pod.publicTypeIndex(ownerWebId)
-            typeIndex.addAddressBook(created.getIdentifier().toString())
+            typeIndex.addAddressBook(created.getIdentifier())
             pod.solidResourceManager.update(ownerWebId, typeIndex).getOrThrow()
         }
-        return created.getIdentifier().toString()
+        return created.getIdentifier()
     }
 }

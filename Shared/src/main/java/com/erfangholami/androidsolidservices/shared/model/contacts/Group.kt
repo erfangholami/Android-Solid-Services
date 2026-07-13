@@ -19,7 +19,7 @@ public data class FullGroup(
     public companion object {
         public fun createFromRdf(groupRdf: GroupRDF): FullGroup {
             return FullGroup(
-                uri = groupRdf.getIdentifier().toString(),
+                uri = groupRdf.getIdentifier(),
                 name = groupRdf.getTitle(),
                 contacts = groupRdf.getContacts()
             )

@@ -10,7 +10,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.RDFS
 import com.erfangholami.androidsolidservices.shared.vocab.STAT
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * Represents an LDP BasicContainer resource.
@@ -23,19 +22,19 @@ public open class SolidContainer : SolidRDFResource {
 
     private val containerRes = arrayListOf<SolidSourceReference>()
 
-    public constructor(identifier: URI) : this(identifier, null)
+    public constructor(identifier: String) : this(identifier, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?) :
             this(identifier, quads, null)
 
-    public constructor(identifier: URI, contentType: String, quads: List<RdfQuad>?) :
+    public constructor(identifier: String, contentType: String, quads: List<RdfQuad>?) :
             this(identifier, contentType, quads, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?, headers: SolidHeaders?) :
             this(identifier, "application/ld+json", quads, headers)
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         quads: List<RdfQuad>?,
         headers: SolidHeaders?
@@ -53,7 +52,7 @@ public open class SolidContainer : SolidRDFResource {
     }
 
     private fun parseContainedResources() {
-        val containerUri = getIdentifier().toString()
+        val containerUri = getIdentifier()
         quads
             .filter { it.predicate == LDP.CONTAINS && iriMatches(it.subject, containerUri) }
             .forEach { containsQuad ->
@@ -131,6 +130,6 @@ public open class SolidContainer : SolidRDFResource {
     /** Returns this container's `rdfs:label`, or `null` if it has none. */
     public fun getLabel(): String? =
         quads.find {
-            it.subject == getIdentifier().toString() && it.predicate == RDFS.LABEL
+            it.subject == getIdentifier() && it.predicate == RDFS.LABEL
         }?.`object`
 }

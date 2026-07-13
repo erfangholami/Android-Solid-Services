@@ -28,10 +28,10 @@ class ProfileOperationsTest {
     fun `readProfile merges a foaf name that lives in an extended profile document`() {
         val extendedDoc = "https://alice.pod/profile/extended"
         val primary = WebId(
-            URI.create(webId),
+            webId,
             listOf(RdfQuad(webId, FOAF.IS_PRIMARY_TOPIC_OF, extendedDoc, null, null)),
         )
-        val extended = WebId(URI.create(extendedDoc), listOf(RdfQuad(webId, FOAF.NAME, "Alice Jones", null, null)))
+        val extended = WebId(extendedDoc, listOf(RdfQuad(webId, FOAF.NAME, "Alice Jones", null, null)))
         val rm = FakeSolidResourceManager(onReadPublic = { uri ->
             when (uri.toString()) {
                 webId -> SolidResult.Success(primary)
@@ -47,8 +47,8 @@ class ProfileOperationsTest {
 
     @Test
     fun `updateProfile safe-replaces an existing foaf name on the profile document`() {
-        val current = WebId(URI.create(webId), listOf(RdfQuad(webId, FOAF.NAME, "Old Name", null, null)))
-        var target: URI? = null
+        val current = WebId(webId, listOf(RdfQuad(webId, FOAF.NAME, "Old Name", null, null)))
+        var target: String? = null
         var captured: N3Patch? = null
         val rm = FakeSolidResourceManager(
             onRead = { SolidResult.Success(current) },
@@ -57,7 +57,7 @@ class ProfileOperationsTest {
 
         runBlocking { rm.updateProfile(webId, name = "New Name") }
 
-        assertEquals(URI.create(docUri), target)
+        assertEquals(docUri, target)
         val n3 = captured!!.toN3String()
         assertTrue("inserts the new name", n3.contains(FOAF.NAME) && n3.contains("New Name"))
         assertNotNull("replaces the existing name (has a delete clause)", captured!!.deletes)
@@ -65,7 +65,7 @@ class ProfileOperationsTest {
 
     @Test
     fun `updateProfile with no fields makes no patch`() {
-        val current = WebId(URI.create(webId), emptyList())
+        val current = WebId(webId, emptyList())
         var patched = false
         val rm = FakeSolidResourceManager(
             onRead = { SolidResult.Success(current) },
@@ -80,8 +80,8 @@ class ProfileOperationsTest {
 
     @Test
     fun `setAvatar uploads a sibling image and points foaf img at it`() {
-        val current = WebId(URI.create(webId), emptyList())
-        var avatarUri: URI? = null
+        val current = WebId(webId, emptyList())
+        var avatarUri: String? = null
         var avatarBytes: ByteArray? = null
         var captured: N3Patch? = null
         val rm = FakeSolidResourceManager(
@@ -92,17 +92,17 @@ class ProfileOperationsTest {
 
         runBlocking { rm.setAvatar(webId, "IMG".toByteArray(), "image/png") }
 
-        assertEquals(URI.create("https://alice.pod/profile/avatar.png"), avatarUri)
+        assertEquals("https://alice.pod/profile/avatar.png", avatarUri)
         assertEquals("IMG", String(avatarBytes!!))
         assertTrue(captured!!.toN3String().contains(FOAF.IMG))
     }
 
     @Test
     fun `reified read forwards to the Class token overload`() {
-        val profile = WebId(URI.create(webId), emptyList())
+        val profile = WebId(webId, emptyList())
         val rm = FakeSolidResourceManager(onRead = { SolidResult.Success(profile) })
 
-        val result = runBlocking { rm.read<WebId>(webId, URI.create(webId)) }
+        val result = runBlocking { rm.read<WebId>(webId, webId) }
 
         assertTrue(result is SolidResult.Success)
         assertSame(profile, (result as SolidResult.Success).value)

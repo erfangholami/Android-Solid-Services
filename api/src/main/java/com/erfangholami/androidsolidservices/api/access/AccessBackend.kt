@@ -3,7 +3,6 @@ package com.erfangholami.androidsolidservices.api.access
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
-import java.net.URI
 
 /**
  * Backend-agnostic seam for granting / revoking / listing access on a single
@@ -48,7 +47,7 @@ internal interface AccessBackend {
      */
     public suspend fun grant(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         mode: ShareMode,
         receiver: ShareReceiver,
         isContainer: Boolean,
@@ -66,7 +65,7 @@ internal interface AccessBackend {
      */
     public suspend fun revoke(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         receiver: ShareReceiver,
         isContainer: Boolean,
     )
@@ -78,7 +77,7 @@ internal interface AccessBackend {
      */
     public suspend fun listShares(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
     ): List<GivenShare>
 
     /**
@@ -88,7 +87,7 @@ internal interface AccessBackend {
      */
     public suspend fun ensureOwnerOnly(
         webId: String,
-        targetUri: URI,
+        targetUri: String,
         isContainer: Boolean,
     )
 
@@ -106,7 +105,7 @@ internal interface AccessBackend {
      */
     public suspend fun reclaimOwnerControl(
         webId: String,
-        targetUri: URI,
+        targetUri: String,
         isContainer: Boolean,
     )
 }

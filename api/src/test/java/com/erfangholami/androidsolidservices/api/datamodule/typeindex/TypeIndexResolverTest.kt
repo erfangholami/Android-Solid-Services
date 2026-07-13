@@ -15,7 +15,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.net.URI
 
 /**
  * Verifies the type-index bootstrap registers its link on the profile with a
@@ -35,7 +34,7 @@ class TypeIndexResolverTest {
             RdfQuad(webId, PIM.STORAGE, storage, null, null),
             RdfQuad(webId, FOAF.IS_PRIMARY_TOPIC_OF, profileDoc, null, null),
         )
-        val patched = mutableListOf<Pair<URI, N3Patch>>()
+        val patched = mutableListOf<Pair<String, N3Patch>>()
         var updateCalled = false
 
         val rm = FakeSolidResourceManager().apply {
@@ -56,7 +55,7 @@ class TypeIndexResolverTest {
         assertFalse("the profile must not be overwritten with a full-document PUT", updateCalled)
         assertEquals("the link is registered with exactly one PATCH", 1, patched.size)
         val (target, patch) = patched.single()
-        assertEquals("the PATCH targets the profile document", URI.create(profileDoc), target)
+        assertEquals("the PATCH targets the profile document", profileDoc, target)
         assertTrue(
             "the PATCH inserts the solid:privateTypeIndex triple",
             patch.toN3String().contains(Solid.PRIVATE_TYPE_INDEX),

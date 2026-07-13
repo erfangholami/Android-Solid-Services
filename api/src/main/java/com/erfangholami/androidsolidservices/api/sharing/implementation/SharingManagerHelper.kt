@@ -31,7 +31,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
-import java.net.URI
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -94,7 +93,7 @@ internal class SharingManagerHelper {
     private val layout get() = profile.storageLayout
     private val vocabulary get() = profile.vocabulary
 
-    private val podRootCache = ConcurrentHashMap<String, URI>()
+    private val podRootCache = ConcurrentHashMap<String, String>()
     private val sharesContainerReady = ConcurrentHashMap<String, Boolean>()
 
     private constructor(resourceManager: SolidResourceManager, profile: SharingProfile) {
@@ -104,27 +103,27 @@ internal class SharingManagerHelper {
         this.acpBackend = AcpBackend(rm)
     }
 
-    suspend fun getPodRoot(webId: String): URI {
+    suspend fun getPodRoot(webId: String): String {
         podRootCache[webId]?.let { return it }
-        val profile = rm.read(webId, URI.create(webId), WebId::class.java).getOrThrow()
+        val profile = rm.read(webId, webId, WebId::class.java).getOrThrow()
         val storage = profile.getStorages().firstOrNull()
             ?: StorageDiscovery.discover(rm, webId)
             ?: error("Could not discover a storage for $webId")
-        return URI.create(storage.toString().ensureTrailingSlash())
+        return storage.ensureTrailingSlash()
             .also { podRootCache[webId] = it }
     }
 
-    fun givenSharesUri(podRoot: URI): URI = layout.givenIndex(podRoot)
+    fun givenSharesUri(podRoot: String): String = layout.givenIndex(podRoot)
 
-    fun receivedSharesUri(podRoot: URI): URI = layout.receivedIndex(podRoot)
+    fun receivedSharesUri(podRoot: String): String = layout.receivedIndex(podRoot)
 
-    fun sharesContainerUri(podRoot: URI): URI = layout.sharesContainer(podRoot)
+    fun sharesContainerUri(podRoot: String): String = layout.sharesContainer(podRoot)
 
-    fun solidshareContainerUri(podRoot: URI): URI = layout.rootContainer(podRoot)
+    fun solidshareContainerUri(podRoot: String): String = layout.rootContainer(podRoot)
 
-    fun catalogUri(podRoot: URI): URI = layout.catalog(podRoot)
+    fun catalogUri(podRoot: String): String = layout.catalog(podRoot)
 
-    suspend fun ensurePrivateSharesContainer(webId: String, podRoot: URI) {
+    suspend fun ensurePrivateSharesContainer(webId: String, podRoot: String) {
         if (sharesContainerReady[webId] == true) return
         ensureContainer(webId, solidshareContainerUri(podRoot))
         val containerUri = sharesContainerUri(podRoot)
@@ -145,28 +144,27 @@ internal class SharingManagerHelper {
      * rather than only at the fixed `solidshare/` path. Idempotent, and
      * best-effort: a failure here never blocks the sharing flow.
      */
-    private suspend fun registerSharesContainer(webId: String, containerUri: URI) {
+    private suspend fun registerSharesContainer(webId: String, containerUri: String) {
         val typeIndex = TypeIndexResolver.getPrivateTypeIndex(rm, webId)
-        val target = containerUri.toString()
-        if (typeIndex.containsResource(target)) return
-        typeIndex.addInstanceContainer(SolidShare.SHARE, target)
+        if (typeIndex.containsResource(containerUri)) return
+        typeIndex.addInstanceContainer(SolidShare.SHARE, containerUri)
         rm.update(webId, typeIndex).getOrThrow()
     }
 
-    suspend fun ensureSolidshareContainer(webId: String, podRoot: URI) {
+    suspend fun ensureSolidshareContainer(webId: String, podRoot: String) {
         ensureContainer(webId, solidshareContainerUri(podRoot))
     }
 
     /** Creates the LDN inbox container if it doesn't already exist. */
-    suspend fun ensureInboxContainer(webId: String, inboxUri: URI) {
+    suspend fun ensureInboxContainer(webId: String, inboxUri: String) {
         ensureContainer(webId, inboxUri)
     }
 
-    private suspend fun ensureContainer(webId: String, containerUri: URI) {
+    private suspend fun ensureContainer(webId: String, containerUri: String) {
         rm.ensureContainer(webId, containerUri).getOrThrow()
     }
 
-    private suspend fun ensureEmptyRdf(webId: String, uri: URI) {
+    private suspend fun ensureEmptyRdf(webId: String, uri: String) {
         when (val head = rm.head(webId, uri)) {
             is SolidResult.Success -> return
             is SolidResult.Failure ->
@@ -191,10 +189,10 @@ internal class SharingManagerHelper {
      * container (BasicContainer or any subtype). Used to choose between
      * `acl:accessTo` and `acl:default` when authoring an authorization.
      */
-    suspend fun isContainer(webId: String, resourceUri: URI): Boolean {
+    suspend fun isContainer(webId: String, resourceUri: String): Boolean {
         val head = rm.head(webId, resourceUri)
         if (head !is SolidResult.Success) {
-            return resourceUri.toString().endsWith("/")
+            return resourceUri.endsWith("/")
         }
         return head.value.isContainer()
     }
@@ -206,7 +204,7 @@ internal class SharingManagerHelper {
             LDP.DIRECT_CONTAINER,
             LDP.INDIRECT_CONTAINER,
         )
-        return linkTypes.any { it.toString() in containerTypes }
+        return linkTypes.any { it in containerTypes }
     }
 
     /**
@@ -214,7 +212,7 @@ internal class SharingManagerHelper {
      * headers returned by HEAD. Defaults to WAC if HEAD fails so the caller
      * always gets a non-throwing reference.
      */
-    suspend fun backendFor(webId: String, resourceUri: URI): AccessBackend {
+    suspend fun backendFor(webId: String, resourceUri: String): AccessBackend {
         val metadata = when (val head = rm.head(webId, resourceUri)) {
             is SolidResult.Success -> head.value
             else -> return wacBackend
@@ -224,13 +222,13 @@ internal class SharingManagerHelper {
 
     suspend fun grantAccess(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         mode: ShareMode,
         receiver: ShareReceiver,
         includeImpliedModes: Boolean = true,
     ) {
         val metadata = (rm.head(webId, resourceUri) as? SolidResult.Success)?.value
-        val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
+        val isContainer = metadata?.isContainer() ?: resourceUri.endsWith("/")
         val backend = if (metadata != null) {
             pickBackend(metadata, resourceUri, wacBackend, acpBackend)
         } else {
@@ -248,11 +246,11 @@ internal class SharingManagerHelper {
 
     suspend fun revokeAccess(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         receiver: ShareReceiver,
     ) {
         val metadata = (rm.head(webId, resourceUri) as? SolidResult.Success)?.value
-        val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
+        val isContainer = metadata?.isContainer() ?: resourceUri.endsWith("/")
         val backend = if (metadata != null) {
             pickBackend(metadata, resourceUri, wacBackend, acpBackend)
         } else {
@@ -261,9 +259,9 @@ internal class SharingManagerHelper {
         backend.revoke(webId, resourceUri, receiver, isContainer)
     }
 
-    suspend fun makeOwnerOnly(webId: String, resourceUri: URI) {
+    suspend fun makeOwnerOnly(webId: String, resourceUri: String) {
         val metadata = (rm.head(webId, resourceUri) as? SolidResult.Success)?.value
-        val isContainer = metadata?.isContainer() ?: resourceUri.toString().endsWith("/")
+        val isContainer = metadata?.isContainer() ?: resourceUri.endsWith("/")
         val backend = if (metadata != null) {
             pickBackend(metadata, resourceUri, wacBackend, acpBackend)
         } else {
@@ -280,7 +278,7 @@ internal class SharingManagerHelper {
      * the HEAD itself is denied, the ACL/ACR can't be discovered through the
      * app and the lockout must be cleared with the pod provider's tooling.
      */
-    suspend fun reclaimOwnerControl(webId: String, resourceUri: URI) {
+    suspend fun reclaimOwnerControl(webId: String, resourceUri: String) {
         val metadata = when (val head = rm.head(webId, resourceUri)) {
             is SolidResult.Success -> head.value
             is SolidResult.Failure -> error(
@@ -293,19 +291,19 @@ internal class SharingManagerHelper {
             .reclaimOwnerControl(webId, resourceUri, metadata.isContainer())
     }
 
-    suspend fun getSharesFromAcl(webId: String, resourceUri: URI): List<GivenShare> =
+    suspend fun getSharesFromAcl(webId: String, resourceUri: String): List<GivenShare> =
         backendFor(webId, resourceUri).listShares(webId, resourceUri)
 
-    suspend fun readGivenIndex(webId: String, podRoot: URI): GivenSharesIndexRDF =
+    suspend fun readGivenIndex(webId: String, podRoot: String): GivenSharesIndexRDF =
         rm.read(webId, givenSharesUri(podRoot), GivenSharesIndexRDF::class.java).getOrThrow()
 
-    suspend fun readReceivedIndex(webId: String, podRoot: URI): ReceivedSharesIndexRDF =
+    suspend fun readReceivedIndex(webId: String, podRoot: String): ReceivedSharesIndexRDF =
         rm.read(webId, receivedSharesUri(podRoot), ReceivedSharesIndexRDF::class.java).getOrThrow()
 
-    suspend fun readGivenShares(webId: String, podRoot: URI): List<GivenShare> =
+    suspend fun readGivenShares(webId: String, podRoot: String): List<GivenShare> =
         readGivenIndex(webId, podRoot).getShares(vocabulary)
 
-    suspend fun readReceivedShares(webId: String, podRoot: URI): List<ReceivedShare> =
+    suspend fun readReceivedShares(webId: String, podRoot: String): List<ReceivedShare> =
         readReceivedIndex(webId, podRoot).getShares(vocabulary)
 
     /**
@@ -314,7 +312,7 @@ internal class SharingManagerHelper {
      * existing record's `dcterms:created` is preserved (so a mode change keeps
      * the original time).
      */
-    suspend fun replaceGivenShare(webId: String, podRoot: URI, share: GivenShare) {
+    suspend fun replaceGivenShare(webId: String, podRoot: String, share: GivenShare) {
         setShareModesForReceiver(
             webId, podRoot,
             resourceUri = share.resourceUri,
@@ -333,7 +331,7 @@ internal class SharingManagerHelper {
      */
     suspend fun setShareModesForReceiver(
         webId: String,
-        podRoot: URI,
+        podRoot: String,
         resourceUri: String,
         receiver: ShareReceiver,
         modes: Set<ShareMode>,
@@ -401,7 +399,7 @@ internal class SharingManagerHelper {
      */
     suspend fun removeGivenShare(
         webId: String,
-        podRoot: URI,
+        podRoot: String,
         resourceUri: String,
         receiver: ShareReceiver,
     ) {
@@ -451,7 +449,7 @@ internal class SharingManagerHelper {
      * An existing record's time is preserved; only the mode is updated when it
      * differs. Legacy bare-triple rows for the pair are migrated.
      */
-    suspend fun replaceReceivedShare(webId: String, podRoot: URI, share: ReceivedShare) {
+    suspend fun replaceReceivedShare(webId: String, podRoot: String, share: ReceivedShare) {
         val uri = receivedSharesUri(podRoot)
         val ownerIri = share.ownerWebId
         patchIndexWithRetry(webId, uri) {
@@ -497,7 +495,7 @@ internal class SharingManagerHelper {
 
     suspend fun removeReceivedShare(
         webId: String,
-        podRoot: URI,
+        podRoot: String,
         resourceUri: String,
         ownerWebId: String,
     ) {
@@ -536,7 +534,7 @@ internal class SharingManagerHelper {
      * reuses the node; callers prefer an already-parsed node's subject when one
      * exists.
      */
-    private fun shareNodeIri(indexUri: URI, counterpartIri: String, resourceUri: String): String {
+    private fun shareNodeIri(indexUri: String, counterpartIri: String, resourceUri: String): String {
         val digest = MessageDigest.getInstance("SHA-1")
             .digest("$counterpartIri|$resourceUri".toByteArray(Charsets.UTF_8))
         val hex = digest.joinToString("") { "%02x".format(it.toInt() and 0xFF) }.take(20)
@@ -545,7 +543,7 @@ internal class SharingManagerHelper {
 
     private suspend fun patchIndexWithRetry(
         webId: String,
-        uri: URI,
+        uri: String,
         build: suspend () -> Pair<N3Patch?, String?>,
     ) {
         var attempt = 0
@@ -583,7 +581,7 @@ internal class SharingManagerHelper {
      */
     suspend fun probeReceivedAccess(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
     ): ReceivedAccess = when (val probe = rm.probeAccess(webId, resourceUri)) {
         is SolidResult.Failure -> ReceivedAccess.Unknown
         is SolidResult.Success -> when (val access = probe.value) {

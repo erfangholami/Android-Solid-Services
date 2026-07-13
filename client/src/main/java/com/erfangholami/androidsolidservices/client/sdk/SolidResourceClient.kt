@@ -22,7 +22,6 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidResource
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import kotlinx.coroutines.flow.Flow
 import java.io.InputStream
-import java.net.URI
 
 /**
  * Reads, creates, updates and deletes resources on the authenticated user's Solid pod by
@@ -175,8 +174,8 @@ public class SolidResourceClient private constructor(
      *
      * @throws SolidException on failure.
      */
-    public suspend fun patch(webId: String, uri: URI, patch: N3Patch): Unit = call { service, bridge ->
-        service.patch(webId, uri.toString(), patch.toN3String(), object : IASSUnitCallback.Stub() {
+    public suspend fun patch(webId: String, uri: String, patch: N3Patch): Unit = call { service, bridge ->
+        service.patch(webId, uri, patch.toN3String(), object : IASSUnitCallback.Stub() {
             override fun onResult() = bridge.onResult(Unit)
             override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
         })
@@ -220,8 +219,8 @@ public class SolidResourceClient private constructor(
      * @param containerUri The URI of the LDP container to delete (must end with `/`).
      * @throws SolidException on failure.
      */
-    public suspend fun deleteContainer(webId: String, containerUri: URI): Unit = call { service, bridge ->
-        service.deleteContainer(webId, containerUri.toString(), object : IASSUnitCallback.Stub() {
+    public suspend fun deleteContainer(webId: String, containerUri: String): Unit = call { service, bridge ->
+        service.deleteContainer(webId, containerUri, object : IASSUnitCallback.Stub() {
             override fun onResult() = bridge.onResult(Unit)
             override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
         })
@@ -268,7 +267,7 @@ public class SolidResourceClient private constructor(
     private fun <T : SolidResource> reconstructRdf(source: SolidRDFResource, clazz: Class<T>): T {
         if (clazz.isInstance(source)) return source as T
         return clazz.getConstructor(
-            URI::class.java, String::class.java, List::class.java, SolidHeaders::class.java
+            String::class.java, String::class.java, List::class.java, SolidHeaders::class.java
         ).newInstance(
             source.getIdentifier(),
             source.getContentType(),
@@ -281,7 +280,7 @@ public class SolidResourceClient private constructor(
     private fun <T : SolidResource> reconstructNonRdf(source: SolidNonRDFResource, clazz: Class<T>): T {
         if (clazz.isInstance(source)) return source as T
         return clazz.getConstructor(
-            URI::class.java, String::class.java, SolidHeaders::class.java, InputStream::class.java
+            String::class.java, String::class.java, SolidHeaders::class.java, InputStream::class.java
         ).newInstance(
             source.getIdentifier(), source.getContentType(), source.getHeaders(), source.getEntity()
         )

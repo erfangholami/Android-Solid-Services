@@ -17,7 +17,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mockito.Mockito.mock
-import java.net.URI
 
 class NotificationTransportTest {
 
@@ -39,7 +38,7 @@ class NotificationTransportTest {
 
     @Test
     fun `post returns the created location on success`() = runBlocking {
-        val location = URI.create("https://bob.pod/inbox/123")
+        val location = "https://bob.pod/inbox/123"
         val fake = FakeSolidResourceManager(onPost = { SolidResult.Success(location) })
 
         val result = transport(fake).post(
@@ -87,7 +86,7 @@ class NotificationTransportTest {
 
     @Test
     fun `subscribe fails when the pod advertises no WebSocket subscription service`() = runBlocking {
-        val storageDesc = URI.create("https://alice.pod/.well-known/solid")
+        val storageDesc = "https://alice.pod/.well-known/solid"
         val service = "https://alice.pod/.notifications/EventSourceChannel2023/"
         val quads = listOf(
             RdfQuad("https://alice.pod/", Notify.SUBSCRIPTION, service, null, null),
@@ -114,7 +113,7 @@ class NotificationTransportTest {
 
     @Test
     fun `discoverInbox finds an inbox advertised via a HEAD link`() = runBlocking {
-        val inbox = URI.create("https://alice.pod/inbox/")
+        val inbox = "https://alice.pod/inbox/"
         val fake = FakeSolidResourceManager(
             onRead = { SolidResult.Failure(SolidError.fromThrowable(RuntimeException("profile has no body"))) },
             onHead = { SolidResult.Success(SolidMetadata.EMPTY.copy(inboxUri = inbox)) },

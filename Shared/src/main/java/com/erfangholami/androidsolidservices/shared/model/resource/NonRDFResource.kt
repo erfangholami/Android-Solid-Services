@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.UncheckedIOException
-import java.net.URI
 
 /**
  * A non-RDF source: a "binary" resource handled as an opaque byte stream.
@@ -35,7 +34,7 @@ import java.net.URI
  */
 public open class NonRDFResource : Resource {
 
-    private val identifier: URI
+    private val identifier: String
     private val contentType: String
     private val headers: SolidHeaders
     private val entity: InputStream
@@ -55,31 +54,31 @@ public open class NonRDFResource : Resource {
 
 
     protected constructor(inParcel: Parcel) {
-        this.identifier = encodeUriString(inParcel.readString()!!)
+        this.identifier = inParcel.readString()!!
         this.contentType = inParcel.readString()!!
         this.headers = SolidHeaders(Json.decodeFromString<Map<String, List<String>>>(inParcel.readString()!!))
         this.entity = ByteArrayInputStream(inParcel.createByteArray() ?: ByteArray(0))
     }
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         headers: SolidHeaders?,
         entity: InputStream
     ) {
-        this.identifier = encodeUri(identifier)
+        this.identifier = encodeUriString(identifier).toString()
         this.contentType = contentType
         this.headers = headers ?: SolidHeaders.EMPTY
         this.entity = entity
     }
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         entity: InputStream
     ) : this(identifier, contentType, null, entity)
 
-    override fun getIdentifier(): URI {
+    override fun getIdentifier(): String {
         return identifier
     }
 
@@ -108,7 +107,7 @@ public open class NonRDFResource : Resource {
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(identifier.toString())
+        dest.writeString(identifier)
         dest.writeString(contentType)
         dest.writeString(Json.encodeToString(headers.toMultimap()))
         dest.writeByteArray(getEntity().use { it.readBytes() })

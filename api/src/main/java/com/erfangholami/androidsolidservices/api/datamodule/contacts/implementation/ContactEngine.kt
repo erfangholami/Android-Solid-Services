@@ -14,7 +14,6 @@ import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
-import java.net.URI
 import java.util.UUID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,7 +28,7 @@ internal class ContactEngine(
         ownerWebId: String,
         contactUri: String,
     ): SolidResult<SolidContact> = runResult {
-        SolidContact.createFromRdf(pod.contact(ownerWebId, URI.create(contactUri)))
+        SolidContact.createFromRdf(pod.contact(ownerWebId, contactUri))
     }
 
     override suspend fun list(
@@ -53,10 +52,10 @@ internal class ContactEngine(
             addressBookUri.substring(0, addressBookUri.lastIndexOf("/") + 1)
         val contactContainer = "${bookContainer}${PEOPLE_DIRECTORY_SUFFIX}${contactId}/"
         val contactUri = "${contactContainer}${INDEX_FILE_NAME}"
-        pod.ensureContainer(ownerWebId, URI.create(contactContainer))
+        pod.ensureContainer(ownerWebId, contactContainer)
         val effectiveData =
             if (data.uid == null) data.copy(uid = "urn:uuid:$contactId") else data
-        val contactRdf = ContactRDF(URI.create(contactUri)).apply {
+        val contactRdf = ContactRDF(contactUri).apply {
             setContactData(effectiveData)
         }
         val created = pod.solidResourceManager.create(ownerWebId, contactRdf).getOrThrow()
@@ -81,11 +80,10 @@ internal class ContactEngine(
         require(data.effectiveFullName().isNotBlank()) {
             "A contact needs at least a name, phone number, or email address"
         }
-        val uri = URI.create(contactUri)
         var oldName: String? = null
         val updated = pod.solidResourceManager.casUpdate(
             ownerWebId,
-            read = { pod.solidResourceManager.read(ownerWebId, uri, ContactRDF::class.java) },
+            read = { pod.solidResourceManager.read(ownerWebId, contactUri, ContactRDF::class.java) },
             mutate = { contactRdf ->
                 oldName = runCatching { contactRdf.getFullName() }.getOrNull()
                 // Replace the writable vCard state in place: keeps the photo link and any
@@ -108,11 +106,11 @@ internal class ContactEngine(
         contactUri: String,
     ): SolidResult<SolidContact> = runResult {
         val contact = runCatching {
-            SolidContact.createFromRdf(pod.contact(ownerWebId, URI.create(contactUri)))
+            SolidContact.createFromRdf(pod.contact(ownerWebId, contactUri))
         }.getOrNull()
 
         val contactContainer = contactUri.substring(0, contactUri.lastIndexOf("/") + 1)
-        deleteTolerant(ownerWebId, URI.create(contactContainer))
+        deleteTolerant(ownerWebId, contactContainer)
 
         var removed = false
         pod.updatePeopleIndex(ownerWebId, addressBookUri) {
@@ -122,7 +120,7 @@ internal class ContactEngine(
         if (removed) {
             val groupsIndexRdf = pod.groupsIndex(
                 ownerWebId,
-                URI.create(pod.addressBook(ownerWebId, URI.create(addressBookUri)).getGroupsIndex()),
+                pod.addressBook(ownerWebId, addressBookUri).getGroupsIndex(),
             )
             groupsIndexRdf.getGroups(addressBookUri).forEach { groupSummary ->
                 groupEngine.removeMemberInternal(ownerWebId, groupSummary.uri, contactUri)
@@ -141,25 +139,25 @@ internal class ContactEngine(
         val photoUri = "${contactContainer}photo${extensionFor(contentType)}"
         pod.solidResourceManager.putRaw(
             webId = ownerWebId,
-            uri = URI.create(photoUri),
+            uri = photoUri,
             contentType = contentType,
             body = photo,
             ifMatch = null,
             linkHeader = "<${LDP.NON_RDF_SOURCE}>; rel=\"type\"",
         ).getOrThrow()
-        val uri = URI.create(contactUri)
         var previous: String? = null
         val updated = pod.solidResourceManager.casUpdate(
             ownerWebId,
-            read = { pod.solidResourceManager.read(ownerWebId, uri, ContactRDF::class.java) },
+            read = { pod.solidResourceManager.read(ownerWebId, contactUri, ContactRDF::class.java) },
             mutate = { contactRdf ->
                 previous = contactRdf.getPhotoUrl()
                 contactRdf.setPhoto(photoUri)
                 true
             },
         ).getOrThrow()
-        if (previous != null && previous != photoUri) {
-            deleteTolerant(ownerWebId, URI.create(previous))
+        val previousPhotoUri = previous
+        if (previousPhotoUri != null && previousPhotoUri != photoUri) {
+            deleteTolerant(ownerWebId, previousPhotoUri)
         }
         SolidContact.createFromRdf(updated)
     }
@@ -168,11 +166,10 @@ internal class ContactEngine(
         ownerWebId: String,
         contactUri: String,
     ): SolidResult<SolidContact> = runResult {
-        val uri = URI.create(contactUri)
         var removedPhoto: String? = null
         val updated = pod.solidResourceManager.casUpdate(
             ownerWebId,
-            read = { pod.solidResourceManager.read(ownerWebId, uri, ContactRDF::class.java) },
+            read = { pod.solidResourceManager.read(ownerWebId, contactUri, ContactRDF::class.java) },
             mutate = { contactRdf ->
                 val photoUri = contactRdf.getPhotoUrl()
                 if (photoUri == null) {
@@ -184,7 +181,7 @@ internal class ContactEngine(
                 }
             },
         ).getOrThrow()
-        removedPhoto?.let { deleteTolerant(ownerWebId, URI.create(it)) }
+        removedPhoto?.let { deleteTolerant(ownerWebId, it) }
         SolidContact.createFromRdf(updated)
     }
 
@@ -193,7 +190,7 @@ internal class ContactEngine(
         photoUri: String,
     ): SolidResult<ContactPhoto> = runResult {
         val resource = pod.solidResourceManager
-            .read(ownerWebId, URI.create(photoUri), SolidNonRDFResource::class.java)
+            .read(ownerWebId, photoUri, SolidNonRDFResource::class.java)
             .getOrThrow()
         val bytes = resource.getEntity().use { it.readBytes() }
         ContactPhoto(photoUri, resource.getContentType(), bytes)
@@ -221,15 +218,15 @@ internal class ContactEngine(
         addressBookUri: String,
     ): List<SolidContact> {
         val addressBookRdf =
-            pod.addressBookOrNull(ownerWebId, URI.create(addressBookUri)) ?: return emptyList()
+            pod.addressBookOrNull(ownerWebId, addressBookUri) ?: return emptyList()
         val peopleIndexRdf =
-            pod.peopleIndexOrNull(ownerWebId, URI.create(addressBookRdf.getNameEmailIndex()))
+            pod.peopleIndexOrNull(ownerWebId, addressBookRdf.getNameEmailIndex())
                 ?: return emptyList()
         val entries = peopleIndexRdf.getContacts(addressBookUri)
         return coroutineScope {
             entries.map { entry ->
                 async {
-                    SolidContact.createFromRdf(pod.contact(ownerWebId, URI.create(entry.uri)))
+                    SolidContact.createFromRdf(pod.contact(ownerWebId, entry.uri))
                 }
             }.awaitAll()
         }
@@ -242,7 +239,7 @@ internal class ContactEngine(
         else -> ""
     }
 
-    private suspend fun deleteTolerant(ownerWebId: String, uri: URI) {
+    private suspend fun deleteTolerant(ownerWebId: String, uri: String) {
         when (val result = pod.solidResourceManager.delete(ownerWebId, uri)) {
             is SolidResult.Success -> Unit
             is SolidResult.Failure ->

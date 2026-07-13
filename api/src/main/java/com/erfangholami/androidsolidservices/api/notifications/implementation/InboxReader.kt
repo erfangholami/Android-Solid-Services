@@ -119,10 +119,10 @@ internal class InboxReader(
             is SolidResult.Success -> r.value
             is SolidResult.Failure -> when (r.error.code) {
                 SolidErrorCode.UNAUTHORIZED ->
-                    throw SharingException.InboxUnauthorized(inboxUri.toString())
+                    throw SharingException.InboxUnauthorized(inboxUri)
 
                 SolidErrorCode.FORBIDDEN ->
-                    throw SharingException.InboxForbidden(inboxUri.toString())
+                    throw SharingException.InboxForbidden(inboxUri)
 
                 else -> return emptyList()
             }
@@ -145,7 +145,7 @@ internal class InboxReader(
         itemUri: URI,
         profileCache: MutableMap<String, WebId?>,
     ): ShareNotification? {
-        val rdf = rm.read(webId, itemUri, ShareNotificationRDF::class.java).getOrThrow()
+        val rdf = rm.read(webId, itemUri.toString(), ShareNotificationRDF::class.java).getOrThrow()
         val rawType = rdf.activityType()
         val actor = rdf.actor() ?: return null
         val obj = rdf.activityObject() ?: return null
@@ -204,7 +204,7 @@ internal class InboxReader(
         itemUri: URI,
         profileCache: MutableMap<String, WebId?>,
     ): ShareRequest? {
-        val rdf = rm.read(webId, itemUri, ShareRequestRDF::class.java).getOrThrow()
+        val rdf = rm.read(webId, itemUri.toString(), ShareRequestRDF::class.java).getOrThrow()
         if (rdf.requestSubject() == null) return null
         val actor = rdf.actor() ?: return null
         val obj = rdf.activityObject() ?: return null
@@ -245,7 +245,7 @@ internal class InboxReader(
             .getOrNull() ?: return false
 
         val ownerFromHeaders = runCatching {
-            (rm.head(readerWebId, resource) as? SolidResult.Success)?.value?.ownerUri
+            (rm.head(readerWebId, resource.toString()) as? SolidResult.Success)?.value?.ownerUri
         }.onFailure { t ->
             Log.w(
                 INBOX_LOG_TAG,
@@ -322,7 +322,12 @@ internal class InboxReader(
 
         val canonicalResource = IriUtils.canonical(resource.toString())
         return profile.getStorages().any { storage ->
-            val root = IriUtils.canonical(IriUtils.toContainerIri(storagePathRoot(storage)))
+            val storageUri = runCatching { URI.create(storage) }
+                .onFailure { t ->
+                    Log.w(INBOX_LOG_TAG, "resourceUnderOwnedStorage: malformed pim:storage '$storage'.", t)
+                }
+                .getOrNull() ?: return@any false
+            val root = IriUtils.canonical(IriUtils.toContainerIri(storagePathRoot(storageUri)))
             // The resource must sit under the storage container AND be served from
             // the very same host as that storage (exact, case-insensitive) — a
             // storage on one host can never own a resource on another. `sameSite`
@@ -330,8 +335,8 @@ internal class InboxReader(
             // legitimately splits identity and storage across sibling subdomains
             // (e.g. id.inrupt.com vs storage.inrupt.com).
             canonicalResource.startsWith(root) &&
-                    sameHost(resource.host, storage.host) &&
-                    sameSite(ownerUri.host, storage.host)
+                    sameHost(resource.host, storageUri.host) &&
+                    sameSite(ownerUri.host, storageUri.host)
         }
     }
 
@@ -361,9 +366,9 @@ internal class InboxReader(
         val key = IriUtils.canonical(webId)
         if (cache.containsKey(key)) return cache[key]
         val profile =
-            (rm.readPublic(webIdUri, WebId::class.java) as? SolidResult.Success)?.value
+            (rm.readPublic(webIdUri.toString(), WebId::class.java) as? SolidResult.Success)?.value
                 ?: runCatching {
-                    rm.read(viaWebId, webIdUri, WebId::class.java).getOrThrow()
+                    rm.read(viaWebId, webIdUri.toString(), WebId::class.java).getOrThrow()
                 }.onFailure { t ->
                     Log.w(
                         INBOX_LOG_TAG,

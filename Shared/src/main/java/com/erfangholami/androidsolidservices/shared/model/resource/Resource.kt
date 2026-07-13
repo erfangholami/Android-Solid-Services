@@ -4,7 +4,6 @@ import android.os.Parcelable
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.io.IOException
 import java.io.InputStream
-import java.net.URI
 
 /**
  * The root of the resource model used throughout the SDK.
@@ -31,7 +30,7 @@ import java.net.URI
 public interface Resource : AutoCloseable, Parcelable {
 
     /** The URI that identifies this resource on the pod. */
-    public fun getIdentifier(): URI
+    public fun getIdentifier(): String
 
     /** The media type of the resource representation (the value of its `Content-Type`). */
     public fun getContentType(): String

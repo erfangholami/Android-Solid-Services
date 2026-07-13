@@ -13,11 +13,10 @@ import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import java.net.URI
 
 class TicketRDFTest {
 
-    private val ticketUri = URI.create("https://alice.pod/tickets/abc123.ttl#this")
+    private val ticketUri = "https://alice.pod/tickets/abc123.ttl#this"
 
     private fun fullTicket(): TicketRDF = TicketRDF(ticketUri).apply {
         setTitle("Coldplay — Music of the Spheres")

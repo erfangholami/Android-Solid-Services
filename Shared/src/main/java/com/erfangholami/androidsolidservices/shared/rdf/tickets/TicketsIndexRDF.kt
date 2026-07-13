@@ -9,7 +9,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
-import java.net.URI
 
 /**
  * RDF representation of the tickets index document (`index.ttl`) inside a tickets
@@ -35,7 +34,7 @@ import java.net.URI
 public class TicketsIndexRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null,
@@ -70,7 +69,7 @@ public class TicketsIndexRDF : SolidRDFResource {
      * display name, and validity end.
      */
     public fun addTicket(ticket: TicketRDF) {
-        val subject = ticket.getIdentifier().toString()
+        val subject = ticket.getIdentifier()
         addQuad(subject, RDF.TYPE, Schema.TICKET)
         addQuadLiteral(subject, Schema.NAME, ticket.getTitle(), XSD.STRING)
         addQuadLiteral(subject, SolidShare.CATEGORY, ticket.getCategory().name, XSD.STRING)
@@ -93,7 +92,7 @@ public class TicketsIndexRDF : SolidRDFResource {
      *   not in this index (no row is added in that case).
      */
     public fun updateTicket(ticket: TicketRDF): Boolean {
-        if (!removeTicket(ticket.getIdentifier().toString())) return false
+        if (!removeTicket(ticket.getIdentifier())) return false
         addTicket(ticket)
         return true
     }

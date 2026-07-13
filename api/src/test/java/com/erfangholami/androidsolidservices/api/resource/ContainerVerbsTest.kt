@@ -55,7 +55,7 @@ class ContainerVerbsTest {
         @Suppress("UNCHECKED_CAST")
         override suspend fun <T : Resource> read(
             webId: String,
-            resource: URI,
+            resource: String,
             clazz: Class<T>,
         ): SolidResult<T> {
             val uri = resource.toString()
@@ -63,17 +63,17 @@ class ContainerVerbsTest {
                 if (uri !in containers) SolidResult.Failure(SolidError.fromHttp(404, uri))
                 else {
                     val quads = directChildrenOf(uri).map { RdfQuad(uri, LDP.CONTAINS, it, null, null) }
-                    SolidResult.Success(SolidContainer(URI.create(uri), quads) as T)
+                    SolidResult.Success(SolidContainer(uri, quads) as T)
                 }
             } else {
                 val f = files[uri] ?: return SolidResult.Failure(SolidError.fromHttp(404, uri))
                 SolidResult.Success(
-                    SolidNonRDFResource(URI.create(uri), f.second, ByteArrayInputStream(f.first)) as T,
+                    SolidNonRDFResource(uri, f.second, ByteArrayInputStream(f.first)) as T,
                 )
             }
         }
 
-        override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> {
+        override suspend fun head(webId: String, uri: String): SolidResult<SolidMetadata> {
             headCount++
             val s = uri.toString()
             return if (s in files || s in containers) SolidResult.Success(SolidMetadata.EMPTY)
@@ -81,13 +81,13 @@ class ContainerVerbsTest {
         }
 
         override suspend fun <T : Resource> create(webId: String, resource: T): SolidResult<T> {
-            if (resource is SolidContainer) containers += resource.getIdentifier().toString()
+            if (resource is SolidContainer) containers += resource.getIdentifier()
             return SolidResult.Success(resource)
         }
 
         override suspend fun putRaw(
             webId: String,
-            uri: URI,
+            uri: String,
             contentType: String,
             body: ByteArray,
             ifMatch: String?,
@@ -97,7 +97,7 @@ class ContainerVerbsTest {
             return SolidResult.Success(Unit)
         }
 
-        override suspend fun delete(webId: String, resourceUri: URI, ifMatch: String?): SolidResult<Boolean> {
+        override suspend fun delete(webId: String, resourceUri: String, ifMatch: String?): SolidResult<Boolean> {
             val uri = resourceUri.toString()
             files.remove(uri)
             containers.remove(uri)
@@ -113,13 +113,13 @@ class ContainerVerbsTest {
             return SolidResult.Success(resource)
         }
 
-        override suspend fun <T : Resource> readPublic(uri: URI, clazz: Class<T>) = read("", uri, clazz)
-        override suspend fun headPublic(uri: URI) = head("", uri)
+        override suspend fun <T : Resource> readPublic(uri: String, clazz: Class<T>) = read("", uri, clazz)
+        override suspend fun headPublic(uri: String) = head("", uri)
         override suspend fun <T : Resource> update(webId: String, newResource: T, ifMatch: String?, ifUnmodifiedSince: String?) = notImpl<T>()
-        override suspend fun patch(webId: String, uri: URI, patch: N3Patch, ifMatch: String?) = notImpl<Unit>()
-        override suspend fun patchRaw(webId: String, uri: URI, n3Body: String, ifMatch: String?) = notImpl<Unit>()
-        override suspend fun post(webId: String, uri: URI, contentType: String, body: ByteArray, additionalHeaders: Map<String, String>) = notImpl<URI?>()
-        override suspend fun <T : Resource> createInContainer(webId: String, containerUri: URI, resource: T) = notImpl<URI?>()
+        override suspend fun patch(webId: String, uri: String, patch: N3Patch, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun patchRaw(webId: String, uri: String, n3Body: String, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun post(webId: String, uri: String, contentType: String, body: ByteArray, additionalHeaders: Map<String, String>) = notImpl<String?>()
+        override suspend fun <T : Resource> createInContainer(webId: String, containerUri: String, resource: T) = notImpl<String?>()
 
         private fun <T> notImpl(): SolidResult<T> =
             SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised")))
@@ -133,7 +133,7 @@ class ContainerVerbsTest {
             putContainer("https://alice.pod/c/sub/")
         }
 
-        val children = runBlocking { pod.listContainer(webId, URI.create("https://alice.pod/c/")).getOrThrow() }
+        val children = runBlocking { pod.listContainer(webId, "https://alice.pod/c/").getOrThrow() }
 
         assertEquals(
             setOf("https://alice.pod/c/a.txt", "https://alice.pod/c/sub/"),
@@ -147,7 +147,7 @@ class ContainerVerbsTest {
         val pod = FsPod().apply { putFile("https://alice.pod/a.txt", "hello", "text/plain") }
 
         val result = runBlocking {
-            pod.copy(webId, URI.create("https://alice.pod/a.txt"), URI.create("https://alice.pod/b.txt"))
+            pod.copy(webId, "https://alice.pod/a.txt", "https://alice.pod/b.txt")
         }
 
         assertTrue(result is SolidResult.Success)
@@ -166,7 +166,7 @@ class ContainerVerbsTest {
         }
 
         val result = runBlocking {
-            pod.copy(webId, URI.create("https://alice.pod/src/"), URI.create("https://alice.pod/dst/"))
+            pod.copy(webId, "https://alice.pod/src/", "https://alice.pod/dst/")
         }
 
         assertTrue(result is SolidResult.Success)
@@ -181,7 +181,7 @@ class ContainerVerbsTest {
         val pod = FsPod().apply { putFile("https://alice.pod/a.txt", "data") }
 
         val result = runBlocking {
-            pod.move(webId, URI.create("https://alice.pod/a.txt"), URI.create("https://alice.pod/moved.txt"))
+            pod.move(webId, "https://alice.pod/a.txt", "https://alice.pod/moved.txt")
         }
 
         assertTrue(result is SolidResult.Success)
@@ -194,10 +194,10 @@ class ContainerVerbsTest {
         val pod = FsPod().apply { putFile("https://alice.pod/notes/old.txt", "n") }
 
         val result = runBlocking {
-            pod.rename(webId, URI.create("https://alice.pod/notes/old.txt"), "new.txt")
+            pod.rename(webId, "https://alice.pod/notes/old.txt", "new.txt")
         }
 
-        assertEquals(URI.create("https://alice.pod/notes/new.txt"), (result as SolidResult.Success).value)
+        assertEquals("https://alice.pod/notes/new.txt", (result as SolidResult.Success).value)
         assertEquals("n", pod.bodyAt("https://alice.pod/notes/new.txt"))
         assertFalse("https://alice.pod/notes/old.txt" in pod.files.keys)
     }

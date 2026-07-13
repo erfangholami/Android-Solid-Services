@@ -59,7 +59,7 @@ import java.net.URI
  */
 public open class RDFResource : Resource {
 
-    private val identifier: URI
+    private val identifier: String
     private val headers: SolidHeaders
     private val contentType: String
     protected var quads: MutableList<RdfQuad>
@@ -140,31 +140,31 @@ public open class RDFResource : Resource {
     }
 
     protected constructor(inParcel: Parcel) {
-        this.identifier = encodeUriString(inParcel.readString()!!)
+        this.identifier = inParcel.readString()!!
         this.headers = SolidHeaders(Json.decodeFromString<Map<String, List<String>>>(inParcel.readString()!!))
         this.contentType = inParcel.readString()!!
         this.quads = Json.decodeFromString<List<RdfQuad>>(inParcel.readString()!!).toMutableList()
         this.itselfSubject = inParcel.readString()!!
     }
 
-    public constructor(identifier: URI) : this(identifier, null as List<RdfQuad>?)
+    public constructor(identifier: String) : this(identifier, null as List<RdfQuad>?)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?) :
             this(identifier, quads, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?, headers: SolidHeaders?) :
             this(identifier, "application/ld+json", quads, headers)
 
-    public constructor(identifier: URI, contentType: String, quads: List<RdfQuad>?) :
+    public constructor(identifier: String, contentType: String, quads: List<RdfQuad>?) :
             this(identifier, contentType, quads, null)
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         quads: List<RdfQuad>?,
         headers: SolidHeaders?
     ) {
-        this.identifier = encodeUri(identifier)
+        this.identifier = encodeUriString(identifier).toString()
         this.headers = headers ?: SolidHeaders.EMPTY
         this.contentType = contentType
         this.quads = quads?.toMutableList() ?: mutableListOf()
@@ -265,7 +265,7 @@ public open class RDFResource : Resource {
     /** Returns a snapshot copy of all triples held by this resource. */
     public fun getAllQuads(): List<RdfQuad> = quads.toList()
 
-    override fun getIdentifier(): URI = identifier
+    override fun getIdentifier(): String = identifier
 
     override fun getContentType(): String = contentType
 
@@ -303,7 +303,7 @@ public open class RDFResource : Resource {
     override fun describeContents(): Int = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(identifier.toString())
+        dest.writeString(identifier)
         dest.writeString(Json.encodeToString(headers.toMultimap()))
         dest.writeString(contentType)
         dest.writeString(Json.encodeToString(quads))

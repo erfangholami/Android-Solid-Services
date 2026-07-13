@@ -25,7 +25,6 @@ import com.erfangholami.androidsolidservices.shared.util.getWwwAuthenticate
 import com.erfangholami.androidsolidservices.shared.util.isStorage
 import com.erfangholami.androidsolidservices.shared.util.tryParseUri
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * Solid-specific metadata extracted from HTTP response headers for a resource
@@ -47,13 +46,13 @@ import java.net.URI
  */
 public data class SolidMetadata(
     /** URI of the WAC/ACP access-control resource. From `Link: rel="acl"`. */
-    val aclUri: URI?,
+    val aclUri: String?,
 
     /** URI of the storage description resource. From `Link: rel="storageDescription"`. */
-    val storageDescriptionUri: URI?,
+    val storageDescriptionUri: String?,
 
     /** URI of the storage owner. From `Link: rel="solid:owner"`. */
-    val ownerUri: URI?,
+    val ownerUri: String?,
 
     /** Parsed `WAC-Allow` header — what modes the current caller has on this resource. */
     val wacAllow: WacAllow?,
@@ -65,7 +64,7 @@ public data class SolidMetadata(
      * RDF type IRIs advertised via `Link: <iri>; rel="type"` headers.
      * Common values: `ldp:Resource`, `ldp:BasicContainer`, `pim:Storage`.
      */
-    val linkTypes: Set<URI>,
+    val linkTypes: Set<String>,
 
     /** ETag for cache validation and conditional requests. From `ETag` header. */
     val etag: String?,
@@ -74,7 +73,7 @@ public data class SolidMetadata(
     val lastModified: String?,
 
     /** Location URI set on 201 Created responses. From `Location` header. */
-    val location: URI?,
+    val location: String?,
 
     /** Media type of the resource. From `Content-Type` header. */
     val contentType: String?,
@@ -83,7 +82,7 @@ public data class SolidMetadata(
     val contentLength: Long,
 
     /** URI of the resource that describes this resource. From `Link: rel="describedby"`. */
-    val describeByUri: URI?,
+    val describeByUri: String?,
 
     /** Media types accepted for PATCH requests. From `Accept-Patch` header. */
     val acceptPatch: List<String>,
@@ -102,7 +101,7 @@ public data class SolidMetadata(
      * From `Link: <iri>; rel="http://www.w3.org/ns/solid/terms#oidcIssuer"`.
      * Spec: https://solidproject.org/TR/oidc
      */
-    val oidcIssuerUri: URI?,
+    val oidcIssuerUri: String?,
 
     /**
      * Whether this resource is a Solid pod storage root.
@@ -115,41 +114,40 @@ public data class SolidMetadata(
      * Used as a fallback when a WebID's profile body doesn't carry an
      * `ldp:inbox` predicate, since the inbox may be exposed either way.
      */
-    val inboxUri: URI? = null,
+    val inboxUri: String? = null,
 ) : Parcelable {
 
     override fun describeContents(): Int = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(aclUri?.toString())
-        dest.writeString(storageDescriptionUri?.toString())
-        dest.writeString(ownerUri?.toString())
+        dest.writeString(aclUri)
+        dest.writeString(storageDescriptionUri)
+        dest.writeString(ownerUri)
         dest.writeParcelable(wacAllow, flags)
         dest.writeStringList(allowedMethods.toList())
-        dest.writeStringList(linkTypes.map { it.toString() })
+        dest.writeStringList(linkTypes.toList())
         dest.writeString(etag)
         dest.writeString(lastModified)
-        dest.writeString(location?.toString())
+        dest.writeString(location)
         dest.writeString(contentType)
         dest.writeLong(contentLength)
-        dest.writeString(describeByUri?.toString())
+        dest.writeString(describeByUri)
         dest.writeStringList(acceptPatch)
         dest.writeStringList(acceptPost)
         dest.writeStringList(acceptPut)
         dest.writeString(wwwAuthenticate)
-        dest.writeString(oidcIssuerUri?.toString())
+        dest.writeString(oidcIssuerUri)
         dest.writeByte(if (isStorage) 1 else 0)
-        dest.writeString(inboxUri?.toString())
+        dest.writeString(inboxUri)
     }
 
     public companion object {
         @JvmField
         public val CREATOR: Parcelable.Creator<SolidMetadata> = object : Parcelable.Creator<SolidMetadata> {
             override fun createFromParcel(parcel: Parcel): SolidMetadata = SolidMetadata(
-                aclUri = parcel.readString()?.let { tryParseUri(it, "SolidMetadata.aclUri") },
-                storageDescriptionUri = parcel.readString()
-                    ?.let { tryParseUri(it, "SolidMetadata.storageDescriptionUri") },
-                ownerUri = parcel.readString()?.let { tryParseUri(it, "SolidMetadata.ownerUri") },
+                aclUri = parcel.readString(),
+                storageDescriptionUri = parcel.readString(),
+                ownerUri = parcel.readString(),
                 wacAllow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     parcel.readParcelable(WacAllow::class.java.classLoader, WacAllow::class.java)
                 } else {
@@ -157,25 +155,20 @@ public data class SolidMetadata(
                     parcel.readParcelable(WacAllow::class.java.classLoader)
                 },
                 allowedMethods = parcel.createStringArrayList()!!.toSet(),
-                linkTypes = parcel.createStringArrayList()!!
-                    .mapNotNull { tryParseUri(it, "SolidMetadata.linkTypes") }
-                    .toSet(),
+                linkTypes = parcel.createStringArrayList()!!.toSet(),
                 etag = parcel.readString(),
                 lastModified = parcel.readString(),
-                location = parcel.readString()?.let { tryParseUri(it, "SolidMetadata.location") },
+                location = parcel.readString(),
                 contentType = parcel.readString(),
                 contentLength = parcel.readLong(),
-                describeByUri = parcel.readString()
-                    ?.let { tryParseUri(it, "SolidMetadata.describeByUri") },
+                describeByUri = parcel.readString(),
                 acceptPatch = parcel.createStringArrayList()!!,
                 acceptPost = parcel.createStringArrayList()!!,
                 acceptPut = parcel.createStringArrayList()!!,
                 wwwAuthenticate = parcel.readString(),
-                oidcIssuerUri = parcel.readString()
-                    ?.let { tryParseUri(it, "SolidMetadata.oidcIssuerUri") },
+                oidcIssuerUri = parcel.readString(),
                 isStorage = parcel.readByte() != 0.toByte(),
-                inboxUri = parcel.readString()
-                    ?.let { tryParseUri(it, "SolidMetadata.inboxUri") },
+                inboxUri = parcel.readString(),
             )
 
             override fun newArray(size: Int): Array<SolidMetadata?> = arrayOfNulls(size)

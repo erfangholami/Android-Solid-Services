@@ -25,8 +25,8 @@ class AcpBackendTest {
     private val alice = "https://alice.pod/profile/card#me"
     private val bob = "https://bob.pod/profile/card#me"
     private val carol = "https://carol.pod/profile/card#me"
-    private val resource = URI.create("https://alice.pod/notes/n1")
-    private val container = URI.create("https://alice.pod/shared/")
+    private val resource = "https://alice.pod/notes/n1"
+    private val container = "https://alice.pod/shared/"
 
     private lateinit var pod: InMemoryAccessPod
     private lateinit var backend: AcpBackend
@@ -37,16 +37,16 @@ class AcpBackendTest {
         backend = AcpBackend(pod)
     }
 
-    private fun grant(res: URI, mode: ShareMode, receiver: ShareReceiver, container: Boolean = false) =
+    private fun grant(res: String, mode: ShareMode, receiver: ShareReceiver, container: Boolean = false) =
         runBlocking { backend.grant(alice, res, mode, receiver, isContainer = container) }
 
-    private fun shares(res: URI) = runBlocking { backend.listShares(alice, res) }
+    private fun shares(res: String) = runBlocking { backend.listShares(alice, res) }
 
-    private fun acrQuadsOf(res: URI) = runBlocking {
-        pod.read(alice, pod.aclUriFor(res), SolidRDFResource::class.java).getOrThrow().getAllQuads()
+    private fun acrQuadsOf(res: String) = runBlocking {
+        pod.read(alice, pod.aclUriFor(res).toString(), SolidRDFResource::class.java).getOrThrow().getAllQuads()
     }
 
-    private fun hasOwnerControl(res: URI): Boolean {
+    private fun hasOwnerControl(res: String): Boolean {
         val quads = acrQuadsOf(res)
         val ownerMatches = quads.any { it.predicate == ACP.AGENT && it.`object` == alice }
         val controlAllowed = quads.any { it.predicate == ACP.ALLOW && it.`object` == ACL.CONTROL }
@@ -54,7 +54,7 @@ class AcpBackendTest {
     }
 
     /** The `acp:allow` modes of the policy whose matcher targets `acp:PublicAgent`. */
-    private fun publicPolicyModes(res: URI): Set<String> {
+    private fun publicPolicyModes(res: String): Set<String> {
         val quads = acrQuadsOf(res)
         val publicMatchers = quads
             .filter { it.predicate == ACP.AGENT && it.`object` == ACP.PUBLIC_AGENT }

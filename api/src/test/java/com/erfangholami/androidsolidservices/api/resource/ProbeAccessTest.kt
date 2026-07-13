@@ -20,7 +20,7 @@ import java.net.URI
 class ProbeAccessTest {
 
     private val webId = "https://alice.pod/profile/card#me"
-    private val uri = URI.create("https://bob.pod/shared/doc")
+    private val uri = "https://bob.pod/shared/doc"
 
     private fun pod(head: SolidResult<SolidMetadata>) = FakeSolidResourceManager(onHead = { head })
 
@@ -28,7 +28,7 @@ class ProbeAccessTest {
     fun `reports the WAC-Allow modes and owner when reachable`() {
         val meta = SolidMetadata.EMPTY.copy(
             wacAllow = WacAllow(userModes = setOf("read", "write"), publicModes = emptySet()),
-            ownerUri = URI.create(webId),
+            ownerUri = webId,
         )
 
         val probe = runBlocking { pod(SolidResult.Success(meta)).probeAccess(webId, uri).getOrThrow() }

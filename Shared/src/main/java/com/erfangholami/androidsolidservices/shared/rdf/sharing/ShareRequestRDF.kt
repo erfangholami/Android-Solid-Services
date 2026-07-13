@@ -11,7 +11,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.ShareNotificationVocab
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShareNotificationVocabulary
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF wrapper for an `solidshare:AccessRequest` inbox notification — the
@@ -39,7 +38,7 @@ import java.net.URI
 public class ShareRequestRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null,

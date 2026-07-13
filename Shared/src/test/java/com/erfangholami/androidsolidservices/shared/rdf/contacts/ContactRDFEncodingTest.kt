@@ -8,7 +8,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.net.URI
 
 /**
  * Tests that `ContactRDF` emits IRI- and datatype-valid RDF for values that
@@ -19,7 +18,7 @@ import java.net.URI
 class ContactRDFEncodingTest {
 
     private val contactUri =
-        URI.create("https://alice.pod/contacts/b1/Person/p1/index.ttl#this")
+        "https://alice.pod/contacts/b1/Person/p1/index.ttl#this"
 
     private fun reparse(contact: ContactRDF): ContactRDF {
         val json = contact.getEntity().bufferedReader().use { it.readText() }

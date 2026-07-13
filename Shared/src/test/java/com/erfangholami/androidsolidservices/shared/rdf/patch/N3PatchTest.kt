@@ -9,7 +9,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.net.URI
 
 /**
  * Tests the N3 Patch builder's escaping (the injection boundary — patches are
@@ -92,11 +91,11 @@ class N3PatchTest {
     @Test
     fun `fromDiff turns removed triples into deletes and added into inserts`() {
         val original = RDFResource(
-            URI.create(subject), "text/turtle",
+            subject, "text/turtle",
             listOf(RdfQuad(subject, VCARD.FN, "Old", datatype = XSD.STRING)), null,
         )
         val updated = RDFResource(
-            URI.create(subject), "text/turtle",
+            subject, "text/turtle",
             listOf(RdfQuad(subject, VCARD.FN, "New", datatype = XSD.STRING)), null,
         )
 
@@ -108,8 +107,8 @@ class N3PatchTest {
     @Test
     fun `fromDiff on identical states throws`() {
         val quads = listOf(RdfQuad(subject, VCARD.FN, "Same", datatype = XSD.STRING))
-        val a = RDFResource(URI.create(subject), "text/turtle", quads, null)
-        val b = RDFResource(URI.create(subject), "text/turtle", quads, null)
+        val a = RDFResource(subject, "text/turtle", quads, null)
+        val b = RDFResource(subject, "text/turtle", quads, null)
         assertThrows(IllegalArgumentException::class.java) { N3Patch.fromDiff(a, b) }
     }
 

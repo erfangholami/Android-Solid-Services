@@ -20,9 +20,9 @@ import java.net.URI
 class StorageDiscoveryTest {
 
     private val webId = "https://alice.pod/profile/card#me"
-    private val root = URI.create("https://alice.pod/")
+    private val root = "https://alice.pod/"
 
-    private fun profile(vararg quads: RdfQuad): WebId = WebId(URI.create(webId), quads.toList())
+    private fun profile(vararg quads: RdfQuad): WebId = WebId(webId, quads.toList())
 
     @Test
     fun `discovers storage from the pim storage triple`() {

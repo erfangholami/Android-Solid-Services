@@ -54,14 +54,14 @@ internal class SaiAccessGrantReader(private val rm: SolidResourceManager) {
             .getOrDefault(emptyList())
 
     private suspend fun crawl(webId: String): List<AccessGrant> {
-        val profile = rm.read(webId, URI.create(webId), WebId::class.java).getOrThrow()
+        val profile = rm.read(webId, webId, WebId::class.java).getOrThrow()
         val registrySetUri = profile.findProperty(SAI.HAS_REGISTRY_SET)?.let(::parseUriOrNull)
         if (registrySetUri == null) {
             Log.i(SAI_LOG_TAG, "crawl: $webId advertises no interop:hasRegistrySet; no SAI grants.")
             return emptyList()
         }
 
-        val registrySet = rm.read(webId, registrySetUri, SolidRDFResource::class.java).getOrThrow()
+        val registrySet = rm.read(webId, registrySetUri.toString(), SolidRDFResource::class.java).getOrThrow()
         val agentRegistries = registrySet
             .findAllProperties(SAI.HAS_AGENT_REGISTRY)
             .mapNotNull(::parseUriOrNull)
@@ -80,7 +80,7 @@ internal class SaiAccessGrantReader(private val rm: SolidResourceManager) {
     ) {
         runCatching {
             val agentRegistry =
-                rm.read(webId, agentRegistryUri, SolidRDFResource::class.java).getOrThrow()
+                rm.read(webId, agentRegistryUri.toString(), SolidRDFResource::class.java).getOrThrow()
             val registrations = (
                 agentRegistry.findAllProperties(SAI.HAS_SOCIAL_AGENT_REGISTRATION) +
                     agentRegistry.findAllProperties(SAI.HAS_APPLICATION_REGISTRATION)
@@ -100,7 +100,7 @@ internal class SaiAccessGrantReader(private val rm: SolidResourceManager) {
     ) {
         runCatching {
             val registration =
-                rm.read(webId, registrationUri, SolidRDFResource::class.java).getOrThrow()
+                rm.read(webId, registrationUri.toString(), SolidRDFResource::class.java).getOrThrow()
             val grantUris = registration
                 .findAllProperties(SAI.HAS_ACCESS_GRANT)
                 .mapNotNull(::parseUriOrNull)
@@ -116,7 +116,7 @@ internal class SaiAccessGrantReader(private val rm: SolidResourceManager) {
     }
 
     private suspend fun parseGrant(webId: String, grantUri: URI): AccessGrant? {
-        val rdf = rm.read(webId, grantUri, SolidRDFResource::class.java).getOrThrow()
+        val rdf = rm.read(webId, grantUri.toString(), SolidRDFResource::class.java).getOrThrow()
         val grantSubject = rdf.getAllQuads()
             .firstOrNull { it.predicate == RDF.TYPE && it.`object` == SAI.ACCESS_GRANT }
             ?.subject

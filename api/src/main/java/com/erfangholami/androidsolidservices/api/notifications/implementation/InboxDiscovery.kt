@@ -4,17 +4,16 @@ import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
-import java.net.URI
 
 internal class InboxDiscovery(private val rm: SolidResourceManager) {
 
-    suspend fun resolveOwnInbox(webId: String): URI? {
+    suspend fun resolveOwnInbox(webId: String): String? {
         val profile = runCatching {
-            rm.read(webId, URI.create(webId), WebId::class.java).getOrThrow()
+            rm.read(webId, webId, WebId::class.java).getOrThrow()
         }.getOrNull()
         profile?.getInbox()?.let { return it }
 
-        runCatching { rm.head(webId, URI.create(webId)) }.getOrNull()
+        runCatching { rm.head(webId, webId) }.getOrNull()
             ?.let { inboxFromMetadata(it) }
             ?.let { return it }
 
@@ -28,13 +27,13 @@ internal class InboxDiscovery(private val rm: SolidResourceManager) {
         return null
     }
 
-    suspend fun resolveInboxOf(targetWebId: String, asWebId: String): URI? {
+    suspend fun resolveInboxOf(targetWebId: String, asWebId: String): String? {
         val profile = runCatching {
-            rm.readPublic(URI.create(targetWebId), WebId::class.java).getOrThrow()
+            rm.readPublic(targetWebId, WebId::class.java).getOrThrow()
         }.getOrNull()
         profile?.getInbox()?.let { return it }
 
-        runCatching { rm.headPublic(URI.create(targetWebId)) }.getOrNull()
+        runCatching { rm.headPublic(targetWebId) }.getOrNull()
             ?.let { inboxFromMetadata(it) }
             ?.let { return it }
 
@@ -57,9 +56,9 @@ internal class InboxDiscovery(private val rm: SolidResourceManager) {
         return null
     }
 
-    private fun extendedProfileDocs(profile: WebId): List<URI> =
+    private fun extendedProfileDocs(profile: WebId): List<String> =
         (profile.getPrimaryTopicDocuments() + profile.getRelatedResources()).distinct()
 
-    private fun inboxFromMetadata(response: SolidResult<SolidMetadata>): URI? =
+    private fun inboxFromMetadata(response: SolidResult<SolidMetadata>): String? =
         (response as? SolidResult.Success)?.value?.inboxUri
 }

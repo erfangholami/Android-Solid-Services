@@ -7,7 +7,6 @@ import com.erfangholami.androidsolidservices.shared.util.tryParseUri
 import com.erfangholami.androidsolidservices.shared.vocab.ACP
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * Represents an ACP Access Control Resource (ACR).
@@ -20,13 +19,13 @@ import java.net.URI
  */
 public class SolidACR : SolidRDFResource {
 
-    public constructor(identifier: URI) : this(identifier, null, null)
+    public constructor(identifier: String) : this(identifier, null, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?, headers: SolidHeaders?) :
             this(identifier, "application/ld+json", quads, headers)
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         quads: List<RdfQuad>?,
         headers: SolidHeaders?
@@ -40,28 +39,28 @@ public class SolidACR : SolidRDFResource {
      * Returns all `acp:AccessControl` IRIs referenced directly via
      * `acp:accessControl` on this ACR.
      */
-    public fun getAccessControls(): List<URI> =
+    public fun getAccessControls(): List<String> =
         quads
             .filter { it.predicate == ACP.ACCESS_CONTROL }
-            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getAccessControls") }
+            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getAccessControls")?.toString() }
 
     /**
      * Returns all `acp:AccessControl` IRIs that apply transitively to
      * member resources via `acp:memberAccessControl`.
      */
-    public fun getMemberAccessControls(): List<URI> =
+    public fun getMemberAccessControls(): List<String> =
         quads
             .filter { it.predicate == ACP.MEMBER_ACCESS_CONTROL }
-            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getMemberAccessControls") }
+            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getMemberAccessControls")?.toString() }
 
     /**
      * Returns all `acp:Policy` IRIs referenced by any access control in
      * this ACR via `acp:apply`.
      */
-    public fun getPolicies(): List<URI> =
+    public fun getPolicies(): List<String> =
         quads
             .filter { it.predicate == ACP.APPLY }
-            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getPolicies") }
+            .mapNotNull { tryParseUri(it.`object`, "SolidACR.getPolicies")?.toString() }
 
     /**
      * Returns the access modes granted by a policy identified by [policyIri].

@@ -1,8 +1,9 @@
 package com.erfangholami.androidsolidservices.shared.util
 
+import java.net.URI
+
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import java.net.URI
 import org.junit.Test
 
 /**

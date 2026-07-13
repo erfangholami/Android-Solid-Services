@@ -27,7 +27,7 @@ public data class FullContact(
     public companion object {
         public fun createFromRdf(contactRdf: ContactRDF): FullContact {
             return FullContact(
-                uri = contactRdf.getIdentifier().toString(),
+                uri = contactRdf.getIdentifier(),
                 fullName = contactRdf.getFullName(),
                 emailAddresses = contactRdf.getEmails(),
                 phoneNumbers = contactRdf.getPhoneNumbers()

@@ -42,11 +42,11 @@ internal class InMemoryAccessPod : SolidResourceManager {
     /** Records every [putRaw] (target URI + the `If-Match` sent) for assertions. */
     val putLog: MutableList<Pair<String, String?>> = mutableListOf()
 
-    fun aclUriFor(resource: URI): URI = URI.create("$resource.acl")
+    fun aclUriFor(resource: String): String = "$resource.acl"
 
     private fun isAclUri(s: String): Boolean = s.endsWith(".acl")
 
-    override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> {
+    override suspend fun head(webId: String, uri: String): SolidResult<SolidMetadata> {
         val s = uri.toString()
         return if (isAclUri(s)) {
             stored[s]?.let {
@@ -60,15 +60,15 @@ internal class InMemoryAccessPod : SolidResourceManager {
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> read(
         webId: String,
-        resource: URI,
+        resource: String,
         clazz: Class<T>,
     ): SolidResult<T> {
-        if (resource.toString() in unreadable) {
+        if (resource in unreadable) {
             return SolidResult.Failure(SolidError.fromHttp(200, "unreadable body (test)"))
         }
-        val doc = stored[resource.toString()]
+        val doc = stored[resource]
             ?: return SolidResult.Failure(SolidError.fromHttp(404, "not found: $resource"))
-        val quads = NTriples.parse(String(doc.body, Charsets.UTF_8), resource)
+        val quads = NTriples.parse(String(doc.body, Charsets.UTF_8), URI.create(resource))
         val headers = SolidHeaders(mapOf("ETag" to listOf(doc.etag)))
         val parsed: Resource = if (SolidACLResource::class.java.isAssignableFrom(clazz)) {
             SolidACLResource(resource, quads, headers)
@@ -80,7 +80,7 @@ internal class InMemoryAccessPod : SolidResourceManager {
 
     override suspend fun putRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         ifMatch: String?,
@@ -97,11 +97,11 @@ internal class InMemoryAccessPod : SolidResourceManager {
     }
 
     override suspend fun <T : Resource> readPublic(
-        uri: URI,
+        uri: String,
         clazz: Class<T>,
     ): SolidResult<T> = read("", uri, clazz)
 
-    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> = head("", uri)
+    override suspend fun headPublic(uri: String): SolidResult<SolidMetadata> = head("", uri)
 
     override suspend fun <T : Resource> create(webId: String, resource: T): SolidResult<T> =
         notImplemented()
@@ -115,21 +115,21 @@ internal class InMemoryAccessPod : SolidResourceManager {
 
     override suspend fun patch(
         webId: String,
-        uri: URI,
+        uri: String,
         patch: N3Patch,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
     override suspend fun patchRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
     override suspend fun delete(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         ifMatch: String?,
     ): SolidResult<Boolean> = notImplemented()
 
@@ -138,17 +138,17 @@ internal class InMemoryAccessPod : SolidResourceManager {
 
     override suspend fun post(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidResult<URI?> = notImplemented()
+    ): SolidResult<String?> = notImplemented()
 
     override suspend fun <T : Resource> createInContainer(
         webId: String,
-        containerUri: URI,
+        containerUri: String,
         resource: T,
-    ): SolidResult<URI?> = notImplemented()
+    ): SolidResult<String?> = notImplemented()
 
     private fun <T> notImplemented(): SolidResult<T> =
         SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised by the access-backend tests")))

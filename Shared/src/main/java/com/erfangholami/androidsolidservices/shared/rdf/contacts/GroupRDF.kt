@@ -9,7 +9,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF representation of a Solid contact group (`vcard:Group`).
@@ -24,25 +23,25 @@ import java.net.URI
 public class GroupRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     init {
-        ensureType(getIdentifier().toString(), VCARD.GROUP)
+        ensureType(getIdentifier(), VCARD.GROUP)
     }
 
     /** Returns the group's display name (`vcard:fn`). */
     public fun getTitle(): String =
         quads.find {
-            it.subject == getIdentifier().toString() && it.predicate == VCARD.FN
+            it.subject == getIdentifier() && it.predicate == VCARD.FN
         }!!.`object`
 
     /** Sets the group's display name. */
     public fun setTitle(title: String) {
-        addQuadLiteral(getIdentifier().toString(), VCARD.FN, title, XSD.STRING)
+        addQuadLiteral(getIdentifier(), VCARD.FN, title, XSD.STRING)
     }
 
     /**
@@ -50,7 +49,7 @@ public class GroupRDF : SolidRDFResource {
      * so the group is discoverable from the address-book root.
      */
     public fun setIncludesInAddressBook(addressBookUri: String) {
-        addQuad(addressBookUri, VCARD.INCLUDES_GROUP, getIdentifier().toString())
+        addQuad(addressBookUri, VCARD.INCLUDES_GROUP, getIdentifier())
     }
 
     /**
@@ -84,12 +83,12 @@ public class GroupRDF : SolidRDFResource {
      */
     public fun addMember(contact: ContactRDF) {
         addQuad(
-            getIdentifier().toString(),
+            getIdentifier(),
             VCARD.HAS_MEMBER,
-            contact.getIdentifier().toString(),
+            contact.getIdentifier(),
             maxNumber = Int.MAX_VALUE
         )
-        addQuadLiteral(contact.getIdentifier().toString(), VCARD.FN, contact.getFullName(), XSD.STRING)
+        addQuadLiteral(contact.getIdentifier(), VCARD.FN, contact.getFullName(), XSD.STRING)
     }
 
     /**
@@ -103,7 +102,7 @@ public class GroupRDF : SolidRDFResource {
      */
     public fun updateMemberName(contactUri: String, newName: String): Boolean {
         val member = quads.any {
-            it.subject == getIdentifier().toString() &&
+            it.subject == getIdentifier() &&
                     it.predicate == VCARD.HAS_MEMBER &&
                     it.`object` == contactUri
         } || quads.any { it.predicate == OWL.SAME_AS && it.`object` == contactUri }
@@ -117,10 +116,10 @@ public class GroupRDF : SolidRDFResource {
      *
      * @return `true` if the member was found and removed, `false` if not present.
      */
-    public fun removeMember(contactURI: URI): Boolean {
-        val contactStr = contactURI.toString()
+    public fun removeMember(contactURI: String): Boolean {
+        val contactStr = contactURI
         val member = quads.find {
-            it.subject == getIdentifier().toString() &&
+            it.subject == getIdentifier() &&
                     it.predicate == VCARD.HAS_MEMBER &&
                     it.`object` == contactStr
         } ?: return false

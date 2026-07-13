@@ -7,7 +7,6 @@ import com.erfangholami.androidsolidservices.shared.util.tryParseUri
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * Represents a Web Access Control (WAC) ACL resource.
@@ -22,13 +21,13 @@ import java.net.URI
  */
 public class SolidACLResource : SolidRDFResource {
 
-    public constructor(identifier: URI) : this(identifier, null, null)
+    public constructor(identifier: String) : this(identifier, null, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?, headers: SolidHeaders?) :
             this(identifier, "application/ld+json", quads, headers)
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         quads: List<RdfQuad>?,
         headers: SolidHeaders?
@@ -51,11 +50,11 @@ public class SolidACLResource : SolidRDFResource {
 
                 accessTo = forSubject
                     .filter { it.predicate == ACL.ACCESS_TO }
-                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.accessTo") },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.accessTo")?.toString() },
 
                 default = forSubject
                     .filter { it.predicate == ACL.DEFAULT }
-                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.default") },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.default")?.toString() },
 
                 modes = forSubject
                     .filter { it.predicate == ACL.MODE }
@@ -64,19 +63,19 @@ public class SolidACLResource : SolidRDFResource {
 
                 agents = forSubject
                     .filter { it.predicate == ACL.AGENT }
-                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agents") },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agents")?.toString() },
 
                 agentClasses = forSubject
                     .filter { it.predicate == ACL.AGENT_CLASS }
-                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agentClasses") },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agentClasses")?.toString() },
 
                 agentGroups = forSubject
                     .filter { it.predicate == ACL.AGENT_GROUP }
-                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agentGroups") },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.agentGroups")?.toString() },
 
                 origins = forSubject
                     .filter { it.predicate == ACL.ORIGIN }
-                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.origins") },
+                    .mapNotNull { tryParseUri(it.`object`, "SolidACLResource.origins")?.toString() },
             )
         }
     }

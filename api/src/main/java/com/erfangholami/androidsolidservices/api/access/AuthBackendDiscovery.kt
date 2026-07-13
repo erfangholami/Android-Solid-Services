@@ -21,16 +21,22 @@ import java.net.URI
  */
 internal fun pickBackend(
     metadata: SolidMetadata,
-    resourceUri: URI,
+    resourceUri: String,
     wac: WacBackend,
     acp: AcpBackend,
 ): AccessBackend = if (looksLikeWacSidecar(metadata.aclUri, resourceUri)) wac else acp
 
-private fun looksLikeWacSidecar(aclUri: URI?, resourceUri: URI): Boolean {
-    aclUri ?: return false
-    return aclUri.scheme.equals(resourceUri.scheme, ignoreCase = true) &&
-            aclUri.host.equals(resourceUri.host, ignoreCase = true) &&
-            aclUri.port == resourceUri.port
+/**
+ * Both IRIs are parsed here — this is an origin comparison (scheme / host / port), one of the few
+ * places that genuinely needs a [URI] rather than the identifier string. An IRI that doesn't parse
+ * can't be shown to share an origin with the other, so it is not treated as a WAC sidecar.
+ */
+private fun looksLikeWacSidecar(aclUri: String?, resourceUri: String): Boolean {
+    val acl = aclUri?.let { runCatching { URI.create(it) }.getOrNull() } ?: return false
+    val resource = runCatching { URI.create(resourceUri) }.getOrNull() ?: return false
+    return acl.scheme.equals(resource.scheme, ignoreCase = true) &&
+            acl.host.equals(resource.host, ignoreCase = true) &&
+            acl.port == resource.port
 }
 
 /**

@@ -153,7 +153,7 @@ internal class NotificationsManagerImplementation private constructor(
 
         var deleted = 0
         toDelete.forEach { uri ->
-            runCatching { rm.delete(webId, uri) }
+            runCatching { rm.delete(webId, uri.toString()) }
                 .onSuccess { r ->
                     when (r) {
                         is SolidResult.Success -> if (r.value) deleted++
@@ -175,7 +175,7 @@ internal class NotificationsManagerImplementation private constructor(
         webId: String,
         notificationUri: String,
     ): SolidResult<Boolean> = wrap {
-        when (val r = rm.delete(webId, encodeUriString(notificationUri))) {
+        when (val r = rm.delete(webId, encodeUriString(notificationUri).toString())) {
             is SolidResult.Success -> r.value
             is SolidResult.Failure -> {
                 val status = r.error.httpStatus
@@ -190,18 +190,18 @@ internal class NotificationsManagerImplementation private constructor(
     override suspend fun ensureInbox(webId: String): SolidResult<String> = wrap {
         discovery.resolveOwnInbox(webId)?.let { existingInbox ->
             ensurePublicAppend(webId, existingInbox)
-            return@wrap existingInbox.toString()
+            return@wrap existingInbox
         }
 
         val podRoot = provisioner.podRoot(webId)
-        val inboxUri = URI.create("${podRoot}inbox/")
+        val inboxUri = "${podRoot}inbox/"
         provisioner.ensureContainer(webId, inboxUri)
         provisioner.grantPublicAppend(webId, inboxUri)
         advertiseInbox(webId, inboxUri)
-        inboxUri.toString()
+        inboxUri
     }
 
-    private suspend fun ensurePublicAppend(webId: String, inboxUri: URI) {
+    private suspend fun ensurePublicAppend(webId: String, inboxUri: String) {
         runCatching {
             provisioner.grantPublicAppend(webId, inboxUri)
         }.onFailure { t ->
@@ -310,26 +310,26 @@ internal class NotificationsManagerImplementation private constructor(
             is InboxPostResult.Success -> Unit
             is InboxPostResult.NoInbox -> throw SharingException.NoInbox(this.targetWebId)
             is InboxPostResult.Unauthorized ->
-                throw SharingException.InboxUnauthorized(inboxUri.toString())
+                throw SharingException.InboxUnauthorized(inboxUri)
 
             is InboxPostResult.Forbidden ->
-                throw SharingException.InboxForbidden(inboxUri.toString())
+                throw SharingException.InboxForbidden(inboxUri)
 
             is InboxPostResult.HttpError ->
-                throw SharingException.NotificationDelivery(inboxUri.toString(), statusCode)
+                throw SharingException.NotificationDelivery(inboxUri, statusCode)
 
             is InboxPostResult.NetworkError ->
-                throw SharingException.NotificationDelivery(inboxUri.toString(), statusCode = null)
+                throw SharingException.NotificationDelivery(inboxUri, statusCode = null)
         }
         @Suppress("UNUSED_VARIABLE") val unused = targetWebId
     }
 
-    private suspend fun advertiseInbox(webId: String, inboxUri: URI) {
-        val profile = rm.read(webId, URI.create(webId), WebId::class.java).getOrThrow()
+    private suspend fun advertiseInbox(webId: String, inboxUri: String) {
+        val profile = rm.read(webId, webId, WebId::class.java).getOrThrow()
         val targets = (
                 profile.getPrimaryTopicDocuments() +
                         profile.getRelatedResources() +
-                        URI.create(webId)
+                        webId
                 ).distinct()
         for (doc in targets) {
             val advertised = runCatching { patchInboxInto(webId, doc, inboxUri) }
@@ -350,10 +350,10 @@ internal class NotificationsManagerImplementation private constructor(
         )
     }
 
-    private suspend fun patchInboxInto(webId: String, doc: URI, inboxUri: URI): Boolean {
+    private suspend fun patchInboxInto(webId: String, doc: String, inboxUri: String): Boolean {
         val existing = rm.read(webId, doc, WebId::class.java).getOrThrow()
         if (existing.getInbox() != null) return true
-        val patch = N3Patch.build { insert(webId, LDP.INBOX, inboxUri.toString()) }
+        val patch = N3Patch.build { insert(webId, LDP.INBOX, inboxUri) }
         return rm.patch(webId, doc, patch, ifMatch = existing.getHeaders().getETag()) is
                 SolidResult.Success
     }

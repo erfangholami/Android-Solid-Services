@@ -17,7 +17,7 @@ public data class SolidContact(
 
     public companion object {
         public fun createFromRdf(contactRdf: ContactRDF): SolidContact = SolidContact(
-            uri = contactRdf.getIdentifier().toString(),
+            uri = contactRdf.getIdentifier(),
             etag = contactRdf.getMetadata().etag,
             modified = contactRdf.getLastModified(),
             photoUri = contactRdf.getPhotoUrl(),

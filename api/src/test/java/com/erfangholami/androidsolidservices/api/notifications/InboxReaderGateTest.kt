@@ -33,16 +33,16 @@ class InboxReaderGateTest {
     private val itemUri = "https://solidweb.org/alice/inbox/item1"
 
     private fun readerProfile() =
-        WebId(URI.create(readerWebId), listOf(RdfQuad(readerWebId, LDP.INBOX, inboxUri)))
+        WebId(readerWebId, listOf(RdfQuad(readerWebId, LDP.INBOX, inboxUri)))
 
     private fun inboxContainer() = SolidContainer(
-        URI.create(inboxUri),
+        inboxUri,
         "application/ld+json",
         listOf(RdfQuad(inboxUri, LDP.CONTAINS, itemUri)),
     )
 
     private fun offer(actorWebId: String, resourceUri: String) = ShareNotificationRDF(
-        URI.create(itemUri),
+        itemUri,
         quads = listOf(
             RdfQuad("$itemUri#offer", RDF.TYPE, AS.OFFER),
             RdfQuad("$itemUri#offer", AS.ACTOR, actorWebId),
@@ -70,7 +70,7 @@ class InboxReaderGateTest {
                 if (uri.toString() == actorWebId) {
                     SolidResult.Success(
                         WebId(
-                            URI.create(actorWebId),
+                            actorWebId,
                             listOf(RdfQuad(actorWebId, PIM.STORAGE, actorStorage)),
                         ),
                     )
@@ -81,7 +81,7 @@ class InboxReaderGateTest {
             onHead = { uri ->
                 if (uri.toString() == resourceUri) {
                     SolidResult.Success(
-                        headOwner?.let { SolidMetadata.EMPTY.copy(ownerUri = URI.create(it)) }
+                        headOwner?.let { SolidMetadata.EMPTY.copy(ownerUri = it) }
                             ?: SolidMetadata.EMPTY,
                     )
                 } else {

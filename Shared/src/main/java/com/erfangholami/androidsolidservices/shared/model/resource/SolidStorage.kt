@@ -8,7 +8,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.PIM
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * Represents a Solid pod storage root container.
@@ -21,13 +20,13 @@ import java.net.URI
  */
 public class SolidStorage : SolidContainer {
 
-    public constructor(identifier: URI) : this(identifier, null, null)
+    public constructor(identifier: String) : this(identifier, null, null)
 
-    public constructor(identifier: URI, quads: List<RdfQuad>?, headers: SolidHeaders?) :
+    public constructor(identifier: String, quads: List<RdfQuad>?, headers: SolidHeaders?) :
             this(identifier, "application/ld+json", quads, headers)
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         quads: List<RdfQuad>?,
         headers: SolidHeaders?
@@ -39,9 +38,9 @@ public class SolidStorage : SolidContainer {
      * Prefers a `solid:owner` triple in the storage description and falls back to the
      * `Link: rel="solid:owner"` response header.
      */
-    public fun getOwner(): URI? {
-        val fromDataset = findPropertyForSubject(getIdentifier().toString(), Solid.OWNER)
-            ?.let { tryParseUri(it, "SolidStorage.owner") }
+    public fun getOwner(): String? {
+        val fromDataset = findPropertyForSubject(getIdentifier(), Solid.OWNER)
+            ?.let { tryParseUri(it, "SolidStorage.owner") }?.toString()
         if (fromDataset != null) return fromDataset
         return getHeaders().getOwnerUri()
     }
@@ -53,10 +52,10 @@ public class SolidStorage : SolidContainer {
      * Prefers a `solid:storageDescription` triple and falls back to the
      * `Link: rel="storageDescription"` response header.
      */
-    public fun getStorageDescriptionUri(): URI? {
+    public fun getStorageDescriptionUri(): String? {
         val fromDataset =
-            findPropertyForSubject(getIdentifier().toString(), Solid.STORAGE_DESCRIPTION)
-                ?.let { tryParseUri(it, "SolidStorage.storageDescription") }
+            findPropertyForSubject(getIdentifier(), Solid.STORAGE_DESCRIPTION)
+                ?.let { tryParseUri(it, "SolidStorage.storageDescription") }?.toString()
         if (fromDataset != null) return fromDataset
         return getHeaders().getStorageDescriptionUri()
     }
@@ -64,7 +63,7 @@ public class SolidStorage : SolidContainer {
     /** Returns `true` if this resource's triples assert `rdf:type pim:Storage`. */
     public fun isStorageType(): Boolean =
         quads.any {
-            it.subject == getIdentifier().toString() &&
+            it.subject == getIdentifier() &&
                     it.predicate == RDF.TYPE &&
                     it.`object` == PIM.STORAGE_TYPE
         }

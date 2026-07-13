@@ -12,7 +12,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import java.net.URI
 
 /**
  * Read-side tests for [GivenSharesIndexRDF]: the reified `solidshare:Share`
@@ -21,7 +20,7 @@ import java.net.URI
  */
 class GivenSharesIndexRDFTest {
 
-    private val index = URI.create("https://alice.pod/solidshare/shares/given_shares.ttl")
+    private val index = "https://alice.pod/solidshare/shares/given_shares.ttl"
     private val bob = "https://bob.pod/profile/card#me"
     private val resource = "https://alice.pod/notes/n1"
     private val created = "2026-06-04T12:00:00Z"

@@ -8,14 +8,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.net.URI
 
 class TicketsIndexRDFTest {
 
-    private val indexUri = URI.create("https://alice.pod/tickets/index.ttl")
+    private val indexUri = "https://alice.pod/tickets/index.ttl"
 
     private fun ticket(id: String, title: String, issuer: String? = null): TicketRDF =
-        TicketRDF(URI.create("https://alice.pod/tickets/$id.ttl#this")).apply {
+        TicketRDF("https://alice.pod/tickets/$id.ttl#this").apply {
             setTitle(title)
             setCategory(TicketCategory.CINEMA)
             setEvent(TicketEvent(name = title, startDate = "2026-08-01T20:00:00Z"))
@@ -61,7 +60,7 @@ class TicketsIndexRDFTest {
         val index = TicketsIndexRDF(indexUri)
         index.addTicket(ticket("t1", "Dune III", issuer = "Pathé"))
 
-        val changed = TicketRDF(URI.create("https://alice.pod/tickets/t1.ttl#this")).apply {
+        val changed = TicketRDF("https://alice.pod/tickets/t1.ttl#this").apply {
             setTitle("Dune III (IMAX)")
             setCategory(TicketCategory.CINEMA)
         }

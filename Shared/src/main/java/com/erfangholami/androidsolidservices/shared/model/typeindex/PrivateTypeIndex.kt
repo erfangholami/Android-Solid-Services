@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.shared.model.typeindex
 import com.apicatalog.jsonld.http.media.MediaType
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * A Solid private type index document (`solid:TypeIndex` + `solid:UnlistedDocument`).
@@ -19,7 +18,7 @@ import java.net.URI
 public class PrivateTypeIndex : SettingTypeIndex {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         quads: List<RdfQuad>?,
         headers: SolidHeaders?
@@ -27,12 +26,12 @@ public class PrivateTypeIndex : SettingTypeIndex {
 
     override fun setTypes() {
         val existing = quads.filter {
-            it.subject == getIdentifier().toString() && it.predicate == typeKey
+            it.subject == getIdentifier() && it.predicate == typeKey
         }
         if (existing.isEmpty()) {
-            addQuad(getIdentifier().toString(), typeKey, typeIndex, maxNumber = Int.MAX_VALUE)
+            addQuad(getIdentifier(), typeKey, typeIndex, maxNumber = Int.MAX_VALUE)
             addQuad(
-                getIdentifier().toString(),
+                getIdentifier(),
                 typeKey,
                 unlistedDocument,
                 maxNumber = Int.MAX_VALUE

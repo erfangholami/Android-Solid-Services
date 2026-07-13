@@ -9,7 +9,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 
 /**
  * RDF representation of a Solid address book root document (`vcard:AddressBook`).
@@ -25,14 +24,14 @@ import java.net.URI
 public class AddressBookRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     init {
-        ensureType(getIdentifier().toString(), VCARD.ADDRESS_BOOK)
+        ensureType(getIdentifier(), VCARD.ADDRESS_BOOK)
     }
 
     /** Returns the WebID of the address-book owner (`acl:owner`). */
@@ -41,7 +40,7 @@ public class AddressBookRDF : SolidRDFResource {
 
     /** Sets the address-book owner to [owner] (a WebID IRI). */
     public fun setOwner(owner: String) {
-        addQuad(getIdentifier().toString(), ACL.OWNER, owner)
+        addQuad(getIdentifier(), ACL.OWNER, owner)
     }
 
     /** Returns the display title of this address book (`dc:title`). */
@@ -50,7 +49,7 @@ public class AddressBookRDF : SolidRDFResource {
 
     /** Sets the display title of this address book. */
     public fun setTitle(title: String) {
-        addQuadLiteral(getIdentifier().toString(), DC.TITLE, title, XSD.STRING)
+        addQuadLiteral(getIdentifier(), DC.TITLE, title, XSD.STRING)
     }
 
     /** Returns the URI of the people (name-email) index document (`vcard:nameEmailIndex`). */
@@ -59,7 +58,7 @@ public class AddressBookRDF : SolidRDFResource {
 
     /** Sets the URI of the people (name-email) index document. */
     public fun setNameEmailIndex(peopleIndex: String) {
-        addQuad(getIdentifier().toString(), VCARD.NAME_EMAIL_INDEX, peopleIndex)
+        addQuad(getIdentifier(), VCARD.NAME_EMAIL_INDEX, peopleIndex)
     }
 
     /** Returns the URI of the groups index document (`vcard:groupIndex`). */
@@ -68,6 +67,6 @@ public class AddressBookRDF : SolidRDFResource {
 
     /** Sets the URI of the groups index document. */
     public fun setGroupsIndex(groupsIndex: String) {
-        addQuad(getIdentifier().toString(), VCARD.GROUP_INDEX, groupsIndex)
+        addQuad(getIdentifier(), VCARD.GROUP_INDEX, groupsIndex)
     }
 }

@@ -22,11 +22,11 @@ class StreamingFallbackTest {
     @Test
     fun `default writeStream buffers the source, reports progress, and delegates to putRaw`() {
         val pod = InMemoryPodResourceManager()
-        val uri = URI.create("https://alice.pod/f.txt")
+        val uri = "https://alice.pod/f.txt"
         val progress = mutableListOf<Long>()
 
         val result = runBlocking {
-            pod.writeStream(webId, uri, "text/plain", onProgress = { written, _ -> progress += written }) {
+            pod.writeStream(webId, uri.toString(), "text/plain", onProgress = { written, _ -> progress += written }) {
                 "data".byteInputStream()
             }
         }
@@ -39,11 +39,11 @@ class StreamingFallbackTest {
     @Test
     fun `default readStream wraps a buffered read`() {
         val pod = InMemoryPodResourceManager()
-        val uri = URI.create("https://alice.pod/f.txt")
+        val uri = "https://alice.pod/f.txt"
         pod.put(SolidNonRDFResource(uri, "text/plain", "hi".byteInputStream()))
 
         runBlocking {
-            pod.readStream(webId, uri).getOrThrow().use { res ->
+            pod.readStream(webId, uri.toString()).getOrThrow().use { res ->
                 assertEquals("text/plain", res.contentType)
                 assertEquals("hi", res.stream().readBytes().decodeToString())
             }

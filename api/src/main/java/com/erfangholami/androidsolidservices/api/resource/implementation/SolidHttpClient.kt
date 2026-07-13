@@ -16,6 +16,7 @@ import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.util.encodeUri
+import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -133,7 +134,7 @@ internal class SolidHttpClient(
             val response = executeAuthenticated(
                 method = "PUT",
                 webId = webId,
-                uri = resource.getIdentifier(),
+                uri = encodeUriString(resource.getIdentifier()),
                 contentType = resource.getContentType(),
                 accept = resource.getContentType(),
                 linkHeader = linkType,
@@ -143,10 +144,10 @@ internal class SolidHttpClient(
                 ifNoneMatchStar = ifNoneMatchStar,
             )
             if (response.isSuccessful()) {
-                invalidate(resource.getIdentifier())
+                invalidate(encodeUriString(resource.getIdentifier()))
                 SolidResult.Success(resource)
             } else {
-                if (response.statusCode == 412) invalidate(resource.getIdentifier())
+                if (response.statusCode == 412) invalidate(encodeUriString(resource.getIdentifier()))
                 SolidResult.Failure(SolidError.fromHttp(response.statusCode, response.errorDetail()))
             }
         } catch (e: Exception) {
@@ -358,7 +359,7 @@ internal class SolidHttpClient(
             }
             val headers = buildMap {
                 put(HTTPHeaderName.LINK, linkType)
-                slugFrom(resource.getIdentifier())?.let { put("Slug", it) }
+                slugFrom(encodeUriString(resource.getIdentifier()))?.let { put("Slug", it) }
             }
             val response = executeAuthenticated(
                 method = "POST",
@@ -595,12 +596,12 @@ internal class SolidHttpClient(
         val body = response.body
             ?: run {
                 response.close()
-                return StreamingResource(uri, "application/octet-stream", 0L, ByteArray(0).inputStream()) {}
+                return StreamingResource(uri.toString(), "application/octet-stream", 0L, ByteArray(0).inputStream()) {}
             }
         val contentType = body.contentType()?.toString()
             ?: response.header(HTTPHeaderName.CONTENT_TYPE)
             ?: "application/octet-stream"
-        return StreamingResource(uri, contentType, body.contentLength(), body.byteStream()) { response.close() }
+        return StreamingResource(uri.toString(), contentType, body.contentLength(), body.byteStream()) { response.close() }
     }
 
     /** Maps a caught throwable to a [SolidResult.Failure], rethrowing coroutine cancellation. */

@@ -46,7 +46,7 @@ class SharingEngineTest {
     private fun manager() = SharingManagerImplementation.getInstance(pod)
 
     private fun receiversOnResource(): List<GivenShare> =
-        runBlocking { WacBackend(pod).listShares(alice, URI.create(resource)) }
+        runBlocking { WacBackend(pod).listShares(alice, resource) }
 
     @Test
     fun `a failed index write on a new share rolls back the WAC grant`() = runBlocking {
@@ -64,7 +64,7 @@ class SharingEngineTest {
     @Test
     fun `a failed index write on a mode change keeps the receiver's live access`() = runBlocking {
         // Bob already holds Read from a prior successful share.
-        WacBackend(pod).grant(alice, URI.create(resource), ShareMode.READ, bob, isContainer = false)
+        WacBackend(pod).grant(alice, resource, ShareMode.READ, bob, isContainer = false)
 
         val result = manager().createShare(
             alice, resource, ShareMode.WRITE, bob, notifyReceiver = false,

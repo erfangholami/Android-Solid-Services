@@ -133,14 +133,13 @@ internal class InboxNotifier(
         return when (
             val r = transport.post(
                 webId = senderWebId,
-                inbox = inbox.toString(),
+                inbox = inbox,
                 contentType = HTTPAcceptType.TURTLE,
                 body = body.toByteArray(),
                 slug = slug,
             )
         ) {
-            is SolidResult.Success ->
-                InboxPostResult.Success(r.value?.let { runCatching { URI.create(it) }.getOrNull() })
+            is SolidResult.Success -> InboxPostResult.Success(r.value)
 
             is SolidResult.Failure -> {
                 val error = r.error
@@ -296,10 +295,10 @@ internal class InboxNotifier(
 }
 
 internal sealed class InboxPostResult {
-    data class Success(val locationUri: URI?) : InboxPostResult()
+    data class Success(val locationUri: String?) : InboxPostResult()
     data class NoInbox(val targetWebId: String) : InboxPostResult()
-    data class Unauthorized(val inboxUri: URI) : InboxPostResult()
-    data class Forbidden(val inboxUri: URI) : InboxPostResult()
-    data class HttpError(val inboxUri: URI, val statusCode: Int) : InboxPostResult()
-    data class NetworkError(val inboxUri: URI, val cause: Throwable) : InboxPostResult()
+    data class Unauthorized(val inboxUri: String) : InboxPostResult()
+    data class Forbidden(val inboxUri: String) : InboxPostResult()
+    data class HttpError(val inboxUri: String, val statusCode: Int) : InboxPostResult()
+    data class NetworkError(val inboxUri: String, val cause: Throwable) : InboxPostResult()
 }

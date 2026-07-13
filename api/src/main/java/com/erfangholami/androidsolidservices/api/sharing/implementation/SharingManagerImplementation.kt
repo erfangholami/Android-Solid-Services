@@ -31,7 +31,6 @@ import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -109,14 +108,14 @@ internal class SharingManagerImplementation : SharingManager {
         webId: String,
         resourceUri: String,
     ): SolidResult<Unit> = wrap {
-        helper.reclaimOwnerControl(webId, encodeUriString(resourceUri))
+        helper.reclaimOwnerControl(webId, encodeUriString(resourceUri).toString())
     }
 
     override suspend fun makePrivate(
         webId: String,
         resourceUri: String,
     ): SolidResult<Unit> = wrap {
-        helper.makeOwnerOnly(webId, encodeUriString(resourceUri))
+        helper.makeOwnerOnly(webId, encodeUriString(resourceUri).toString())
     }
 
     override suspend fun createShare(

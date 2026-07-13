@@ -9,7 +9,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import java.net.URI
 
 /**
  * Tests for ticket RDF hygiene: date-only values must not be over-typed as
@@ -17,7 +16,7 @@ import java.net.URI
  */
 class TicketRDFHygieneTest {
 
-    private val ticketUri = URI.create("https://alice.pod/tickets/abc.ttl#this")
+    private val ticketUri = "https://alice.pod/tickets/abc.ttl#this"
 
     private fun quadsOf(ticket: TicketRDF): List<RdfQuad> {
         val json = ticket.getEntity().bufferedReader().use { it.readText() }

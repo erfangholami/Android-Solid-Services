@@ -23,7 +23,6 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFRe
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineDispatcher
-import java.net.URI
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -79,7 +78,7 @@ class ASSResourceService : LifecycleService() {
                     callback::onError,
                     callback::onResult
                 ) {
-                    solidResourceRepository.head(webId, URI.create(resourceUrl))
+                    solidResourceRepository.head(webId, resourceUrl)
                 }
             }
         }
@@ -93,7 +92,7 @@ class ASSResourceService : LifecycleService() {
                 ) {
                     solidResourceRepository.read(
                         webId,
-                        URI.create(containerUrl),
+                        containerUrl,
                         SolidContainer::class.java
                     )
                 }
@@ -135,7 +134,7 @@ class ASSResourceService : LifecycleService() {
                 ) {
                     solidResourceRepository.read(
                         webId,
-                        URI.create(resourceUrl),
+                        resourceUrl,
                         SolidNonRDFResource::class.java
                     )
                 }
@@ -151,7 +150,7 @@ class ASSResourceService : LifecycleService() {
                 ) {
                     solidResourceRepository.read(
                         webId,
-                        URI.create(resourceUrl),
+                        resourceUrl,
                         SolidRDFResource::class.java
                     )
                 }
@@ -193,7 +192,7 @@ class ASSResourceService : LifecycleService() {
         override fun patch(webId: String, resourceUrl: String, patchBody: String, callback: IASSUnitCallback) {
             guard(webId, callback::onError) {
                 lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
-                    solidResourceRepository.patchRaw(webId, URI.create(resourceUrl), patchBody)
+                    solidResourceRepository.patchRaw(webId, resourceUrl, patchBody)
                 }
             }
         }
@@ -230,7 +229,7 @@ class ASSResourceService : LifecycleService() {
                     ioDispatcher,
                     callback::onError,
                     { callback.onResult() }) {
-                    solidResourceRepository.delete(webId, URI.create(containerUrl))
+                    solidResourceRepository.delete(webId, containerUrl)
                 }
             }
         }

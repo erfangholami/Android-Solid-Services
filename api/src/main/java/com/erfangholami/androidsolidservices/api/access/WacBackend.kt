@@ -13,7 +13,6 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.collapseByReceiver
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
-import java.net.URI
 import java.util.UUID
 
 /**
@@ -53,7 +52,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun grant(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         mode: ShareMode,
         receiver: ShareReceiver,
         isContainer: Boolean,
@@ -78,13 +77,13 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
                 setOf(mode.toAclPredicate())
             },
             agents = (receiver as? ShareReceiver.WebIdReceiver)?.let {
-                listOf(URI.create(it.webId))
+                listOf(it.webId)
             } ?: emptyList(),
             agentClasses = if (receiver is ShareReceiver.Public) {
-                listOf(URI.create(ShareReceiver.Public.toRdfSubject()))
+                listOf(ShareReceiver.Public.toRdfSubject())
             } else emptyList(),
             agentGroups = (receiver as? ShareReceiver.GroupReceiver)?.let {
-                listOf(URI.create(it.groupUri))
+                listOf(it.groupUri)
             } ?: emptyList(),
         )
 
@@ -100,7 +99,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun revoke(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         receiver: ShareReceiver,
         isContainer: Boolean,
     ): Unit = withStaleAclRetry {
@@ -121,7 +120,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun listShares(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
     ): List<GivenShare> {
         val read = readAcl(webId, resourceUri)
         val shares = mutableListOf<GivenShare>()
@@ -129,39 +128,39 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
         // nearest ancestor container's acl:default authorizations (WAC inheritance);
         // baseAuthorizations returns those, mapped onto this resource, in that case.
         val authorizations = baseAuthorizations(
-            webId, resourceUri, read, isContainer = resourceUri.toString().endsWith("/"),
+            webId, resourceUri, read, isContainer = resourceUri.endsWith("/"),
         )
         authorizations.forEach { auth ->
             val applies =
-                auth.accessTo.any { IriUtils.sameIri(it.toString(), resourceUri.toString()) } ||
-                        auth.default.any { IriUtils.sameIri(it.toString(), resourceUri.toString()) }
+                auth.accessTo.any { IriUtils.sameIri(it, resourceUri) } ||
+                        auth.default.any { IriUtils.sameIri(it, resourceUri) }
             if (!applies) return@forEach
             if (isOwnerSelfRule(auth, webId)) return@forEach
 
             val mode = ShareMode.strongest(auth.modes) ?: return@forEach
 
             auth.agents.forEach { agent ->
-                if (!IriUtils.sameIri(agent.toString(), webId)) {
+                if (!IriUtils.sameIri(agent, webId)) {
                     shares += GivenShare(
-                        receiver = ShareReceiver.WebIdReceiver(agent.toString()),
+                        receiver = ShareReceiver.WebIdReceiver(agent),
                         mode = mode,
-                        resourceUri = resourceUri.toString(),
+                        resourceUri = resourceUri,
                     )
                 }
             }
             auth.agentGroups.forEach { g ->
                 shares += GivenShare(
-                    receiver = ShareReceiver.GroupReceiver(g.toString()),
+                    receiver = ShareReceiver.GroupReceiver(g),
                     mode = mode,
-                    resourceUri = resourceUri.toString(),
+                    resourceUri = resourceUri,
                 )
             }
             auth.agentClasses.forEach { c ->
-                if (IriUtils.sameIri(c.toString(), ShareReceiver.Public.toRdfSubject())) {
+                if (IriUtils.sameIri(c, ShareReceiver.Public.toRdfSubject())) {
                     shares += GivenShare(
                         receiver = ShareReceiver.Public,
                         mode = mode,
-                        resourceUri = resourceUri.toString(),
+                        resourceUri = resourceUri,
                     )
                 }
             }
@@ -171,7 +170,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun ensureOwnerOnly(
         webId: String,
-        targetUri: URI,
+        targetUri: String,
         isContainer: Boolean,
     ) {
         val read = readAcl(webId, targetUri)
@@ -186,7 +185,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun reclaimOwnerControl(
         webId: String,
-        targetUri: URI,
+        targetUri: String,
         isContainer: Boolean,
     ): Unit = withStaleAclRetry {
         val read = readAcl(webId, targetUri)
@@ -203,7 +202,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
     }
 
     private data class AclRead(
-        val aclUri: URI,
+        val aclUri: String,
         val acl: SolidACLResource,
         val etag: String?,
     )
@@ -227,7 +226,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     private suspend fun baseAuthorizations(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         read: AclRead,
         isContainer: Boolean,
     ): List<AclAuthorization> {
@@ -237,8 +236,8 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     private suspend fun inheritedDefaultAuthorizations(
         webId: String,
-        resourceUri: URI,
-        aclUri: URI,
+        resourceUri: String,
+        aclUri: String,
         isContainer: Boolean,
     ): List<AclAuthorization> {
         var ancestor = parentContainerOf(resourceUri)
@@ -269,7 +268,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     private suspend fun containerDefaultAuthorizations(
         webId: String,
-        container: URI,
+        container: String,
     ): List<AclAuthorization> {
         val metadata = rm.head(webId, container).getOrThrow()
         val aclUri = metadata.aclUri ?: return emptyList()
@@ -285,16 +284,15 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
         }
     }
 
-    private fun parentContainerOf(uri: URI): URI? {
-        val str = uri.toString()
-        val trimmed = if (str.endsWith("/")) str.dropLast(1) else str
-        val schemeEnd = str.indexOf("://")
+    private fun parentContainerOf(uri: String): String? {
+        val trimmed = if (uri.endsWith("/")) uri.dropLast(1) else uri
+        val schemeEnd = uri.indexOf("://")
         val lastSlash = trimmed.lastIndexOf('/')
         if (schemeEnd < 0 || lastSlash <= schemeEnd + 2) return null
-        return runCatching { URI.create(trimmed.substring(0, lastSlash + 1)) }.getOrNull()
+        return trimmed.substring(0, lastSlash + 1)
     }
 
-    private suspend fun readAcl(webId: String, resourceUri: URI): AclRead {
+    private suspend fun readAcl(webId: String, resourceUri: String): AclRead {
         val metadata = rm.head(webId, resourceUri).getOrThrow()
         val aclUri = metadata.aclUri
             ?: error("Resource $resourceUri does not advertise an acl link")
@@ -318,7 +316,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     private suspend fun writeAcl(
         webId: String,
-        aclUri: URI,
+        aclUri: String,
         acl: SolidACLResource,
         ifMatch: String?,
     ) {
@@ -335,7 +333,7 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
             is SolidResult.Success -> Unit
             is SolidResult.Failure -> {
                 if (result.error.code == SolidErrorCode.PRECONDITION_FAILED) {
-                    throw SharingException.StaleAcl(aclUri.toString())
+                    throw SharingException.StaleAcl(aclUri)
                 }
                 error("ACL write failed: ${result.error.message}")
             }
@@ -344,46 +342,45 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     private fun ownerSelfAuth(
         webId: String,
-        aclUri: URI,
-        targetUri: URI,
+        aclUri: String,
+        targetUri: String,
         isContainer: Boolean,
     ): AclAuthorization = AclAuthorization(
         subject = "${aclUri}#owner",
         accessTo = listOf(targetUri),
         default = if (isContainer) listOf(targetUri) else emptyList(),
         modes = setOf(ACL.READ, ACL.WRITE, ACL.CONTROL),
-        agents = listOf(URI.create(webId)),
+        agents = listOf(webId),
     )
 
     private fun isOwnerSelfRule(auth: AclAuthorization, webId: String): Boolean =
-        auth.agents.any { IriUtils.sameIri(it.toString(), webId) } &&
+        auth.agents.any { IriUtils.sameIri(it, webId) } &&
                 auth.modes.containsAll(setOf(ACL.READ, ACL.WRITE, ACL.CONTROL))
 
     private fun narrowAuthorization(
         auth: AclAuthorization,
-        resourceUri: URI,
+        resourceUri: String,
         receiver: ShareReceiver,
     ): List<AclAuthorization> {
-        val target = resourceUri.toString()
-        val accessToHasTarget = auth.accessTo.any { IriUtils.sameIri(it.toString(), target) }
-        val defaultHasTarget = auth.default.any { IriUtils.sameIri(it.toString(), target) }
-        val accessToOthers = auth.accessTo.filterNot { IriUtils.sameIri(it.toString(), target) }
-        val defaultOthers = auth.default.filterNot { IriUtils.sameIri(it.toString(), target) }
+        val accessToHasTarget = auth.accessTo.any { IriUtils.sameIri(it, resourceUri) }
+        val defaultHasTarget = auth.default.any { IriUtils.sameIri(it, resourceUri) }
+        val accessToOthers = auth.accessTo.filterNot { IriUtils.sameIri(it, resourceUri) }
+        val defaultOthers = auth.default.filterNot { IriUtils.sameIri(it, resourceUri) }
         val hasOtherResources = accessToOthers.isNotEmpty() || defaultOthers.isNotEmpty()
 
         val agentsWithoutR = if (receiver is ShareReceiver.WebIdReceiver) {
-            auth.agents.filterNot { IriUtils.sameIri(it.toString(), receiver.webId) }
+            auth.agents.filterNot { IriUtils.sameIri(it, receiver.webId) }
         } else {
             auth.agents
         }
         val groupsWithoutR = if (receiver is ShareReceiver.GroupReceiver) {
-            auth.agentGroups.filterNot { IriUtils.sameIri(it.toString(), receiver.groupUri) }
+            auth.agentGroups.filterNot { IriUtils.sameIri(it, receiver.groupUri) }
         } else {
             auth.agentGroups
         }
         val classesWithoutR = if (receiver is ShareReceiver.Public) {
             auth.agentClasses.filterNot {
-                IriUtils.sameIri(it.toString(), ShareReceiver.Public.toRdfSubject())
+                IriUtils.sameIri(it, ShareReceiver.Public.toRdfSubject())
             }
         } else {
             auth.agentClasses
@@ -414,23 +411,23 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     private fun ruleMatches(
         auth: AclAuthorization,
-        resourceUri: URI,
+        resourceUri: String,
         receiver: ShareReceiver,
     ): Boolean {
         val touchesResource =
-            auth.accessTo.any { IriUtils.sameIri(it.toString(), resourceUri.toString()) } ||
-                    auth.default.any { IriUtils.sameIri(it.toString(), resourceUri.toString()) }
+            auth.accessTo.any { IriUtils.sameIri(it, resourceUri) } ||
+                    auth.default.any { IriUtils.sameIri(it, resourceUri) }
         if (!touchesResource) return false
         return when (receiver) {
             is ShareReceiver.WebIdReceiver ->
-                auth.agents.any { IriUtils.sameIri(it.toString(), receiver.webId) }
+                auth.agents.any { IriUtils.sameIri(it, receiver.webId) }
 
             is ShareReceiver.GroupReceiver ->
-                auth.agentGroups.any { IriUtils.sameIri(it.toString(), receiver.groupUri) }
+                auth.agentGroups.any { IriUtils.sameIri(it, receiver.groupUri) }
 
             is ShareReceiver.Public ->
                 auth.agentClasses.any {
-                    IriUtils.sameIri(it.toString(), ShareReceiver.Public.toRdfSubject())
+                    IriUtils.sameIri(it, ShareReceiver.Public.toRdfSubject())
                 }
         }
     }

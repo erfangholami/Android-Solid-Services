@@ -14,7 +14,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
-import java.net.URI
 
 /**
  * RDF representation of a single wallet ticket (`schema:Ticket`).
@@ -36,18 +35,18 @@ import java.net.URI
 public class TicketRDF : SolidRDFResource {
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String? = null,
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null,
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
 
     init {
-        ensureType(getIdentifier().toString(), Schema.TICKET)
+        ensureType(getIdentifier(), Schema.TICKET)
     }
 
     private val selfUri: String
-        get() = getIdentifier().toString()
+        get() = getIdentifier()
 
     private val documentUri: String
         get() = selfUri.substringBefore('#')

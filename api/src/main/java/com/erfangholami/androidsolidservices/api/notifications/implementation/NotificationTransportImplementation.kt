@@ -75,7 +75,7 @@ internal class NotificationTransportImplementation private constructor(
     override suspend fun discoverInbox(webId: String): SolidResult<String?> =
         withContext(ioDispatcher) {
             try {
-                SolidResult.Success(discovery.resolveOwnInbox(webId)?.toString())
+                SolidResult.Success(discovery.resolveOwnInbox(webId))
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 SolidResult.Failure(SolidError.fromThrowable(e))
@@ -91,7 +91,7 @@ internal class NotificationTransportImplementation private constructor(
     ): SolidResult<String?> = withContext(ioDispatcher) {
         try {
             val headers = if (slug != null) mapOf(SLUG_HEADER to slug) else emptyMap()
-            when (val r = rm.post(webId, encodeUriString(inbox), contentType, body, headers)) {
+            when (val r = rm.post(webId, encodeUriString(inbox).toString(), contentType, body, headers)) {
                 is SolidResult.Success -> SolidResult.Success(r.value?.toString())
                 is SolidResult.Failure -> r
             }
@@ -107,7 +107,7 @@ internal class NotificationTransportImplementation private constructor(
     ): SolidResult<List<RawNotification>> = withContext(ioDispatcher) {
         try {
             val container = when (
-                val r = rm.read(webId, encodeUriString(inbox), SolidContainer::class.java)
+                val r = rm.read(webId, encodeUriString(inbox).toString(), SolidContainer::class.java)
             ) {
                 is SolidResult.Success -> r.value
                 is SolidResult.Failure -> return@withContext r
@@ -128,7 +128,7 @@ internal class NotificationTransportImplementation private constructor(
     ): SolidResult<RawNotification> = withContext(ioDispatcher) {
         try {
             val uri = encodeUriString(notificationUri)
-            when (val r = rm.read(webId, uri, SolidRDFResource::class.java)) {
+            when (val r = rm.read(webId, uri.toString(), SolidRDFResource::class.java)) {
                 is SolidResult.Success ->
                     SolidResult.Success(
                         RawNotificationParser.parse(uri.toString(), r.value.getAllQuads()),
@@ -147,7 +147,7 @@ internal class NotificationTransportImplementation private constructor(
         notificationUri: String,
     ): SolidResult<Boolean> = withContext(ioDispatcher) {
         try {
-            rm.delete(webId, encodeUriString(notificationUri))
+            rm.delete(webId, encodeUriString(notificationUri).toString())
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
             SolidResult.Failure(SolidError.fromThrowable(e))
@@ -156,7 +156,7 @@ internal class NotificationTransportImplementation private constructor(
 
     private suspend fun readRaw(webId: String, item: URI): RawNotification? =
         runCatching {
-            val resource = rm.read(webId, item, SolidRDFResource::class.java).getOrThrow()
+            val resource = rm.read(webId, item.toString(), SolidRDFResource::class.java).getOrThrow()
             RawNotificationParser.parse(item.toString(), resource.getAllQuads())
         }.getOrNull()
 
@@ -187,9 +187,9 @@ internal class NotificationTransportImplementation private constructor(
      * `notify:channelType` is `WebSocketChannel2023`, or `null` when the pod advertises none.
      */
     private suspend fun discoverWebSocketSubscription(webId: String, topic: URI): URI? {
-        val metadata = (rm.head(webId, topic) as? SolidResult.Success)?.value ?: return null
+        val metadata = (rm.head(webId, topic.toString()) as? SolidResult.Success)?.value ?: return null
         val storageDescription = metadata.storageDescriptionUri ?: return null
-        val quads = (rm.read(webId, storageDescription, SolidRDFResource::class.java) as? SolidResult.Success)
+        val quads = (rm.read(webId, storageDescription.toString(), SolidRDFResource::class.java) as? SolidResult.Success)
             ?.value?.getAllQuads() ?: return null
         val services = quads.filter { it.predicate == Notify.SUBSCRIPTION }.map { it.`object` }
         val wsService = services.firstOrNull { service ->

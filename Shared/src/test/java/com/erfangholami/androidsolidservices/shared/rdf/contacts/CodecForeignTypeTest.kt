@@ -10,7 +10,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.net.URI
 
 /**
  * Regression tests for the codec `init` blocks: constructing a codec over a
@@ -21,8 +20,8 @@ import java.net.URI
 class CodecForeignTypeTest {
 
     private val contactUri =
-        URI.create("https://alice.pod/contacts/b1/Person/p1/index.ttl#this")
-    private val ticketUri = URI.create("https://alice.pod/tickets/abc.ttl#this")
+        "https://alice.pod/contacts/b1/Person/p1/index.ttl#this"
+    private val ticketUri = "https://alice.pod/tickets/abc.ttl#this"
 
     @Test
     fun `ContactRDF keeps a foreign rdf-type already on the subject`() {

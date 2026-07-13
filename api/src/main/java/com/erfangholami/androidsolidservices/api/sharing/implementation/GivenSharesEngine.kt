@@ -14,7 +14,6 @@ import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.util.getETag
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF
-import java.net.URI
 
 /**
  * The given-shares half of the sharing engine: the owner's outgoing "shared-by-me" surface —
@@ -48,7 +47,7 @@ internal class GivenSharesEngine(
         val observedResourceUris = mutableSetOf<String>()
         stored.map { it.resourceUri }.distinct().forEach { resourceUri ->
             val live = runCatching {
-                helper.getSharesFromAcl(webId, encodeUriString(resourceUri))
+                helper.getSharesFromAcl(webId, encodeUriString(resourceUri).toString())
             }.onSuccess {
                 observedResourceUris += resourceUri
             }.onFailure { t ->
@@ -101,7 +100,7 @@ internal class GivenSharesEngine(
         webId: String,
         resourceUri: String,
     ): SolidResult<List<GivenShare>> = wrapSharing {
-        helper.getSharesFromAcl(webId, encodeUriString(resourceUri))
+        helper.getSharesFromAcl(webId, encodeUriString(resourceUri).toString())
     }
 
     suspend fun rebuildGivenIndex(
@@ -159,16 +158,15 @@ internal class GivenSharesEngine(
     ): SolidResult<GivenShare> = wrapSharing {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
-        val uri = encodeUriString(resourceUri)
-        val canonicalUri = uri.toString()
+        val canonicalUri = encodeUriString(resourceUri).toString()
         val canonicalReceiver = canonicalizeReceiver(webId, receiver)
         val hadGrantBefore = runCatching {
-            helper.getSharesFromAcl(webId, uri).any {
+            helper.getSharesFromAcl(webId, canonicalUri).any {
                 it.receiver.toRdfSubject() == canonicalReceiver.toRdfSubject()
             }
         }.getOrDefault(false)
-        helper.grantAccess(webId, uri, mode, canonicalReceiver)
-        writeOwnerProvenance(webId, uri)
+        helper.grantAccess(webId, canonicalUri, mode, canonicalReceiver)
+        writeOwnerProvenance(webId, canonicalUri)
         val share = GivenShare(canonicalReceiver, mode, canonicalUri, createdAt = nowIsoDateTime())
         runCatching {
             helper.replaceGivenShare(webId, podRoot, share)
@@ -183,7 +181,7 @@ internal class GivenSharesEngine(
                     t,
                 )
             } else {
-                runCatching { helper.revokeAccess(webId, uri, canonicalReceiver) }.onFailure { rb ->
+                runCatching { helper.revokeAccess(webId, canonicalUri, canonicalReceiver) }.onFailure { rb ->
                     Log.e(
                         TAG,
                         "createShare: index write FAILED and rollback of the WAC grant for " +
@@ -247,9 +245,8 @@ internal class GivenSharesEngine(
     ): SolidResult<Unit> = wrapSharing {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
-        val uri = encodeUriString(resourceUri)
-        val canonicalUri = uri.toString()
-        helper.revokeAccess(webId, uri, receiver)
+        val canonicalUri = encodeUriString(resourceUri).toString()
+        helper.revokeAccess(webId, canonicalUri, receiver)
         runCatching {
             helper.removeGivenShare(webId, podRoot, canonicalUri, receiver)
         }.onFailure { t ->
@@ -307,12 +304,11 @@ internal class GivenSharesEngine(
     }
 
     private suspend fun resolveProfileWebId(viewerWebId: String, docIri: String): String? {
-        val docUri = encodeUriString(docIri)
-        val docStr = docUri.toString()
+        val docStr = encodeUriString(docIri).toString()
         val rdf = runCatching {
-            rm.readPublic(docUri, SolidRDFResource::class.java).getOrThrow()
+            rm.readPublic(docStr, SolidRDFResource::class.java).getOrThrow()
         }.getOrElse {
-            rm.read(viewerWebId, docUri, SolidRDFResource::class.java).getOrThrow()
+            rm.read(viewerWebId, docStr, SolidRDFResource::class.java).getOrThrow()
         }
         val candidates = rdf.getAllQuads().mapNotNull { q ->
             when {
@@ -328,13 +324,13 @@ internal class GivenSharesEngine(
             ?.takeIf { IriUtils.isValid(it) }
     }
 
-    private suspend fun writeOwnerProvenance(webId: String, resourceUri: URI) {
+    private suspend fun writeOwnerProvenance(webId: String, resourceUri: String) {
         runCatching {
             val rdf = rm.read(webId, resourceUri, SolidRDFResource::class.java).getOrThrow()
             val alreadyHasCreator = rdf.getAllQuads().any { it.predicate == DC.CREATOR }
             if (alreadyHasCreator) return
             val etag = rdf.getHeaders().getETag()
-            val patch = N3Patch.build { insert(resourceUri.toString(), DC.CREATOR, webId) }
+            val patch = N3Patch.build { insert(resourceUri, DC.CREATOR, webId) }
             rm.patch(webId, resourceUri, patch, ifMatch = etag).getOrThrow()
         }.onFailure { t ->
             Log.w(

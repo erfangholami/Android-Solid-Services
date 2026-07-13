@@ -6,7 +6,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import java.net.URI
 import java.util.UUID
 
 /**
@@ -32,7 +31,7 @@ public abstract class SettingTypeIndex : SolidRDFResource {
     protected val addressBook : String = VCARD.ADDRESS_BOOK
 
     public constructor(
-        identifier: URI,
+        identifier: String,
         contentType: String,
         quads: List<RdfQuad>?,
         headers: SolidHeaders?

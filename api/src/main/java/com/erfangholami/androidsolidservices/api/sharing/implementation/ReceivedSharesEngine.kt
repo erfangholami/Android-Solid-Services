@@ -15,7 +15,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -54,7 +53,7 @@ internal class ReceivedSharesEngine(
         val verified = mutableListOf<ReceivedShare>()
         stored.forEach { share ->
             val access = runCatching {
-                helper.probeReceivedAccess(webId, encodeUriString(share.resourceUri))
+                helper.probeReceivedAccess(webId, encodeUriString(share.resourceUri).toString())
             }.getOrElse { t ->
                 Log.w(
                     TAG,
@@ -97,12 +96,11 @@ internal class ReceivedSharesEngine(
         receivedIndexLock(webId).withLock {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
-        val uri = encodeUriString(resourceUri)
-        val canonicalUri = uri.toString()
+        val canonicalUri = encodeUriString(resourceUri).toString()
         val hintedOwner = ownerHint?.takeIf { IriUtils.isValid(it) }
-        when (val access = helper.probeReceivedAccess(webId, uri)) {
+        when (val access = helper.probeReceivedAccess(webId, canonicalUri)) {
             is ReceivedAccess.Granted -> {
-                val ownerWebId = hintedOwner ?: access.owner ?: resolveOwner(webId, uri)
+                val ownerWebId = hintedOwner ?: access.owner ?: resolveOwner(webId, canonicalUri)
                 val share = ReceivedShare(
                     ownerWebId = ownerWebId,
                     mode = access.mode,
@@ -119,7 +117,7 @@ internal class ReceivedSharesEngine(
                 if (matching.isEmpty()) {
                     throw SharingException.AccessDenied(
                         resourceUri = canonicalUri,
-                        ownerWebId = resolveOwner(webId, uri),
+                        ownerWebId = resolveOwner(webId, canonicalUri),
                     )
                 }
                 matching.forEach { row ->
@@ -169,7 +167,7 @@ internal class ReceivedSharesEngine(
 
     private suspend fun applyReceivedShareNotification(
         webId: String,
-        podRoot: URI,
+        podRoot: String,
         n: ShareNotification,
     ) {
         when (n.type) {
@@ -177,7 +175,7 @@ internal class ReceivedSharesEngine(
             ShareNotificationType.ACCEPTED,
             ShareNotificationType.UPDATED,
                 -> runCatching {
-                val resourceUri = encodeUriString(n.resourceUri)
+                val resourceUri = encodeUriString(n.resourceUri).toString()
                 val access = helper.probeReceivedAccess(webId, resourceUri)
                 if (access is ReceivedAccess.Denied) return@runCatching
                 val granted = access as? ReceivedAccess.Granted
@@ -186,7 +184,7 @@ internal class ReceivedSharesEngine(
                     ReceivedShare(
                         ownerWebId = granted?.owner ?: n.ownerWebId,
                         mode = n.mode ?: granted?.mode ?: ShareMode.READ,
-                        resourceUri = resourceUri.toString(),
+                        resourceUri = resourceUri,
                         addedAt = n.publishedAt ?: nowIsoDateTime(),
                     ),
                 )
@@ -219,7 +217,7 @@ internal class ReceivedSharesEngine(
         }
     }
 
-    private suspend fun resolveOwner(webId: String, resourceUri: URI): String {
+    private suspend fun resolveOwner(webId: String, resourceUri: String): String {
         runCatching {
             val rdf = rm.read(webId, resourceUri, SolidRDFResource::class.java).getOrThrow()
             rdf.getAllQuads().firstOrNull { it.predicate == DC.CREATOR }?.`object`
@@ -245,7 +243,11 @@ internal class ReceivedSharesEngine(
             )
         }.getOrNull()?.takeIf { IriUtils.isValid(it) }?.let { return it }
 
-        val origin = "${resourceUri.scheme}://${resourceUri.authority}"
+        // The last-resort owner hint is an origin, which needs the IRI's scheme and authority
+        // components — one of the few genuine parses left. encodeUriString is idempotent, so
+        // re-parsing the already-canonical identifier here does not re-encode it.
+        val parsed = encodeUriString(resourceUri)
+        val origin = "${parsed.scheme}://${parsed.authority}"
         Log.w(
             TAG,
             "resolveOwner: no WebID signal for $resourceUri; using pod origin '$origin' as a " +

@@ -53,7 +53,7 @@ class ContactEngineTest {
 
         fake.put(
             WebId(
-                URI.create(webId),
+                webId,
                 listOf(
                     RdfQuad(webId, Solid.PRIVATE_TYPE_INDEX, privateIndexUri),
                     RdfQuad(webId, Solid.PUBLIC_TYPE_INDEX, publicIndexUri),
@@ -61,15 +61,15 @@ class ContactEngineTest {
             ),
         )
         fake.put(
-            PrivateTypeIndex(URI.create(privateIndexUri), "application/ld+json", null, null)
+            PrivateTypeIndex(privateIndexUri, "application/ld+json", null, null)
                 .apply { addAddressBook(bookUri) },
         )
         fake.put(
-            PublicTypeIndex(URI.create(publicIndexUri), "application/ld+json", null, null),
+            PublicTypeIndex(publicIndexUri, "application/ld+json", null, null),
         )
         fake.put(
             AddressBookRDF(
-                identifier = URI.create(bookUri),
+                identifier = bookUri,
                 contentType = "application/ld+json",
                 quads = null,
                 headers = null,
@@ -80,8 +80,8 @@ class ContactEngineTest {
                 setGroupsIndex(groupsUri)
             },
         )
-        fake.put(NameEmailIndexRDF(URI.create(peopleUri)))
-        fake.put(GroupsIndexRDF(URI.create(groupsUri)))
+        fake.put(NameEmailIndexRDF(peopleUri))
+        fake.put(GroupsIndexRDF(groupsUri))
     }
 
     private fun createJane() = runBlocking {

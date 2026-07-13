@@ -13,7 +13,6 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.ACP
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
-import java.net.URI
 import java.util.UUID
 
 private const val TAG = "AcpBackend"
@@ -60,7 +59,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun grant(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         mode: ShareMode,
         receiver: ShareReceiver,
         isContainer: Boolean,
@@ -123,7 +122,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun revoke(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         receiver: ShareReceiver,
         isContainer: Boolean,
     ) {
@@ -167,7 +166,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun listShares(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
     ): List<GivenShare> {
         val read = readAcr(webId, resourceUri).orThrowIfUnparseable(resourceUri)
         val quads = read.acr.getAllQuads()
@@ -197,7 +196,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
                             shares += GivenShare(
                                 receiver = receiver,
                                 mode = mode,
-                                resourceUri = resourceUri.toString(),
+                                resourceUri = resourceUri,
                             )
                         }
                     }
@@ -209,7 +208,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun ensureOwnerOnly(
         webId: String,
-        targetUri: URI,
+        targetUri: String,
         isContainer: Boolean,
     ) {
         val metadataResp = rm.head(webId, targetUri)
@@ -232,7 +231,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     override suspend fun reclaimOwnerControl(
         webId: String,
-        targetUri: URI,
+        targetUri: String,
         isContainer: Boolean,
     ) {
         val read = readAcr(webId, targetUri).orThrowIfUnparseable(targetUri)
@@ -249,7 +248,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
     }
 
     private data class AcrRead(
-        val acrUri: URI,
+        val acrUri: String,
         val acr: SolidRDFResource,
         val etag: String?,
         /**
@@ -269,10 +268,10 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
      * a Turtle-serialised ACR before the Turtle reader lands, or malformed
      * JSON-LD). Surfaces a typed failure instead of silently dropping grants.
      */
-    private fun AcrRead.orThrowIfUnparseable(resourceUri: URI): AcrRead {
+    private fun AcrRead.orThrowIfUnparseable(resourceUri: String): AcrRead {
         if (parseFailed) {
             throw SharingException.UnsupportedAuthBackend(
-                resourceUri.toString(), backend = "ACP (unreadable ACR)",
+                resourceUri, backend = "ACP (unreadable ACR)",
             )
         }
         return this
@@ -284,19 +283,19 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
      * its members access. Reject it explicitly rather than write an `acp:vc`
      * matcher that matches no one.
      */
-    private fun rejectUnsupportedReceiver(receiver: ShareReceiver, resourceUri: URI) {
+    private fun rejectUnsupportedReceiver(receiver: ShareReceiver, resourceUri: String) {
         if (receiver is ShareReceiver.GroupReceiver) {
             throw SharingException.UnsupportedAuthBackend(
-                resourceUri.toString(), backend = "ACP (group receivers)",
+                resourceUri, backend = "ACP (group receivers)",
             )
         }
     }
 
-    private suspend fun readAcr(webId: String, resourceUri: URI): AcrRead {
+    private suspend fun readAcr(webId: String, resourceUri: String): AcrRead {
         val metadata = rm.head(webId, resourceUri).getOrThrow()
         val acrUri = metadata.aclUri
             ?: throw SharingException.UnsupportedAuthBackend(
-                resourceUri.toString(), backend = "ACP",
+                resourceUri, backend = "ACP",
             )
         val existing = rm.head(webId, acrUri)
         if (existing !is SolidResult.Success) {
@@ -326,13 +325,13 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     private suspend fun writeAcr(
         webId: String,
-        acrUri: URI,
-        resourceUri: URI,
+        acrUri: String,
+        resourceUri: String,
         acr: SolidRDFResource,
         ifMatch: String?,
     ) {
-        addQuadOnce(acr, acrUri.toString(), RDF.TYPE, ACP.ACCESS_CONTROL_RESOURCE)
-        addQuadOnce(acr, acrUri.toString(), ACP.RESOURCE, resourceUri.toString())
+        addQuadOnce(acr, acrUri, RDF.TYPE, ACP.ACCESS_CONTROL_RESOURCE)
+        addQuadOnce(acr, acrUri, ACP.RESOURCE, resourceUri)
         val body = NTriples.serialize(acr.getAllQuads()).toByteArray(Charsets.UTF_8)
         val result = rm.putRaw(
             webId = webId,
@@ -346,7 +345,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
             is SolidResult.Success -> Unit
             is SolidResult.Failure -> {
                 if (result.error.code == SolidErrorCode.PRECONDITION_FAILED) {
-                    throw SharingException.StaleAcl(acrUri.toString())
+                    throw SharingException.StaleAcl(acrUri)
                 }
                 error("ACR write failed: ${result.error.message}")
             }
@@ -355,7 +354,7 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
 
     private fun appendPolicy(
         acr: SolidRDFResource,
-        acrUri: URI,
+        acrUri: String,
         receiver: ShareReceiver,
         modes: Set<String>,
         isContainer: Boolean,
@@ -366,9 +365,9 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         val policy = "${acrUri}#policy-$suffix"
         val matcher = "${acrUri}#matcher-$suffix"
 
-        acr.addQuad(acrUri.toString(), ACP.ACCESS_CONTROL, ac, maxNumber = Int.MAX_VALUE)
+        acr.addQuad(acrUri, ACP.ACCESS_CONTROL, ac, maxNumber = Int.MAX_VALUE)
         if (isContainer) {
-            acr.addQuad(acrUri.toString(), ACP.MEMBER_ACCESS_CONTROL, ac, maxNumber = Int.MAX_VALUE)
+            acr.addQuad(acrUri, ACP.MEMBER_ACCESS_CONTROL, ac, maxNumber = Int.MAX_VALUE)
         }
 
         addQuadOnce(acr, ac, RDF.TYPE, ACP.ACCESS_CONTROL_TYPE)

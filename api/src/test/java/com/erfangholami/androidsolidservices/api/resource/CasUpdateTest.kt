@@ -21,8 +21,8 @@ import org.junit.Test
 class CasUpdateTest {
 
     private val webId = "https://alice.pod/profile/card#me"
-    private val docUri = URI.create("https://alice.pod/contacts/b1/people.ttl")
-    private val subject = docUri.toString()
+    private val docUri = "https://alice.pod/contacts/b1/people.ttl"
+    private val subject = docUri
     private val predAlice = "https://example.org/vocab#alice"
     private val predBob = "https://example.org/vocab#bob"
 
@@ -62,7 +62,7 @@ class CasUpdateTest {
         @Suppress("UNCHECKED_CAST")
         override suspend fun <T : Resource> read(
             webId: String,
-            resource: URI,
+            resource: String,
             clazz: Class<T>,
         ): SolidResult<T> {
             val headers = SolidHeaders(
@@ -98,16 +98,16 @@ class CasUpdateTest {
         }
 
         override suspend fun <T : Resource> create(webId: String, resource: T) = notImpl<T>()
-        override suspend fun delete(webId: String, resourceUri: URI, ifMatch: String?) = notImpl<Boolean>()
+        override suspend fun delete(webId: String, resourceUri: String, ifMatch: String?) = notImpl<Boolean>()
         override suspend fun <T : Resource> delete(webId: String, resource: T) = notImpl<T>()
-        override suspend fun head(webId: String, uri: URI) = notImpl<SolidMetadata>()
-        override suspend fun headPublic(uri: URI) = notImpl<SolidMetadata>()
-        override suspend fun <T : Resource> readPublic(uri: URI, clazz: Class<T>) = notImpl<T>()
-        override suspend fun patch(webId: String, uri: URI, patch: N3Patch, ifMatch: String?) = notImpl<Unit>()
-        override suspend fun patchRaw(webId: String, uri: URI, n3Body: String, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun head(webId: String, uri: String) = notImpl<SolidMetadata>()
+        override suspend fun headPublic(uri: String) = notImpl<SolidMetadata>()
+        override suspend fun <T : Resource> readPublic(uri: String, clazz: Class<T>) = notImpl<T>()
+        override suspend fun patch(webId: String, uri: String, patch: N3Patch, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun patchRaw(webId: String, uri: String, n3Body: String, ifMatch: String?) = notImpl<Unit>()
         override suspend fun putRaw(
             webId: String,
-            uri: URI,
+            uri: String,
             contentType: String,
             body: ByteArray,
             ifMatch: String?,
@@ -116,17 +116,17 @@ class CasUpdateTest {
 
         override suspend fun post(
             webId: String,
-            uri: URI,
+            uri: String,
             contentType: String,
             body: ByteArray,
             additionalHeaders: Map<String, String>,
-        ) = notImpl<URI?>()
+        ) = notImpl<String?>()
 
         override suspend fun <T : Resource> createInContainer(
             webId: String,
-            containerUri: URI,
+            containerUri: String,
             resource: T,
-        ) = notImpl<URI?>()
+        ) = notImpl<String?>()
 
         private fun <T> notImpl(): SolidResult<T> =
             SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised")))

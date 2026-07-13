@@ -49,31 +49,31 @@ public fun SolidHeaders.getWwwAuthenticate(): String? = get(HTTPHeaderName.WWW_A
  * Returns the URI of the WAC / ACP access-control resource advertised by
  * `Link: <...>; rel="acl"`, or `null` if absent.
  */
-public fun SolidHeaders.getAclUri(): URI? =
-    parseLinkRelation(this, HTTPLinkRelation.ACL)
+public fun SolidHeaders.getAclUri(): String? =
+    parseLinkRelation(this, HTTPLinkRelation.ACL)?.toString()
 
 /**
  * Returns the URI of the description resource advertised by
  * `Link: <...>; rel="describedby"`, or `null` if absent.
  */
-public fun SolidHeaders.getDescribedByUri(): URI? =
-    parseLinkRelation(this, HTTPLinkRelation.DESCRIBED_BY)
+public fun SolidHeaders.getDescribedByUri(): String? =
+    parseLinkRelation(this, HTTPLinkRelation.DESCRIBED_BY)?.toString()
 
 /**
  * Returns the URI of the storage description resource advertised by
  * `Link: <...>; rel="http://www.w3.org/ns/solid/terms#storageDescription"`,
  * or `null` if absent.
  */
-public fun SolidHeaders.getStorageDescriptionUri(): URI? =
-    parseLinkRelation(this, HTTPLinkRelation.STORAGE_DESCRIPTION)
+public fun SolidHeaders.getStorageDescriptionUri(): String? =
+    parseLinkRelation(this, HTTPLinkRelation.STORAGE_DESCRIPTION)?.toString()
 
 /**
  * Returns the URI of the storage owner advertised by
  * `Link: <...>; rel="http://www.w3.org/ns/solid/terms#owner"`,
  * or `null` if absent.
  */
-public fun SolidHeaders.getOwnerUri(): URI? =
-    parseLinkRelation(this, HTTPLinkRelation.OWNER)
+public fun SolidHeaders.getOwnerUri(): String? =
+    parseLinkRelation(this, HTTPLinkRelation.OWNER)?.toString()
 
 /**
  * Returns the URI of the LDN inbox advertised by
@@ -81,8 +81,8 @@ public fun SolidHeaders.getOwnerUri(): URI? =
  * Solid Protocol §4.1.1 allows this on storage roots and on WebID URLs;
  * agents may also expose it via an `ldp:inbox` triple in their profile.
  */
-public fun SolidHeaders.getInboxUri(): URI? =
-    parseLinkRelation(this, LDP.INBOX)
+public fun SolidHeaders.getInboxUri(): String? =
+    parseLinkRelation(this, LDP.INBOX)?.toString()
 
 /**
  * Returns the OIDC issuer URI advertised by
@@ -91,8 +91,8 @@ public fun SolidHeaders.getInboxUri(): URI? =
  *
  * Spec: https://solidproject.org/TR/oidc — Solid-OIDC issuer discovery
  */
-public fun SolidHeaders.getOidcIssuerUri(): URI? =
-    parseLinkRelation(this, HTTPLinkRelation.OIDC_ISSUER)
+public fun SolidHeaders.getOidcIssuerUri(): String? =
+    parseLinkRelation(this, HTTPLinkRelation.OIDC_ISSUER)?.toString()
 
 /**
  * Returns `true` when the `Link` header contains
@@ -143,8 +143,8 @@ public fun SolidHeaders.getLastModified(): String? = get(HTTPHeaderName.LAST_MOD
  * Returns the `Location` header value as a [URI], or `null` if absent.
  * This is set on 201 Created responses.
  */
-public fun SolidHeaders.getLocation(): URI? =
-    get(HTTPHeaderName.LOCATION)?.let { tryParseUri(it, "SolidHeaders.getLocation") }
+public fun SolidHeaders.getLocation(): String? =
+    get(HTTPHeaderName.LOCATION)?.let { tryParseUri(it, "SolidHeaders.getLocation") }?.toString()
 
 /**
  * Returns the set of HTTP methods listed in the `Allow` response header,
@@ -182,15 +182,15 @@ public fun SolidHeaders.getLinkRelTypes(): List<String> {
  * Returns the set of type URIs advertised via `Link: <uri>; rel="type"` headers.
  * Used to identify resource types such as `ldp:BasicContainer` or `pim:Storage`.
  */
-public fun SolidHeaders.getLinkTypeUris(): Set<URI> {
-    val results = mutableSetOf<URI>()
+public fun SolidHeaders.getLinkTypeUris(): Set<String> {
+    val results = mutableSetOf<String>()
     values(HTTPHeaderName.LINK).forEach { headerValue ->
         headerValue.split(Regex(",(?=\\s*<)")).forEach { segment ->
             val relMatch = Regex("""rel="?([^";,\s]+)"?""").find(segment) ?: return@forEach
             if (relMatch.groupValues[1] == HTTPLinkRelation.TYPE) {
                 val uriMatch = Regex("""<([^>]+)>""").find(segment) ?: return@forEach
                 tryParseUri(uriMatch.groupValues[1], "SolidHeaders.getLinkTypeUris")
-                    ?.let { results.add(it) }
+                    ?.let { results.add(it.toString()) }
             }
         }
     }

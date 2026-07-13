@@ -6,7 +6,6 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.GROUP_DIRECTO
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
-import java.net.URI
 import java.util.UUID
 
 internal class GroupEngine(
@@ -21,10 +20,10 @@ internal class GroupEngine(
     ): SolidResult<FullGroup> = runResult {
         val bookContainer =
             addressBookUri.substring(0, addressBookUri.lastIndexOf("/") + 1)
-        pod.ensureContainer(ownerWebId, URI.create("${bookContainer}${GROUP_DIRECTORY_SUFFIX}"))
+        pod.ensureContainer(ownerWebId, "${bookContainer}${GROUP_DIRECTORY_SUFFIX}")
         val groupUri = "${bookContainer}${GROUP_DIRECTORY_SUFFIX}${UUID.randomUUID()}.ttl"
         val groupRdf = GroupRDF(
-            identifier = URI.create(groupUri),
+            identifier = groupUri,
             contentType = "application/ld+json",
             quads = null,
             headers = null,
@@ -35,7 +34,7 @@ internal class GroupEngine(
         val created = pod.solidResourceManager.create(ownerWebId, groupRdf).getOrThrow()
 
         val bookIdentifier =
-            pod.addressBook(ownerWebId, URI.create(addressBookUri)).getIdentifier().toString()
+            pod.addressBook(ownerWebId, addressBookUri).getIdentifier()
         pod.updateGroupsIndex(ownerWebId, addressBookUri) {
             it.addGroup(bookIdentifier, created)
             true
@@ -44,8 +43,8 @@ internal class GroupEngine(
         contactUris.forEach { contactUri ->
             addMemberInternal(
                 ownerWebId,
-                created.getIdentifier().toString(),
-                pod.contact(ownerWebId, URI.create(contactUri)),
+                created.getIdentifier(),
+                pod.contact(ownerWebId, contactUri),
             )
         }
         FullGroup.createFromRdf(pod.group(ownerWebId, created.getIdentifier()))
@@ -55,7 +54,7 @@ internal class GroupEngine(
         ownerWebId: String,
         groupUri: String,
     ): SolidResult<FullGroup> = runResult {
-        FullGroup.createFromRdf(pod.group(ownerWebId, URI.create(groupUri)))
+        FullGroup.createFromRdf(pod.group(ownerWebId, groupUri))
     }
 
     override suspend fun delete(
@@ -63,10 +62,10 @@ internal class GroupEngine(
         addressBookUri: String,
         groupUri: String,
     ): SolidResult<FullGroup> = runResult {
-        val groupRdf = pod.group(ownerWebId, URI.create(groupUri))
+        val groupRdf = pod.group(ownerWebId, groupUri)
         var removed = false
         pod.updateGroupsIndex(ownerWebId, addressBookUri) {
-            removed = it.removeGroup(URI.create(groupUri))
+            removed = it.removeGroup(groupUri)
             removed
         }
         if (removed) {
@@ -80,9 +79,9 @@ internal class GroupEngine(
         groupUri: String,
         contactUri: String,
     ): SolidResult<FullGroup> = runResult {
-        val contactRdf = pod.contact(ownerWebId, URI.create(contactUri))
+        val contactRdf = pod.contact(ownerWebId, contactUri)
         addMemberInternal(ownerWebId, groupUri, contactRdf)
-        FullGroup.createFromRdf(pod.group(ownerWebId, URI.create(groupUri)))
+        FullGroup.createFromRdf(pod.group(ownerWebId, groupUri))
     }
 
     override suspend fun removeMember(
@@ -91,7 +90,7 @@ internal class GroupEngine(
         contactUri: String,
     ): SolidResult<FullGroup> = runResult {
         removeMemberInternal(ownerWebId, groupUri, contactUri)
-        FullGroup.createFromRdf(pod.group(ownerWebId, URI.create(groupUri)))
+        FullGroup.createFromRdf(pod.group(ownerWebId, groupUri))
     }
 
     internal suspend fun addMemberInternal(
@@ -111,7 +110,7 @@ internal class GroupEngine(
         contactUri: String,
     ) {
         pod.updateGroup(ownerWebId, groupUri) {
-            it.removeMember(URI.create(contactUri))
+            it.removeMember(contactUri)
         }
     }
 }

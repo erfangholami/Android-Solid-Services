@@ -16,13 +16,13 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     val failDeletesFor: MutableSet<String> = mutableSetOf()
 
     fun put(resource: Resource) {
-        store[resource.getIdentifier().toString()] = resource
+        store[resource.getIdentifier()] = resource
     }
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Resource> read(
         webId: String,
-        resource: URI,
+        resource: String,
         clazz: Class<T>,
     ): SolidResult<T> =
         store[resource.toString()]
@@ -49,7 +49,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
 
     override suspend fun delete(
         webId: String,
-        resourceUri: URI,
+        resourceUri: String,
         ifMatch: String?,
     ): SolidResult<Boolean> {
         val uri = resourceUri.toString()
@@ -75,7 +75,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
 
     override suspend fun putRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         ifMatch: String?,
@@ -85,48 +85,48 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         return SolidResult.Success(Unit)
     }
 
-    override suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> =
+    override suspend fun head(webId: String, uri: String): SolidResult<SolidMetadata> =
         if (store.containsKey(uri.toString())) {
             SolidResult.Success(SolidMetadata.EMPTY)
         } else {
             SolidResult.Failure(SolidError.fromHttp(404, "not found: $uri"))
         }
 
-    override suspend fun headPublic(uri: URI): SolidResult<SolidMetadata> =
+    override suspend fun headPublic(uri: String): SolidResult<SolidMetadata> =
         SolidResult.Success(SolidMetadata.EMPTY)
 
     override suspend fun <T : Resource> readPublic(
-        uri: URI,
+        uri: String,
         clazz: Class<T>,
     ): SolidResult<T> = read("", uri, clazz)
 
     override suspend fun patch(
         webId: String,
-        uri: URI,
+        uri: String,
         patch: N3Patch,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
     override suspend fun patchRaw(
         webId: String,
-        uri: URI,
+        uri: String,
         n3Body: String,
         ifMatch: String?,
     ): SolidResult<Unit> = notImplemented()
 
     override suspend fun post(
         webId: String,
-        uri: URI,
+        uri: String,
         contentType: String,
         body: ByteArray,
         additionalHeaders: Map<String, String>,
-    ): SolidResult<URI?> = notImplemented()
+    ): SolidResult<String?> = notImplemented()
 
     override suspend fun <T : Resource> createInContainer(
         webId: String,
-        containerUri: URI,
+        containerUri: String,
         resource: T,
-    ): SolidResult<URI?> = notImplemented()
+    ): SolidResult<String?> = notImplemented()
 
     private fun <T> notImplemented(): SolidResult<T> =
         SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised by this test")))

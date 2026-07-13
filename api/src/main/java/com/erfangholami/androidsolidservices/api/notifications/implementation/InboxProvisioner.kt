@@ -9,27 +9,25 @@ import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
-import java.net.URI
 
 internal class InboxProvisioner(private val rm: SolidResourceManager) {
 
     private val wacBackend = WacBackend(rm)
     private val acpBackend = AcpBackend(rm)
 
-    suspend fun podRoot(webId: String): URI {
-        val profile = rm.read(webId, URI.create(webId), WebId::class.java).getOrThrow()
+    suspend fun podRoot(webId: String): String {
+        val profile = rm.read(webId, webId, WebId::class.java).getOrThrow()
         val storage = profile.getStorages().firstOrNull()
             ?: StorageDiscovery.discover(rm, webId)
             ?: error("Could not discover a storage for $webId")
-        val root = storage.toString().let { if (it.endsWith("/")) it else "$it/" }
-        return URI.create(root)
+        return if (storage.endsWith("/")) storage else "$storage/"
     }
 
-    suspend fun ensureContainer(webId: String, containerUri: URI) {
+    suspend fun ensureContainer(webId: String, containerUri: String) {
         rm.ensureContainer(webId, containerUri).getOrThrow()
     }
 
-    suspend fun grantPublicAppend(webId: String, inboxUri: URI) {
+    suspend fun grantPublicAppend(webId: String, inboxUri: String) {
         val metadata = (rm.head(webId, inboxUri) as? SolidResult.Success)?.value
         val backend = if (metadata != null) {
             pickBackend(metadata, inboxUri, wacBackend, acpBackend)
