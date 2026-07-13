@@ -1,32 +1,230 @@
 package com.erfangholami.androidsolidservices.api.datamodule.typeindex
 
 import com.erfangholami.androidsolidservices.api.notifications.FakeSolidResourceManager
+import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 import com.erfangholami.androidsolidservices.shared.vocab.PIM
+import com.erfangholami.androidsolidservices.shared.vocab.RDF
+import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
+import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Verifies the type-index bootstrap registers its link on the profile with a
- * targeted N3 PATCH rather than a full-document PUT — a PUT would re-serialise and
- * overwrite the whole profile, silently dropping concurrent or server-managed
- * triples and needing Write on the entire document.
+ * The type index is the library's most contended document: every app the user has
+ * authorised registers into the same resource. These tests pin the two properties that
+ * makes concurrent registration safe — the write is a compare-and-swap, and it is
+ * idempotent — plus the PATCH-not-PUT bootstrap.
  */
 class TypeIndexResolverTest {
 
     private val webId = "https://alice.pod/profile/card#me"
     private val profileDoc = "https://alice.pod/profile/card"
     private val storage = "https://alice.pod/"
+    private val indexUri = "https://alice.pod/settings/privateTypeIndex.ttl"
+
+    private val bookUri = "https://alice.pod/contacts/b1/index.ttl"
+    private val ticketsContainer = "https://alice.pod/tickets/"
+
+    /**
+     * A fake pod serving Alice's profile and her private type index, with a monotonic
+     * ETag and a real `If-Match` precondition: [update] rejects a stale validator with a
+     * 412, exactly as a server does. [beforeUpdate] lets a test drop another app's write
+     * in between our read and our conditional write.
+     */
+    private class VersionedIndexPod(
+        private val webId: String,
+        private val profileDoc: String,
+        private val indexUri: String,
+        private val profileQuads: List<RdfQuad>,
+        initialIndexQuads: List<RdfQuad> = emptyList(),
+    ) : SolidResourceManager {
+        private var version = 1
+        private var indexQuads: List<RdfQuad> = initialIndexQuads
+        var updateCount = 0
+            private set
+        var lastIfMatch: String? = null
+            private set
+        var beforeUpdate: (() -> Unit)? = null
+
+        fun index(): PrivateTypeIndex =
+            PrivateTypeIndex(indexUri, "application/ld+json", indexQuads.toList(), null)
+
+        /** Simulates another app committing its own registration, bumping the ETag under us. */
+        fun concurrentRegistration(forClass: String, containerUri: String) {
+            version++
+            val subject = "$indexUri#other-app"
+            indexQuads = indexQuads + listOf(
+                RdfQuad(subject, RDF.TYPE, Solid.TYPE_REGISTRATION, null, null),
+                RdfQuad(subject, Solid.FOR_CLASS, forClass, null, null),
+                RdfQuad(subject, Solid.INSTANCE_CONTAINER, containerUri, null, null),
+            )
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        override suspend fun <T : Resource> read(
+            webId: String,
+            resource: String,
+            clazz: Class<T>,
+        ): SolidResult<T> = when (resource) {
+            this.webId, profileDoc -> SolidResult.Success(WebId(resource, profileQuads) as T)
+            else -> {
+                val headers = SolidHeaders(mapOf("ETag" to listOf("\"$version\"")))
+                SolidResult.Success(
+                    PrivateTypeIndex(resource, "application/ld+json", indexQuads.toList(), headers) as T
+                )
+            }
+        }
+
+        override suspend fun <T : Resource> update(
+            webId: String,
+            newResource: T,
+            ifMatch: String?,
+            ifUnmodifiedSince: String?,
+        ): SolidResult<T> {
+            beforeUpdate?.invoke()
+            updateCount++
+            lastIfMatch = ifMatch
+            if (ifMatch != null && ifMatch != version.toString()) {
+                return SolidResult.Failure(SolidError.fromHttp(412, "precondition failed"))
+            }
+            version++
+            indexQuads = (newResource as SolidRDFResource).getAllQuads()
+            return SolidResult.Success(newResource)
+        }
+
+        override suspend fun <T : Resource> create(webId: String, resource: T) = notImpl<T>()
+        override suspend fun delete(webId: String, resourceUri: String, ifMatch: String?) = notImpl<Boolean>()
+        override suspend fun <T : Resource> delete(webId: String, resource: T) = notImpl<T>()
+        override suspend fun head(webId: String, uri: String) = SolidResult.Success(SolidMetadata.EMPTY)
+        override suspend fun headPublic(uri: String) = notImpl<SolidMetadata>()
+        override suspend fun <T : Resource> readPublic(uri: String, clazz: Class<T>) = notImpl<T>()
+        override suspend fun patch(webId: String, uri: String, patch: N3Patch, ifMatch: String?) =
+            SolidResult.Success(Unit)
+
+        override suspend fun patchRaw(webId: String, uri: String, n3Body: String, ifMatch: String?) = notImpl<Unit>()
+        override suspend fun putRaw(
+            webId: String,
+            uri: String,
+            contentType: String,
+            body: ByteArray,
+            ifMatch: String?,
+            linkHeader: String?,
+        ) = notImpl<Unit>()
+
+        override suspend fun post(
+            webId: String,
+            uri: String,
+            contentType: String,
+            body: ByteArray,
+            additionalHeaders: Map<String, String>,
+        ) = notImpl<String?>()
+
+        override suspend fun <T : Resource> createInContainer(
+            webId: String,
+            containerUri: String,
+            resource: T,
+        ) = notImpl<String?>()
+
+        private fun <T> notImpl(): SolidResult<T> =
+            SolidResult.Failure(SolidError.fromThrowable(NotImplementedError("not exercised")))
+    }
+
+    private fun linkedProfile() = listOf(
+        RdfQuad(webId, PIM.STORAGE, storage, null, null),
+        RdfQuad(webId, FOAF.IS_PRIMARY_TOPIC_OF, profileDoc, null, null),
+        RdfQuad(webId, Solid.PRIVATE_TYPE_INDEX, indexUri, null, null),
+    )
+
+    @Test
+    fun `a registration racing another app's keeps both, instead of clobbering it`() = runBlocking {
+        val pod = VersionedIndexPod(webId, profileDoc, indexUri, linkedProfile())
+        pod.beforeUpdate = {
+            // Another app registers its tickets container in the instant between our read
+            // and our conditional write, so our If-Match is stale and the pod answers 412.
+            pod.beforeUpdate = null
+            pod.concurrentRegistration(Schema.TICKET, ticketsContainer)
+        }
+
+        TypeIndexResolver.addInstance(pod, webId, VCARD.ADDRESS_BOOK, bookUri, isPrivate = true)
+
+        // The write was genuinely conditional — without an If-Match the pod could never
+        // have detected the conflict, and the retry below would be dead code.
+        assertNotNull("the update must carry an If-Match precondition", pod.lastIfMatch)
+        assertEquals("the 412 must be retried, not surfaced", 2, pod.updateCount)
+
+        val index = pod.index()
+        assertTrue(
+            "our address book is registered",
+            bookUri in index.getInstances(VCARD.ADDRESS_BOOK),
+        )
+        assertTrue(
+            "the other app's registration survived — a blind write would have dropped it",
+            ticketsContainer in index.getInstanceContainers(Schema.TICKET),
+        )
+    }
+
+    @Test
+    fun `re-registering an already-registered instance writes nothing`() = runBlocking {
+        val pod = VersionedIndexPod(webId, profileDoc, indexUri, linkedProfile())
+        TypeIndexResolver.addInstance(pod, webId, VCARD.ADDRESS_BOOK, bookUri, isPrivate = true)
+        assertEquals(1, pod.updateCount)
+
+        // `ensure…`-style callers run on every start; a second pass must not append a
+        // duplicate solid:TypeRegistration node, nor spend a round trip.
+        TypeIndexResolver.addInstance(pod, webId, VCARD.ADDRESS_BOOK, bookUri, isPrivate = true)
+
+        assertEquals("the redundant registration is a no-op", 1, pod.updateCount)
+        assertEquals(listOf(bookUri), pod.index().getInstances(VCARD.ADDRESS_BOOK))
+    }
+
+    @Test
+    fun `removing an unregistered resource writes nothing`() = runBlocking {
+        val pod = VersionedIndexPod(webId, profileDoc, indexUri, linkedProfile())
+
+        TypeIndexResolver.removeResource(pod, webId, bookUri)
+
+        assertEquals(0, pod.updateCount)
+    }
+
+    @Test
+    fun `bootstrapping tolerates another app creating the index first`() {
+        val profileQuads = listOf(
+            RdfQuad(webId, PIM.STORAGE, storage, null, null),
+            RdfQuad(webId, FOAF.IS_PRIMARY_TOPIC_OF, profileDoc, null, null),
+        )
+        val rm = FakeSolidResourceManager().apply {
+            onRead = { uri ->
+                when (uri) {
+                    webId, profileDoc -> SolidResult.Success(WebId(uri, profileQuads))
+                    else -> SolidResult.Success(PrivateTypeIndex(uri, "application/ld+json", null, null))
+                }
+            }
+            // create() is a conditional If-None-Match:* PUT, so the app that loses the
+            // bootstrap race is told the index already exists. It must carry on with the
+            // winner's index rather than failing to start.
+            onCreate = { SolidResult.Failure(SolidError.fromHttp(409, "Resource already exists")) }
+        }
+
+        val index = runBlocking { TypeIndexResolver.getPrivateTypeIndex(rm, webId) }
+
+        assertNotNull(index)
+    }
 
     @Test
     fun `bootstrapping the private type index registers the link via PATCH, not a full-document PUT`() {
@@ -39,7 +237,7 @@ class TypeIndexResolverTest {
 
         val rm = FakeSolidResourceManager().apply {
             onRead = { uri ->
-                when (uri.toString()) {
+                when (uri) {
                     webId, profileDoc -> SolidResult.Success(WebId(uri, profileQuads))
                     else -> SolidResult.Success(PrivateTypeIndex(uri, "application/ld+json", null, null))
                 }

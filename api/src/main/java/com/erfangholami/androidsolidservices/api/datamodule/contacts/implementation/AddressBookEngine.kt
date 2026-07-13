@@ -1,8 +1,10 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation
 
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.AddressBookStore
+import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
 import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
 import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
+import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList
 import com.erfangholami.androidsolidservices.shared.model.contacts.CONTACTS_DIRECTORY_SUFFIX
@@ -94,17 +96,7 @@ internal class AddressBookEngine(
         val bookContainer = addressBookUri.substring(0, addressBookUri.lastIndexOf("/") + 1)
         pod.solidResourceManager.delete(ownerWebId, bookContainer).getOrThrow()
 
-        val privateTypeIndex = pod.privateTypeIndex(ownerWebId)
-        if (privateTypeIndex.containsAddressBook(addressBookUri)) {
-            privateTypeIndex.removeAddressBook(addressBookUri)
-            pod.solidResourceManager.update(ownerWebId, privateTypeIndex).getOrThrow()
-        } else {
-            val publicTypeIndex = pod.publicTypeIndex(ownerWebId)
-            if (publicTypeIndex.containsAddressBook(addressBookUri)) {
-                publicTypeIndex.removeAddressBook(addressBookUri)
-                pod.solidResourceManager.update(ownerWebId, publicTypeIndex).getOrThrow()
-            }
-        }
+        TypeIndexResolver.removeResource(pod.solidResourceManager, ownerWebId, addressBookUri)
 
         book ?: AddressBook(addressBookUri, "", emptyList(), emptyList())
     }
@@ -127,7 +119,7 @@ internal class AddressBookEngine(
 
     private suspend fun requireStorage(ownerWebId: String, storage: String?): String =
         storage
-            ?: StorageDiscovery.discover(pod.solidResourceManager, ownerWebId)?.toString()
+            ?: StorageDiscovery.discover(pod.solidResourceManager, ownerWebId)
             ?: error("Could not discover a storage for $ownerWebId")
 
     private suspend fun readBook(ownerWebId: String, addressBookUri: String): AddressBook {
@@ -175,15 +167,13 @@ internal class AddressBookEngine(
         pod.solidResourceManager.create(ownerWebId, groupsIndex).getOrThrow()
         val created = pod.solidResourceManager.create(ownerWebId, addressBook).getOrThrow()
 
-        if (isPrivate) {
-            val typeIndex = pod.privateTypeIndex(ownerWebId)
-            typeIndex.addAddressBook(created.getIdentifier())
-            pod.solidResourceManager.update(ownerWebId, typeIndex).getOrThrow()
-        } else {
-            val typeIndex = pod.publicTypeIndex(ownerWebId)
-            typeIndex.addAddressBook(created.getIdentifier())
-            pod.solidResourceManager.update(ownerWebId, typeIndex).getOrThrow()
-        }
+        TypeIndexResolver.addInstance(
+            resourceManager = pod.solidResourceManager,
+            webIdString = ownerWebId,
+            forClass = VCARD.ADDRESS_BOOK,
+            instanceUri = created.getIdentifier(),
+            isPrivate = isPrivate,
+        )
         return created.getIdentifier()
     }
 }

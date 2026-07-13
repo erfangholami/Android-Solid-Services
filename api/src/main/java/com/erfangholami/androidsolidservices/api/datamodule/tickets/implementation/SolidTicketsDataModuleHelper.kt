@@ -213,23 +213,19 @@ internal class SolidTicketsDataModuleHelper {
                 ) response.getOrThrow()
         }
 
-        if (isPrivate) {
-            val typeIndex =
-                TypeIndexResolver.getPrivateTypeIndex(solidResourceManager, ownerWebId)
-            typeIndex.addInstanceContainer(Schema.TICKET, target)
-            solidResourceManager.update(ownerWebId, typeIndex).getOrThrow()
-        } else {
-            val typeIndex =
-                TypeIndexResolver.getPublicTypeIndex(solidResourceManager, ownerWebId)
-            typeIndex.addInstanceContainer(Schema.TICKET, target)
-            solidResourceManager.update(ownerWebId, typeIndex).getOrThrow()
-        }
+        TypeIndexResolver.addInstanceContainer(
+            resourceManager = solidResourceManager,
+            webIdString = ownerWebId,
+            forClass = Schema.TICKET,
+            containerUri = target,
+            isPrivate = isPrivate,
+        )
         return target
     }
 
     private suspend fun requireStorage(ownerWebId: String, storage: String?): String =
         storage
-            ?: StorageDiscovery.discover(solidResourceManager, ownerWebId)?.toString()
+            ?: StorageDiscovery.discover(solidResourceManager, ownerWebId)
             ?: error("Could not discover a storage for $ownerWebId")
 
     private suspend fun ensureContainer(ownerWebId: String, containerUri: String) {

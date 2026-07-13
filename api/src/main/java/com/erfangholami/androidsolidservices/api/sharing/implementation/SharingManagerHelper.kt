@@ -145,10 +145,13 @@ internal class SharingManagerHelper {
      * best-effort: a failure here never blocks the sharing flow.
      */
     private suspend fun registerSharesContainer(webId: String, containerUri: String) {
-        val typeIndex = TypeIndexResolver.getPrivateTypeIndex(rm, webId)
-        if (typeIndex.containsResource(containerUri)) return
-        typeIndex.addInstanceContainer(SolidShare.SHARE, containerUri)
-        rm.update(webId, typeIndex).getOrThrow()
+        TypeIndexResolver.addInstanceContainer(
+            resourceManager = rm,
+            webIdString = webId,
+            forClass = SolidShare.SHARE,
+            containerUri = containerUri,
+            isPrivate = true,
+        )
     }
 
     suspend fun ensureSolidshareContainer(webId: String, podRoot: String) {

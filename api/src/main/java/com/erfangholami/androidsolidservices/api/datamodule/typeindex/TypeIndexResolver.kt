@@ -2,15 +2,20 @@ package com.erfangholami.androidsolidservices.api.datamodule.typeindex
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
+import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
+import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
+import com.erfangholami.androidsolidservices.shared.model.typeindex.SettingTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 
 /**
- * Resolves (and bootstraps, when missing) a user's Solid type indexes.
+ * Resolves (and bootstraps, when missing) a user's Solid type indexes, and is the
+ * single place they are mutated.
  *
  * Shared by every data module that registers its instances in the private or
  * public type index (contacts address books, tickets containers, …). Resolution
@@ -18,97 +23,246 @@ import com.erfangholami.androidsolidservices.shared.vocab.Solid
  * document, then on the extended profile; when absent from both, the link is
  * written to the extended profile and an empty index resource is created under
  * the user's storage.
+ *
+ * A pod's type index is shared by every app the user has authorised, so it is the
+ * library's most contended document. Registration therefore goes through
+ * [addInstance] / [addInstanceContainer] / [removeResource], which compare-and-swap
+ * (see [casUpdate]) rather than blind-write: a naive read-modify-write would drop a
+ * registration another app wrote in the meantime. The mutations are also idempotent —
+ * re-registering an already-registered URI is a no-op instead of appending a duplicate
+ * `solid:TypeRegistration` node — so `ensure…`-style callers can run on every start.
  */
 internal object TypeIndexResolver {
 
     suspend fun getPrivateTypeIndex(
         resourceManager: SolidResourceManager,
         webIdString: String,
-    ): PrivateTypeIndex {
-        val webId =
-            resourceManager.read(webIdString, webIdString, WebId::class.java)
-                .getOrThrow()
-        var privateTypeIndexUri = webId.getPrivateTypeIndex()
-
-        if (privateTypeIndexUri == null) {
-            val extendedProfile = resourceManager.read(
-                webIdString,
-                webId.getPrimaryTopicDocuments().firstOrNull() ?: webIdString,
-                WebId::class.java
-            ).getOrThrow()
-            privateTypeIndexUri = extendedProfile.getPrivateTypeIndex()
-
-            if (privateTypeIndexUri == null) {
-                extendedProfile.setPrivateTypeIndex(webIdString, resolveStorage(resourceManager, webIdString, webId))
-                privateTypeIndexUri = extendedProfile.getPrivateTypeIndex()
-                val indexUri = requireNotNull(privateTypeIndexUri)
-                registerTypeIndexLink(
-                    resourceManager, webIdString, extendedProfile.getIdentifier(),
-                    Solid.PRIVATE_TYPE_INDEX, indexUri,
-                )
-                ensureContainer(resourceManager, webIdString, indexUri)
-                resourceManager.create(
-                    webIdString,
-                    PrivateTypeIndex(
-                        indexUri,
-                        "application/ld+json",
-                        null,
-                        null
-                    )
-                ).getOrThrow()
-            }
-        }
-
-        return resourceManager.read(
+    ): PrivateTypeIndex =
+        resourceManager.read(
             webIdString,
-            privateTypeIndexUri.toString(),
+            resolvePrivateTypeIndexUri(resourceManager, webIdString),
             PrivateTypeIndex::class.java
         ).getOrThrow()
-    }
 
     suspend fun getPublicTypeIndex(
         resourceManager: SolidResourceManager,
         webIdString: String,
-    ): PublicTypeIndex {
+    ): PublicTypeIndex =
+        resourceManager.read(
+            webIdString,
+            resolvePublicTypeIndexUri(resourceManager, webIdString),
+            PublicTypeIndex::class.java
+        ).getOrThrow()
+
+    /**
+     * Registers [instanceUri] as a `solid:instance` of [forClass]. No-op when it is
+     * already registered.
+     */
+    suspend fun addInstance(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        forClass: String,
+        instanceUri: String,
+        isPrivate: Boolean,
+    ) {
+        val indexUri = resolveTypeIndexUri(resourceManager, webIdString, isPrivate)
+        mutate(resourceManager, webIdString, indexUri, isPrivate) { index ->
+            if (instanceUri in index.getInstances(forClass)) false
+            else index.addInstance(forClass, instanceUri).let { true }
+        }
+    }
+
+    /**
+     * Registers [containerUri] as a `solid:instanceContainer` of [forClass]. No-op when
+     * it is already registered.
+     */
+    suspend fun addInstanceContainer(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        forClass: String,
+        containerUri: String,
+        isPrivate: Boolean,
+    ) {
+        val indexUri = resolveTypeIndexUri(resourceManager, webIdString, isPrivate)
+        mutate(resourceManager, webIdString, indexUri, isPrivate) { index ->
+            if (containerUri in index.getInstanceContainers(forClass)) false
+            else index.addInstanceContainer(forClass, containerUri).let { true }
+        }
+    }
+
+    /**
+     * Removes the registration pointing at [resourceUri], looking in the private index
+     * first and falling back to the public one. No-op when it is registered in neither.
+     *
+     * Unlike the `add` verbs this never bootstraps an index: deregistering something the
+     * user never registered must not have the side effect of provisioning a type index —
+     * least of all the *public* one — on their pod.
+     */
+    suspend fun removeResource(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        resourceUri: String,
+    ) {
+        val drop: (SettingTypeIndex) -> Boolean = { index ->
+            if (!index.containsResource(resourceUri)) false
+            else index.removeResource(resourceUri).let { true }
+        }
+
+        findTypeIndexUri(resourceManager, webIdString, isPrivate = true)?.let { uri ->
+            var removed = false
+            mutate(resourceManager, webIdString, uri, isPrivate = true) { index ->
+                drop(index).also { removed = removed || it }
+            }
+            if (removed) return
+        }
+
+        findTypeIndexUri(resourceManager, webIdString, isPrivate = false)?.let { uri ->
+            mutate(resourceManager, webIdString, uri, isPrivate = false, change = drop)
+        }
+    }
+
+    /**
+     * Applies [change] to the index at [indexUri] under a compare-and-swap: the index is
+     * re-read on every attempt, so [change] always sees the pod's latest state and decides
+     * afresh whether a write is needed (returning `false` skips it entirely).
+     */
+    private suspend fun mutate(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        indexUri: String,
+        isPrivate: Boolean,
+        change: (SettingTypeIndex) -> Boolean,
+    ) {
+        if (isPrivate) {
+            resourceManager.casUpdate(
+                webId = webIdString,
+                read = { resourceManager.read(webIdString, indexUri, PrivateTypeIndex::class.java) },
+                mutate = change,
+            ).getOrThrow()
+        } else {
+            resourceManager.casUpdate(
+                webId = webIdString,
+                read = { resourceManager.read(webIdString, indexUri, PublicTypeIndex::class.java) },
+                mutate = change,
+            ).getOrThrow()
+        }
+    }
+
+    private suspend fun resolveTypeIndexUri(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        isPrivate: Boolean,
+    ): String =
+        if (isPrivate) resolvePrivateTypeIndexUri(resourceManager, webIdString)
+        else resolvePublicTypeIndexUri(resourceManager, webIdString)
+
+    /** Looks the index link up on the profile, then the extended profile. Never bootstraps. */
+    private suspend fun findTypeIndexUri(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        isPrivate: Boolean,
+    ): String? {
+        val link: (WebId) -> String? =
+            if (isPrivate) WebId::getPrivateTypeIndex else WebId::getPublicTypeIndex
+        val profile =
+            resourceManager.read(webIdString, webIdString, WebId::class.java).getOrThrow()
+        link(profile)?.let { return it }
+        return link(extendedProfile(resourceManager, webIdString, profile))
+    }
+
+    private suspend fun extendedProfile(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        profile: WebId,
+    ): WebId = resourceManager.read(
+        webIdString,
+        profile.getPrimaryTopicDocuments().firstOrNull() ?: webIdString,
+        WebId::class.java,
+    ).getOrThrow()
+
+    private suspend fun resolvePrivateTypeIndexUri(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+    ): String {
         val webId =
             resourceManager.read(webIdString, webIdString, WebId::class.java)
                 .getOrThrow()
-        var publicTypeIndexUri = webId.getPublicTypeIndex()
+        webId.getPrivateTypeIndex()?.let { return it }
 
-        if (publicTypeIndexUri == null) {
-            val extendedProfile = resourceManager.read(
-                webIdString,
-                webId.getPrimaryTopicDocuments().firstOrNull() ?: webIdString,
-                WebId::class.java
-            ).getOrThrow()
-            publicTypeIndexUri = extendedProfile.getPublicTypeIndex()
-
-            if (publicTypeIndexUri == null) {
-                extendedProfile.setPublicTypeIndex(webIdString, resolveStorage(resourceManager, webIdString, webId))
-                publicTypeIndexUri = extendedProfile.getPublicTypeIndex()
-                val indexUri = requireNotNull(publicTypeIndexUri)
-                registerTypeIndexLink(
-                    resourceManager, webIdString, extendedProfile.getIdentifier(),
-                    Solid.PUBLIC_TYPE_INDEX, indexUri,
-                )
-                ensureContainer(resourceManager, webIdString, indexUri)
-                resourceManager.create(
-                    webIdString,
-                    PublicTypeIndex(
-                        indexUri,
-                        "application/ld+json",
-                        null,
-                        null
-                    )
-                ).getOrThrow()
-            }
-        }
-
-        return resourceManager.read(
+        val extendedProfile = resourceManager.read(
             webIdString,
-            publicTypeIndexUri.toString(),
-            PublicTypeIndex::class.java
+            webId.getPrimaryTopicDocuments().firstOrNull() ?: webIdString,
+            WebId::class.java
         ).getOrThrow()
+        extendedProfile.getPrivateTypeIndex()?.let { return it }
+
+        extendedProfile.setPrivateTypeIndex(
+            webIdString,
+            resolveStorage(resourceManager, webIdString, webId),
+        )
+        val indexUri = requireNotNull(extendedProfile.getPrivateTypeIndex())
+        registerTypeIndexLink(
+            resourceManager, webIdString, extendedProfile.getIdentifier(),
+            Solid.PRIVATE_TYPE_INDEX, indexUri,
+        )
+        ensureContainer(resourceManager, webIdString, indexUri)
+        createIfAbsent(
+            resourceManager, webIdString,
+            PrivateTypeIndex(indexUri, "application/ld+json", null, null),
+        )
+        return indexUri
+    }
+
+    private suspend fun resolvePublicTypeIndexUri(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+    ): String {
+        val webId =
+            resourceManager.read(webIdString, webIdString, WebId::class.java)
+                .getOrThrow()
+        webId.getPublicTypeIndex()?.let { return it }
+
+        val extendedProfile = resourceManager.read(
+            webIdString,
+            webId.getPrimaryTopicDocuments().firstOrNull() ?: webIdString,
+            WebId::class.java
+        ).getOrThrow()
+        extendedProfile.getPublicTypeIndex()?.let { return it }
+
+        extendedProfile.setPublicTypeIndex(
+            webIdString,
+            resolveStorage(resourceManager, webIdString, webId),
+        )
+        val indexUri = requireNotNull(extendedProfile.getPublicTypeIndex())
+        registerTypeIndexLink(
+            resourceManager, webIdString, extendedProfile.getIdentifier(),
+            Solid.PUBLIC_TYPE_INDEX, indexUri,
+        )
+        ensureContainer(resourceManager, webIdString, indexUri)
+        createIfAbsent(
+            resourceManager, webIdString,
+            PublicTypeIndex(indexUri, "application/ld+json", null, null),
+        )
+        return indexUri
+    }
+
+    /**
+     * Creates the empty index, tolerating the case where another app bootstrapped it
+     * between our profile read and this write. [SolidResourceManager.create] is already a
+     * conditional `If-None-Match: *` PUT, so the loser of that race gets a `CONFLICT`
+     * rather than overwriting the winner's index — but it must not be treated as an error,
+     * or a second app on the same pod would fail to start.
+     */
+    private suspend fun <T : Resource> createIfAbsent(
+        resourceManager: SolidResourceManager,
+        webIdString: String,
+        index: T,
+    ) {
+        when (val response = resourceManager.create(webIdString, index)) {
+            is SolidResult.Success -> Unit
+            is SolidResult.Failure ->
+                if (response.error.code != SolidErrorCode.CONFLICT) response.getOrThrow()
+        }
     }
 
     /**
@@ -122,8 +276,8 @@ internal object TypeIndexResolver {
         webIdString: String,
         profile: WebId,
     ): String =
-        (profile.getStorages().firstOrNull()
-            ?: StorageDiscovery.discover(resourceManager, webIdString))?.toString()
+        profile.getStorages().firstOrNull()
+            ?: StorageDiscovery.discover(resourceManager, webIdString)
             ?: error("No pim:storage could be discovered for $webIdString")
 
     /**
