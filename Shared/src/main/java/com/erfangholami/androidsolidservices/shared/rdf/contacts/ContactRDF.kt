@@ -4,7 +4,6 @@ import com.apicatalog.jsonld.http.media.MediaType
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressType
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
-import com.erfangholami.androidsolidservices.shared.model.contacts.Email
 import com.erfangholami.androidsolidservices.shared.model.contacts.EmailEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.EmailType
 import com.erfangholami.androidsolidservices.shared.model.contacts.Gender
@@ -12,7 +11,6 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.ImEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.ImType
 import com.erfangholami.androidsolidservices.shared.model.contacts.Name
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneEntry
-import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneNumber
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneType
 import com.erfangholami.androidsolidservices.shared.model.contacts.URLType
 import com.erfangholami.androidsolidservices.shared.model.contacts.UrlEntry
@@ -110,15 +108,6 @@ public class ContactRDF : SolidRDFResource {
         )
     }
 
-    /** Returns all phone numbers (`vcard:hasTelephone`) stored for this contact. */
-    public fun getPhoneNumbers(): List<PhoneNumber> =
-        quads
-            .filter { it.subject == getIdentifier() && it.predicate == VCARD.HAS_TELEPHONE }
-            .mapNotNull { triple ->
-                quads.find { it.subject == triple.`object` && it.predicate == VCARD.VALUE }
-                    ?.let { PhoneNumber(it.`object`) }
-            }
-
     /**
      * Adds [newPhoneNumber] to this contact's quad list as an untyped `vcard:hasTelephone`
      * entry. Delegates to [addPhone] with [PhoneType.OTHER].
@@ -129,15 +118,6 @@ public class ContactRDF : SolidRDFResource {
         if (newPhoneNumber.isNullOrEmpty()) return false
         return addPhone(newPhoneNumber, PhoneType.OTHER)
     }
-
-    /** Returns all email addresses (`vcard:hasEmail`) stored for this contact. */
-    public fun getEmails(): List<Email> =
-        quads
-            .filter { it.subject == getIdentifier() && it.predicate == VCARD.HAS_EMAIL }
-            .mapNotNull { triple ->
-                quads.find { it.subject == triple.`object` && it.predicate == VCARD.VALUE }
-                    ?.let { Email(it.`object`) }
-            }
 
     /**
      * Adds [newEmailAddress] to this contact's quad list as an untyped `vcard:hasEmail`

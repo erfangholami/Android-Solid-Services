@@ -359,7 +359,18 @@ class ContactRDFDataTest {
             .filter { it.predicate == VCARD.HAS_TELEPHONE || it.predicate == VCARD.HAS_EMAIL }
             .map { it.`object` }
         assertEquals(listOf("_:phone0", "_:email0"), nodeLabels)
-        assertEquals(listOf("tel:+31612345678"), contact.getPhoneNumbers().map { it.value })
+        // The untyped helpers read back through the typed accessors, as PhoneType.OTHER —
+        // the bare Email / PhoneNumber value classes they used to return are gone. The typed
+        // accessors also hand back the plain value, where the old ones leaked the raw
+        // `tel:` / `mailto:` IRI the quad is actually stored under.
+        assertEquals(
+            listOf(PhoneEntry("+31612345678", PhoneType.OTHER)),
+            contact.getPhoneEntries(),
+        )
+        assertEquals(
+            listOf(EmailEntry("x@example.com", EmailType.OTHER)),
+            contact.getEmailEntries(),
+        )
     }
 
     @Test

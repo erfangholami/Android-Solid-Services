@@ -6,14 +6,15 @@ import kotlinx.parcelize.Parcelize
 /**
  * Summary and value types for the contacts model.
  *
- * The former V1 *write* model (`NewContact`) and V1 *detail* model (`FullContact`) have
- * been removed: both the in-process API and the IPC surface now speak the immutable
- * [ContactData] / [SolidContact] model, which carries full vCard 4.0 coverage (typed
- * phones, emails, postal addresses, IM handles, categories, gender, …).
+ * The V1 *write* model (`NewContact`), *detail* model (`FullContact`) and the untyped
+ * `Email` / `PhoneNumber` pair are all gone: both the in-process API and the IPC surface
+ * now speak the immutable [ContactData] / [SolidContact] model, which carries full vCard
+ * 4.0 coverage — including the *typed* [EmailEntry] / [PhoneEntry] that replaced the bare
+ * value classes (a phone with no `vcard:Cell` / `vcard:Home` type reads back as
+ * [PhoneType.OTHER] rather than losing the distinction).
  *
- * The types below remain because they are still load-bearing: [Contact] is the summary row
- * carried by [AddressBook] / [FullGroup] and the name-email index, and the codec reads and
- * writes the primitive [Email] / [PhoneNumber] / [Name] shapes.
+ * What remains here is load-bearing: [Contact] is the summary row carried by [AddressBook]
+ * and [FullGroup], and [Name] / [URLType] are part of [ContactData] itself.
  */
 
 /** A contact as it appears in a listing: just enough to render a row. */
@@ -21,18 +22,6 @@ import kotlinx.parcelize.Parcelize
 public data class Contact(
     val uri: String,
     val name: String,
-) : Parcelable
-
-/** A bare email address, as read from a `vcard:hasEmail` node. */
-@Parcelize
-public data class Email(
-    val value: String,
-) : Parcelable
-
-/** A bare phone number, as read from a `vcard:hasTelephone` node. */
-@Parcelize
-public data class PhoneNumber(
-    val value: String,
 ) : Parcelable
 
 /** The kind of link a `vcard:hasURL` node carries. */
