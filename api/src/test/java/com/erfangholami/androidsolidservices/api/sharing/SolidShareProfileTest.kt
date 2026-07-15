@@ -33,12 +33,12 @@ class SolidShareProfileTest {
     @Test
     fun `vocabulary reproduces the existing solidshare namespace`() {
         val vocab = SolidShareProfile.vocabulary
-        assertEquals("https://solidshare.com/ns#", vocab.namespace)
-        assertEquals("https://solidshare.com/ns#Share", vocab.shareType)
-        assertEquals("https://solidshare.com/ns#resource", vocab.resource)
-        assertEquals("https://solidshare.com/ns#receiver", vocab.receiver)
-        assertEquals("https://solidshare.com/ns#owner", vocab.owner)
-        assertEquals("https://solidshare.com/ns#CatalogEntry", vocab.catalogEntryType)
+        assertEquals("https://solidshare.app/ns#", vocab.namespace)
+        assertEquals("https://solidshare.app/ns#Share", vocab.shareType)
+        assertEquals("https://solidshare.app/ns#resource", vocab.resource)
+        assertEquals("https://solidshare.app/ns#receiver", vocab.receiver)
+        assertEquals("https://solidshare.app/ns#owner", vocab.owner)
+        assertEquals("https://solidshare.app/ns#CatalogEntry", vocab.catalogEntryType)
     }
 
     @Test

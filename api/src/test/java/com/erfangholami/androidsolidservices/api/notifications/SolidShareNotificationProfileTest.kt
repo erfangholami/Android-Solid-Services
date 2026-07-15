@@ -8,8 +8,8 @@ class SolidShareNotificationProfileTest {
     @Test
     fun `vocabulary reproduces the existing solidshare fallback literals`() {
         val vocab = SolidShareNotificationProfile.vocabulary
-        assertEquals("https://solidshare.com/ns#mode", vocab.modeLiteral)
-        assertEquals("https://solidshare.com/ns#requestedMode", vocab.requestedModeLiteral)
+        assertEquals("https://solidshare.app/ns#mode", vocab.modeLiteral)
+        assertEquals("https://solidshare.app/ns#requestedMode", vocab.requestedModeLiteral)
     }
 
     @Test

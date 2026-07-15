@@ -29,7 +29,7 @@ public interface SharingProfile {
 }
 
 /**
- * The default profile: SolidShare's vocabulary (`https://solidshare.com/ns#`),
+ * The default profile: SolidShare's vocabulary (`https://solidshare.app/ns#`),
  * `solidshare/` pod layout, `solidshare://` links, and the catalog enabled.
  */
 public object SolidShareProfile : SharingProfile {

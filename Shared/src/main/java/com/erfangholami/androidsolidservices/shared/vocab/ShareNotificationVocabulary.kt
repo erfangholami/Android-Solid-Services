@@ -17,7 +17,7 @@ public interface ShareNotificationVocabulary {
     public val requestedModeLiteral: String
 }
 
-/** SolidShare's notification fallback literals, under `https://solidshare.com/ns#`. */
+/** SolidShare's notification fallback literals, under `https://solidshare.app/ns#`. */
 public object SolidShareNotificationVocabulary : ShareNotificationVocabulary {
     override val modeLiteral: String = SolidShare.MODE
     override val requestedModeLiteral: String = SolidShare.REQUESTED_MODE

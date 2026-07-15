@@ -1,8 +1,10 @@
 package com.erfangholami.androidsolidservices.shared.rdf.tickets
 
 import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
+import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketCategory
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEvent
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketOrganization
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketSummary
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,11 +17,15 @@ class TicketsIndexRDFTest {
 
     private fun ticket(id: String, title: String, issuer: String? = null): TicketRDF =
         TicketRDF("https://alice.pod/tickets/$id.ttl#this").apply {
-            setTitle(title)
-            setCategory(TicketCategory.CINEMA)
-            setEvent(TicketEvent(name = title, startDate = "2026-08-01T20:00:00Z"))
-            setValidThrough("2026-08-02T00:00:00Z")
-            issuer?.let { setIssuerName(it) }
+            setTicketData(
+                NewTicket(
+                    title = title,
+                    category = TicketCategory.CINEMA,
+                    event = TicketEvent(name = title, startDate = "2026-08-01T20:00:00Z"),
+                    validThrough = "2026-08-02T00:00:00Z",
+                    issuer = issuer?.let { TicketOrganization(name = it) },
+                ),
+            )
         }
 
     @Test
@@ -61,8 +67,7 @@ class TicketsIndexRDFTest {
         index.addTicket(ticket("t1", "Dune III", issuer = "Pathé"))
 
         val changed = TicketRDF("https://alice.pod/tickets/t1.ttl#this").apply {
-            setTitle("Dune III (IMAX)")
-            setCategory(TicketCategory.CINEMA)
+            setTicketData(NewTicket(title = "Dune III (IMAX)", category = TicketCategory.CINEMA))
         }
         assertTrue(index.updateTicket(changed))
 

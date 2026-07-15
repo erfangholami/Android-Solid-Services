@@ -270,23 +270,7 @@ internal class SolidTicketsDataModuleHelper {
     }
 
     private fun applyNewTicket(target: TicketRDF, newTicket: NewTicket) {
-        require(newTicket.title.isNotBlank()) { "A ticket needs a non-blank title" }
-        target.setTitle(newTicket.title)
-        target.setDescription(newTicket.description)
-        target.setTicketNumber(newTicket.ticketNumber)
-        target.setTicketToken(newTicket.ticketToken)
-        target.setBarcodeFormat(newTicket.barcodeFormat)
-        target.setCategory(newTicket.category)
-        target.setIssuerName(newTicket.issuerName)
-        target.setUnderName(newTicket.underName)
-        target.setSeat(newTicket.seat)
-        target.setTotalPrice(newTicket.totalPrice)
-        target.setPriceCurrency(newTicket.priceCurrency)
-        target.setDateIssued(newTicket.dateIssued)
-        target.setEvent(newTicket.event)
-        target.setValidFrom(newTicket.validFrom)
-        target.setValidThrough(newTicket.validThrough)
-        target.setSource(newTicket.source)
+        target.setTicketData(newTicket)
     }
 
     private fun containerOf(ticketUri: String): String {

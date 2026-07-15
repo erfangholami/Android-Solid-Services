@@ -27,7 +27,7 @@ public interface ShareVocabulary {
     public val catalogEntryType: String
 }
 
-/** The SolidShare vocabulary, hosted under `https://solidshare.com/ns#`. */
+/** The SolidShare vocabulary, hosted under `https://solidshare.app/ns#`. */
 public object SolidShareVocabulary : ShareVocabulary {
     override val namespace: String = SolidShare.NAMESPACE
     override val shareType: String = SolidShare.SHARE

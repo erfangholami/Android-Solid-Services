@@ -73,7 +73,7 @@ public class TicketsIndexRDF : SolidRDFResource {
         addQuad(subject, RDF.TYPE, Schema.TICKET)
         addQuadLiteral(subject, Schema.NAME, ticket.getTitle(), XSD.STRING)
         addQuadLiteral(subject, SolidShare.CATEGORY, ticket.getCategory().name, XSD.STRING)
-        ticket.getEvent()?.startDate?.let {
+        ticket.getIndexStartDate()?.let {
             addQuadLiteral(subject, Schema.START_DATE, it, XSD.dateTypeFor(it))
         }
         ticket.getIssuerName()?.let {
