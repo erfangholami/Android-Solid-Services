@@ -8,6 +8,7 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBarcode
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBarcodeFormat
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketCategory
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBeacon
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketDetail
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEvent
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEventStatus
@@ -85,6 +86,7 @@ public class TicketRDF : SolidRDFResource {
     private fun detailNode(i: Int) = "$doc#detail$i"
     private fun relevanceNode(i: Int) = "$doc#rel$i"
     private fun wifiNode(i: Int) = "$doc#wifi$i"
+    private fun beaconNode(i: Int) = "$doc#beacon$i"
 
     // ---- Public convenience accessors (used by the index and the delete shell) ----------------
 
@@ -183,6 +185,13 @@ public class TicketRDF : SolidRDFResource {
         putStr(self, SolidShare.SERIAL_NUMBER, data.serialNumber)
         putStr(self, SolidShare.GROUPING_IDENTIFIER, data.groupingIdentifier)
         putStr(self, SolidShare.ORGANIZATION_NAME, data.organizationName)
+        putStr(self, SolidShare.PASS_TYPE_IDENTIFIER, data.passTypeIdentifier)
+        putStr(self, SolidShare.TEAM_IDENTIFIER, data.teamIdentifier)
+        putStr(self, SolidShare.WEB_SERVICE_URL, data.webServiceUrl)
+        putStr(self, SolidShare.AUTHENTICATION_TOKEN, data.authenticationToken)
+        putBool(self, SolidShare.SHARING_PROHIBITED, data.sharingProhibited)
+        putDate(self, SolidShare.RELEVANT_START_DATE, data.relevantStartDate)
+        putDate(self, SolidShare.RELEVANT_END_DATE, data.relevantEndDate)
 
         writeBarcodes(data.barcodes)
         writeSeats(data.seats)
@@ -193,6 +202,7 @@ public class TicketRDF : SolidRDFResource {
         writeDetails(data.details)
         writeRelevantLocations(data.relevantLocations)
         writeWifi(data.wifiNetworks)
+        writeBeacons(data.beacons)
 
         if (data.event != null) writeEvent(data.event)
         if (data.journey != null) writeJourney(data.journey)
@@ -285,6 +295,9 @@ public class TicketRDF : SolidRDFResource {
         putIri(styleNode, SolidShare.THUMBNAIL_IMAGE, s.thumbnailImage)
         putIri(styleNode, SolidShare.BACKGROUND_IMAGE, s.backgroundImage)
         putIri(styleNode, SolidShare.FOOTER_IMAGE, s.footerImage)
+        putStr(styleNode, SolidShare.STRIP_COLOR, s.stripColor)
+        putStr(styleNode, SolidShare.FOOTER_BACKGROUND_COLOR, s.footerBackgroundColor)
+        putStr(styleNode, SolidShare.LOGO_SYMBOL_NAME, s.logoSymbolName)
     }
 
     private fun writeDetails(details: List<TicketDetail>) {
@@ -296,6 +309,9 @@ public class TicketRDF : SolidRDFResource {
             putStr(node, SolidShare.VALUE, d.value)
             putEnum(node, SolidShare.PLACEMENT, d.placement)
             putInt(node, SolidShare.ORDER, d.order)
+            putStr(node, SolidShare.CHANGE_MESSAGE, d.changeMessage)
+            putStr(node, SolidShare.TEXT_ALIGNMENT, d.textAlignment)
+            putStr(node, SolidShare.LINK_URL, d.linkUrl)
         }
     }
 
@@ -307,6 +323,18 @@ public class TicketRDF : SolidRDFResource {
             writeGeo(node, "${node}Geo", loc.geo)
             putInt(node, SolidShare.MAX_DISTANCE, loc.maxDistance)
             putStr(node, SolidShare.RELEVANT_TEXT, loc.relevantText)
+        }
+    }
+
+    private fun writeBeacons(beacons: List<TicketBeacon>) {
+        beacons.filterNot { it.proximityUuid == null && it.relevantText == null }.forEachIndexed { i, b ->
+            val node = beaconNode(i)
+            addQuad(self, SolidShare.BEACON, node, maxNumber = Int.MAX_VALUE)
+            addQuad(node, RDF.TYPE, SolidShare.BEACON_CLASS)
+            putStr(node, SolidShare.PROXIMITY_UUID, b.proximityUuid)
+            putInt(node, SolidShare.BEACON_MAJOR, b.major)
+            putInt(node, SolidShare.BEACON_MINOR, b.minor)
+            putStr(node, SolidShare.RELEVANT_TEXT, b.relevantText)
         }
     }
 
@@ -530,6 +558,14 @@ public class TicketRDF : SolidRDFResource {
             serialNumber = str(self, SolidShare.SERIAL_NUMBER),
             groupingIdentifier = str(self, SolidShare.GROUPING_IDENTIFIER),
             organizationName = str(self, SolidShare.ORGANIZATION_NAME),
+            passTypeIdentifier = str(self, SolidShare.PASS_TYPE_IDENTIFIER),
+            teamIdentifier = str(self, SolidShare.TEAM_IDENTIFIER),
+            webServiceUrl = str(self, SolidShare.WEB_SERVICE_URL),
+            authenticationToken = str(self, SolidShare.AUTHENTICATION_TOKEN),
+            sharingProhibited = bool(self, SolidShare.SHARING_PROHIBITED),
+            relevantStartDate = str(self, SolidShare.RELEVANT_START_DATE),
+            relevantEndDate = str(self, SolidShare.RELEVANT_END_DATE),
+            beacons = readBeacons(),
         )
     }
 
@@ -605,6 +641,9 @@ public class TicketRDF : SolidRDFResource {
             foregroundColor = str(node, SolidShare.FOREGROUND_COLOR),
             backgroundColor = str(node, SolidShare.BACKGROUND_COLOR),
             labelColor = str(node, SolidShare.LABEL_COLOR),
+            stripColor = str(node, SolidShare.STRIP_COLOR),
+            footerBackgroundColor = str(node, SolidShare.FOOTER_BACKGROUND_COLOR),
+            logoSymbolName = str(node, SolidShare.LOGO_SYMBOL_NAME),
             logoText = str(node, SolidShare.LOGO_TEXT),
             logoImage = str(node, SolidShare.LOGO_IMAGE),
             iconImage = str(node, SolidShare.ICON_IMAGE),
@@ -622,6 +661,9 @@ public class TicketRDF : SolidRDFResource {
                 value = str(node, SolidShare.VALUE),
                 placement = enumOrNull<DetailPlacement>(str(node, SolidShare.PLACEMENT)),
                 order = int(node, SolidShare.ORDER),
+                changeMessage = str(node, SolidShare.CHANGE_MESSAGE),
+                textAlignment = str(node, SolidShare.TEXT_ALIGNMENT),
+                linkUrl = str(node, SolidShare.LINK_URL),
             ).takeUnless { it.label == null && it.value == null }
         }
 
@@ -632,6 +674,16 @@ public class TicketRDF : SolidRDFResource {
                 maxDistance = int(node, SolidShare.MAX_DISTANCE),
                 relevantText = str(node, SolidShare.RELEVANT_TEXT),
             ).takeUnless { it.geo == null && it.maxDistance == null && it.relevantText == null }
+        }
+
+    private fun readBeacons(): List<TicketBeacon> =
+        followAll(self, SolidShare.BEACON).mapNotNull { node ->
+            TicketBeacon(
+                proximityUuid = str(node, SolidShare.PROXIMITY_UUID),
+                major = int(node, SolidShare.BEACON_MAJOR),
+                minor = int(node, SolidShare.BEACON_MINOR),
+                relevantText = str(node, SolidShare.RELEVANT_TEXT),
+            ).takeUnless { it.proximityUuid == null && it.relevantText == null }
         }
 
     private fun readWifi(): List<TicketWifi> =
@@ -791,11 +843,16 @@ public class TicketRDF : SolidRDFResource {
         addQuad(geoNode, RDF.TYPE, Schema.GEO_COORDINATES)
         putDouble(geoNode, Schema.LATITUDE, geo.latitude)
         putDouble(geoNode, Schema.LONGITUDE, geo.longitude)
+        putDouble(geoNode, Schema.ELEVATION, geo.elevation)
     }
 
     private fun readGeo(parent: String): TicketGeo? {
         val node = follow(parent, Schema.GEO) ?: return null
-        val geo = TicketGeo(dbl(node, Schema.LATITUDE), dbl(node, Schema.LONGITUDE))
+        val geo = TicketGeo(
+            dbl(node, Schema.LATITUDE),
+            dbl(node, Schema.LONGITUDE),
+            dbl(node, Schema.ELEVATION),
+        )
         return geo.takeUnless { it.latitude == null && it.longitude == null }
     }
 
@@ -979,7 +1036,8 @@ public class TicketRDF : SolidRDFResource {
         allBlank(programName, membershipNumber, membershipStatus, pointsBalance, balance, balanceCurrency)
 
     private fun TicketStyle.isEmpty(): Boolean = allBlank(
-        foregroundColor, backgroundColor, labelColor, logoText,
+        foregroundColor, backgroundColor, labelColor, stripColor, footerBackgroundColor,
+        logoText, logoSymbolName,
         logoImage, iconImage, stripImage, thumbnailImage, backgroundImage, footerImage,
     )
 

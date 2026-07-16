@@ -6,19 +6,23 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBarcode
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBarcodeFormat
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBeacon
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketCategory
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketDetail
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEvent
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketGeo
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketJourney
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketMembership
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketOrganization
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketPerson
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketPlace
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketRelevantLocation
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketReservation
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketReservationStatus
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketSeat
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketSource
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketStop
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketStyle
 import com.erfangholami.androidsolidservices.shared.model.tickets.TransportMode
 import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import org.junit.Assert.assertEquals
@@ -225,6 +229,71 @@ class TicketRDFTest {
         )
 
         assertEquals(data.details, roundTrip(data).details)
+    }
+
+    @Test
+    fun `pass identity, relevancy interval and beacons round-trip`() {
+        val data = NewTicket(
+            title = "Full pkpass capture",
+            passTypeIdentifier = "pass.com.example.flight",
+            teamIdentifier = "TEAM99",
+            webServiceUrl = "https://example.com/passes/",
+            authenticationToken = "tok-abc",
+            sharingProhibited = true,
+            serialNumber = "SN-1",
+            groupingIdentifier = "trip-9",
+            relevantStartDate = "2026-07-07T07:40:30Z",
+            relevantEndDate = "2026-07-07T09:40:00Z",
+            beacons = listOf(
+                TicketBeacon(proximityUuid = "f1e2d3c4", major = 7, minor = 21, relevantText = "Near gate"),
+            ),
+            relevantLocations = listOf(
+                TicketRelevantLocation(
+                    geo = TicketGeo(latitude = 52.37, longitude = 4.89, elevation = 2.5),
+                    maxDistance = 150,
+                    relevantText = "Welcome",
+                ),
+            ),
+        )
+
+        val parsed = roundTrip(data)
+        assertEquals(data.passTypeIdentifier, parsed.passTypeIdentifier)
+        assertEquals(data.teamIdentifier, parsed.teamIdentifier)
+        assertEquals(data.webServiceUrl, parsed.webServiceUrl)
+        assertEquals(data.authenticationToken, parsed.authenticationToken)
+        assertEquals(data.sharingProhibited, parsed.sharingProhibited)
+        assertEquals(data.relevantStartDate, parsed.relevantStartDate)
+        assertEquals(data.relevantEndDate, parsed.relevantEndDate)
+        assertEquals(data.beacons, parsed.beacons)
+        assertEquals(data.relevantLocations, parsed.relevantLocations)
+    }
+
+    @Test
+    fun `style colours, logo symbol and rich detail attributes round-trip`() {
+        val data = NewTicket(
+            title = "Styled pass",
+            style = TicketStyle(
+                backgroundColor = "rgb(0,54,113)",
+                stripColor = "#123456",
+                footerBackgroundColor = "#001122",
+                logoSymbolName = "airplane",
+            ),
+            details = listOf(
+                TicketDetail(
+                    label = "Website",
+                    value = "Visit our site",
+                    placement = DetailPlacement.FOOTER,
+                    order = 0,
+                    changeMessage = "Gate changed to %@",
+                    textAlignment = "right",
+                    linkUrl = "https://example.com/help",
+                ),
+            ),
+        )
+
+        val parsed = roundTrip(data)
+        assertEquals(data.style, parsed.style)
+        assertEquals(data.details, parsed.details)
     }
 
     // ---- Model bridge --------------------------------------------------------------------------

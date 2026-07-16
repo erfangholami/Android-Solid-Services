@@ -131,6 +131,9 @@ public object Schema {
     public const val GEO: String = "${NAMESPACE}geo"
     public const val LATITUDE: String = "${NAMESPACE}latitude"
     public const val LONGITUDE: String = "${NAMESPACE}longitude"
+
+    /** The elevation of a location, in metres (`schema:elevation`). */
+    public const val ELEVATION: String = "${NAMESPACE}elevation"
     public const val LOGO: String = "${NAMESPACE}logo"
     public const val STREET_ADDRESS: String = "${NAMESPACE}streetAddress"
     public const val ADDRESS_LOCALITY: String = "${NAMESPACE}addressLocality"

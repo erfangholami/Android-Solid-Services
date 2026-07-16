@@ -75,6 +75,27 @@ public object SolidShare {
     /** Groups related passes, e.g. the legs of one trip (pkpass `groupingIdentifier`). */
     public const val GROUPING_IDENTIFIER: String = "${NAMESPACE}groupingIdentifier"
 
+    /** Apple pass type identifier of the imported pass (pkpass `passTypeIdentifier`). */
+    public const val PASS_TYPE_IDENTIFIER: String = "${NAMESPACE}passTypeIdentifier"
+
+    /** Apple developer team identifier of the pass signer (pkpass `teamIdentifier`). */
+    public const val TEAM_IDENTIFIER: String = "${NAMESPACE}teamIdentifier"
+
+    /** The issuer's pass-update web service base URL (pkpass `webServiceURL`). */
+    public const val WEB_SERVICE_URL: String = "${NAMESPACE}webServiceUrl"
+
+    /** The authentication token for the pass-update web service. */
+    public const val AUTHENTICATION_TOKEN: String = "${NAMESPACE}authenticationToken"
+
+    /** Whether the issuer prohibits sharing this pass (pkpass `sharingProhibited`). */
+    public const val SHARING_PROHIBITED: String = "${NAMESPACE}sharingProhibited"
+
+    /** The start of the pass relevancy interval (pkpass `relevantDates[].startDate`). */
+    public const val RELEVANT_START_DATE: String = "${NAMESPACE}relevantStartDate"
+
+    /** The end of the pass relevancy interval (pkpass `relevantDates[].endDate`). */
+    public const val RELEVANT_END_DATE: String = "${NAMESPACE}relevantEndDate"
+
     /** The issuing organisation's display name when no richer issuer node exists. */
     public const val ORGANIZATION_NAME: String = "${NAMESPACE}organizationName"
 
@@ -350,6 +371,15 @@ public object SolidShare {
     /** Pod URI of the strip image. */
     public const val STRIP_IMAGE: String = "${NAMESPACE}stripImage"
 
+    /** The pass's strip background colour (pkpass `stripColor`). */
+    public const val STRIP_COLOR: String = "${NAMESPACE}stripColor"
+
+    /** The pass's footer background colour (pkpass `footerBackgroundColor`). */
+    public const val FOOTER_BACKGROUND_COLOR: String = "${NAMESPACE}footerBackgroundColor"
+
+    /** An SF Symbol name the issuer uses as a logo (pkpass `logoSymbolName`). */
+    public const val LOGO_SYMBOL_NAME: String = "${NAMESPACE}logoSymbolName"
+
     /** Pod URI of the thumbnail image. */
     public const val THUMBNAIL_IMAGE: String = "${NAMESPACE}thumbnailImage"
 
@@ -372,6 +402,15 @@ public object SolidShare {
 
     /** `rdf:type` of a detail node. */
     public const val DETAIL_CLASS: String = "${NAMESPACE}Detail"
+
+    /** The alert format string shown when a detail's value changes (pkpass `changeMessage`). */
+    public const val CHANGE_MESSAGE: String = "${NAMESPACE}changeMessage"
+
+    /** The issuer's text alignment hint for a detail (pkpass `textAlignment`). */
+    public const val TEXT_ALIGNMENT: String = "${NAMESPACE}textAlignment"
+
+    /** A hyperlink carried by a detail's attributed value (pkpass `attributedValue`). */
+    public const val LINK_URL: String = "${NAMESPACE}linkUrl"
 
     /** The detail's label. */
     public const val LABEL: String = "${NAMESPACE}label"
@@ -416,6 +455,21 @@ public object SolidShare {
 
     /** The device should stay silent for the duration of the event or journey. */
     public const val SILENCE_REQUESTED: String = "${NAMESPACE}silenceRequested"
+
+    /** Links a ticket to a [BEACON_CLASS] node. Repeatable. */
+    public const val BEACON: String = "${NAMESPACE}beacon"
+
+    /** The class of a Bluetooth relevance beacon node (pkpass `beacons[]`). */
+    public const val BEACON_CLASS: String = "${NAMESPACE}Beacon"
+
+    /** The proximity UUID of a relevance beacon. */
+    public const val PROXIMITY_UUID: String = "${NAMESPACE}proximityUuid"
+
+    /** The major identifier of a relevance beacon. */
+    public const val BEACON_MAJOR: String = "${NAMESPACE}beaconMajor"
+
+    /** The minor identifier of a relevance beacon. */
+    public const val BEACON_MINOR: String = "${NAMESPACE}beaconMinor"
 
     // ---- Ticket: person -----------------------------------------------------------------------
 

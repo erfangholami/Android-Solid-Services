@@ -83,7 +83,7 @@ public enum class TicketEventStatus { SCHEDULED, RESCHEDULED, POSTPONED, CANCELL
 public enum class TransportMode { FLIGHT, TRAIN, BUS, BOAT }
 
 /** Where the issuer placed a [TicketDetail] on the original pass. */
-public enum class DetailPlacement { HEADER, PRIMARY, SECONDARY, AUXILIARY, BACK, ADDITIONAL }
+public enum class DetailPlacement { HEADER, PRIMARY, SECONDARY, AUXILIARY, BACK, ADDITIONAL, FOOTER }
 
 /**
  * One barcode on a ticket (`solidshare:Barcode`). A pass may carry several.
@@ -114,6 +114,7 @@ public data class TicketBarcode(
 public data class TicketGeo(
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val elevation: Double? = null,
 ) : Parcelable
 
 /**
@@ -317,7 +318,10 @@ public data class TicketStyle(
     val foregroundColor: String? = null,
     val backgroundColor: String? = null,
     val labelColor: String? = null,
+    val stripColor: String? = null,
+    val footerBackgroundColor: String? = null,
     val logoText: String? = null,
+    val logoSymbolName: String? = null,
     val logoImage: String? = null,
     val iconImage: String? = null,
     val stripImage: String? = null,
@@ -338,6 +342,9 @@ public data class TicketDetail(
     val value: String? = null,
     val placement: DetailPlacement? = null,
     val order: Int? = null,
+    val changeMessage: String? = null,
+    val textAlignment: String? = null,
+    val linkUrl: String? = null,
 ) : Parcelable
 
 /** A location that should surface the pass on the lock screen (`solidshare:RelevantLocation`). */
@@ -345,6 +352,15 @@ public data class TicketDetail(
 public data class TicketRelevantLocation(
     val geo: TicketGeo? = null,
     val maxDistance: Int? = null,
+    val relevantText: String? = null,
+) : Parcelable
+
+/** A Bluetooth beacon that should surface the pass nearby (`solidshare:Beacon`). */
+@Parcelize
+public data class TicketBeacon(
+    val proximityUuid: String? = null,
+    val major: Int? = null,
+    val minor: Int? = null,
     val relevantText: String? = null,
 ) : Parcelable
 
@@ -394,6 +410,14 @@ public data class NewTicket(
     val serialNumber: String? = null,
     val groupingIdentifier: String? = null,
     val organizationName: String? = null,
+    val passTypeIdentifier: String? = null,
+    val teamIdentifier: String? = null,
+    val webServiceUrl: String? = null,
+    val authenticationToken: String? = null,
+    val sharingProhibited: Boolean? = null,
+    val relevantStartDate: String? = null,
+    val relevantEndDate: String? = null,
+    val beacons: List<TicketBeacon> = emptyList(),
 ) : Parcelable
 
 /**
@@ -433,6 +457,14 @@ public data class Ticket(
     val serialNumber: String? = null,
     val groupingIdentifier: String? = null,
     val organizationName: String? = null,
+    val passTypeIdentifier: String? = null,
+    val teamIdentifier: String? = null,
+    val webServiceUrl: String? = null,
+    val authenticationToken: String? = null,
+    val sharingProhibited: Boolean? = null,
+    val relevantStartDate: String? = null,
+    val relevantEndDate: String? = null,
+    val beacons: List<TicketBeacon> = emptyList(),
     val artifactUri: String? = null,
     val artifactVerified: Boolean? = null,
     val createdAt: String? = null,
@@ -478,6 +510,14 @@ public data class Ticket(
                 serialNumber = core.serialNumber,
                 groupingIdentifier = core.groupingIdentifier,
                 organizationName = core.organizationName,
+                passTypeIdentifier = core.passTypeIdentifier,
+                teamIdentifier = core.teamIdentifier,
+                webServiceUrl = core.webServiceUrl,
+                authenticationToken = core.authenticationToken,
+                sharingProhibited = core.sharingProhibited,
+                relevantStartDate = core.relevantStartDate,
+                relevantEndDate = core.relevantEndDate,
+                beacons = core.beacons,
                 artifactUri = ticketRdf.getArtifactUri(),
                 artifactVerified = ticketRdf.getArtifactVerified(),
                 createdAt = ticketRdf.getCreated(),
