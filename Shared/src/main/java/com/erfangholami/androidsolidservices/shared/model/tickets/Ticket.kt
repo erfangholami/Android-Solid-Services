@@ -500,6 +500,8 @@ public data class TicketSummary(
     val eventStart: String? = null,
     val issuer: String? = null,
     val validThrough: String? = null,
+    val backgroundColor: String? = null,
+    val foregroundColor: String? = null,
 ) : Parcelable
 
 /** A list of [TicketSummary] rows, wrapped as one [Parcelable] so it can cross the AIDL boundary. */

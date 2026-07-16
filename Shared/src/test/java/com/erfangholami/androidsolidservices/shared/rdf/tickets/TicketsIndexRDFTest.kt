@@ -5,6 +5,7 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketCategory
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEvent
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketOrganization
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketStyle
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketSummary
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -47,6 +48,30 @@ class TicketsIndexRDFTest {
             ),
             rows[0],
         )
+    }
+
+    @Test
+    fun `pass colours are cached on the row when the ticket has a style`() {
+        val styled = TicketRDF("https://alice.pod/tickets/t9.ttl#this").apply {
+            setTicketData(
+                NewTicket(
+                    title = "Flight",
+                    category = TicketCategory.FLIGHT,
+                    style = TicketStyle(
+                        backgroundColor = "rgb(60,65,76)",
+                        foregroundColor = "rgb(255,255,255)",
+                    ),
+                ),
+            )
+        }
+        val index = TicketsIndexRDF(indexUri)
+        index.addTicket(styled)
+        index.addTicket(ticket("t1", "Dune III"))
+
+        val rows = index.getTickets().sortedBy { it.uri }
+        assertEquals("rgb(60,65,76)", rows[1].backgroundColor)
+        assertEquals("rgb(255,255,255)", rows[1].foregroundColor)
+        assertEquals(null, rows[0].backgroundColor)
     }
 
     @Test

@@ -108,6 +108,9 @@ public class TicketRDF : SolidRDFResource {
     /** The validity end (`schema:validThrough`, ISO-8601), or `null`. */
     public fun getValidThrough(): String? = str(self, Schema.VALID_THROUGH)
 
+    /** The pass's presentation (colours, logo), or `null` when none was stored. */
+    public fun getStyle(): TicketStyle? = readStyle()
+
     /** The date a wallet list should sort by: the event start, or a journey's departure. */
     public fun getIndexStartDate(): String? =
         reservationForTargets().firstNotNullOfOrNull { node ->

@@ -61,12 +61,15 @@ public class TicketsIndexRDF : SolidRDFResource {
                     eventStart = findPropertyForSubject(subject, Schema.START_DATE),
                     issuer = findPropertyForSubject(subject, SolidShare.ISSUER),
                     validThrough = findPropertyForSubject(subject, Schema.VALID_THROUGH),
+                    backgroundColor = findPropertyForSubject(subject, SolidShare.BACKGROUND_COLOR),
+                    foregroundColor = findPropertyForSubject(subject, SolidShare.FOREGROUND_COLOR),
                 )
             }
 
     /**
      * Caches a row for [ticket]: its URI, title, category, event start, issuer
-     * display name, and validity end.
+     * display name, validity end, and pass colours (so a wallet list can paint
+     * each pass without fetching its document).
      */
     public fun addTicket(ticket: TicketRDF) {
         val subject = ticket.getIdentifier()
@@ -81,6 +84,12 @@ public class TicketsIndexRDF : SolidRDFResource {
         }
         ticket.getValidThrough()?.let {
             addQuadLiteral(subject, Schema.VALID_THROUGH, it, XSD.dateTypeFor(it))
+        }
+        ticket.getStyle()?.backgroundColor?.let {
+            addQuadLiteral(subject, SolidShare.BACKGROUND_COLOR, it, XSD.STRING)
+        }
+        ticket.getStyle()?.foregroundColor?.let {
+            addQuadLiteral(subject, SolidShare.FOREGROUND_COLOR, it, XSD.STRING)
         }
     }
 
