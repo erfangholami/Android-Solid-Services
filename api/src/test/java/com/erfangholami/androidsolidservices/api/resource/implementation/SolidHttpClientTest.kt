@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
 import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
+import com.erfangholami.androidsolidservices.shared.model.resource.NonRDFResource
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.runBlocking
@@ -209,6 +210,45 @@ class SolidHttpClientTest {
         } finally {
             other.shutdown()
         }
+    }
+
+    @Test
+    fun `getPublic follows a 303 to the document it names`() {
+        server.enqueue(
+            MockResponse().setResponseCode(303).addHeader("Location", server.url("/card?lookup").toString()),
+        )
+        server.enqueue(
+            MockResponse().setResponseCode(200)
+                .addHeader("Content-Type", "text/plain")
+                .setBody("hello"),
+        )
+
+        val result = runBlocking { client.getPublic(url("/card"), NonRDFResource::class.java) }
+
+        assertTrue(
+            "an anonymous read must chase the redirect identity hosts serve profiles behind, got $result",
+            result is SolidResult.Success,
+        )
+        assertEquals(2, server.requestCount)
+        server.takeRequest()
+        val followed = server.takeRequest()
+        assertEquals("/card?lookup", followed.path)
+        assertNull("the public path carries no credentials", followed.getHeader("Authorization"))
+    }
+
+    @Test
+    fun `headPublic follows a redirect and keeps the HEAD method`() {
+        server.enqueue(
+            MockResponse().setResponseCode(301).addHeader("Location", server.url("/moved").toString()),
+        )
+        server.enqueue(MockResponse().setResponseCode(200))
+
+        val result = runBlocking { client.headPublic(url("/r")) }
+
+        assertTrue(result is SolidResult.Success)
+        assertEquals(2, server.requestCount)
+        server.takeRequest()
+        assertEquals("HEAD", server.takeRequest().method)
     }
 
     @Test

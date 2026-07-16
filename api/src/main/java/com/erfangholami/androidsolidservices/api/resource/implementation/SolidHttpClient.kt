@@ -96,6 +96,35 @@ internal class SolidHttpClient(
         SolidRawResponse(statusCode, responseHeaders, bodyBytes, effectiveUri)
     }
 
+    /**
+     * Sends one **unauthenticated** request, manually following redirects — the transport has
+     * them disabled (see [httpClient]), and the authenticated paths re-implement the walk in
+     * [executeAuthenticated]. The anonymous read path needs the same treatment: identity hosts
+     * serve public WebID profiles behind a `303` (e.g. `id.inrupt.com/<name>` → `…?lookup`),
+     * so a single-shot GET surfaces the redirect as a failure and callers wrongly conclude the
+     * document is unreadable. There are no credentials here, so every hop can be followed
+     * as-is; a `303` downgrades a non-GET to GET per HTTP semantics.
+     */
+    private suspend fun sendPublicFollowingRedirects(
+        method: String,
+        uri: URI,
+        accept: String?,
+        headers: Map<String, String>,
+    ): SolidRawResponse {
+        var currentMethod = method
+        var currentUri = uri
+        var hops = 0
+        while (true) {
+            val response = send(method = currentMethod, uri = currentUri, accept = accept, headers = headers)
+            val target = redirectTarget(response, currentUri)
+            if (target == null || hops++ >= MAX_REDIRECTS) return response
+            if (response.statusCode == HTTP_SEE_OTHER && currentMethod != "GET" && currentMethod != "HEAD") {
+                currentMethod = "GET"
+            }
+            currentUri = target
+        }
+    }
+
     suspend fun <T : Resource> get(
         webId: String,
         uri: URI,
@@ -253,7 +282,7 @@ internal class SolidHttpClient(
             val response = readCached(
                 SolidResponseCache.PUBLIC_PRINCIPAL, "GET", uri, accept, ttlFor(uri, clazz)
             ) { cond ->
-                send(method = "GET", uri = uri, accept = accept, headers = cond)
+                sendPublicFollowingRedirects(method = "GET", uri = uri, accept = accept, headers = cond)
             }
             if (response.isSuccessful()) {
                 SolidResult.Success(SolidResourceParser.parse(response, clazz))
@@ -274,7 +303,7 @@ internal class SolidHttpClient(
                 accept = null,
                 ttlMillis = ttlFor(uri, null)
             ) { cond ->
-                send(method = "HEAD", uri = uri, headers = cond)
+                sendPublicFollowingRedirects(method = "HEAD", uri = uri, accept = null, headers = cond)
             }
             if (response.isSuccessful()) {
                 SolidResult.Success(SolidMetadata.from(SolidHeaders(response.headers.toMultimap())))

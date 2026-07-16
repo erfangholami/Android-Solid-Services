@@ -201,6 +201,14 @@ internal class AuthenticatorImplementation internal constructor(
         )
 
         val realWebId = userInfo.webId
+        if (finalProfile.authState.refreshToken == null) {
+            Log.w(
+                AUTH_LOG_TAG,
+                "Login for $realWebId returned no refresh token; the session will last only until " +
+                    "the access token expires. Some providers withhold offline_access unless the " +
+                    "user opts to stay logged in on the consent screen.",
+            )
+        }
         val previousKeyId = profileManager.getProfileOrNull(realWebId)?.dpopKeyId
         profileManager.writeProfile(realWebId, finalProfile)
         profileManager.setActiveWebId(realWebId)

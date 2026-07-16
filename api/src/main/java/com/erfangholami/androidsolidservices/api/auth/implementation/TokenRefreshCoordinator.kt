@@ -30,6 +30,19 @@ private const val REFRESH_COALESCE_MS = 5_000L
 private const val REFRESH_LEAD_MS = 60_000L
 
 /**
+ * Synthetic OAuth error for a refresh attempted on a session that holds no refresh token.
+ * Deliberately **not** in [TokenRefreshCoordinator.isTerminalRefreshError]'s set: "cannot
+ * refresh" must never be conflated with the server revoking the grant (`invalid_grant`).
+ */
+private const val ERROR_NO_REFRESH_TOKEN = "no_refresh_token"
+
+/**
+ * Synthetic OAuth error recorded when a refresh-token-less session's access token finally
+ * expires — the one case where such a session genuinely ends and re-login is required.
+ */
+private const val ERROR_SESSION_EXPIRED = "session_expired"
+
+/**
  * Acquires and refreshes OAuth tokens for a WebID: the initial code-for-token exchange, DPoP-bound
  * silent refresh (RFC 9449 nonce handling that AppAuth cannot do), refresh-token-reuse coalescing,
  * and the expiry policy. Split out of [AuthenticatorImplementation]; behaviour is unchanged.
@@ -74,6 +87,13 @@ internal class TokenRefreshCoordinator(
         if (profile.authState.lastAuthorizationResponse == null) {
             return Pair(null, profile.authState.authorizationException)
         }
+        // Without a refresh token there is nothing to send to the token endpoint: AppAuth's
+        // createTokenRefreshRequest() would throw, and the DPoP path used to synthesize
+        // invalid_grant here — which read as "the server revoked the session" and terminally
+        // expired an account whose access token was still perfectly valid.
+        if (isRefresh && profile.authState.refreshToken == null) {
+            return Pair(null, tokenError(ERROR_NO_REFRESH_TOKEN, "No refresh token held for this session."))
+        }
 
         val discoveryDoc = profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!
 
@@ -115,7 +135,7 @@ internal class TokenRefreshCoordinator(
         val authState = profile.authState
         val config = authState.authorizationServiceConfiguration!!
         val refreshToken = authState.refreshToken
-            ?: return Pair(null, AuthorizationException.TokenRequestErrors.INVALID_GRANT)
+            ?: return Pair(null, tokenError(ERROR_NO_REFRESH_TOKEN, "No refresh token held for this session."))
         val clientId = authState.lastRegistrationResponse?.clientId
             ?: authState.lastAuthorizationResponse?.request?.clientId
             ?: return Pair(null, AuthorizationException.TokenRequestErrors.INVALID_CLIENT)
@@ -205,6 +225,9 @@ internal class TokenRefreshCoordinator(
 
             val currentProfile = profileManager.getProfileOrNull(webId) ?: return@withLock profile
             if (!forceRefresh && !needsTokenRefresh(currentProfile)) return@withLock currentProfile
+            if (currentProfile.authState.refreshToken == null) {
+                return@withLock expireOnlyIfAccessTokenSpent(webId, currentProfile)
+            }
 
             val (tokenResponse, exception) = requestToken(currentProfile, isRefresh = true)
             when {
@@ -245,6 +268,35 @@ internal class TokenRefreshCoordinator(
                 }
             }
         }
+    }
+
+    /**
+     * Resolves a refresh request for a session that was never issued a refresh token (some
+     * providers withhold `offline_access` — e.g. Community Solid Server grants it only when the
+     * user ticks "remember me" on its consent screen). Being unable to refresh is not, by
+     * itself, the end of the session: the existing access token keeps authenticating requests
+     * until it genuinely expires — a `401`-driven forced refresh must not kill a still-valid
+     * session. Only once the access token is spent is the terminal expiry recorded, so the
+     * account surfaces in `expiredProfilesFlow` for re-login instead of erroring forever.
+     */
+    private suspend fun expireOnlyIfAccessTokenSpent(webId: String, profile: Profile): Profile {
+        if (!isAccessTokenHardExpired(profile)) return profile
+        // Already terminally recorded — repeated probes of a dead session must not keep
+        // re-logging and re-writing the same expiry.
+        if (!profile.authState.isAuthorized) return profile
+        Log.w(
+            AUTH_LOG_TAG,
+            "Session for $webId has an expired access token and no refresh token to renew it; " +
+                "marking the session expired.",
+        )
+        val updatedAuthState = deepCopyAuthState(profile.authState)
+        updatedAuthState.update(
+            null as TokenResponse?,
+            tokenError(ERROR_SESSION_EXPIRED, "The access token expired and the provider issued no refresh token."),
+        )
+        val updated = profile.copy(authState = updatedAuthState)
+        profileManager.writeProfile(webId, updated)
+        return updated
     }
 
     /**
