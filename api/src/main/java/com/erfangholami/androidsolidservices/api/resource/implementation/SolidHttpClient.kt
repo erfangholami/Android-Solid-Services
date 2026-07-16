@@ -713,13 +713,13 @@ internal class SolidHttpClient(
      * [from] (so a relative `Location` works), or `null` when this is not a redirect
      * the client follows.
      */
-    private fun redirectTarget(response: SolidRawResponse, from: URI): URI? {
+    internal fun redirectTarget(response: SolidRawResponse, from: URI): URI? {
         if (response.statusCode !in REDIRECT_CODES) return null
         val location = response.headers[HTTPHeaderName.LOCATION]?.takeIf { it.isNotBlank() } ?: return null
         return runCatching { from.resolve(location) }.getOrNull()
     }
 
-    private fun sameOrigin(a: URI, b: URI): Boolean =
+    internal fun sameOrigin(a: URI, b: URI): Boolean =
         a.scheme.equals(b.scheme, ignoreCase = true) &&
                 a.authority.equals(b.authority, ignoreCase = true)
 

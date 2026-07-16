@@ -1,5 +1,6 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
+import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidResourceParser
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
@@ -28,10 +29,35 @@ internal class WebIdResolver {
         authHeadersProvider: suspend (httpMethod: String, uri: String) -> Map<String, String>,
         nonceSink: (forUri: String, nonce: String) -> Unit,
     ): WebId {
-        val uri = URI.create(webIdUri)
+        val startUri = URI.create(webIdUri)
         val hasToken = tokenProvider() != null
-        val headers = if (hasToken) authHeadersProvider("GET", webIdUri) else emptyMap()
 
+        var currentUri = startUri
+        var hops = 0
+        while (true) {
+            val attachAuth = hasToken && solidHttpClient.sameOrigin(startUri, currentUri)
+            val response = fetch(currentUri, attachAuth, authHeadersProvider, nonceSink)
+
+            val target = solidHttpClient.redirectTarget(response, currentUri)
+            if (target != null && hops++ < SolidHttpClient.MAX_REDIRECTS) {
+                currentUri = target
+                continue
+            }
+
+            if (!response.isSuccessful()) {
+                throw Exception("Could not resolve WebID '$webIdUri'. HTTP ${response.statusCode}")
+            }
+            return SolidResourceParser.parse(response, WebId::class.java)
+        }
+    }
+
+    private suspend fun fetch(
+        uri: URI,
+        attachAuth: Boolean,
+        authHeadersProvider: suspend (httpMethod: String, uri: String) -> Map<String, String>,
+        nonceSink: (forUri: String, nonce: String) -> Unit,
+    ): SolidRawResponse {
+        val headers = if (attachAuth) authHeadersProvider("GET", uri.toString()) else emptyMap()
         var response = solidHttpClient.send(
             method = "GET",
             uri = uri,
@@ -40,10 +66,10 @@ internal class WebIdResolver {
         )
 
         val nonce = response.headers[HTTPHeaderName.DPOP_NONCE]
-        if (nonce != null && hasToken) {
-            nonceSink(webIdUri, nonce)
+        if (nonce != null && attachAuth) {
+            nonceSink(uri.toString(), nonce)
             if (response.statusCode == 401) {
-                val retryHeaders = authHeadersProvider("GET", webIdUri)
+                val retryHeaders = authHeadersProvider("GET", uri.toString())
                 response = solidHttpClient.send(
                     method = "GET",
                     uri = uri,
@@ -52,11 +78,6 @@ internal class WebIdResolver {
                 )
             }
         }
-
-        if (!response.isSuccessful()) {
-            throw Exception("Could not resolve WebID '$webIdUri'. HTTP ${response.statusCode}")
-        }
-
-        return SolidResourceParser.parse(response, WebId::class.java)
+        return response
     }
 }

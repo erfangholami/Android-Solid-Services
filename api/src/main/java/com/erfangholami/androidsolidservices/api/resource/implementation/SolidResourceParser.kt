@@ -10,7 +10,6 @@ import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import java.io.InputStream
-import java.net.URI
 
 /**
  * Thrown when a Solid pod returns an RDF resource in a serialization this
@@ -73,13 +72,13 @@ internal object SolidResourceParser {
         val quads = rdfQuads(response, contentType, i18nDirection = false)
         return clazz
             .getConstructor(
-                URI::class.java,
+                String::class.java,
                 String::class.java,
                 List::class.java,
                 SolidHeaders::class.java
             )
             .newInstance(
-                response.uri,
+                response.uri.toString(),
                 contentType,
                 quads,
                 SolidHeaders(response.headers.toMultimap()),
@@ -90,13 +89,13 @@ internal object SolidResourceParser {
         val quads = rdfQuads(response, contentType, i18nDirection = true)
         return clazz
             .getConstructor(
-                URI::class.java,
+                String::class.java,
                 String::class.java,
                 List::class.java,
                 SolidHeaders::class.java
             )
             .newInstance(
-                response.uri,
+                response.uri.toString(),
                 contentType,
                 quads,
                 SolidHeaders(response.headers.toMultimap()),
@@ -144,26 +143,26 @@ internal object SolidResourceParser {
         return try {
             clazz
                 .getConstructor(
-                    URI::class.java,
+                    String::class.java,
                     String::class.java,
                     InputStream::class.java,
                     SolidHeaders::class.java
                 )
-                .newInstance(response.uri, contentType, body, headers)
+                .newInstance(response.uri.toString(), contentType, body, headers)
         } catch (_: NoSuchMethodException) {
             try {
                 clazz
                     .getConstructor(
-                        URI::class.java,
+                        String::class.java,
                         String::class.java,
                         SolidHeaders::class.java,
                         InputStream::class.java
                     )
-                    .newInstance(response.uri, contentType, headers, body)
+                    .newInstance(response.uri.toString(), contentType, headers, body)
             } catch (_: NoSuchMethodException) {
                 clazz
-                    .getConstructor(URI::class.java, String::class.java, InputStream::class.java)
-                    .newInstance(response.uri, contentType, body)
+                    .getConstructor(String::class.java, String::class.java, InputStream::class.java)
+                    .newInstance(response.uri.toString(), contentType, body)
             }
         }
     }

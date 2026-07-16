@@ -12,14 +12,22 @@ import org.json.JSONObject
  */
 internal object IdTokenClaims {
 
-    /** The caller's WebID: the `webId` claim, falling back to `sub`. */
+    /** The caller's WebID: the `webid` claim, falling back to `sub`. */
     fun webId(idToken: String): String =
         try {
-            val claims = payload(idToken)
-            claims.optString("webId").takeIf { it.isNotEmpty() } ?: claims.getString("sub")
+            webIdFrom(payload(idToken))
         } catch (ex: Exception) {
             throw IllegalStateException("Unable to parse ID token", ex)
         }
+
+    /**
+     * Picks the WebID out of decoded ID-token claims: the Solid-OIDC `webid` claim — lower-case, as
+     * the spec mandates — falling back to `sub`. Kept as an internal seam so the wire claim name is
+     * unit-testable without decoding a JWT, and so a blanket identifier rename can't silently
+     * camel-case the over-the-wire key again.
+     */
+    internal fun webIdFrom(claims: JSONObject): String =
+        claims.optString("webid").takeIf { it.isNotEmpty() } ?: claims.getString("sub")
 
     /** The WebID wrapped as [UserInfo]. */
     fun userInfo(idToken: String): UserInfo = UserInfo(webId(idToken))
