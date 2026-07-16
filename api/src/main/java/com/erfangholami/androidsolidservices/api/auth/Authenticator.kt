@@ -27,8 +27,16 @@ public interface Authenticator {
 
     /** Emits the currently active [SolidAccount], or `null` if no user is active. */
     public val activeProfileFlow: StateFlow<SolidAccount?>
-    /** Emits the list of all currently signed-in accounts. */
+    /** Emits the list of all currently signed-in accounts (excluding expired sessions). */
     public val loggedInProfilesFlow: StateFlow<List<SolidAccount>>
+    /**
+     * Emits accounts that were signed in but whose session has terminally expired — the provider
+     * rejected the refresh token (e.g. `invalid_grant` after a server-side session timeout), so
+     * they no longer appear in [loggedInProfilesFlow]. Their local state is retained: signing in
+     * again with the same WebID restores the account in place. [SolidAccount.sessionError]
+     * carries the recorded reason, and [SolidAccount.isAuthorized] is `false`.
+     */
+    public val expiredProfilesFlow: StateFlow<List<SolidAccount>>
     /** Emits `true` when at least one user is fully authorized. */
     public val isAuthorizedFlow: StateFlow<Boolean>
     /** Emits the WebID of the active user, or `null` if no user is active. */

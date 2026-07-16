@@ -57,6 +57,7 @@ internal class AuthenticatorImplementation internal constructor(
 
     override val activeProfileFlow: StateFlow<SolidAccount?> get() = profileManager.activeAccountFlow
     override val loggedInProfilesFlow: StateFlow<List<SolidAccount>> get() = profileManager.loggedInAccountsFlow
+    override val expiredProfilesFlow: StateFlow<List<SolidAccount>> get() = profileManager.expiredAccountsFlow
     override val isAuthorizedFlow: StateFlow<Boolean> get() = profileManager.isAuthorizedFlow
     override val activeWebIdFlow: StateFlow<String?> get() = profileManager.activeWebIdFlow
 

@@ -50,6 +50,20 @@ internal class ProfileManager private constructor(
         }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
+    /**
+     * Accounts that were signed in but whose session has terminally expired (a token refresh was
+     * rejected with `invalid_grant`/`invalid_client`, so [net.openid.appauth.AuthState] is no
+     * longer authorized). Their local state — identity, WebID document, DPoP key — is retained;
+     * signing in again with the same WebID restores the account in place.
+     */
+    val expiredProfilesFlow: StateFlow<List<Profile>> = allProfilesFlow
+        .map { profileList ->
+            profileList.profiles.values.filter {
+                !it.authState.isAuthorized && it.userInfo != null && it.webId != null
+            }
+        }
+        .stateIn(scope, SharingStarted.Eagerly, emptyList())
+
     val activeProfileFlow: StateFlow<Profile?> = combine(
         allProfilesFlow,
         activeWebIdFlow,
@@ -74,11 +88,47 @@ internal class ProfileManager private constructor(
         .map { profiles -> profiles.map { it.toAccount() } }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
+    val expiredAccountsFlow: StateFlow<List<SolidAccount>> = expiredProfilesFlow
+        .map { profiles -> profiles.map { it.toAccount() } }
+        .stateIn(scope, SharingStarted.Eagerly, emptyList())
+
     init {
         scope.launch {
             userRepository.readAllProfiles().first()
             userRepository.activeWebIdFlow().first()
             initDeferred.complete(Unit)
+        }
+        scope.launch {
+            initDeferred.await()
+            combine(allProfilesFlow, activeWebIdFlow) { profiles, activeId ->
+                profiles to activeId
+            }.collect { (profileList, activeId) ->
+                reconcileActiveWebId(profileList, activeId)
+            }
+        }
+    }
+
+    /**
+     * Keeps the persisted active WebID pointing at a usable account. When the active account's
+     * session expires (or its profile disappears) while another signed-in account remains, the
+     * selection moves to that account instead of dangling on one that is no longer authorized —
+     * previously the UI listed the remaining signed-in accounts with none of them selected. An
+     * expired account stays selected only when no authorized account remains, so a re-login
+     * surface can still show which account to restore.
+     */
+    private suspend fun reconcileActiveWebId(profileList: ProfileList, activeId: String?) {
+        val activeProfile = activeId?.let { profileList.profiles[it] }
+        val activeIsUsable = activeProfile != null &&
+            activeProfile.authState.isAuthorized && activeProfile.userInfo != null
+        if (activeIsUsable) return
+
+        val fallback = profileList.profiles.entries.firstOrNull { (_, profile) ->
+            profile.authState.isAuthorized && profile.userInfo != null
+        }?.key
+
+        when {
+            fallback != null -> userRepository.setActiveWebId(fallback)
+            activeId != null && activeProfile == null -> userRepository.setActiveWebId(null)
         }
     }
 

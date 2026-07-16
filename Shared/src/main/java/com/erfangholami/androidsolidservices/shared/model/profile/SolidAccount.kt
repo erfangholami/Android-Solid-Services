@@ -11,8 +11,16 @@ package com.erfangholami.androidsolidservices.shared.model.profile
  *
  * @property userInfo The OIDC `userinfo` response for this account, or `null` if not yet fetched.
  * @property webId    The parsed WebID profile document, or `null` if not yet fetched.
+ * @property isAuthorized Whether this account currently holds a usable session. `false` for an
+ *   account whose session has terminally expired — it is surfaced via
+ *   [com.erfangholami.androidsolidservices.api.auth.Authenticator.expiredProfilesFlow] and needs a
+ *   fresh sign-in with the same WebID to be restored.
+ * @property sessionError The OAuth error recorded when the session terminally expired (e.g.
+ *   `invalid_grant: token expired`), or `null` while the session is healthy.
  */
 public data class SolidAccount(
     val userInfo: UserInfo? = null,
     val webId: WebId? = null,
+    val isAuthorized: Boolean = true,
+    val sessionError: String? = null,
 )
