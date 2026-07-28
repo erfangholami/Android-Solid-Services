@@ -12,7 +12,7 @@ plugins {
 
 android {
     namespace = "com.erfangholami.androidsolidservices.client"
-    compileSdk = 36
+    compileSdk = 37
     resourcePrefix = "ass_"
 
     defaultConfig {

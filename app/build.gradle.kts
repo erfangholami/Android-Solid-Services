@@ -12,13 +12,13 @@ plugins {
 
 android {
     namespace = "com.erfangholami.androidsolidservices"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         applicationId = "com.erfangholami.androidsolidservices"
         minSdk = 26
         targetSdk = 33
-        versionCode = 9
-        versionName = "0.5.1"
+        versionCode = 10
+        versionName = "0.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
