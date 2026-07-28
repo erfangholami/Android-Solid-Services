@@ -171,4 +171,35 @@ class TicketEngineTest {
         val index = fake.store[indexUri] as TicketsIndexRDF
         assertEquals("Concert (moved)", index.getTickets().single().title)
     }
+
+    @Test
+    fun `putArtifact rewrites the artifact and provided image roles keeping the rest`() =
+        runBlocking {
+            val created = engine.create(
+                ownerWebId = webId,
+                newTicket = NewTicket(title = "Concert"),
+                storage = storage,
+                artifact = byteArrayOf(1),
+                artifactContentType = "application/vnd.apple.pkpass",
+                images = NewTicketImages(logo = byteArrayOf(2), strip = byteArrayOf(3)),
+            ).getOrThrow()
+            val ticketDir = created.uri.removeSuffix("ticket#this")
+
+            val refreshed = engine.putArtifact(
+                ownerWebId = webId,
+                ticketUri = created.uri,
+                artifact = byteArrayOf(9),
+                artifactContentType = "application/vnd.apple.pkpass",
+                images = NewTicketImages(strip = byteArrayOf(8)),
+            ).getOrThrow()
+
+            assertArrayEquals(byteArrayOf(9), fake.rawPuts["${ticketDir}artifact.pkpass"])
+            assertArrayEquals(byteArrayOf(8), fake.rawPuts["${ticketDir}strip.png"])
+            assertArrayEquals(byteArrayOf(2), fake.rawPuts["${ticketDir}logo.png"])
+            assertEquals(
+                TicketImages(logo = "${ticketDir}logo.png", strip = "${ticketDir}strip.png"),
+                refreshed.images,
+            )
+            assertEquals("${ticketDir}artifact.pkpass", refreshed.artifactUri)
+        }
 }

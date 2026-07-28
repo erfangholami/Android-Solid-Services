@@ -157,6 +157,58 @@ internal class SolidTicketsDataModuleHelper {
         return fresh
     }
 
+    suspend fun putTicketArtifact(
+        ownerWebId: String,
+        ticketUri: URI,
+        artifact: ByteArray,
+        artifactContentType: String,
+        images: NewTicketImages?,
+    ): TicketRDF {
+        val ticketUriString = ticketUri.toString()
+        val documentUri = ticketUriString.substringBefore('#')
+        val holder = containerOf(documentUri)
+        val existing = getTicket(ownerWebId, ticketUri)
+        val artifactUri = existing.getArtifactUri()
+            ?: if (isPerTicketDocument(documentUri)) {
+                "${holder}artifact${artifactExtensionFor(artifactContentType)}"
+            } else {
+                documentUri.substringBeforeLast('.') + artifactExtensionFor(artifactContentType)
+            }
+        putBinary(ownerWebId, artifactUri, artifactContentType, artifact)
+        val storedImages = images
+            ?.takeIf { !it.isEmpty && isPerTicketDocument(documentUri) }
+            ?.let { uploadImages(ownerWebId, holder, it) }
+        val fresh = solidResourceManager.casUpdate(
+            ownerWebId,
+            read = {
+                solidResourceManager.read(ownerWebId, ticketUriString, TicketRDF::class.java)
+            },
+            mutate = { ticketRdf ->
+                ticketRdf.setArtifactUri(artifactUri)
+                if (storedImages != null) {
+                    val current = ticketRdf.getImages()
+                    ticketRdf.setImages(
+                        TicketImages(
+                            logo = storedImages.logo ?: current?.logo,
+                            icon = storedImages.icon ?: current?.icon,
+                            strip = storedImages.strip ?: current?.strip,
+                            thumbnail = storedImages.thumbnail ?: current?.thumbnail,
+                            footer = storedImages.footer ?: current?.footer,
+                            background = storedImages.background ?: current?.background,
+                        ),
+                    )
+                }
+                ticketRdf.setModified(nowIsoDateTime())
+                true
+            },
+        ).getOrThrow()
+        updateIndex(ownerWebId, resolveIndexFor(ownerWebId, ticketUriString)) {
+            if (!it.updateTicket(fresh)) it.addTicket(fresh)
+            true
+        }
+        return fresh
+    }
+
     suspend fun deleteTicket(
         ownerWebId: String,
         ticketUri: URI,

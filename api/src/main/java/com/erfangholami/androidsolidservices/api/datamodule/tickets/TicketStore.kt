@@ -88,6 +88,20 @@ public interface TicketStore {
     ): SolidResult<Ticket>
 
     /**
+     * Replaces the binary attachments stored with the ticket at [ticketUri] — the original
+     * artifact and, when [images] is non-null, the provided pass-image roles — refreshing the
+     * document's links and `dcterms:modified`. Used when an issuer publishes an updated pass
+     * (the pkpass web service). Roles absent from [images] keep their stored files.
+     */
+    public suspend fun putArtifact(
+        ownerWebId: String,
+        ticketUri: String,
+        artifact: ByteArray,
+        artifactContentType: String,
+        images: NewTicketImages? = null,
+    ): SolidResult<Ticket>
+
+    /**
      * Deletes the ticket at [ticketUri]: its index row and its whole sub-container — document,
      * artifact and stored images. A legacy flat ticket (document directly inside the tickets
      * container) loses its document and artifact binary instead. Returns the removed ticket.

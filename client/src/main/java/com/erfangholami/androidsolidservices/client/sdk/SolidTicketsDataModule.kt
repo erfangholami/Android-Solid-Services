@@ -105,6 +105,21 @@ public class SolidTicketsDataModule private constructor(context: Context) {
     ): Ticket? = ticket { tickets, cb -> tickets.updateTicket(webId, ticketUri, updated, cb) }
 
     /**
+     * Replaces the ticket's stored artifact (and any provided pass-image roles) with fresh
+     * bytes, refreshing the document links. Travels inline over Binder, so it is subject to
+     * the ~1 MB transaction limit.
+     */
+    public suspend fun putTicketArtifact(
+        webId: String,
+        ticketUri: String,
+        artifact: ByteArray,
+        artifactContentType: String,
+        images: NewTicketImages? = null,
+    ): Ticket? = ticket { tickets, cb ->
+        tickets.putTicketArtifact(webId, ticketUri, artifact, artifactContentType, images, cb)
+    }
+
+    /**
      * Deletes the ticket at [ticketUri]: its index row and its whole sub-container (document,
      * artifact, stored images). Returns the removed ticket.
      */

@@ -56,6 +56,19 @@ interface IASSTicketsModuleInterface {
     );
 
     /**
+     * Replaces the ticket's stored artifact (and any provided pass-image roles) with fresh
+     * bytes, refreshing the document links. Subject to the ~1 MB Binder transaction limit.
+     */
+    void putTicketArtifact(
+        String webId,
+        String ticketUri,
+        in byte[] artifact,
+        String artifactContentType,
+        in @nullable NewTicketImages images,
+        IASSTicketCallback callback
+    );
+
+    /**
      * Deletes the ticket at [ticketUri]: its index row and its whole sub-container (document,
      * artifact, stored images). Returns the removed ticket.
      */

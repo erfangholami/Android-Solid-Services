@@ -53,6 +53,24 @@ internal class TicketEngine(
         Ticket.createFromRdf(helper.updateTicket(ownerWebId, URI.create(ticketUri), updated))
     }
 
+    override suspend fun putArtifact(
+        ownerWebId: String,
+        ticketUri: String,
+        artifact: ByteArray,
+        artifactContentType: String,
+        images: NewTicketImages?,
+    ): SolidResult<Ticket> = runResult {
+        Ticket.createFromRdf(
+            helper.putTicketArtifact(
+                ownerWebId,
+                URI.create(ticketUri),
+                artifact,
+                artifactContentType,
+                images,
+            ),
+        )
+    }
+
     override suspend fun delete(ownerWebId: String, ticketUri: String): SolidResult<Ticket> = runResult {
         Ticket.createFromRdf(helper.deleteTicket(ownerWebId, URI.create(ticketUri)))
     }

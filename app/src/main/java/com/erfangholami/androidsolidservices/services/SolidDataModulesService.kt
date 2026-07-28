@@ -308,6 +308,23 @@ class SolidDataModulesService : LifecycleService() {
             ticketsDataModule.tickets.update(webId, ticketUri, updated)
         }
 
+        override fun putTicketArtifact(
+            webId: String,
+            ticketUri: String,
+            artifact: ByteArray,
+            artifactContentType: String,
+            images: NewTicketImages?,
+            callback: IASSTicketCallback,
+        ) = dispatch(callback::onError, callback::onResult) {
+            ticketsDataModule.tickets.putArtifact(
+                webId,
+                ticketUri,
+                artifact,
+                artifactContentType,
+                images,
+            )
+        }
+
         override fun deleteTicket(
             webId: String,
             ticketUri: String,
