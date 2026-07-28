@@ -23,6 +23,7 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketCall
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketListCallback
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
+import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
@@ -62,11 +63,7 @@ class SolidDataModulesService : LifecycleService() {
             ticketsModuleInterface
     }
 
-    // ------------------------------------------------------------------ Contacts
-
     private val contactsModuleInterface = object : IASSContactsModuleInterface.Stub() {
-
-        // ---- Address books ----
 
         override fun listAddressBooks(
             webId: String,
@@ -128,8 +125,6 @@ class SolidDataModulesService : LifecycleService() {
         ) = dispatch(callback::onError, callback::onResult) {
             contactsDataModule.books.ensureDefault(webId, storage, title)
         }
-
-        // ---- Contacts ----
 
         override fun getContact(
             webId: String,
@@ -215,8 +210,6 @@ class SolidDataModulesService : LifecycleService() {
             contactsDataModule.contacts.findByWebId(webId, targetWebId)
         }
 
-        // ---- Groups ----
-
         override fun createGroup(
             webId: String,
             addressBookUri: String,
@@ -268,8 +261,6 @@ class SolidDataModulesService : LifecycleService() {
         }
     }
 
-    // ------------------------------------------------------------------- Tickets
-
     private val ticketsModuleInterface = object : IASSTicketsModuleInterface.Stub() {
 
         override fun listTickets(webId: String, callback: IASSTicketListCallback) =
@@ -291,6 +282,7 @@ class SolidDataModulesService : LifecycleService() {
             storage: String?,
             artifact: ByteArray?,
             artifactContentType: String?,
+            images: NewTicketImages?,
             isPrivate: Boolean,
             container: String?,
             callback: IASSTicketCallback,
@@ -301,6 +293,7 @@ class SolidDataModulesService : LifecycleService() {
                 storage = storage,
                 artifact = artifact,
                 artifactContentType = artifactContentType,
+                images = images,
                 isPrivate = isPrivate,
                 container = container,
             )
@@ -332,7 +325,6 @@ class SolidDataModulesService : LifecycleService() {
         }
     }
 
-    /** Runs [block] on the IO dispatcher and forwards its result to an AIDL callback pair. */
     private fun <T : android.os.Parcelable> dispatch(
         onError: (Int, String) -> Unit,
         onSuccess: (T?) -> Unit,

@@ -9,13 +9,17 @@ import com.erfangholami.androidsolidservices.api.sharing.implementation.nowIsoDa
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
+import com.erfangholami.androidsolidservices.shared.model.tickets.LEGACY_TICKETS_INDEX_FILE_NAME
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
+import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
 import com.erfangholami.androidsolidservices.shared.model.tickets.TICKETS_DIRECTORY_SUFFIX
-import com.erfangholami.androidsolidservices.shared.model.tickets.TICKETS_INDEX_FILE_NAME
-import com.erfangholami.androidsolidservices.shared.model.tickets.TICKET_FILE_SUFFIX
+import com.erfangholami.androidsolidservices.shared.model.tickets.TICKETS_INDEX_NAME
+import com.erfangholami.androidsolidservices.shared.model.tickets.TICKET_DOCUMENT_NAME
 import com.erfangholami.androidsolidservices.shared.model.tickets.TICKET_FRAGMENT
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketArtifact
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketImages
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketSummary
+import com.erfangholami.androidsolidservices.shared.model.typeindex.SettingTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.tickets.TicketRDF
 import com.erfangholami.androidsolidservices.shared.rdf.tickets.TicketsIndexRDF
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
@@ -28,6 +32,10 @@ internal class SolidTicketsDataModuleHelper {
     companion object {
         @Volatile
         private var INSTANCE: SolidTicketsDataModuleHelper? = null
+
+        internal fun resetForTest() {
+            INSTANCE = null
+        }
 
         fun getInstance(
             authenticator: Authenticator,
@@ -56,17 +64,17 @@ internal class SolidTicketsDataModuleHelper {
         this.solidResourceManager = resourceManager
     }
 
-    suspend fun resolveTicketContainers(ownerWebId: String): List<String> {
-        val private = TypeIndexResolver.getPrivateTypeIndex(solidResourceManager, ownerWebId)
-            .getInstanceContainers(Schema.TICKET)
-        val public = TypeIndexResolver.getPublicTypeIndex(solidResourceManager, ownerWebId)
-            .getInstanceContainers(Schema.TICKET)
-        return (private + public).distinct()
+    suspend fun resolveTicketIndexes(ownerWebId: String): List<String> {
+        val indexes = typeIndexes(ownerWebId)
+        val instances = indexes.flatMap { it.getInstances(Schema.TICKET) }
+        val legacy = indexes.flatMap { it.getInstanceContainers(Schema.TICKET) }
+            .map { "$it$LEGACY_TICKETS_INDEX_FILE_NAME" }
+        return (instances + legacy).distinct()
     }
 
     suspend fun getTicketSummaries(ownerWebId: String): List<TicketSummary> =
-        resolveTicketContainers(ownerWebId).flatMap { container ->
-            runCatching { getIndex(ownerWebId, container).getTickets() }
+        resolveTicketIndexes(ownerWebId).flatMap { indexUri ->
+            runCatching { readIndex(ownerWebId, indexUri).getTickets() }
                 .getOrDefault(emptyList())
         }
 
@@ -84,14 +92,16 @@ internal class SolidTicketsDataModuleHelper {
         newTicket: NewTicket,
         artifact: ByteArray?,
         artifactContentType: String?,
+        images: NewTicketImages?,
         isPrivate: Boolean,
         container: String?,
     ): TicketRDF {
-        val ticketsContainer =
-            ensureTicketsContainer(ownerWebId, storage, isPrivate, container)
-        val ticketId = UUID.randomUUID().toString()
-        val documentUri = "${ticketsContainer}${ticketId}${TICKET_FILE_SUFFIX}"
+        val indexUri = ensureTicketsIndex(ownerWebId, storage, isPrivate, container)
+        val ticketContainer = "${containerOf(indexUri)}${UUID.randomUUID()}/"
+        val documentUri = "${ticketContainer}${TICKET_DOCUMENT_NAME}"
         val ticketUri = "${documentUri}${TICKET_FRAGMENT}"
+
+        ensureContainer(ownerWebId, ticketContainer)
 
         val now = nowIsoDateTime()
         val ticketRdf = TicketRDF(
@@ -107,22 +117,17 @@ internal class SolidTicketsDataModuleHelper {
 
         if (artifact != null) {
             val contentType = artifactContentType ?: "application/octet-stream"
-            val artifactUri =
-                "${ticketsContainer}${ticketId}${artifactExtensionFor(contentType)}"
-            solidResourceManager.putRaw(
-                webId = ownerWebId,
-                uri = artifactUri,
-                contentType = contentType,
-                body = artifact,
-                ifMatch = null,
-                linkHeader = "<${LDP.NON_RDF_SOURCE}>; rel=\"type\"",
-            ).getOrThrow()
+            val artifactUri = "${ticketContainer}artifact${artifactExtensionFor(contentType)}"
+            putBinary(ownerWebId, artifactUri, contentType, artifact)
             ticketRdf.setArtifactUri(artifactUri)
+        }
+        if (images != null && !images.isEmpty) {
+            ticketRdf.setImages(uploadImages(ownerWebId, ticketContainer, images))
         }
 
         val created = solidResourceManager.create(ownerWebId, ticketRdf).getOrThrow()
 
-        updateIndex(ownerWebId, ticketsContainer) {
+        updateIndex(ownerWebId, indexUri) {
             it.addTicket(created)
             true
         }
@@ -145,8 +150,7 @@ internal class SolidTicketsDataModuleHelper {
             },
         ).getOrThrow()
 
-        val ticketsContainer = containerOf(ticketUri.toString())
-        updateIndex(ownerWebId, ticketsContainer) {
+        updateIndex(ownerWebId, resolveIndexFor(ownerWebId, ticketUri.toString())) {
             if (!it.updateTicket(fresh)) it.addTicket(fresh)
             true
         }
@@ -158,18 +162,19 @@ internal class SolidTicketsDataModuleHelper {
         ticketUri: URI,
     ): TicketRDF {
         val ticketUriString = ticketUri.toString()
-        val ticketsContainer = containerOf(ticketUriString)
+        val documentUri = ticketUriString.substringBefore('#')
         val old = runCatching { getTicket(ownerWebId, ticketUri) }.getOrNull()
 
-        if (old != null) {
-            val documentUri = ticketUriString.substringBefore('#')
+        if (isPerTicketDocument(documentUri)) {
+            deleteTolerant(ownerWebId, containerOf(documentUri))
+        } else if (old != null) {
             solidResourceManager.delete(ownerWebId, documentUri).getOrThrow()
             old.getArtifactUri()?.let { artifactUri ->
                 deleteTolerant(ownerWebId, artifactUri)
             }
         }
 
-        updateIndex(ownerWebId, ticketsContainer) {
+        updateIndex(ownerWebId, resolveIndexFor(ownerWebId, ticketUriString)) {
             it.removeTicket(ticketUriString)
         }
         return old ?: TicketRDF(identifier = ticketUriString).apply { setTitle("") }
@@ -186,21 +191,31 @@ internal class SolidTicketsDataModuleHelper {
         return TicketArtifact(artifactUri.toString(), resource.getContentType(), bytes)
     }
 
-    private suspend fun ensureTicketsContainer(
+    private suspend fun ensureTicketsIndex(
         ownerWebId: String,
         storage: String?,
         isPrivate: Boolean,
         container: String?,
     ): String {
-        val registered = resolveTicketContainers(ownerWebId)
+        val indexes = typeIndexes(ownerWebId)
+        val instances = indexes.flatMap { it.getInstances(Schema.TICKET) }
+        val legacyContainers = indexes.flatMap { it.getInstanceContainers(Schema.TICKET) }
+
+        if (container == null) {
+            instances.firstOrNull()?.let { return it }
+        } else {
+            instances.firstOrNull { containerOf(it) == container }?.let { return it }
+        }
+
         val target = container
-            ?: registered.firstOrNull()
+            ?: legacyContainers.firstOrNull()
             ?: "${requireStorage(ownerWebId, storage)}${TICKETS_DIRECTORY_SUFFIX}"
-        if (target in registered) return target
+        val indexUri = target +
+            if (target in legacyContainers) LEGACY_TICKETS_INDEX_FILE_NAME else TICKETS_INDEX_NAME
 
         ensureContainer(ownerWebId, target)
         val index = TicketsIndexRDF(
-            identifier = "${target}${TICKETS_INDEX_FILE_NAME}",
+            identifier = indexUri,
             contentType = "application/ld+json",
             quads = null,
             headers = null
@@ -213,15 +228,29 @@ internal class SolidTicketsDataModuleHelper {
                 ) response.getOrThrow()
         }
 
-        TypeIndexResolver.addInstanceContainer(
+        TypeIndexResolver.addInstance(
             resourceManager = solidResourceManager,
             webIdString = ownerWebId,
             forClass = Schema.TICKET,
-            containerUri = target,
+            instanceUri = indexUri,
             isPrivate = isPrivate,
         )
-        return target
+        if (target in legacyContainers) {
+            TypeIndexResolver.removeResource(solidResourceManager, ownerWebId, target)
+        }
+        return indexUri
     }
+
+    private suspend fun resolveIndexFor(ownerWebId: String, ticketUri: String): String {
+        val ticketsContainer = ticketsContainerOf(ticketUri.substringBefore('#'))
+        return resolveTicketIndexes(ownerWebId).firstOrNull { containerOf(it) == ticketsContainer }
+            ?: "${ticketsContainer}${TICKETS_INDEX_NAME}"
+    }
+
+    private suspend fun typeIndexes(ownerWebId: String): List<SettingTypeIndex> = listOf(
+        TypeIndexResolver.getPrivateTypeIndex(solidResourceManager, ownerWebId),
+        TypeIndexResolver.getPublicTypeIndex(solidResourceManager, ownerWebId),
+    )
 
     private suspend fun requireStorage(ownerWebId: String, storage: String?): String =
         storage
@@ -232,6 +261,47 @@ internal class SolidTicketsDataModuleHelper {
         solidResourceManager.ensureContainer(ownerWebId, containerUri).getOrThrow()
     }
 
+    private suspend fun uploadImages(
+        ownerWebId: String,
+        ticketContainer: String,
+        images: NewTicketImages,
+    ): TicketImages = TicketImages(
+        logo = putImage(ownerWebId, ticketContainer, "logo", images.logo),
+        icon = putImage(ownerWebId, ticketContainer, "icon", images.icon),
+        strip = putImage(ownerWebId, ticketContainer, "strip", images.strip),
+        thumbnail = putImage(ownerWebId, ticketContainer, "thumbnail", images.thumbnail),
+        footer = putImage(ownerWebId, ticketContainer, "footer", images.footer),
+        background = putImage(ownerWebId, ticketContainer, "background", images.background),
+    )
+
+    private suspend fun putImage(
+        ownerWebId: String,
+        ticketContainer: String,
+        role: String,
+        bytes: ByteArray?,
+    ): String? {
+        if (bytes == null) return null
+        val uri = "${ticketContainer}${role}.png"
+        putBinary(ownerWebId, uri, "image/png", bytes)
+        return uri
+    }
+
+    private suspend fun putBinary(
+        ownerWebId: String,
+        uri: String,
+        contentType: String,
+        body: ByteArray,
+    ) {
+        solidResourceManager.putRaw(
+            webId = ownerWebId,
+            uri = uri,
+            contentType = contentType,
+            body = body,
+            ifMatch = null,
+            linkHeader = "<${LDP.NON_RDF_SOURCE}>; rel=\"type\"",
+        ).getOrThrow()
+    }
+
     private suspend fun deleteTolerant(ownerWebId: String, uri: String) {
         when (val result = solidResourceManager.delete(ownerWebId, uri)) {
             is SolidResult.Success -> Unit
@@ -240,28 +310,19 @@ internal class SolidTicketsDataModuleHelper {
         }
     }
 
-    private suspend fun getIndex(
+    private suspend fun readIndex(
         ownerWebId: String,
-        containerUri: String,
+        indexUri: String,
     ): TicketsIndexRDF {
-        return solidResourceManager.read(
-            ownerWebId,
-            "${containerUri}${TICKETS_INDEX_FILE_NAME}",
-            TicketsIndexRDF::class.java
-        ).getOrThrow()
+        return solidResourceManager.read(ownerWebId, indexUri, TicketsIndexRDF::class.java)
+            .getOrThrow()
     }
 
-    /**
-     * Compare-and-swap read-modify-write of a container's tickets index: [mutate] the
-     * fresh index in place (return `false` to skip a no-op write), with `If-Match` +
-     * retry so a concurrent ticket add/update/remove can't be lost.
-     */
     private suspend fun updateIndex(
         ownerWebId: String,
-        containerUri: String,
+        indexUri: String,
         mutate: (TicketsIndexRDF) -> Boolean,
     ) {
-        val indexUri = "${containerUri}${TICKETS_INDEX_FILE_NAME}"
         solidResourceManager.casUpdate(
             ownerWebId,
             read = { solidResourceManager.read(ownerWebId, indexUri, TicketsIndexRDF::class.java) },
@@ -273,9 +334,18 @@ internal class SolidTicketsDataModuleHelper {
         target.setTicketData(newTicket)
     }
 
-    private fun containerOf(ticketUri: String): String {
-        val documentUri = ticketUri.substringBefore('#')
-        return documentUri.substring(0, documentUri.lastIndexOf("/") + 1)
+    private fun isPerTicketDocument(documentUri: String): Boolean =
+        documentUri.endsWith("/${TICKET_DOCUMENT_NAME}")
+
+    private fun containerOf(documentUri: String): String =
+        documentUri.substring(0, documentUri.lastIndexOf('/') + 1)
+
+    private fun parentContainerOf(containerUri: String): String =
+        containerOf(containerUri.dropLast(1))
+
+    private fun ticketsContainerOf(documentUri: String): String {
+        val holder = containerOf(documentUri)
+        return if (isPerTicketDocument(documentUri)) parentContainerOf(holder) else holder
     }
 
     private fun artifactExtensionFor(contentType: String): String =

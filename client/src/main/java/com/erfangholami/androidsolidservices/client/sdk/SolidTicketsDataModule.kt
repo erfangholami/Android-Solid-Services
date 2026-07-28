@@ -9,6 +9,7 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketCall
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketListCallback
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
+import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
 import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketArtifact
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketList
@@ -56,12 +57,14 @@ public class SolidTicketsDataModule private constructor(context: Context) {
         ticket { tickets, cb -> tickets.getTicket(webId, ticketUri, cb) }
 
     /**
-     * Creates a ticket on the user's pod.
+     * Creates a ticket on the user's pod, in its own sub-container of the tickets container.
      *
-     * @param artifact Optional original file (e.g. a `.pkpass`), stored as a sibling binary
-     *   and linked from the ticket. Travels inline over Binder, so it is subject to the
-     *   ~1 MB transaction limit.
+     * @param artifact Optional original file (e.g. a `.pkpass`), stored inside the ticket's
+     *   container and linked from the ticket. Travels inline over Binder, so it is subject to
+     *   the ~1 MB transaction limit.
      * @param artifactContentType Required when [artifact] is non-null.
+     * @param images Optional pass images, stored inside the ticket's container and linked from
+     *   the ticket. Travel inline over Binder like [artifact].
      * @param storage Optional pod storage (root) URL; when `null`, the registered or default
      *   tickets container is used.
      * @param isPrivate When `true` (default) a bootstrapped container is registered in the
@@ -74,6 +77,7 @@ public class SolidTicketsDataModule private constructor(context: Context) {
         storage: String? = null,
         artifact: ByteArray? = null,
         artifactContentType: String? = null,
+        images: NewTicketImages? = null,
         isPrivate: Boolean = true,
         container: String? = null,
     ): Ticket? = ticket { tickets, cb ->
@@ -83,6 +87,7 @@ public class SolidTicketsDataModule private constructor(context: Context) {
             storage,
             artifact,
             artifactContentType,
+            images,
             isPrivate,
             container,
             cb,
@@ -99,11 +104,17 @@ public class SolidTicketsDataModule private constructor(context: Context) {
         updated: NewTicket,
     ): Ticket? = ticket { tickets, cb -> tickets.updateTicket(webId, ticketUri, updated, cb) }
 
-    /** Deletes the ticket at [ticketUri], its artifact and its index row. Returns the removed ticket. */
+    /**
+     * Deletes the ticket at [ticketUri]: its index row and its whole sub-container (document,
+     * artifact, stored images). Returns the removed ticket.
+     */
     public suspend fun deleteTicket(webId: String, ticketUri: String): Ticket? =
         ticket { tickets, cb -> tickets.deleteTicket(webId, ticketUri, cb) }
 
-    /** Reads a ticket's binary artifact. Subject to the ~1 MB Binder transaction limit. */
+    /**
+     * Reads a binary stored with a ticket — the original artifact or a stored pass image.
+     * Subject to the ~1 MB Binder transaction limit.
+     */
     public suspend fun getTicketArtifact(webId: String, artifactUri: String): TicketArtifact? =
         ticketArtifact { tickets, cb -> tickets.getTicketArtifact(webId, artifactUri, cb) }
 

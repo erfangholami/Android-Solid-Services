@@ -3,13 +3,13 @@ package com.erfangholami.androidsolidservices.api.datamodule.tickets.implementat
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation.runResult
 import com.erfangholami.androidsolidservices.api.datamodule.tickets.TicketStore
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
+import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
 import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketArtifact
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketList
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import java.net.URI
 
-/** [TicketStore] backed by [SolidTicketsDataModuleHelper]'s pod access. */
 internal class TicketEngine(
     private val helper: SolidTicketsDataModuleHelper,
 ) : TicketStore {
@@ -28,6 +28,7 @@ internal class TicketEngine(
         storage: String?,
         artifact: ByteArray?,
         artifactContentType: String?,
+        images: NewTicketImages?,
         isPrivate: Boolean,
         container: String?,
     ): SolidResult<Ticket> = runResult {
@@ -37,6 +38,7 @@ internal class TicketEngine(
             newTicket,
             artifact,
             artifactContentType,
+            images,
             isPrivate,
             container,
         )

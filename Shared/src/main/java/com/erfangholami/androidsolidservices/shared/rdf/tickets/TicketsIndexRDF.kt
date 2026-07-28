@@ -11,15 +11,18 @@ import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 
 /**
- * RDF representation of the tickets index document (`index.ttl`) inside a tickets
- * container.
+ * RDF representation of the tickets index document inside a tickets container — a
+ * `solidshare:TicketIndex`, the document the type index's `solid:instance` registration
+ * for `schema:Ticket` points at.
  *
  * Mirrors the people-index idiom of the contacts data module: each ticket in the
  * container gets one cached row keyed by its URI, so a wallet list can be rendered
  * from a single GET without fetching every ticket document:
  *
  * ```turtle
- * <…/{id}.ttl#this>
+ * <> rdf:type solidshare:TicketIndex .
+ *
+ * <…/{uuid}/ticket#this>
  *     rdf:type            schema:Ticket ;
  *     schema:name         "Concert" ;
  *     solidshare:category "EVENT" ;
@@ -39,6 +42,10 @@ public class TicketsIndexRDF : SolidRDFResource {
         quads: List<RdfQuad>? = null,
         headers: SolidHeaders? = null,
     ) : super(identifier, contentType ?: "application/ld+json", quads, headers)
+
+    init {
+        ensureType(getIdentifier(), SolidShare.TICKET_INDEX_CLASS)
+    }
 
     /**
      * Returns every cached ticket row in this index. Rows missing a title are

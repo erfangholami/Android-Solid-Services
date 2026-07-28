@@ -11,6 +11,7 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.TicketCategory
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketDetail
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEvent
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketGeo
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketImages
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketJourney
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketMembership
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketOrganization
@@ -35,15 +36,12 @@ class TicketRDFTest {
     private val ticketUri = "https://alice.pod/tickets/abc123.ttl#this"
     private val documentUri = "https://alice.pod/tickets/abc123.ttl"
 
-    /** Writes [data] as RDF, serialises to JSON-LD, parses it back, and returns the re-read snapshot. */
     private fun roundTrip(data: NewTicket): NewTicket {
         val written = TicketRDF(ticketUri).apply { setTicketData(data) }
         val jsonLd = written.getEntity().bufferedReader().use { it.readText() }
         val quads = RDFResource.parseJsonLd(jsonLd, documentUri)
         return TicketRDF(ticketUri, quads = quads).toNewTicket()
     }
-
-    // ---- The case the old model could not represent at all: a two-ended bus journey -----------
 
     @Test
     fun `a bus ticket round-trips origin, destination, platform and booking reference`() {
@@ -79,8 +77,6 @@ class TicketRDFTest {
         assertEquals(bus, roundTrip(bus))
     }
 
-    // ---- Flight: gate, terminal, boarding group, multiple seats, IATA codes -------------------
-
     @Test
     fun `a flight ticket round-trips gate, terminal, boarding group and IATA codes`() {
         val flight = NewTicket(
@@ -113,8 +109,6 @@ class TicketRDFTest {
         assertEquals(flight, roundTrip(flight))
     }
 
-    // ---- Event: venue, doors, performers, admission level -------------------------------------
-
     @Test
     fun `an event ticket round-trips venue, doors-open, performers and admission level`() {
         val event = NewTicket(
@@ -142,8 +136,6 @@ class TicketRDFTest {
 
         assertEquals(event, roundTrip(event))
     }
-
-    // ---- Loyalty: membership + balance, no reservation ----------------------------------------
 
     @Test
     fun `a loyalty card round-trips membership and balance with no reservation node`() {
@@ -174,8 +166,6 @@ class TicketRDFTest {
             rdf.getAllQuads().count { it.subject.endsWith("#reservation") },
         )
     }
-
-    // ---- Repeatable structures -----------------------------------------------------------------
 
     @Test
     fun `multiple barcodes and seats all survive`() {
@@ -215,8 +205,6 @@ class TicketRDFTest {
         val token = rdf.getAllQuads().single { it.subject == ticketUri && it.predicate == Schema.TICKET_TOKEN }
         assertEquals("PRIMARY", token.`object`)
     }
-
-    // ---- The no-data-lost catch-all -----------------------------------------------------------
 
     @Test
     fun `detail catch-all round-trips with placement and order`() {
@@ -296,14 +284,13 @@ class TicketRDFTest {
         assertEquals(data.details, parsed.details)
     }
 
-    // ---- Model bridge --------------------------------------------------------------------------
-
     @Test
     fun `model createFromRdf carries the lifecycle fields`() {
         val rdf = TicketRDF(ticketUri).apply {
             setTicketData(NewTicket(title = "Show", category = TicketCategory.EVENT))
             setArtifactUri("$documentUri.pkpass")
             setArtifactVerified(true)
+            setImages(TicketImages(logo = "https://alice.pod/tickets/t1/logo.png"))
             setCreated("2026-07-02T09:15:00Z")
             setModified("2026-07-03T09:15:00Z")
         }
@@ -312,8 +299,33 @@ class TicketRDFTest {
         assertEquals("Show", model.title)
         assertEquals("$documentUri.pkpass", model.artifactUri)
         assertEquals(true, model.artifactVerified)
+        assertEquals(TicketImages(logo = "https://alice.pod/tickets/t1/logo.png"), model.images)
         assertEquals("2026-07-02T09:15:00Z", model.createdAt)
         assertEquals("2026-07-03T09:15:00Z", model.modifiedAt)
+    }
+
+    @Test
+    fun `stored image links round-trip and survive a replace`() {
+        val images = TicketImages(
+            logo = "https://alice.pod/tickets/t1/logo.png",
+            icon = "https://alice.pod/tickets/t1/icon.png",
+            strip = "https://alice.pod/tickets/t1/strip.png",
+            background = "https://alice.pod/tickets/t1/background.png",
+        )
+        val written = TicketRDF(ticketUri).apply {
+            setTicketData(NewTicket(title = "Show"))
+            setImages(images)
+        }
+
+        val jsonLd = written.getEntity().bufferedReader().use { it.readText() }
+        val reread = TicketRDF(ticketUri, quads = RDFResource.parseJsonLd(jsonLd, documentUri))
+        assertEquals(images, reread.getImages())
+
+        written.setTicketData(NewTicket(title = "Bare"))
+        assertEquals("image links survive a replace", images, written.getImages())
+
+        written.setImages(null)
+        assertNull(written.getImages())
     }
 
     @Test

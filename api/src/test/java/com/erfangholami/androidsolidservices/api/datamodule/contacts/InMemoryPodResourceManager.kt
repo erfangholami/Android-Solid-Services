@@ -14,6 +14,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     val deletedUris: MutableList<String> = mutableListOf()
     val rawPuts: MutableMap<String, ByteArray> = mutableMapOf()
     val failDeletesFor: MutableSet<String> = mutableSetOf()
+    var conflictOnExistingCreate: Boolean = false
 
     fun put(resource: Resource) {
         store[resource.getIdentifier()] = resource
@@ -33,6 +34,11 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         webId: String,
         resource: T,
     ): SolidResult<T> {
+        if (conflictOnExistingCreate && store.containsKey(resource.getIdentifier())) {
+            return SolidResult.Failure(
+                SolidError.fromHttp(409, "already exists: ${resource.getIdentifier()}"),
+            )
+        }
         put(resource)
         return SolidResult.Success(resource)
     }

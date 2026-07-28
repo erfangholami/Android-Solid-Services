@@ -13,6 +13,7 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.TicketDetail
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEvent
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEventStatus
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketGeo
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketImages
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketJourney
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketMembership
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketOrganization
@@ -88,8 +89,6 @@ public class TicketRDF : SolidRDFResource {
     private fun wifiNode(i: Int) = "$doc#wifi$i"
     private fun beaconNode(i: Int) = "$doc#beacon$i"
 
-    // ---- Public convenience accessors (used by the index and the delete shell) ----------------
-
     /** The display title (`schema:name`); `""` when absent, so a throwaway shell never crashes. */
     public fun getTitle(): String = str(self, Schema.NAME) ?: ""
 
@@ -137,6 +136,28 @@ public class TicketRDF : SolidRDFResource {
         putBool(self, SolidShare.ARTIFACT_VERIFIED, verified)
     }
 
+    /** The pod URIs of the stored pass images (`solidshare:logoImage` …), or `null` when none. */
+    public fun getImages(): TicketImages? =
+        TicketImages(
+            logo = str(self, SolidShare.LOGO_IMAGE),
+            icon = str(self, SolidShare.ICON_IMAGE),
+            strip = str(self, SolidShare.STRIP_IMAGE),
+            thumbnail = str(self, SolidShare.THUMBNAIL_IMAGE),
+            footer = str(self, SolidShare.FOOTER_IMAGE),
+            background = str(self, SolidShare.BACKGROUND_IMAGE),
+        ).takeIf { !it.isEmpty }
+
+    /** Sets (or clears, when `null`/blank) the stored pass image links. */
+    public fun setImages(images: TicketImages?) {
+        IMAGE_PREDICATES.forEach { clearProperties(it, self) }
+        putIri(self, SolidShare.LOGO_IMAGE, images?.logo)
+        putIri(self, SolidShare.ICON_IMAGE, images?.icon)
+        putIri(self, SolidShare.STRIP_IMAGE, images?.strip)
+        putIri(self, SolidShare.THUMBNAIL_IMAGE, images?.thumbnail)
+        putIri(self, SolidShare.FOOTER_IMAGE, images?.footer)
+        putIri(self, SolidShare.BACKGROUND_IMAGE, images?.background)
+    }
+
     /** The creation timestamp (`dcterms:created`, ISO-8601), or `null`. */
     public fun getCreated(): String? = str(self, DC.CREATED)
 
@@ -153,17 +174,17 @@ public class TicketRDF : SolidRDFResource {
         addQuadLiteral(self, DC.MODIFIED, isoDateTime, XSD.DATE_TIME)
     }
 
-    // ---- Write --------------------------------------------------------------------------------
-
     /**
      * Rewrites this ticket's writable state from [data] with replace semantics: every fragment
      * node and every optional property is replaced by the snapshot's content. Only the type
-     * triple, `dcterms:created`, `solidshare:artifact` and `solidshare:artifactVerified` survive —
-     * those belong to the resource lifecycle, not the ticket's editable content.
+     * triple, `dcterms:created`, `solidshare:artifact`, `solidshare:artifactVerified` and the
+     * stored image links survive — those belong to the resource lifecycle, not the ticket's
+     * editable content.
      */
     public fun setTicketData(data: NewTicket) {
         require(data.title.isNotBlank()) { "A ticket needs a non-blank title" }
-        val preserved = setOf(DC.CREATED, SolidShare.ARTIFACT, SolidShare.ARTIFACT_VERIFIED)
+        val preserved =
+            setOf(DC.CREATED, SolidShare.ARTIFACT, SolidShare.ARTIFACT_VERIFIED) + IMAGE_PREDICATES
         quads.retainAll { q ->
             q.subject == self &&
                 ((q.predicate == RDF.TYPE && q.`object` == Schema.TICKET) || q.predicate in preserved)
@@ -221,7 +242,6 @@ public class TicketRDF : SolidRDFResource {
             putStr(node, SolidShare.ALT_TEXT, bc.altText)
             if (bc.rotating) putBool(node, SolidShare.ROTATING, true)
         }
-        // Mirror the first barcode's payload into schema:ticketToken for schema.org consumers.
         present.firstOrNull()?.let { putStr(self, Schema.TICKET_TOKEN, it.payload) }
     }
 
@@ -289,12 +309,6 @@ public class TicketRDF : SolidRDFResource {
         putStr(styleNode, SolidShare.BACKGROUND_COLOR, s.backgroundColor)
         putStr(styleNode, SolidShare.LABEL_COLOR, s.labelColor)
         putStr(styleNode, SolidShare.LOGO_TEXT, s.logoText)
-        putIri(styleNode, SolidShare.LOGO_IMAGE, s.logoImage)
-        putIri(styleNode, SolidShare.ICON_IMAGE, s.iconImage)
-        putIri(styleNode, SolidShare.STRIP_IMAGE, s.stripImage)
-        putIri(styleNode, SolidShare.THUMBNAIL_IMAGE, s.thumbnailImage)
-        putIri(styleNode, SolidShare.BACKGROUND_IMAGE, s.backgroundImage)
-        putIri(styleNode, SolidShare.FOOTER_IMAGE, s.footerImage)
         putStr(styleNode, SolidShare.STRIP_COLOR, s.stripColor)
         putStr(styleNode, SolidShare.FOOTER_BACKGROUND_COLOR, s.footerBackgroundColor)
         putStr(styleNode, SolidShare.LOGO_SYMBOL_NAME, s.logoSymbolName)
@@ -395,14 +409,6 @@ public class TicketRDF : SolidRDFResource {
         putStr(venueNode, SolidShare.REGION_NAME, v.regionName)
     }
 
-    /**
-     * Writes the journey. Per-mode predicates are the fiddly part: the service number/name and the
-     * stop links differ by mode, and boats have no schema.org service term at all — so a boat's
-     * [TicketJourney.serviceNumber] / [TicketJourney.serviceName] are stored in
-     * `solidshare:vehicleNumber` / `solidshare:vehicleName` (a ferry's "vehicle" is its service).
-     * Gate and terminal are always `schema:` (Flight-domain, but non-constraining); platform is
-     * `schema:` for rail and `solidshare:` otherwise, since schema.org's platform is TrainTrip-only.
-     */
     private fun writeJourney(j: TicketJourney) {
         addQuad(tripNode, RDF.TYPE, tripTypeFor(j.mode))
         when (j.mode) {
@@ -452,7 +458,6 @@ public class TicketRDF : SolidRDFResource {
     }
 
     private fun writeStop(mode: TransportMode, stop: TicketStop?, isDeparture: Boolean) {
-        // Gate/terminal/platform are the journey's, so they go on the trip node even if the place is null.
         putStr(tripNode, if (isDeparture) Schema.DEPARTURE_GATE else Schema.ARRIVAL_GATE, stop?.gate)
         putStr(tripNode, if (isDeparture) Schema.DEPARTURE_TERMINAL else Schema.ARRIVAL_TERMINAL, stop?.terminal)
         val platformPredicate = when {
@@ -523,8 +528,6 @@ public class TicketRDF : SolidRDFResource {
         putInt(reservationNode, Schema.NUM_ADULTS, r.numAdults)
         putInt(reservationNode, Schema.NUM_CHILDREN, r.numChildren)
     }
-
-    // ---- Read ---------------------------------------------------------------------------------
 
     /** Reads this ticket's complete writable state into a [NewTicket] snapshot. */
     public fun toNewTicket(): NewTicket {
@@ -645,12 +648,6 @@ public class TicketRDF : SolidRDFResource {
             footerBackgroundColor = str(node, SolidShare.FOOTER_BACKGROUND_COLOR),
             logoSymbolName = str(node, SolidShare.LOGO_SYMBOL_NAME),
             logoText = str(node, SolidShare.LOGO_TEXT),
-            logoImage = str(node, SolidShare.LOGO_IMAGE),
-            iconImage = str(node, SolidShare.ICON_IMAGE),
-            stripImage = str(node, SolidShare.STRIP_IMAGE),
-            thumbnailImage = str(node, SolidShare.THUMBNAIL_IMAGE),
-            backgroundImage = str(node, SolidShare.BACKGROUND_IMAGE),
-            footerImage = str(node, SolidShare.FOOTER_IMAGE),
         ).takeUnless { it.isEmpty() }
     }
 
@@ -835,8 +832,6 @@ public class TicketRDF : SolidRDFResource {
         ).takeUnless { it == TicketEvent() }
     }
 
-    // ---- Geo ----------------------------------------------------------------------------------
-
     private fun writeGeo(parent: String, geoNode: String, geo: TicketGeo?) {
         if (geo == null || (geo.latitude == null && geo.longitude == null)) return
         addQuad(parent, Schema.GEO, geoNode)
@@ -855,8 +850,6 @@ public class TicketRDF : SolidRDFResource {
         )
         return geo.takeUnless { it.latitude == null && it.longitude == null }
     }
-
-    // ---- Type / enum mapping ------------------------------------------------------------------
 
     private fun reservationTypeFor(data: NewTicket): String? {
         if (data.reservation == null && data.journey == null && data.event == null) return null
@@ -959,8 +952,6 @@ public class TicketRDF : SolidRDFResource {
     private fun reservationForTargets(): List<String> =
         follow(self, SolidShare.RESERVATION)?.let { followAll(it, Schema.RESERVATION_FOR) } ?: emptyList()
 
-    // ---- Low-level quad helpers ---------------------------------------------------------------
-
     private fun str(subject: String, predicate: String): String? =
         findPropertyForSubject(subject, predicate)
 
@@ -1023,9 +1014,6 @@ public class TicketRDF : SolidRDFResource {
     private inline fun <reified T : Enum<T>> enumOrNull(raw: String?): T? =
         raw?.let { runCatching { enumValueOf<T>(it) }.getOrNull() }
 
-    // A sub-entity counts as empty — and so is neither written nor read back as a node — when every
-    // one of its fields is null or blank. Blank-aware so a `TicketSeat(seatNumber = "  ")` collapses
-    // to nothing rather than a bare, part-less node.
     private fun TicketOrganization.isEmpty(): Boolean = allBlank(name, logoUri, url, telephone, email, iataCode)
 
     private fun TicketPerson.isEmpty(): Boolean = allBlank(
@@ -1038,7 +1026,6 @@ public class TicketRDF : SolidRDFResource {
     private fun TicketStyle.isEmpty(): Boolean = allBlank(
         foregroundColor, backgroundColor, labelColor, stripColor, footerBackgroundColor,
         logoText, logoSymbolName,
-        logoImage, iconImage, stripImage, thumbnailImage, backgroundImage, footerImage,
     )
 
     private fun TicketSeat.isEmpty(): Boolean = allBlank(
@@ -1067,6 +1054,10 @@ public class TicketRDF : SolidRDFResource {
         )
         private val TRIP_TYPES = setOf(
             Schema.TRIP, Schema.FLIGHT, Schema.TRAIN_TRIP, Schema.BUS_TRIP, Schema.BOAT_TRIP,
+        )
+        private val IMAGE_PREDICATES = setOf(
+            SolidShare.LOGO_IMAGE, SolidShare.ICON_IMAGE, SolidShare.STRIP_IMAGE,
+            SolidShare.THUMBNAIL_IMAGE, SolidShare.FOOTER_IMAGE, SolidShare.BACKGROUND_IMAGE,
         )
     }
 }

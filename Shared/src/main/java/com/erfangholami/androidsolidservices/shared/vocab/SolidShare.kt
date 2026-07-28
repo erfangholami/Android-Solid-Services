@@ -17,8 +17,6 @@ public object SolidShare {
     /** The namespace every term below is minted under. */
     public const val NAMESPACE: String = "https://solidshare.app/ns#"
 
-    // ---- Sharing ------------------------------------------------------------------------------
-
     /** Access mode literal on an Offer notification: "read" | "append" | "write". */
     public const val MODE: String = "${NAMESPACE}mode"
 
@@ -46,8 +44,6 @@ public object SolidShare {
     /** The owner WebID on a received-share [SHARE] record. */
     public const val OWNER: String = "${NAMESPACE}owner"
 
-    // ---- Ticket: structure and housekeeping ---------------------------------------------------
-
     /**
      * Links a `schema:Ticket` to its `schema:Reservation` envelope. schema.org only provides the
      * inverse (`schema:reservedTicket`), so this exists to spare readers a reverse scan.
@@ -65,6 +61,30 @@ public object SolidShare {
 
     /** Whether the artifact's issuer signature verified. */
     public const val ARTIFACT_VERIFIED: String = "${NAMESPACE}artifactVerified"
+
+    /** Links a ticket to its stored logo image (pkpass `logo.png`, `primaryLogo.png`). */
+    public const val LOGO_IMAGE: String = "${NAMESPACE}logoImage"
+
+    /** Links a ticket to its stored icon image (pkpass `icon.png`). */
+    public const val ICON_IMAGE: String = "${NAMESPACE}iconImage"
+
+    /** Links a ticket to its stored strip image (pkpass `strip.png`). */
+    public const val STRIP_IMAGE: String = "${NAMESPACE}stripImage"
+
+    /** Links a ticket to its stored thumbnail image (pkpass `thumbnail.png`). */
+    public const val THUMBNAIL_IMAGE: String = "${NAMESPACE}thumbnailImage"
+
+    /** Links a ticket to its stored footer image (pkpass `footer.png`). */
+    public const val FOOTER_IMAGE: String = "${NAMESPACE}footerImage"
+
+    /** Links a ticket to its stored background image (pkpass `background.png`, `artwork.png`). */
+    public const val BACKGROUND_IMAGE: String = "${NAMESPACE}backgroundImage"
+
+    /**
+     * `rdf:type` of a tickets index document — the wallet-list row cache a type index
+     * `solid:instance` registration for `schema:Ticket` points at.
+     */
+    public const val TICKET_INDEX_CLASS: String = "${NAMESPACE}TicketIndex"
 
     /** The ticket has been redeemed or cancelled (pkpass `voided`). */
     public const val VOIDED: String = "${NAMESPACE}voided"
@@ -102,11 +122,6 @@ public object SolidShare {
     /** Cached issuer display name on a tickets-index row. */
     public const val ISSUER: String = "${NAMESPACE}issuer"
 
-    // ---- Ticket: barcode ----------------------------------------------------------------------
-    // Entirely minted. `schema:Barcode` is an ImageObject — a *picture* of a barcode, with no
-    // properties; its `encodingFormat` is a MIME type, not a symbology. Searching all of
-    // schema.org, `symbology`, `aztec`, `pdf417` and `qrcode` return zero hits.
-
     /** Links a ticket to a [BARCODE_CLASS] node. Repeatable — a pass may carry several. */
     public const val BARCODE: String = "${NAMESPACE}barcode"
 
@@ -130,8 +145,6 @@ public object SolidShare {
      * snapshot that will not scan later, so the UI must say so rather than show a dead barcode.
      */
     public const val ROTATING: String = "${NAMESPACE}rotating"
-
-    // ---- Ticket: journey ----------------------------------------------------------------------
 
     /**
      * The originally scheduled departure, frozen at issue. schema.org has no scheduled-vs-actual
@@ -179,8 +192,6 @@ public object SolidShare {
     /** Journey duration. `schema:Trip` has no duration term. */
     public const val DURATION: String = "${NAMESPACE}duration"
 
-    // ---- Ticket: stops ------------------------------------------------------------------------
-
     /** Station/stop code where it is not an IATA airport code (UIC station code, carrier code). */
     public const val STOP_CODE: String = "${NAMESPACE}stopCode"
 
@@ -192,8 +203,6 @@ public object SolidShare {
 
     /** A security programme available at this stop, e.g. "TSA PreCheck". Repeatable. */
     public const val SECURITY_PROGRAM: String = "${NAMESPACE}securityProgram"
-
-    // ---- Ticket: fare and boarding ------------------------------------------------------------
 
     /** Fare / booking class. `fare` returns zero hits across all of schema.org. */
     public const val FARE_CLASS: String = "${NAMESPACE}fareClass"
@@ -233,8 +242,6 @@ public object SolidShare {
 
     /** The passenger's international documents have been verified. */
     public const val DOCUMENTS_VERIFIED: String = "${NAMESPACE}documentsVerified"
-
-    // ---- Ticket: event and venue --------------------------------------------------------------
 
     /** Genre of the performance. `schema:Event` is not a `CreativeWork`, so it has no `genre`. */
     public const val GENRE: String = "${NAMESPACE}genre"
@@ -302,9 +309,6 @@ public object SolidShare {
     /** City or hosting region of the venue. */
     public const val REGION_NAME: String = "${NAMESPACE}regionName"
 
-    // ---- Ticket: seat -------------------------------------------------------------------------
-    // `schema:Seat` has only four properties; pkpass models nine.
-
     /** The seat's identifier code. */
     public const val SEAT_IDENTIFIER: String = "${NAMESPACE}seatIdentifier"
 
@@ -323,8 +327,6 @@ public object SolidShare {
     /** The coach containing this specific place (UIC). */
     public const val COACH: String = "${NAMESPACE}coach"
 
-    // ---- Ticket: loyalty ----------------------------------------------------------------------
-
     /** Membership tier, e.g. "Gold". */
     public const val MEMBERSHIP_STATUS: String = "${NAMESPACE}membershipStatus"
 
@@ -339,10 +341,6 @@ public object SolidShare {
 
     /** ISO-4217 currency of [BALANCE]. */
     public const val BALANCE_CURRENCY: String = "${NAMESPACE}balanceCurrency"
-
-    // ---- Ticket: presentation -----------------------------------------------------------------
-    // schema.org models no presentation, and `schema:logo`'s domain excludes `Ticket`. Keeping
-    // these lets the wallet re-render a pass faithfully and export it back to `.pkpass`.
 
     /** Links a ticket to its [PASS_STYLE_CLASS] node. */
     public const val STYLE: String = "${NAMESPACE}style"
@@ -362,15 +360,6 @@ public object SolidShare {
     /** Text rendered next to the logo. */
     public const val LOGO_TEXT: String = "${NAMESPACE}logoText"
 
-    /** Pod URI of the logo image. */
-    public const val LOGO_IMAGE: String = "${NAMESPACE}logoImage"
-
-    /** Pod URI of the icon image. */
-    public const val ICON_IMAGE: String = "${NAMESPACE}iconImage"
-
-    /** Pod URI of the strip image. */
-    public const val STRIP_IMAGE: String = "${NAMESPACE}stripImage"
-
     /** The pass's strip background colour (pkpass `stripColor`). */
     public const val STRIP_COLOR: String = "${NAMESPACE}stripColor"
 
@@ -379,17 +368,6 @@ public object SolidShare {
 
     /** An SF Symbol name the issuer uses as a logo (pkpass `logoSymbolName`). */
     public const val LOGO_SYMBOL_NAME: String = "${NAMESPACE}logoSymbolName"
-
-    /** Pod URI of the thumbnail image. */
-    public const val THUMBNAIL_IMAGE: String = "${NAMESPACE}thumbnailImage"
-
-    /** Pod URI of the background image. */
-    public const val BACKGROUND_IMAGE: String = "${NAMESPACE}backgroundImage"
-
-    /** Pod URI of the footer image. */
-    public const val FOOTER_IMAGE: String = "${NAMESPACE}footerImage"
-
-    // ---- Ticket: catch-all --------------------------------------------------------------------
 
     /**
      * Links a ticket to a [DETAIL_CLASS] node. Repeatable.
@@ -423,8 +401,6 @@ public object SolidShare {
 
     /** Render order within its placement. */
     public const val ORDER: String = "${NAMESPACE}order"
-
-    // ---- Ticket: relevance --------------------------------------------------------------------
 
     /** Links a ticket to a [RELEVANT_LOCATION_CLASS] node. Repeatable. */
     public const val RELEVANT_LOCATION: String = "${NAMESPACE}relevantLocation"
@@ -470,8 +446,6 @@ public object SolidShare {
 
     /** The minor identifier of a relevance beacon. */
     public const val BEACON_MINOR: String = "${NAMESPACE}beaconMinor"
-
-    // ---- Ticket: person -----------------------------------------------------------------------
 
     /** Phonetic representation of the holder's name (pkpass `phoneticRepresentation`). */
     public const val PHONETIC_NAME: String = "${NAMESPACE}phoneticName"

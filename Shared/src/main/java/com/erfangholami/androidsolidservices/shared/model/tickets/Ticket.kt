@@ -322,12 +322,6 @@ public data class TicketStyle(
     val footerBackgroundColor: String? = null,
     val logoText: String? = null,
     val logoSymbolName: String? = null,
-    val logoImage: String? = null,
-    val iconImage: String? = null,
-    val stripImage: String? = null,
-    val thumbnailImage: String? = null,
-    val backgroundImage: String? = null,
-    val footerImage: String? = null,
 ) : Parcelable
 
 /**
@@ -372,11 +366,55 @@ public data class TicketWifi(
 ) : Parcelable
 
 /**
+ * The binary pass images to store alongside a ticket on create, one slot per pkpass image
+ * role. Each non-null slot is uploaded into the ticket's container as `{role}.png` and
+ * linked from the ticket document (see [TicketImages]).
+ */
+@Parcelize
+public class NewTicketImages(
+    public val logo: ByteArray? = null,
+    public val icon: ByteArray? = null,
+    public val strip: ByteArray? = null,
+    public val thumbnail: ByteArray? = null,
+    public val footer: ByteArray? = null,
+    public val background: ByteArray? = null,
+) : Parcelable {
+
+    /** `true` when every slot is `null` — nothing to store. */
+    public val isEmpty: Boolean
+        get() = logo == null && icon == null && strip == null &&
+                thumbnail == null && footer == null && background == null
+}
+
+/**
+ * The pod URIs of a ticket's stored pass images (`solidshare:logoImage` …), one per pkpass
+ * image role. They live inside the ticket's own container, next to its document and artifact,
+ * so sharing the container shares the complete pass.
+ */
+@Parcelize
+public data class TicketImages(
+    val logo: String? = null,
+    val icon: String? = null,
+    val strip: String? = null,
+    val thumbnail: String? = null,
+    val footer: String? = null,
+    val background: String? = null,
+) : Parcelable {
+
+    /** `true` when no image link is present. */
+    public val isEmpty: Boolean
+        get() = logo == null && icon == null && strip == null &&
+                thumbnail == null && footer == null && background == null
+}
+
+/**
  * Input model for creating or updating a ticket — the complete writable state, minus the
- * server-managed fields ([Ticket.uri], [Ticket.artifactUri], timestamps, [Ticket.etag]).
+ * server-managed fields ([Ticket.uri], [Ticket.artifactUri], [Ticket.images], timestamps,
+ * [Ticket.etag]).
  *
  * Updates use replace semantics: anything absent here is removed from the pod resource; only the
- * artifact link, `solidshare:artifactVerified` and `dcterms:created` survive a write.
+ * artifact link, `solidshare:artifactVerified`, the stored image links and `dcterms:created`
+ * survive a write.
  *
  * Every field is optional except [title].
  */
@@ -467,6 +505,7 @@ public data class Ticket(
     val beacons: List<TicketBeacon> = emptyList(),
     val artifactUri: String? = null,
     val artifactVerified: Boolean? = null,
+    val images: TicketImages? = null,
     val createdAt: String? = null,
     val modifiedAt: String? = null,
     val etag: String? = null,
@@ -520,6 +559,7 @@ public data class Ticket(
                 beacons = core.beacons,
                 artifactUri = ticketRdf.getArtifactUri(),
                 artifactVerified = ticketRdf.getArtifactVerified(),
+                images = ticketRdf.getImages(),
                 createdAt = ticketRdf.getCreated(),
                 modifiedAt = ticketRdf.getModified(),
                 etag = ticketRdf.getMetadata().etag,
