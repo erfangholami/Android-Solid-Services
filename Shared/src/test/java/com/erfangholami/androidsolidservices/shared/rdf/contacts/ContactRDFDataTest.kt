@@ -349,20 +349,16 @@ class ContactRDFDataTest {
     }
 
     @Test
-    fun `legacy add helpers delegate to safe counter labels`() {
+    fun `typed add helpers mint safe counter labels`() {
         val contact = ContactRDF(contactUri).apply {
             setFullName("X")
-            addPhoneNumber("+31612345678")
-            addEmailAddress("x@example.com")
+            addPhone("+31612345678", PhoneType.OTHER)
+            addEmail("x@example.com", EmailType.OTHER)
         }
         val nodeLabels = contact.getAllQuads()
             .filter { it.predicate == VCARD.HAS_TELEPHONE || it.predicate == VCARD.HAS_EMAIL }
             .map { it.`object` }
         assertEquals(listOf("_:phone0", "_:email0"), nodeLabels)
-        // The untyped helpers read back through the typed accessors, as PhoneType.OTHER —
-        // the bare Email / PhoneNumber value classes they used to return are gone. The typed
-        // accessors also hand back the plain value, where the old ones leaked the raw
-        // `tel:` / `mailto:` IRI the quad is actually stored under.
         assertEquals(
             listOf(PhoneEntry("+31612345678", PhoneType.OTHER)),
             contact.getPhoneEntries(),

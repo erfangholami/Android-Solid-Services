@@ -109,28 +109,6 @@ public class ContactRDF : SolidRDFResource {
     }
 
     /**
-     * Adds [newPhoneNumber] to this contact's quad list as an untyped `vcard:hasTelephone`
-     * entry. Delegates to [addPhone] with [PhoneType.OTHER].
-     *
-     * @return `true` if the phone number was added, `false` if it was a no-op.
-     */
-    public fun addPhoneNumber(newPhoneNumber: String?): Boolean {
-        if (newPhoneNumber.isNullOrEmpty()) return false
-        return addPhone(newPhoneNumber, PhoneType.OTHER)
-    }
-
-    /**
-     * Adds [newEmailAddress] to this contact's quad list as an untyped `vcard:hasEmail`
-     * entry. Delegates to [addEmail] with [EmailType.OTHER].
-     *
-     * @return `true` if the email address was added, `false` if it was a no-op.
-     */
-    public fun addEmailAddress(newEmailAddress: String?): Boolean {
-        if (newEmailAddress.isNullOrEmpty()) return false
-        return addEmail(newEmailAddress, EmailType.OTHER)
-    }
-
-    /**
      * Removes the `vcard:hasTelephone` entry for [phoneNumber] from this contact's quad list.
      *
      * @return `true` if the entry was found and removed, `false` if it was not present.

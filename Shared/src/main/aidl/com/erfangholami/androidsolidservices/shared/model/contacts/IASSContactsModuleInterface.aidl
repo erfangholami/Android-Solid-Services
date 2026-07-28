@@ -1,14 +1,6 @@
 package com.erfangholami.androidsolidservices.shared.model.contacts;
 
-import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook;
-import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList;
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData;
-import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContact;
-import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContactList;
-import com.erfangholami.androidsolidservices.shared.model.contacts.ContactPhoto;
-import com.erfangholami.androidsolidservices.shared.model.contacts.ContactMatch;
-import com.erfangholami.androidsolidservices.shared.model.contacts.Group;
-import com.erfangholami.androidsolidservices.shared.model.contacts.FullGroup;
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookCallback;
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookListCallback;
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactCallback;

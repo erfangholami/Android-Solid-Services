@@ -17,7 +17,6 @@ public object ACL {
     /** Allows reading and modifying the ACL resource itself. */
     public const val CONTROL : String = "${NAMESPACE}Control"
 
-    //Authorization predicates
     /** Links an Authorization to a specific resource it protects. */
     public const val ACCESS_TO : String = "${NAMESPACE}accessTo"
 
@@ -39,14 +38,12 @@ public object ACL {
     /** HTTP Origin that is allowed to make requests. */
     public const val ORIGIN : String = "${NAMESPACE}origin"
 
-    //Agent class constants
     /** Any agent, authenticated or not. */
     public const val AGENT_PUBLIC : String = "http://xmlns.com/foaf/0.1/Agent"
 
     /** Any authenticated agent. */
     public const val AUTHENTICATED_AGENT : String = "${NAMESPACE}AuthenticatedAgent"
 
-    //Legacy/storage
     /** Links a storage to its owner. */
     public const val OWNER : String = "${NAMESPACE}owner"
 
