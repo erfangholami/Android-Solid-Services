@@ -19,13 +19,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests the anti-impersonation gate in [InboxReader]: an inbound `as:Offer`
- * must be dropped unless its `as:actor` is provably the owner of the offered
- * resource. Regression guard for the removed bare "same host as the actor's
- * WebID" fallback, which let any user on a shared multi-tenant pod forge an
- * offer for another user's resource.
- */
 class InboxReaderGateTest {
 
     private val readerWebId = "https://solidweb.org/alice/profile/card#me"
@@ -94,7 +87,6 @@ class InboxReaderGateTest {
 
     @Test
     fun `forged offer for another tenant's resource on a shared host is dropped`() = runBlocking {
-        // Path-based multi-tenant pod: bob and alice share host solidweb.org.
         val bob = "https://solidweb.org/bob/profile/card#me"
         val aliceResource = "https://solidweb.org/alice/private/secret"
         val result = reader(bob, aliceResource, actorStorage = "https://solidweb.org/bob/")

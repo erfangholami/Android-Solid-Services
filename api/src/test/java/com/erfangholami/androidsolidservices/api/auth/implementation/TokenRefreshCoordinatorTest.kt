@@ -24,15 +24,6 @@ import org.mockito.Mockito.`when`
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/**
- * Locks the refresh policy for sessions that hold **no refresh token** (a provider may withhold
- * `offline_access` — e.g. Community Solid Server only grants it when the user asks to be
- * remembered on its consent screen). A forced refresh — typically triggered by a stray `401` —
- * must not terminally expire such a session while its access token is still valid; the session
- * ends only when the access token itself is spent. Previously the DPoP refresh path synthesized
- * `invalid_grant` for a missing refresh token, which read as "the server revoked the grant" and
- * killed a freshly created, perfectly healthy session.
- */
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE, sdk = [34])
 class TokenRefreshCoordinatorTest {

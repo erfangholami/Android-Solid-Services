@@ -26,8 +26,6 @@ public object ExceptionsErrorCode {
     /** An unexpected error occurred that does not map to a more specific code. */
     public const val UNKNOWN: Int = 103
 
-    // Sharing and notification errors — the client SDK surfaces these as typed exceptions.
-
     /** The target resource or inbox denied access (HTTP 403). */
     public const val ACCESS_DENIED: Int = 200
 

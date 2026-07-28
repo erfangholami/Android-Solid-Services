@@ -235,10 +235,6 @@ public class SolidResourceClient private constructor(
         })
     }
 
-    /**
-     * Runs [register] once the ASS app is installed and connected; the coroutine resumes with the
-     * callback's result or throws the mapped [SolidException].
-     */
     private suspend fun <T> call(register: (IASSResourceService, CallbackBridge<T>) -> Unit): T {
         if (!hasInstalledAndroidSolidServices()) {
             throw SolidException.SolidAppNotFoundException()
@@ -261,11 +257,6 @@ public class SolidResourceClient private constructor(
                 override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
             })
         }
-
-    // ---- Derived verbs ---------------------------------------------------------------
-    //
-    // These run SERVER-SIDE. Each is composed from several HTTP calls (a recursive copy
-    // walks an entire tree), so you pay one IPC round trip instead of N.
 
     /**
      * Reports whether a resource exists: a `404` is `false`; anything indeterminate (403,
@@ -336,8 +327,6 @@ public class SolidResourceClient private constructor(
             service.rename(webId, sourceUri, newName, stringCallback(bridge))
         }
 
-    // ---- Unauthenticated reads -------------------------------------------------------
-
     /**
      * Reads a **public** resource with no `Authorization` header — most usefully a foreign
      * WebID profile document, which a pod may reject when presented a foreign issuer's token.
@@ -364,8 +353,6 @@ public class SolidResourceClient private constructor(
             override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
         })
     }
-
-    // ---- Raw writes ------------------------------------------------------------------
 
     /**
      * PUTs an opaque body to [uri].
@@ -426,11 +413,6 @@ public class SolidResourceClient private constructor(
         }
     }
 
-    // ---- Streaming -------------------------------------------------------------------
-    //
-    // Bodies travel through a pipe, never through a parcel, so they are not bound by the
-    // ~1 MB Binder transaction limit and are never held whole in memory.
-
     /**
      * Opens the resource at [uri] as a live stream.
      *
@@ -467,8 +449,6 @@ public class SolidResourceClient private constructor(
         val readEnd = pipe[0]
         val writeEnd = pipe[1]
 
-        // Pump the caller's bytes into the pipe off the calling thread — writing to a full
-        // pipe blocks until the service drains it.
         Thread {
             runCatching {
                 ParcelFileDescriptor.AutoCloseOutputStream(writeEnd).use { sink ->
@@ -479,7 +459,6 @@ public class SolidResourceClient private constructor(
             }
         }.apply { isDaemon = true }.start()
 
-        // Hand the read end over; our copy is closed once it has been written into the parcel.
         readEnd.use { fd ->
             service.writeStream(
                 webId,
@@ -495,8 +474,6 @@ public class SolidResourceClient private constructor(
             )
         }
     }
-
-    // ---- callback bridges ------------------------------------------------------------
 
     private fun stringCallback(bridge: CallbackBridge<String>) = object : IASSStringCallback.Stub() {
         override fun onResult(value: String?) = bridge.onResult(value.orEmpty())

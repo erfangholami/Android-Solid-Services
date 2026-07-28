@@ -7,7 +7,6 @@ package com.erfangholami.androidsolidservices.shared.result
  * localize. Every [SolidError] variant reports exactly one of these.
  */
 public enum class SolidErrorCode {
-    // HTTP status outcomes
     UNAUTHORIZED,
     FORBIDDEN,
     NOT_FOUND,
@@ -18,7 +17,6 @@ public enum class SolidErrorCode {
     SERVER_ERROR,
     UNEXPECTED_RESPONSE,
 
-    // Transport / local
     NETWORK,
     TIMEOUT,
     TLS,
@@ -26,7 +24,6 @@ public enum class SolidErrorCode {
     CANCELLED,
     NOT_AUTHENTICATED,
 
-    // Sharing / notifications / access-control domain
     ACCESS_DENIED,
     ACCESS_INDETERMINATE,
     NO_INBOX,
@@ -73,8 +70,6 @@ public sealed class SolidError {
 
     /** The underlying throwable, when this error wraps one. */
     public open val cause: Throwable? = null
-
-    // ---- HTTP outcomes ----
 
     /** 401 — no valid credentials for the target (distinct from [NotAuthenticated], a missing local session). */
     public data class Unauthorized(
@@ -156,8 +151,6 @@ public sealed class SolidError {
         override val retryable: Boolean get() = status in 500..599
     }
 
-    // ---- transport / local ----
-
     /** A network I/O failure before a response was obtained; retryable. */
     public data class Network(
         override val cause: Throwable? = null,
@@ -204,8 +197,6 @@ public sealed class SolidError {
     ) : SolidError() {
         override val code: SolidErrorCode get() = SolidErrorCode.NOT_AUTHENTICATED
     }
-
-    // ---- sharing / notifications / access-control domain ----
 
     /** Definitive no-access to a resource; the UI can offer to send an access request. */
     public data class AccessDenied(

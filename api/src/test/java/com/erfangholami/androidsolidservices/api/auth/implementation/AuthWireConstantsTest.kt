@@ -4,12 +4,6 @@ import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * Locks the Solid-OIDC over-the-wire constants that a blanket `webid → webId` identifier rename
- * once silently broke: the `webid` authorization scope and the `webid` ID-token claim are both
- * lower-case per spec (https://solidproject.org/TR/oidc), even though the Kotlin identifiers around
- * them are camelCase.
- */
 class AuthWireConstantsTest {
 
     @Test

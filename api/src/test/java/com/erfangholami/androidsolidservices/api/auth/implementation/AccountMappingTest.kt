@@ -9,12 +9,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Locks the [Profile] → [com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount]
- * projection of session health: an account whose token refresh failed terminally must surface as
- * unauthorized *with the recorded OAuth error*, instead of silently vanishing from the signed-in
- * list with no way to tell why.
- */
 class AccountMappingTest {
 
     @Test

@@ -10,11 +10,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests the derived [SolidResourceManager] capabilities [SolidResourceManager.exists] and
- * [SolidResourceManager.ensureContainer] over an in-memory pod that models HEAD (existence)
- * and create.
- */
 class SolidResourceManagerCapabilitiesTest {
 
     private val webId = "https://alice.pod/profile/card#me"

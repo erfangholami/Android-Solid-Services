@@ -8,7 +8,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object PIM {
     public const val NAMESPACE: String = "http://www.w3.org/ns/pim/space#"
 
-    //Types
     /** A Solid pod storage root container. */
     public const val STORAGE_TYPE: String = "${NAMESPACE}Storage"
 
@@ -21,7 +20,6 @@ public object PIM {
     public const val CONTROLLED_STORAGE: String = "${NAMESPACE}ControlledStorage"
     public const val PERSONAL_STORAGE: String = "${NAMESPACE}PersonalStorage"
 
-    //Predicates
     /** Links a WebID to its storage root(s). */
     public const val STORAGE: String = "${NAMESPACE}storage"
 

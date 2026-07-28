@@ -25,12 +25,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * The type index is the library's most contended document: every app the user has
- * authorised registers into the same resource. These tests pin the two properties that
- * makes concurrent registration safe — the write is a compare-and-swap, and it is
- * idempotent — plus the PATCH-not-PUT bootstrap.
- */
 class TypeIndexResolverTest {
 
     private val webId = "https://alice.pod/profile/card#me"
@@ -41,12 +35,6 @@ class TypeIndexResolverTest {
     private val bookUri = "https://alice.pod/contacts/b1/index.ttl"
     private val ticketsContainer = "https://alice.pod/tickets/"
 
-    /**
-     * A fake pod serving Alice's profile and her private type index, with a monotonic
-     * ETag and a real `If-Match` precondition: [update] rejects a stale validator with a
-     * 412, exactly as a server does. [beforeUpdate] lets a test drop another app's write
-     * in between our read and our conditional write.
-     */
     private class VersionedIndexPod(
         private val webId: String,
         private val profileDoc: String,
@@ -65,7 +53,6 @@ class TypeIndexResolverTest {
         fun index(): PrivateTypeIndex =
             PrivateTypeIndex(indexUri, "application/ld+json", indexQuads.toList(), null)
 
-        /** Simulates another app committing its own registration, bumping the ETag under us. */
         fun concurrentRegistration(forClass: String, containerUri: String) {
             version++
             val subject = "$indexUri#other-app"
@@ -155,16 +142,12 @@ class TypeIndexResolverTest {
     fun `a registration racing another app's keeps both, instead of clobbering it`() = runBlocking {
         val pod = VersionedIndexPod(webId, profileDoc, indexUri, linkedProfile())
         pod.beforeUpdate = {
-            // Another app registers its tickets container in the instant between our read
-            // and our conditional write, so our If-Match is stale and the pod answers 412.
             pod.beforeUpdate = null
             pod.concurrentRegistration(Schema.TICKET, ticketsContainer)
         }
 
         TypeIndexResolver.addInstance(pod, webId, VCARD.ADDRESS_BOOK, bookUri, isPrivate = true)
 
-        // The write was genuinely conditional — without an If-Match the pod could never
-        // have detected the conflict, and the retry below would be dead code.
         assertNotNull("the update must carry an If-Match precondition", pod.lastIfMatch)
         assertEquals("the 412 must be retried, not surfaced", 2, pod.updateCount)
 
@@ -185,8 +168,6 @@ class TypeIndexResolverTest {
         TypeIndexResolver.addInstance(pod, webId, VCARD.ADDRESS_BOOK, bookUri, isPrivate = true)
         assertEquals(1, pod.updateCount)
 
-        // `ensure…`-style callers run on every start; a second pass must not append a
-        // duplicate solid:TypeRegistration node, nor spend a round trip.
         TypeIndexResolver.addInstance(pod, webId, VCARD.ADDRESS_BOOK, bookUri, isPrivate = true)
 
         assertEquals("the redundant registration is a no-op", 1, pod.updateCount)
@@ -215,9 +196,6 @@ class TypeIndexResolverTest {
                     else -> SolidResult.Success(PrivateTypeIndex(uri, "application/ld+json", null, null))
                 }
             }
-            // create() is a conditional If-None-Match:* PUT, so the app that loses the
-            // bootstrap race is told the index already exists. It must carry on with the
-            // winner's index rather than failing to start.
             onCreate = { SolidResult.Failure(SolidError.fromHttp(409, "Resource already exists")) }
         }
 

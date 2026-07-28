@@ -11,12 +11,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Regression tests for the codec `init` blocks: constructing a codec over a
- * parsed document must NOT strip `rdf:type` triples another application wrote
- * on the primary subject. Before `ensureType`, the single-valued `addQuad`
- * clobbered every foreign type.
- */
 class CodecForeignTypeTest {
 
     private val contactUri =

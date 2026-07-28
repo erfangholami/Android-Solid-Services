@@ -26,23 +26,12 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import java.net.URI
 
-/**
- * Negotiates and streams a Solid `WebSocketChannel2023` notification channel.
- *
- * Spec: https://solid.github.io/notifications/websocket-channel-2023
- *
- * [negotiate] POSTs an authenticated channel request to the pod's subscription service and reads
- * back the `notify:receiveFrom` WebSocket URL; [connect] opens that WebSocket and emits each
- * pushed frame — decoded exactly like a polled inbox notification — through a cold [Flow] whose
- * lifetime bounds the socket's.
- */
 internal class WebSocketChannel2023Client(
     private val auth: AuthSession,
     private val ioDispatcher: CoroutineDispatcher,
     private val httpClient: OkHttpClient = defaultWebSocketClient(),
 ) {
 
-    /** Creates a channel for [topic] via [subscriptionService], returning the `receiveFrom` URL. */
     suspend fun negotiate(webId: String, subscriptionService: URI, topic: URI): URI {
         val requestJson = channelRequestBody(topic)
         var didForceRefresh = false
@@ -72,7 +61,7 @@ internal class WebSocketChannel2023Client(
                     didForceRefresh = true
                 }
 
-                code == 401 -> Unit // nonce now recorded (or refreshed) — retry
+                code == 401 -> Unit
 
                 else -> throw SolidError.fromHttp(code, body.take(BODY_EXCERPT)).asException()
             }
@@ -80,7 +69,6 @@ internal class WebSocketChannel2023Client(
         throw SolidError.fromHttp(500, "WebSocketChannel2023: channel negotiation exhausted retries").asException()
     }
 
-    /** Opens the [receiveFrom] WebSocket and streams decoded notifications until collection stops. */
     fun connect(webId: String, receiveFrom: URI): Flow<RawNotification> = callbackFlow {
         val headers = runCatching { auth.getAuthHeaders(webId, "GET", receiveFrom.toString()) }
             .getOrDefault(emptyMap())

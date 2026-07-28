@@ -13,11 +13,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests [SolidResourceManager.probeAccess]: it reads the `WAC-Allow` header into typed
- * modes, distinguishes a definitive `Denied` (403/404) from an indeterminate outcome
- * (surfaced as a [SolidResult.Failure] a caller must not treat as denial).
- */
 class ProbeAccessTest {
 
     private val webId = "https://alice.pod/profile/card#me"

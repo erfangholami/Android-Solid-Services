@@ -8,7 +8,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object ACP {
     public const val NAMESPACE: String = "http://www.w3.org/ns/solid/acp#"
 
-    //Types
     /** Connects a resource to its access controls. Linked via Link: rel="acl". */
     public const val ACCESS_CONTROL_RESOURCE: String = "${NAMESPACE}AccessControlResource"
 
@@ -30,7 +29,6 @@ public object ACP {
     /** Defines access modes granted in a given context. */
     public const val ACCESS_GRANT: String = "${NAMESPACE}AccessGrant"
 
-    //ACR predicates
     /** Connects an ACR to the resource it controls. */
     public const val RESOURCE: String = "${NAMESPACE}resource"
 
@@ -40,11 +38,9 @@ public object ACP {
     /** Connects an ACR to access controls that apply transitively to member resources. */
     public const val MEMBER_ACCESS_CONTROL: String = "${NAMESPACE}memberAccessControl"
 
-    //AccessControl predicates
     /** References policies applied by this access control. */
     public const val APPLY: String = "${NAMESPACE}apply"
 
-    //Policy predicates
     /** Access modes granted when the policy is satisfied. */
     public const val ALLOW: String = "${NAMESPACE}allow"
 
@@ -60,7 +56,6 @@ public object ACP {
     /** None of the referenced matchers must be satisfied. */
     public const val NONE_OF: String = "${NAMESPACE}noneOf"
 
-    //Matcher/ Context attributes
     public const val AGENT: String = "${NAMESPACE}agent"
     public const val CLIENT: String = "${NAMESPACE}client"
     public const val ISSUER: String = "${NAMESPACE}issuer"
@@ -73,14 +68,12 @@ public object ACP {
     /** Base property for custom context attributes. */
     public const val ATTRIBUTE: String = "${NAMESPACE}attribute"
 
-    //AccessGrant predicates
     /** Access modes granted in this context. */
     public const val GRANT: String = "${NAMESPACE}grant"
 
     /** Context associated with this access grant. */
     public const val CONTEXT: String = "${NAMESPACE}context"
 
-    //Special named individuals
     /** Matches all agents (authenticated and public). */
     public const val PUBLIC_AGENT: String = "${NAMESPACE}PublicAgent"
 

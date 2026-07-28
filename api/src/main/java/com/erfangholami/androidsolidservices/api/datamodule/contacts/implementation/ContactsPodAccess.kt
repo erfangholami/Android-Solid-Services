@@ -15,11 +15,6 @@ import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.CancellationException
 
-/**
- * Wraps a contacts-engine operation into a [SolidResult], mapping any thrown
- * exception to [SolidResult.Failure]. [CancellationException] is rethrown so
- * coroutine cancellation propagates instead of surfacing as a failed result.
- */
 internal suspend fun <T> runResult(block: suspend () -> T): SolidResult<T> =
     try {
         SolidResult.Success(block())
@@ -29,11 +24,6 @@ internal suspend fun <T> runResult(block: suspend () -> T): SolidResult<T> =
         SolidResult.Failure(SolidError.fromThrowable(e))
     }
 
-/**
- * Shared low-level pod access for the contacts engines: typed reads of the module's
- * RDF documents, type-index resolution, and the display-name cache refresh that keeps
- * `people.ttl` and per-group cached names consistent with a contact's `vcard:fn`.
- */
 internal class ContactsPodAccess(
     val solidResourceManager: SolidResourceManager,
 ) {
@@ -47,22 +37,15 @@ internal class ContactsPodAccess(
     suspend fun groupsIndex(ownerWebId: String, uri: String): GroupsIndexRDF =
         solidResourceManager.read(ownerWebId, uri, GroupsIndexRDF::class.java).getOrThrow()
 
-    /** Reads the address book at [uri], or `null` when it does not exist (404). */
     suspend fun addressBookOrNull(ownerWebId: String, uri: String): AddressBookRDF? =
         solidResourceManager.read(ownerWebId, uri, AddressBookRDF::class.java).dataOrNullIfMissing()
 
-    /** Reads the people index at [uri], or `null` when it does not exist (404). */
     suspend fun peopleIndexOrNull(ownerWebId: String, uri: String): NameEmailIndexRDF? =
         solidResourceManager.read(ownerWebId, uri, NameEmailIndexRDF::class.java).dataOrNullIfMissing()
 
-    /** Reads the groups index at [uri], or `null` when it does not exist (404). */
     suspend fun groupsIndexOrNull(ownerWebId: String, uri: String): GroupsIndexRDF? =
         solidResourceManager.read(ownerWebId, uri, GroupsIndexRDF::class.java).dataOrNullIfMissing()
 
-    /**
-     * Ensures the container at [containerUri] and its whole parent chain exist (delegates to
-     * [SolidResourceManager.ensureContainer]). No-op when it already exists.
-     */
     suspend fun ensureContainer(ownerWebId: String, containerUri: String) {
         solidResourceManager.ensureContainer(ownerWebId, containerUri).getOrThrow()
     }
@@ -79,10 +62,6 @@ internal class ContactsPodAccess(
     suspend fun publicTypeIndex(webId: String): PublicTypeIndex =
         TypeIndexResolver.getPublicTypeIndex(solidResourceManager, webId)
 
-    /**
-     * Rewrites the cached `vcard:fn` for [contactUri] in the book's people index and in
-     * every group of the book that lists the contact as a member.
-     */
     suspend fun refreshCachedName(
         ownerWebId: String,
         addressBookUri: String,
@@ -106,11 +85,6 @@ internal class ContactsPodAccess(
         }
     }
 
-    /**
-     * Compare-and-swap read-modify-write of the address book's people (name-email)
-     * index: [mutate] the fresh index in place (return `false` to skip a no-op write),
-     * with `If-Match` + retry so a concurrent contact add/remove can't be lost.
-     */
     suspend fun updatePeopleIndex(
         ownerWebId: String,
         addressBookUri: String,
@@ -124,11 +98,6 @@ internal class ContactsPodAccess(
         ).getOrThrow()
     }
 
-    /**
-     * Compare-and-swap read-modify-write of the address book's groups index:
-     * [mutate] the fresh index in place (return `false` to skip a no-op write),
-     * with `If-Match` + retry so a concurrent group add/remove can't be lost.
-     */
     suspend fun updateGroupsIndex(
         ownerWebId: String,
         addressBookUri: String,
@@ -142,11 +111,6 @@ internal class ContactsPodAccess(
         ).getOrThrow()
     }
 
-    /**
-     * Compare-and-swap read-modify-write of a single group document: [mutate] the
-     * fresh group in place (return `false` to skip a no-op write), with `If-Match` +
-     * retry so a concurrent membership or title edit can't be lost.
-     */
     suspend fun updateGroup(
         ownerWebId: String,
         groupUri: String,

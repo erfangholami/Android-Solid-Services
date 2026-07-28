@@ -19,26 +19,6 @@ import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.AS
 import java.net.URI
 
-/**
- * Reads the current user's LDN inbox and decodes items into the two
- * supported event shapes:
- *
- * - `as:Offer` / `as:Accept` / `as:Undo` / `as:Reject` → [ShareNotification]
- * - `interop:AccessRequest` (or legacy `solidshare:AccessRequest`) → [ShareRequest]
- *
- * The inbox is discovered via `ldp:inbox` on the user's WebID profile, falling
- * back to a HEAD on the WebID URL. Container-level 401/403 errors are surfaced
- * as typed [SharingException] variants; per-item parse errors are skipped
- * silently (the inbox can contain arbitrary RDF).
- *
- * Items whose `as:actor` doesn't match the actual owner of the referenced
- * resource are dropped — see [actorMatchesOwner] for the verification strategy.
- *
- * Spec anchors:
- * - LDN: https://www.w3.org/TR/ldn/
- * - Activity Streams 2: https://www.w3.org/TR/activitystreams-core/
- * - Solid Notifications: https://solidproject.org/TR/notifications-protocol
- */
 internal class InboxReader(
     private val rm: SolidResourceManager,
     private val discovery: InboxDiscovery,
@@ -81,11 +61,6 @@ internal class InboxReader(
         }
     }
 
-    /**
-     * Parses [itemUri] as either a [ShareNotification] or a [ShareRequest].
-     * Returns a typed result so a push channel (when added) can route to
-     * the right listener method.
-     */
     suspend fun parseInboxItem(webId: String, itemUri: URI): InboxItem? {
         val profileCache = HashMap<String, WebId?>()
         val asNotification = runCatching { parseAsNotification(webId, itemUri, profileCache) }
@@ -150,11 +125,6 @@ internal class InboxReader(
         val actor = rdf.actor() ?: return null
         val obj = rdf.activityObject() ?: return null
 
-        // An as:Accept / as:Reject whose actor is this very inbox's owner is the
-        // owner's own read-only memo of a decision they made on an incoming
-        // request — not a counterpart's grant/decline. The same activity, read
-        // out of the requester's inbox, has a foreign actor and stays
-        // ACCEPTED / REJECT. See ShareNotificationType.DECISION_GRANTED.
         val isOwnDecision = (rawType == AS.ACCEPT || rawType == AS.REJECT) &&
                 IriUtils.sameIri(actor, webId)
         val type = when {
@@ -172,9 +142,6 @@ internal class InboxReader(
                 ShareMode.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
             }
 
-        // REJECT carries no grant to verify, and a self-authored decision is
-        // about the owner's own resource, so neither needs the impersonation
-        // gate that protects against a forged grant to my resources.
         val skipOwnershipGate = isOwnDecision || type == ShareNotificationType.REJECT
         if (!skipOwnershipGate &&
             !actorMatchesOwner(
@@ -257,13 +224,6 @@ internal class InboxReader(
             return IriUtils.sameIri(ownerFromHeaders.toString(), claimedActor)
         }
 
-        // Authoritative-header check failed to name an owner; fall back to the
-        // actor's self-declared pim:storage. There is deliberately NO bare
-        // "same host as the actor's WebID" fallback: on a path-based multi-tenant
-        // pod (…/alice/, …/bob/ under one host) every user shares the host, so
-        // that fallback let any user forge an Offer for any other user's resource.
-        // A claim now only passes if the resource actually sits under a storage
-        // the actor declares in their own profile.
         return resourceUnderOwnedStorage(
             readerWebId,
             ownerWebId = claimedActor,
@@ -328,12 +288,6 @@ internal class InboxReader(
                 }
                 .getOrNull() ?: return@any false
             val root = IriUtils.canonical(IriUtils.toContainerIri(storagePathRoot(storageUri)))
-            // The resource must sit under the storage container AND be served from
-            // the very same host as that storage (exact, case-insensitive) — a
-            // storage on one host can never own a resource on another. `sameSite`
-            // is used only for the looser WebID↔storage relation, where a provider
-            // legitimately splits identity and storage across sibling subdomains
-            // (e.g. id.inrupt.com vs storage.inrupt.com).
             canonicalResource.startsWith(root) &&
                     sameHost(resource.host, storageUri.host) &&
                     sameSite(ownerUri.host, storageUri.host)
@@ -344,19 +298,6 @@ internal class InboxReader(
         !hostA.isNullOrBlank() && !hostB.isNullOrBlank() &&
                 hostA.equals(hostB, ignoreCase = true)
 
-    /**
-     * Reads the WebID profile at [webIdUri] (caching the result, including a null) so the
-     * ownership checks can inspect its declared `pim:storage`.
-     *
-     * The profile usually belongs to a third party — the `as:actor` of an incoming
-     * notification — whose pod and OIDC issuer differ from the reader's, so it is read
-     * **anonymously** first via [SolidResourceManager.readPublic]. WebID profile documents are
-     * public, and attaching the reader's own-issuer Authorization/DPoP headers to a foreign host
-     * is at best ignored and at worst rejected (Inrupt PodSpaces answers 401 to a foreign-issuer
-     * token) — which otherwise made every cross-pod notification fail this gate and disappear.
-     * The authenticated [SolidResourceManager.read] is kept as a fallback for the unusual server
-     * that gates even the profile from anonymous callers.
-     */
     private suspend fun readProfileCached(
         viaWebId: String,
         webId: String,
@@ -401,7 +342,6 @@ internal class InboxReader(
             .joinToString(".")
     }
 
-    /** Typed wrapper around an inbox item that has been parsed once. */
     sealed class InboxItem {
         data class Notification(val value: ShareNotification) : InboxItem()
         data class Request(val value: ShareRequest) : InboxItem()

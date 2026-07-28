@@ -8,10 +8,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
 
-/**
- * Tests the [SolidResult] combinators and accessors that let callers handle a
- * failure without a manual `when`.
- */
 class SolidResultTest {
 
     private val ok: SolidResult<Int> = SolidResult.Success(42)
@@ -84,8 +80,6 @@ class SolidResultTest {
 
     @Test
     fun `solidCatching maps a JDK cancellation to Cancelled`() {
-        // solidCatching rethrows only kotlinx.coroutines.CancellationException (matched by
-        // class name, with no coroutines dependency here); a JDK cancellation maps to Cancelled.
         assertEquals(
             SolidError.Cancelled,
             solidCatching { throw java.util.concurrent.CancellationException() }.errorOrNull(),

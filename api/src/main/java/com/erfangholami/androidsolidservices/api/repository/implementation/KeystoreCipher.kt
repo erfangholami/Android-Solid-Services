@@ -8,14 +8,6 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-/**
- * AES-256-GCM encryption backed by a hardware-bound Android Keystore key, used to protect the
- * locally persisted profile/token store at rest.
- *
- * The key never leaves the Keystore, so the ciphertext is unreadable off-device (e.g. from a
- * backup or a pulled data directory) without it. Output is the 12-byte GCM IV followed by the
- * ciphertext-and-tag; each [encrypt] uses a fresh random IV.
- */
 internal object KeystoreCipher {
 
     private const val KEYSTORE_PROVIDER = "AndroidKeyStore"

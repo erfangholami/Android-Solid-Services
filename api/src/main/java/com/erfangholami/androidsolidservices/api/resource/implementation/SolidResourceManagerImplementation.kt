@@ -248,22 +248,6 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     override suspend fun headPublic(uri: String): SolidResult<SolidMetadata> =
         withContext(Dispatchers.IO) { solidHttpClient.headPublic(encodeUriString(uri)) }
 
-    /**
-     * Deletes a container and everything under it.
-     *
-     * Solid has no single-call recursive delete: a `DELETE` on a non-empty container returns `409`
-     * (Solid Protocol §5.4), so the tree must be emptied leaf-first, client-side. This empties the
-     * container by deleting its contained resources — recursing into child containers — before
-     * deleting the container itself.
-     *
-     * Deletes are bounded to [MAX_CONCURRENT_DELETES] in-flight requests via [gate] (a single
-     * shared permit budget for the whole tree) so a large container cannot flood the server with
-     * hundreds of simultaneous requests. A failed child does **not** cancel its siblings: every
-     * child is attempted, transient failures are retried ([deleteWithRetry]), and if any resource
-     * still cannot be deleted the container is left intact and an aggregate [SolidResult.Failure]
-     * is returned — the caller can safely retry (already-gone resources report `404`, treated as
-     * success) without leaving the container half-emptied yet deregistered.
-     */
     private suspend fun deleteRecursive(
         webId: String,
         containerUri: URI,
@@ -312,12 +296,6 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         return deleteWithRetry(webId, containerUri, gate)
     }
 
-    /**
-     * Deletes a single resource, holding a [gate] permit for the request and retrying transient
-     * failures (network errors and [TRANSIENT_DELETE_STATUS_CODES] responses) with exponential
-     * backoff, up to [MAX_DELETE_ATTEMPTS] attempts. A `404` is treated as success (the resource is
-     * already gone), which makes a re-run of a partially-completed delete idempotent.
-     */
     private suspend fun deleteWithRetry(
         webId: String,
         uri: URI,

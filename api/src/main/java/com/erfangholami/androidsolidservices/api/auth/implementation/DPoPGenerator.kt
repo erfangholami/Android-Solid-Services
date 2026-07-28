@@ -32,10 +32,6 @@ internal class DPoPGenerator private constructor(
         private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
         private const val KEYSTORE_ALIAS_PREFIX = BuildConfig.KEY_GENERATOR_ALIAS
 
-        /**
-         * Returns the generator for a DPoP key. [keyId] scopes the key to a single account; a `null`
-         * [keyId] (legacy profiles) shares one key per algorithm, keyed per issuer as before.
-         */
         fun getInstance(
             authDiscovery: AuthorizationServiceDiscovery,
             keyId: String? = null,
@@ -46,7 +42,6 @@ internal class DPoPGenerator private constructor(
             }
         }
 
-        /** Deletes the Keystore key(s) for [keyId] (all algorithms) and drops the cached generator. */
         fun deleteKeys(keyId: String) {
             runCatching {
                 val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
@@ -60,11 +55,6 @@ internal class DPoPGenerator private constructor(
 
     private val selectedAlgo: DPopSupportedAlgo = selectCategory()
 
-    /**
-     * Server-issued DPoP nonces, keyed by origin (`scheme://authority`). RFC 9449 §9: the
-     * authorization server and each resource server issue distinct nonces that are only accepted
-     * by the server that issued them, so they must be tracked per-origin and never shared.
-     */
     private val nonces = ConcurrentHashMap<String, String>()
 
     private val keyholder: KeyHolder = KeyPairHolderFactory.getKeyHolder(
@@ -74,7 +64,6 @@ internal class DPoPGenerator private constructor(
         selectedAlgo
     )
 
-    /** Records the `DPoP-Nonce` returned by the server at [forUri] for use in subsequent proofs. */
     fun updateNonce(forUri: String, newNonce: String) {
         nonces[originOf(forUri)] = newNonce
     }

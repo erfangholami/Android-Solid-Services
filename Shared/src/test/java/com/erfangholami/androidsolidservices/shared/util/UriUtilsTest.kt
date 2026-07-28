@@ -6,12 +6,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Tests that [encodeUri] / [encodeUriString] percent-encode only truly-illegal
- * characters and never corrupt identifiers that legitimately contain encoded
- * reserved characters (a decode/re-encode round-trip used to turn `%2F` into a
- * real path separator).
- */
 class UriUtilsTest {
 
     @Test

@@ -564,11 +564,6 @@ public interface SolidResourceManager {
         resource: T,
     ): SolidResult<String?>
 
-    /**
-     * Recursively copies [source] to [dest]: a leaf is read as raw bytes and re-`PUT`,
-     * a container is recreated and its children copied (bounded concurrency). Returns the
-     * first failure, or `Success(Unit)` when the whole subtree copied.
-     */
     private suspend fun copyTree(webId: String, source: String, dest: String): SolidResult<Unit> {
         if (!source.endsWith("/")) {
             val resource = when (val read = read(webId, source, SolidNonRDFResource::class.java)) {
@@ -600,14 +595,8 @@ public interface SolidResourceManager {
     }
 }
 
-/** Max concurrent per-child requests when listing (enriched) or copying a container. */
 private const val CONTAINER_FANOUT_LIMIT = 8
 
-/**
- * The parent container URI of [uri] (with a trailing `/`), or `null` when [uri] is the
- * storage root or has no parent path segment. Drives [SolidResourceManager.ensureContainer]'s
- * bottom-up recursion.
- */
 private fun parentContainerOfUri(uri: String): String? {
     val schemeEnd = uri.indexOf("://")
     if (schemeEnd < 0) return null

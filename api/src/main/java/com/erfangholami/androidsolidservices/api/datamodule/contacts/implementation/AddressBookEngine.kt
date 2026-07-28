@@ -89,10 +89,6 @@ internal class AddressBookEngine(
     ): SolidResult<AddressBook> = runResult {
         val book = runCatching { readBook(ownerWebId, addressBookUri) }.getOrNull()
 
-        // Delete the whole book container recursively first, and only deregister it from the type
-        // index if that succeeded. Deregistering after a partial delete would strip discovery while
-        // leaving orphaned contact documents behind, so a failed delete must abort here (getOrThrow)
-        // — the book stays registered and findable, and the caller can safely retry.
         val bookContainer = addressBookUri.substring(0, addressBookUri.lastIndexOf("/") + 1)
         pod.solidResourceManager.delete(ownerWebId, bookContainer).getOrThrow()
 

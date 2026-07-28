@@ -14,7 +14,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.XSD.LANG_STRING
 public object XSD {
     public const val NAMESPACE: String = "http://www.w3.org/2001/XMLSchema#"
 
-    //String types
     public const val STRING: String = "${NAMESPACE}string"
     public const val NORMALIZED_STRING: String = "${NAMESPACE}normalizedString"
     public const val TOKEN: String = "${NAMESPACE}token"
@@ -24,7 +23,6 @@ public object XSD {
     /** Language-tagged string — uses the RDF namespace, not XSD, but grouped here for convenience. */
     public const val LANG_STRING: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
 
-    //Numeric types
     public const val INTEGER: String = "${NAMESPACE}integer"
     public const val LONG: String = "${NAMESPACE}long"
     public const val INT: String = "${NAMESPACE}int"
@@ -40,10 +38,8 @@ public object XSD {
     public const val UNSIGNED_LONG: String = "${NAMESPACE}unsignedLong"
     public const val UNSIGNED_INT: String = "${NAMESPACE}unsignedInt"
 
-    //Boolean
     public const val BOOLEAN: String = "${NAMESPACE}boolean"
 
-    //Date/time types
     public const val DATE_TIME: String = "${NAMESPACE}dateTime"
     public const val DATE_TIME_STAMP: String = "${NAMESPACE}dateTimeStamp"
     public const val DATE: String = "${NAMESPACE}date"
@@ -55,7 +51,6 @@ public object XSD {
     public const val G_MONTH: String = "${NAMESPACE}gMonth"
     public const val G_DAY: String = "${NAMESPACE}gDay"
 
-    //Binary
     public const val BASE64_BINARY: String = "${NAMESPACE}base64Binary"
     public const val HEX_BINARY: String = "${NAMESPACE}hexBinary"
 

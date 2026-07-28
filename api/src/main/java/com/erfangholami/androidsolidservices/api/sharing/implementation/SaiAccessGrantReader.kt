@@ -14,27 +14,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.SAI
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import java.net.URI
 
-/**
- * Reads Solid Application Interoperability (SAI) access grants for a user by
- * walking the registry graph advertised from their WebID profile:
- *
- * ```
- * WebID profile  --interop:hasRegistrySet-->  RegistrySet
- *   --interop:hasAgentRegistry-->  AgentRegistry
- *     --interop:hasSocialAgentRegistration / hasApplicationRegistration-->  Registration
- *       --interop:hasAccessGrant-->  AccessGrant
- *         --interop:hasDataGrant-->  DataGrant (access modes, data instances)
- * ```
- *
- * SAI deployment is rare across servers (CSS / NSS / Inrupt ESS), and the
- * graph is cross-pod and shape-tree-scoped rather than resource-centric, so
- * this reader is deliberately **best-effort and additive**: every step is
- * guarded, a failure at any node is logged with its reason and skipped, and a
- * pod without a registry set yields an empty list. It never throws — the
- * authoritative answer comes from the app's own indexes.
- *
- * Spec: https://solidproject.org/TR/sai
- */
 internal class SaiAccessGrantReader(private val rm: SolidResourceManager) {
 
     private companion object {

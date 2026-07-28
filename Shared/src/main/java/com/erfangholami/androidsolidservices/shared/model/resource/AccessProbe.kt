@@ -4,11 +4,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 
-/**
- * Parcel discriminators for the sealed [AccessProbe] hierarchy. They live at file scope
- * because an interface companion holding a `@JvmField` (the required `CREATOR`) may not
- * also hold ordinary properties.
- */
 private const val TYPE_ACCESSIBLE = 0
 private const val TYPE_DENIED = 1
 

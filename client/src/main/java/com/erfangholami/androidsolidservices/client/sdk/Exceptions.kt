@@ -66,11 +66,6 @@ public sealed class SolidException(message: String) : Exception(message) {
     }
 }
 
-/**
- * Maps an IPC `(errorCode, errorMessage)` pair back to the corresponding typed
- * [SolidException]. Used internally to reconstruct exceptions that crossed the
- * process boundary.
- */
 internal fun handleSolidException(errorCode: Int, errorMessage: String): SolidException {
     return when (errorCode) {
         ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED -> SolidServicesDrawPermissionDeniedException(

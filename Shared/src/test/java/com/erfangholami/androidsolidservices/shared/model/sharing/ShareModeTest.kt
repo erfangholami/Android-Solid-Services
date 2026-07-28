@@ -5,12 +5,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-/**
- * Tests the WAC mode mapping that underpins every grant: View/Add/Edit ↔
- * Read/Append/Write, the explicit implied-Read expansion (WAC has no mode
- * subsumption), and the "strongest wins" fold used to collapse a grant's
- * several acl:modes back to one logical level.
- */
 class ShareModeTest {
 
     @Test

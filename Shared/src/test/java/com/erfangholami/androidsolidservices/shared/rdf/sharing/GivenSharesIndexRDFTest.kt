@@ -13,11 +13,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-/**
- * Read-side tests for [GivenSharesIndexRDF]: the reified `solidshare:Share`
- * record form (with its `dcterms:created` timestamp), the legacy bare-triple
- * form, node-wins-over-legacy dedup, and group-receiver disambiguation.
- */
 class GivenSharesIndexRDFTest {
 
     private val index = "https://alice.pod/solidshare/shares/given_shares.ttl"
@@ -76,7 +71,6 @@ class GivenSharesIndexRDFTest {
                 RdfQuad(node, v.resource, resource),
                 RdfQuad(node, v.receiver, bob),
                 RdfQuad(node, ACL.MODE, ACL.WRITE),
-                // stale legacy row for the same (bob, resource) pair
                 RdfQuad(bob, ACL.READ, resource),
             ),
         )

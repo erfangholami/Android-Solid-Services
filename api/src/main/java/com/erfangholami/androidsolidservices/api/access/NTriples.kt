@@ -4,33 +4,6 @@ import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import java.net.URI
 
-/**
- * Tiny N-Triples writer used by the access backends.
- *
- * Why a hand-rolled writer instead of pushing everything through
- * Titanium's JSON-LD compaction:
- *
- *  - Inrupt PodSpaces' ACR endpoint rejects compacted JSON-LD that doesn't
- *    match its proprietary shape (`{"id": "...", "type": "AccessControlResource",
- *    "resource": "...", "accessControl": [...]}`) with `400 "invalid ACR
- *    format"`. It does, however, advertise `application/n-triples` in its
- *    `Accept-Put`, and N-Triples has no context to disagree about.
- *  - WAC ACL writes get the same benefit for free: a flat line per triple
- *    is independent of the server's preferred JSON-LD context.
- *
- * The format is the strict N-Triples 1.1 subset we actually need:
- *
- *  - Each quad becomes one line `<subject> <predicate> <object> .` followed
- *    by `\n`.
- *  - Subject and predicate are always written as absolute IRIs in angle
- *    brackets. We don't emit blank nodes — every ACL/ACR subject in this
- *    codebase is built from `${aclUri}#fragment` so it always resolves.
- *  - Objects are IRIs (when [RdfQuad.datatype] and [RdfQuad.language] are
- *    both null) or literals (otherwise). Literals are quoted with the
- *    escapes mandated by the N-Triples grammar.
- *
- * Spec: https://www.w3.org/TR/n-triples/
- */
 internal object NTriples {
 
     const val MEDIA_TYPE: String = "application/n-triples"
@@ -55,20 +28,6 @@ internal object NTriples {
         }
     }
 
-    /**
-     * Parses an N-Triples document into [RdfQuad]s. Round-trips the output of
-     * [serialize], so an ACL/ACR this library wrote (or that a server echoes
-     * back) as `application/n-triples` is readable again.
-     *
-     * Supports the N-Triples 1.1 grammar we actually encounter: IRIs in angle
-     * brackets, blank nodes (`_:label`), plain/typed/language literals, `#`
-     * comment lines and blank lines. Relative IRIs (technically illegal in
-     * N-Triples but emitted by some servers) are resolved against [base] when
-     * provided. Malformed lines throw so the caller can surface a clear error
-     * rather than silently dropping data.
-     *
-     * Spec: https://www.w3.org/TR/n-triples/
-     */
     fun parse(text: String, base: URI? = null): List<RdfQuad> {
         val quads = mutableListOf<RdfQuad>()
         text.lineSequence().forEach { rawLine ->

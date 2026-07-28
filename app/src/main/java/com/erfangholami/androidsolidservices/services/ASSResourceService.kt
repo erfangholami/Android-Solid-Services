@@ -247,11 +247,6 @@ class ASSResourceService : LifecycleService() {
             }
         }
 
-        // ---- Derived verbs, executed server-side ----------------------------------
-        //
-        // Each of these is composed from several HTTP calls (a recursive copy walks a whole
-        // tree). Running them here costs the caller ONE IPC round trip instead of N.
-
         override fun exists(webId: String, uri: String, callback: IASSBooleanCallback) {
             guard(webId, callback::onError) {
                 lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
@@ -332,11 +327,6 @@ class ASSResourceService : LifecycleService() {
             }
         }
 
-        // ---- Unauthenticated reads -------------------------------------------------
-        //
-        // No WebID is involved and no token is sent, so there is nothing to guard: the
-        // caller could fetch the same world-readable document itself over plain HTTP.
-
         override fun readPublicRdf(uri: String, callback: IASSSolidRdfResourceCallback) {
             lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
                 resourceManager.readPublic(uri, SolidRDFResource::class.java)
@@ -354,8 +344,6 @@ class ASSResourceService : LifecycleService() {
                 resourceManager.headPublic(uri)
             }
         }
-
-        // ---- Raw writes ------------------------------------------------------------
 
         override fun putRaw(
             webId: String,
@@ -419,12 +407,6 @@ class ASSResourceService : LifecycleService() {
             }
         }
 
-        // ---- Streaming -------------------------------------------------------------
-        //
-        // Bodies never go through a parcel — they would not survive the ~1 MB Binder
-        // transaction limit. They travel through a pipe instead, so a multi-megabyte
-        // transfer is never materialised in memory on either side.
-
         override fun readStream(webId: String, uri: String, callback: IASSStreamCallback) {
             guard(webId, callback::onError) {
                 lifecycleScope.launch(ioDispatcher) {
@@ -438,8 +420,6 @@ class ASSResourceService : LifecycleService() {
                             val readEnd = pipe[0]
                             val writeEnd = pipe[1]
 
-                            // Hand the read end over first (the descriptor is duplicated into
-                            // the parcel), then close our copy and pump the bytes across.
                             readEnd.use { callback.onResult(it, body.contentType, body.contentLength) }
 
                             launch(ioDispatcher) {
@@ -448,7 +428,6 @@ class ASSResourceService : LifecycleService() {
                                         body.use { it.stream().copyTo(sink) }
                                     }
                                 }.onFailure { t ->
-                                    // Surfaces to the reader as a broken pipe with a reason.
                                     runCatching { writeEnd.closeWithError(t.message ?: "stream failed") }
                                 }
                             }
@@ -469,11 +448,6 @@ class ASSResourceService : LifecycleService() {
         ) {
             guard(webId, callback::onError) {
                 lifecycleScope.launch(ioDispatcher) {
-                    // A pipe can only be read ONCE, but `writeStream` requires openSource to
-                    // yield a FRESH stream on every attempt — the request is legitimately
-                    // re-sent on a DPoP-nonce challenge or a token refresh. So spool the
-                    // incoming bytes to a temp file and stream the upload from there: still
-                    // never fully in memory, but now re-openable.
                     val spool = File.createTempFile("ass-upload-", null, cacheDir)
                     try {
                         ParcelFileDescriptor.AutoCloseInputStream(source).use { incoming ->

@@ -18,13 +18,11 @@ public object DC {
     public const val NAMESPACE: String = "http://purl.org/dc/terms/"
     public const val ELEMENT_NAMESPACE: String = "http://purl.org/dc/elements/1.1/"
 
-    // Dates
     public const val CREATED: String = "${NAMESPACE}created"
     public const val MODIFIED: String = "${NAMESPACE}modified"
     public const val ISSUED: String = "${NAMESPACE}issued"
     public const val DATE: String = "${NAMESPACE}date"
 
-    // Descriptive
     public const val TITLE: String = "${NAMESPACE}title"
 
     /** https variant of [TITLE] — present on some older documents; prefer [TITLE]. */
@@ -36,13 +34,11 @@ public object DC {
     public const val SOURCE: String = "${NAMESPACE}source"
     public const val FORMAT: String = "${NAMESPACE}format"
 
-    // Identity
     public const val IDENTIFIER: String = "${NAMESPACE}identifier"
     public const val PUBLISHER: String = "${NAMESPACE}publisher"
     public const val CREATOR: String = "${NAMESPACE}creator"
     public const val CONTRIBUTOR: String = "${NAMESPACE}contributor"
 
-    // Relations
     public const val RELATION: String = "${NAMESPACE}relation"
     public const val IS_PART_OF: String = "${NAMESPACE}isPartOf"
     public const val HAS_PART: String = "${NAMESPACE}hasPart"

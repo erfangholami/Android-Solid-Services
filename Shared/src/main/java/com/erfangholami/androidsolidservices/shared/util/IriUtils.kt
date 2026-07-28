@@ -123,7 +123,6 @@ public object IriUtils {
     public fun sameIri(a: String, b: String): Boolean =
         a == b || canonical(a) == canonical(b)
 
-    /** Characters an IRIREF may not contain unescaped (N-Triples/Turtle grammar). */
     private const val IRI_FORBIDDEN = "<>\"{}|^`\\"
 
     /**

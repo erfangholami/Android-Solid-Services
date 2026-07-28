@@ -12,11 +12,6 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests storage-root discovery: the profile's `pim:storage` triple first, then a
- * walk-up HEAD probe for a container advertising `Link: rel="type" <pim:Storage>`,
- * and `null` (not a crash) when neither reveals a storage.
- */
 class StorageDiscoveryTest {
 
     private val webId = "https://alice.pod/profile/card#me"
@@ -42,7 +37,6 @@ class StorageDiscoveryTest {
             },
         )
 
-        // profile/card → profile/ → alice.pod/ (the first that reports pim:Storage)
         assertEquals(root, runBlocking { StorageDiscovery.discover(rm, webId) })
     }
 

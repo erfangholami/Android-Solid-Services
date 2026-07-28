@@ -11,12 +11,6 @@ import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import java.io.InputStream
 
-/**
- * Thrown when a Solid pod returns an RDF resource in a serialization this
- * library cannot parse (e.g. `text/turtle`, `application/rdf+xml`), so callers
- * can distinguish "the server spoke a dialect we don't read" from a genuine
- * empty/absent resource.
- */
 internal class UnsupportedRdfContentTypeException(
     val contentType: String,
     val uri: String,
@@ -25,23 +19,6 @@ internal class UnsupportedRdfContentTypeException(
             "${HTTPAcceptType.JSON_LD} and ${HTTPAcceptType.N_TRIPLES} are supported.",
 )
 
-/**
- * Parses HTTP responses from a Solid pod into strongly-typed resource objects.
- *
- * Resource type is determined by the target class, following the Solid Protocol's
- * content-type conventions:
- *  - LDP containers   → [SolidContainer]
- *  - RDF documents    → any [RDFResource] subclass (WebID, contact, type index, etc.)
- *  - Binary/other     → NonRDFSource
- *
- * All relative IRIs in the response body are resolved against the document's base URL
- * (the request URI), as required by the JSON-LD specification and the Solid Protocol.
- * This correctly handles servers that return root-relative IRIs (e.g. `/storage/thing.ttl`)
- * without any server-specific workarounds.
- *
- * Spec: https://solidproject.org/TR/protocol#reading-resources
- *       https://www.w3.org/TR/json-ld11/#base-iri
- */
 internal object SolidResourceParser {
 
     fun <T> parse(response: SolidRawResponse, clazz: Class<T>): T {

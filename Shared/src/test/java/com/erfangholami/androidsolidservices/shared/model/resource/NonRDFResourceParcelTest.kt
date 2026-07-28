@@ -9,18 +9,12 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/**
- * Regression test for the binary-corruption bug: [NonRDFResource] used to parcel
- * its body as a UTF-8 string, replacing every invalid byte sequence with U+FFFD.
- * A binary resource (image / PDF / .pkpass) sent over AIDL must survive byte-for-byte.
- */
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE, sdk = [34])
 class NonRDFResourceParcelTest {
 
     private val uri = "https://alice.pod/photo.png"
 
-    // PNG magic + bytes that are NOT valid UTF-8 (0x89, 0xC0, 0xFF, 0xFE).
     private val binaryBody = byteArrayOf(
         0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
         0xC0.toByte(), 0xFF.toByte(), 0xFE.toByte(), 0x00, 0x7F,

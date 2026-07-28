@@ -9,16 +9,6 @@ import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import net.openid.appauth.TokenResponse
 import java.net.URI
 
-/**
- * Resolves a WebID document from a Solid pod.
- *
- * Uses a plain [SolidHttpClient] (no embedded auth) because this resolver is called
- * during the login flow, before the main [Authenticator] state is ready. Auth headers
- * are provided via callbacks from the caller's in-progress auth state.
- *
- * Spec: https://solid.github.io/webId-profile/
- *       https://solidproject.org/TR/oidc — WebID claim extraction
- */
 internal class WebIdResolver {
 
     private val solidHttpClient = SolidHttpClient()

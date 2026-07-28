@@ -22,8 +22,6 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactMo
  */
 interface IASSContactsModuleInterface {
 
-    // ---- Address books ----
-
     /** Returns every address book that belongs to the user. */
     void listAddressBooks(String webId, IASSContactModuleAddressBookListCallback callback);
 
@@ -77,8 +75,6 @@ interface IASSContactsModuleInterface {
         String title,
         IASSContactModuleAddressBookCallback callback
     );
-
-    // ---- Contacts ----
 
     /** Reads the contact at contactUri. */
     void getContact(
@@ -152,8 +148,6 @@ interface IASSContactsModuleInterface {
         String targetWebId,
         IASSContactModuleContactMatchCallback callback
     );
-
-    // ---- Groups ----
 
     /** Creates a group titled title, optionally seeded with contactUris. */
     void createGroup(

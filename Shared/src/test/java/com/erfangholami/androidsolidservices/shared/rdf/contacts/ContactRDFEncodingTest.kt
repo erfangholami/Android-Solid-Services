@@ -9,12 +9,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Tests that `ContactRDF` emits IRI- and datatype-valid RDF for values that
- * arrive from user input or `.vcf` imports: `tel:` / `mailto:` objects must be
- * legal IRIs, dates must not be over-typed as `xsd:dateTime`, and a non-IRI UID
- * must be wrapped so it round-trips.
- */
 class ContactRDFEncodingTest {
 
     private val contactUri =
@@ -37,8 +31,6 @@ class ContactRDFEncodingTest {
             setFullName("Jane")
             addPhone("+31 6 12 34 56 78", PhoneType.CELL)
         }
-        // Round-trips through titanium JSON-LD, which would drop or mangle an
-        // invalid IRI object — proving the stored tel: value is legal.
         val roundTripped = reparse(contact).getPhoneEntries().single()
         assertEquals("+31612345678", roundTripped.number)
         assertEquals(PhoneType.CELL, roundTripped.type)
@@ -66,7 +58,6 @@ class ContactRDFEncodingTest {
         val mailObject = quadsOf(contact).single { it.predicate == VCARD.VALUE }.`object`
         assertTrue("mailto: IRI must have no raw spaces", !mailObject.contains(' '))
         assertTrue(mailObject.startsWith("mailto:"))
-        // The decoded address is recoverable on read.
         assertEquals("jane doe@example.com", reparse(contact).getEmailEntries().single().address)
     }
 

@@ -10,13 +10,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests the [InruptAcrJson] quirk shield: Inrupt PodSpaces serves its ACR as
- * JSON-LD with a remote `@context` that a device can't dereference, which used
- * to parse to an empty quad set and made ACP shares vanish. This parser maps the
- * self-describing JSON straight to ACP quads without the remote context — and
- * declines (returns `null`) anything that isn't the Inrupt shape.
- */
 class InruptAcrJsonTest {
 
     private val base = URI.create("https://storage.inrupt.com/alice/photo.acr")

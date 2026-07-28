@@ -11,7 +11,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object SAI {
     public const val NAMESPACE: String = "http://www.w3.org/ns/solid/interop#"
 
-    //Agent types
     /** An individual, group, or organization identifiable by a WebID. */
     public const val SOCIAL_AGENT: String = "${NAMESPACE}SocialAgent"
 
@@ -21,7 +20,6 @@ public object SAI {
     /** The authorization agent application managing data access on behalf of an agent. */
     public const val AUTHORIZATION_AGENT: String = "${NAMESPACE}AuthorizationAgent"
 
-    //Registry types
     /** Links to all registries owned by a social agent. */
     public const val REGISTRY_SET: String = "${NAMESPACE}RegistrySet"
 
@@ -43,7 +41,6 @@ public object SAI {
     /** A secure way to initiate a data-sharing relationship. */
     public const val SOCIAL_AGENT_INVITATION: String = "${NAMESPACE}SocialAgentInvitation"
 
-    //Access need types
     /** A group of related access needs communicated together. */
     public const val ACCESS_NEED_GROUP: String = "${NAMESPACE}AccessNeedGroup"
 
@@ -53,7 +50,6 @@ public object SAI {
     /** Sent from one agent to another to communicate access need groups. */
     public const val ACCESS_REQUEST: String = "${NAMESPACE}AccessRequest"
 
-    //Authorization / grant types
     /** Records the decision to grant access to data for an agent. */
     public const val ACCESS_AUTHORIZATION: String = "${NAMESPACE}AccessAuthorization"
 
@@ -69,7 +65,6 @@ public object SAI {
     /** A data grant that re-shares access from a grantee to another agent. */
     public const val DELEGATED_DATA_GRANT: String = "${NAMESPACE}DelegatedDataGrant"
 
-    //Registry predicates
     /** Links a social agent to their registry set. */
     public const val HAS_REGISTRY_SET: String = "${NAMESPACE}hasRegistrySet"
 
@@ -94,7 +89,6 @@ public object SAI {
     /** Links a data registration to a specific data instance. */
     public const val HAS_DATA_INSTANCE: String = "${NAMESPACE}hasDataInstance"
 
-    //Registration predicates
     /** The social agent that created this registration. */
     public const val REGISTERED_BY: String = "${NAMESPACE}registeredBy"
 
@@ -113,7 +107,6 @@ public object SAI {
     /** The shape tree that describes the registered data type. */
     public const val REGISTERED_SHAPE_TREE: String = "${NAMESPACE}registeredShapeTree"
 
-    //Application description predicates
     /** Human-readable name of the application. */
     public const val APPLICATION_NAME: String = "${NAMESPACE}applicationName"
 
@@ -132,7 +125,6 @@ public object SAI {
     /** URI the authorization agent uses for authorization redirects. */
     public const val HAS_AUTHORIZATION_REDIRECT_ENDPOINT: String = "${NAMESPACE}hasAuthorizationRedirectEndpoint"
 
-    //Access need predicates
     /** Links an access need group to its constituent access needs. */
     public const val HAS_ACCESS_NEED: String = "${NAMESPACE}hasAccessNeed"
 
@@ -154,7 +146,6 @@ public object SAI {
     /** References a parent access need this need inherits from. */
     public const val INHERITS_FROM_NEED: String = "${NAMESPACE}inheritsFromNeed"
 
-    //Authorization / grant predicates
     /** Links a social agent registration or access grant to an access grant. */
     public const val HAS_ACCESS_GRANT: String = "${NAMESPACE}hasAccessGrant"
 
@@ -200,14 +191,12 @@ public object SAI {
     /** A secure URL for accepting a social agent invitation. */
     public const val CAPABILITY_URL: String = "${NAMESPACE}capabilityUrl"
 
-    //Access necessity named individuals
     /** Marks an access need as required. */
     public const val REQUIRED: String = "${NAMESPACE}Required"
 
     /** Marks an access need as optional. */
     public const val OPTIONAL: String = "${NAMESPACE}Optional"
 
-    //Access scenario named individuals
     /** Access for the agent's own personal data. */
     public const val PERSONAL_ACCESS: String = "${NAMESPACE}PersonalAccess"
 

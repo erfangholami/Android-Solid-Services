@@ -6,48 +6,10 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import org.json.JSONArray
 import org.json.JSONObject
 
-/**
- * Native parser for Inrupt PodSpaces' Access Control Resource representation.
- *
- * Inrupt's authorization host (`authorization.inrupt.com`) serves ACRs as
- * `application/ld+json` whose `@context` is a **remote** URL
- * (`https://authorization.inrupt.com/authorization/v1`). Our JSON-LD reader
- * (Titanium) tries to dereference that context to expand the compact terms
- * (`accessControl`, `apply`, `allow`, `allOf`, `agent`, …); on a device it
- * cannot fetch it and throws a `JsonLdError` with a `null` message. Before this
- * parser, [SolidResourceParser] swallowed that failure into an *empty* quad set,
- * so [AcpBackend.listShares] reported "no shares" for every ACP resource — which
- * made `refreshGivenShares` prune freshly-created share rows (it treats a
- * successful-but-empty ACL read as authoritative "nothing is shared"). That is
- * the share-row-loss bug on Inrupt ESS.
- *
- * The document, however, is fully self-describing: every `id`/`agent`/`allow`
- * value is already an absolute IRI and the term set is fixed and small. So we
- * map it directly to ACP quads — the exact shape [AcpBackend] writes and reads —
- * without needing the remote context at all.
- *
- * Shape (abridged):
- * ```json
- * { "@context": ["https://authorization.inrupt.com/authorization/v1"],
- *   "id": "<acr>", "type": "AccessControlResource", "resource": "<resource>",
- *   "accessControl": [ { "id": "<ac>", "type": "AccessControl", "apply": [
- *     { "id": "<policy>", "type": "Policy", "allow": ["acl#Read", …],
- *       "allOf": [ { "id": "<matcher>", "type": "Matcher",
- *                    "agent": ["acp#PublicAgent" | "<webId>"] } ] } ] } ] }
- * ```
- */
 internal object InruptAcrJson {
 
-    /** Marker substring identifying the Inrupt authorization context. */
     private const val INRUPT_CONTEXT_MARKER = "authorization.inrupt.com"
 
-    /**
-     * Parses [text] as an Inrupt ACR into ACP quads, or returns `null` if the
-     * body is not the Inrupt ACR shape (so the caller falls back to a generic
-     * JSON-LD reader). Never throws — a malformed-but-Inrupt body yields an
-     * empty list rather than `null` only when the context clearly marks it as
-     * ours; otherwise `null`.
-     */
     fun parseOrNull(text: String, base: java.net.URI): List<RdfQuad>? {
         val root = runCatching { JSONObject(text) }.getOrNull() ?: return null
         if (!hasInruptContext(root)) return null

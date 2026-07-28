@@ -12,7 +12,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object ShapeTree {
     public const val NAMESPACE: String = "http://www.w3.org/ns/shapetrees#"
 
-    //Types
     /**
      * Defines a composite data structure: a tree of resources and validation
      * criteria (linked shape, expected resource type, child shape trees).
@@ -49,7 +48,6 @@ public object ShapeTree {
     /** A human-readable description of a shape tree. */
     public const val DESCRIPTION: String = "${NAMESPACE}Description"
 
-    //Shape tree predicates
     /**
      * Describes the expected resource type for this shape tree node
      * (one of `st:Container`, `st:Resource`, `st:NonRDFResource`).
@@ -83,7 +81,6 @@ public object ShapeTree {
      */
     public const val VIA_PREDICATE: String = "${NAMESPACE}viaPredicate"
 
-    //Manager / assignment predicates
     /** Links a shape tree manager to a shape tree assignment. */
     public const val HAS_ASSIGNMENT: String = "${NAMESPACE}hasAssignment"
 
@@ -105,7 +102,6 @@ public object ShapeTree {
     /** The IRI of the shape tree assigned to the managed resource. */
     public const val ASSIGNS: String = "${NAMESPACE}assigns"
 
-    //Description predicates
     /** Links a description to the shape tree it describes. */
     public const val DESCRIBES: String = "${NAMESPACE}describes"
 

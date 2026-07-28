@@ -11,17 +11,6 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResou
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import java.net.URI
 
-/**
- * A minimal in-memory pod that models exactly what the WAC/ACP access backends
- * touch: `HEAD` on a resource advertises its ACL/ACR link, `HEAD` on that
- * ACL/ACR reports existence + an ETag, `read` parses the stored document back
- * from N-Triples, and `putRaw` stores it and bumps the ETag.
- *
- * The ACL/ACR round-trips through the library's own [NTriples] codec, so a
- * backend that writes a document and reads it back sees exactly the triples it
- * wrote — the same contract a real Solid server offers over
- * `application/n-triples`.
- */
 internal class InMemoryAccessPod : SolidResourceManager {
 
     private class StoredDoc(val body: ByteArray, val etag: String)
@@ -29,17 +18,10 @@ internal class InMemoryAccessPod : SolidResourceManager {
     private val stored = mutableMapOf<String, StoredDoc>()
     private var etagSeq = 0
 
-    /** When set, the next [putRaw] returns `412` once, then clears itself. */
     var failNextPutWith412: Boolean = false
 
-    /**
-     * URIs whose stored body is treated as unreadable: `HEAD` still succeeds (the
-     * document exists, with an ETag) but `read` fails — modelling an ACR the parser
-     * can't handle (e.g. a Turtle-serialised ACR, or malformed JSON-LD).
-     */
     val unreadable: MutableSet<String> = mutableSetOf()
 
-    /** Records every [putRaw] (target URI + the `If-Match` sent) for assertions. */
     val putLog: MutableList<Pair<String, String?>> = mutableListOf()
 
     fun aclUriFor(resource: String): String = "$resource.acl"

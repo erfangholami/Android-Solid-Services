@@ -21,11 +21,6 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import java.net.URI
 
-/**
- * Tests the `WebSocketChannel2023` client end-to-end against a real [MockWebServer]: the channel
- * negotiation reads `notify:receiveFrom` from the response, and the opened WebSocket decodes each
- * pushed frame into a [RawNotification].
- */
 class WebSocketChannel2023ClientTest {
 
     private val webId = "https://alice.pod/profile/card#me"

@@ -237,8 +237,6 @@ public class SolidContactsDataModule private constructor(context: Context) {
         ): FullGroup? = fullGroup { c, cb -> c.removeGroupMember(webId, groupUri, contactUri, cb) }
     }
 
-    // ------------------------------------------------------------- callback bridges
-
     private suspend fun addressBookList(
         call: (IASSContactsModuleInterface, IASSContactModuleAddressBookListCallback) -> Unit,
     ): AddressBookList? = connector.await { contacts, bridge ->

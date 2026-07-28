@@ -16,16 +16,6 @@ import org.junit.Before
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests the `createShare` rollback contract: when the share-index write fails
- * after the WAC grant was written, a **new** share is rolled back (the grant is
- * revoked so the ACL and index don't diverge), but a **mode change** for a
- * receiver who already had access keeps the live grant rather than stripping
- * access the index simply failed to record.
- *
- * The engine's three collaborators are process-global singletons, reset here
- * via their `resetForTest` seam so the test's in-memory pod is used.
- */
 class SharingEngineTest {
 
     private val alice = "https://alice.pod/profile/card#me"
@@ -63,7 +53,6 @@ class SharingEngineTest {
 
     @Test
     fun `a failed index write on a mode change keeps the receiver's live access`() = runBlocking {
-        // Bob already holds Read from a prior successful share.
         WacBackend(pod).grant(alice, resource, ShareMode.READ, bob, isContainer = false)
 
         val result = manager().createShare(

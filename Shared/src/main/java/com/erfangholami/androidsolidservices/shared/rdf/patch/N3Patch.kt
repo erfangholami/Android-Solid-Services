@@ -298,7 +298,6 @@ public class N3PatchBuilder {
         "${subject.asN3Subject()} <${IriUtils.escapeIri(predicate)}> $objectTerm ."
 }
 
-/** Escapes the lexical form of an N3/Turtle string literal (backslash, quote, and control characters). */
 private fun escapeN3Literal(value: String): String =
     value
         .replace("\\", "\\\\")

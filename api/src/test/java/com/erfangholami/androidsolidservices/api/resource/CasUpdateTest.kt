@@ -26,12 +26,6 @@ class CasUpdateTest {
     private val predAlice = "https://example.org/vocab#alice"
     private val predBob = "https://example.org/vocab#bob"
 
-    /**
-     * A fake pod modeling a single document with a monotonic ETag version and an
-     * `If-Match` precondition: [update] rejects a stale `ifMatch` with a 412, exactly
-     * as a real server does. [beforeUpdate] lets a test inject a concurrent writer that
-     * lands between the caller's read and its conditional write.
-     */
     private class VersionedPod(
         initialQuads: List<RdfQuad>,
         private val weakEtags: Boolean = false,
@@ -48,7 +42,6 @@ class CasUpdateTest {
 
         fun currentQuads(): List<RdfQuad> = quads
 
-        /** Simulates another writer committing a change, bumping the validators out from under an in-flight CAS. */
         fun concurrentWrite(quad: RdfQuad) {
             version++
             quads = quads + quad
@@ -56,7 +49,6 @@ class CasUpdateTest {
 
         private fun etagValue(): String = if (weakEtags) "W/\"$version\"" else "\"$version\""
 
-        // A monotonic stand-in for a wall clock — every write advances "modification time".
         private fun lastModified(): String = "lm-$version"
 
         @Suppress("UNCHECKED_CAST")
@@ -148,7 +140,6 @@ class CasUpdateTest {
         assertTrue(result is SolidResult.Success)
         assertEquals(1, pod.updateCount)
         assertTrue(pod.hasQuad(predAlice))
-        // A strong ETag was available, so CAS conditioned on If-Match, not the coarser fallback.
         assertEquals("1", pod.lastIfMatch)
         assertNull(pod.lastIfUnmodifiedSince)
     }
@@ -168,7 +159,6 @@ class CasUpdateTest {
         )
 
         assertTrue(result is SolidResult.Success)
-        // No strong ETag to send, so CAS conditioned on Last-Modified — and still caught the conflict.
         assertNull(pod.lastIfMatch)
         assertNotNull(pod.lastIfUnmodifiedSince)
         assertEquals(2, pod.updateCount)
@@ -180,8 +170,6 @@ class CasUpdateTest {
     fun `re-reads and retries on a 412, preserving the concurrent writer's change`() = runBlocking {
         val pod = VersionedPod(emptyList())
         pod.beforeUpdate = {
-            // A different writer commits Bob's triple right before our first conditional
-            // write evaluates — so our If-Match is now stale and the server answers 412.
             pod.beforeUpdate = null
             pod.concurrentWrite(RdfQuad(subject, predBob, "bob", null, null))
         }
@@ -194,7 +182,6 @@ class CasUpdateTest {
 
         assertTrue(result is SolidResult.Success)
         assertEquals(2, pod.updateCount)
-        // The retry saw Bob's triple and kept it: neither writer clobbered the other.
         assertTrue(pod.hasQuad(predBob))
         assertTrue(pod.hasQuad(predAlice))
     }
@@ -216,7 +203,6 @@ class CasUpdateTest {
     @Test
     fun `gives up with a precondition failure after exhausting the retry budget`() = runBlocking {
         val pod = VersionedPod(emptyList())
-        // Every attempt collides: a fresh concurrent write bumps the version each time.
         pod.beforeUpdate = { pod.concurrentWrite(RdfQuad(subject, predBob, "again", null, null)) }
 
         val result = pod.casUpdate(

@@ -28,7 +28,6 @@ internal class NotificationTransportImplementation private constructor(
     private val wsClient: WebSocketChannel2023Client? =
         auth?.let { WebSocketChannel2023Client(it, ioDispatcher) }
 
-    /** `true` when this instance can authenticate (built from an [Authenticator]) — needed for [subscribe]. */
     internal val hasAuth: Boolean get() = wsClient != null
 
     companion object {
@@ -37,12 +36,6 @@ internal class NotificationTransportImplementation private constructor(
         @Volatile
         private var INSTANCE: NotificationTransportImplementation? = null
 
-        /**
-         * The authenticated instance always wins: if the cached singleton was built without auth
-         * (via the [SolidResourceManager] path, e.g. in a test), it is replaced with an
-         * auth-capable one rather than returned — otherwise a later `getInstance(authenticator)`
-         * would silently yield an instance whose [subscribe] can never negotiate a channel.
-         */
         fun getInstance(authenticator: Authenticator): NotificationTransport {
             INSTANCE?.takeIf { it.hasAuth }?.let { return it }
             return synchronized(this) {
@@ -58,7 +51,6 @@ internal class NotificationTransportImplementation private constructor(
                 INSTANCE ?: create(resourceManager).also { INSTANCE = it }
             }
 
-        /** Clears the process-global singleton so a test gets a fresh, isolated instance. */
         internal fun resetForTest() {
             INSTANCE = null
         }
@@ -182,10 +174,6 @@ internal class NotificationTransportImplementation private constructor(
         }
     }
 
-    /**
-     * Reads [topic]'s storage description and returns the subscription service whose
-     * `notify:channelType` is `WebSocketChannel2023`, or `null` when the pod advertises none.
-     */
     private suspend fun discoverWebSocketSubscription(webId: String, topic: URI): URI? {
         val metadata = (rm.head(webId, topic.toString()) as? SolidResult.Success)?.value ?: return null
         val storageDescription = metadata.storageDescriptionUri ?: return null

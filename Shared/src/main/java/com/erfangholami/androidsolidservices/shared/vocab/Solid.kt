@@ -15,21 +15,18 @@ import com.erfangholami.androidsolidservices.shared.vocab.Solid.STORAGE_DESCRIPT
 public object Solid {
     public const val NAMESPACE: String = "http://www.w3.org/ns/solid/terms#"
 
-    //Authentication
     /** OpenID Connect issuer for a WebID. */
     public const val OIDC_ISSUER: String = "${NAMESPACE}oidcIssuer"
 
     /** Client identifier registration document. */
     public const val OIDC_REGISTRATION: String = "${NAMESPACE}oidcRegistration"
 
-    //Storage
     /** Links a resource to a storage description resource. */
     public const val STORAGE_DESCRIPTION: String = "${NAMESPACE}storageDescription"
 
     /** Identifies the owner of a storage. */
     public const val OWNER: String = "${NAMESPACE}owner"
 
-    //Type Index
     /** Links a WebID to a non-public type index (access-controlled). */
     public const val PRIVATE_TYPE_INDEX: String = "${NAMESPACE}privateTypeIndex"
 
@@ -57,7 +54,6 @@ public object Solid {
     /** A type index that is discoverable from the public profile. */
     public const val LISTED_DOCUMENT: String = "${NAMESPACE}ListedDocument"
 
-    //N3 Patch
     /** rdf:type for a Solid N3 Patch document. */
     public const val INSERT_DELETE_PATCH: String = "${NAMESPACE}InsertDeletePatch"
 
@@ -70,14 +66,12 @@ public object Solid {
     /** Conditions that must hold for the patch to apply. */
     public const val WHERE: String = "${NAMESPACE}where"
 
-    //Access Control (Solid-specific agent classes)
     /** Matches any agent (authenticated or not). Same as foaf:Agent. */
     public const val PUBLIC_AGENT: String = "http://xmlns.com/foaf/0.1/Agent"
 
     /** Matches only authenticated agents. */
     public const val AUTHENTICATED_AGENT: String = "${NAMESPACE}AuthenticatedAgent"
 
-    // Notifications
     /** Links a storage description to an available notification channel. */
     public const val NOTIFICATION_CHANNEL: String = "${NAMESPACE}notificationChannel"
 }

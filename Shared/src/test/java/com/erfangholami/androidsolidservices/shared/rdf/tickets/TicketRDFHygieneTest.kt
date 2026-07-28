@@ -13,10 +13,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Tests for ticket RDF hygiene: date-only values must not be over-typed as `xsd:dateTime`, and
- * blank seat parts must not create empty literals or an empty seat node.
- */
 class TicketRDFHygieneTest {
 
     private val ticketUri = "https://alice.pod/tickets/abc.ttl#this"

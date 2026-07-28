@@ -15,12 +15,6 @@ import com.erfangholami.androidsolidservices.shared.util.getETag
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 
-/**
- * The given-shares half of the sharing engine: the owner's outgoing "shared-by-me" surface —
- * creating / updating / revoking WAC grants, keeping the given-shares index in step (with
- * rollback on a failed index write), re-verifying it against the live ACLs, and rebuilding it
- * from a full [PodShareScanner] walk. Split out of the sharing facade; behaviour is unchanged.
- */
 internal class GivenSharesEngine(
     private val rm: SolidResourceManager,
     private val helper: SharingManagerHelper,
@@ -126,9 +120,6 @@ internal class GivenSharesEngine(
             .mapValues { (_, list) -> list.firstNotNullOfOrNull { it.createdAt } }
         previous.map { it.receiver.toRdfSubject() to it.resourceUri }.distinct().forEach { pair ->
             val resourceUri = pair.second
-            // Observed rows are re-asserted from the live ACL below; excluded rows
-            // are dropped outright (and never re-added). Anything else — an
-            // unreadable or unreached resource — keeps its row.
             val prune = resourceUri in scan.observedResources || scanner.isExcludedFromScan(resourceUri)
             if (!prune) return@forEach
             val receiver = previous.first {
@@ -271,18 +262,6 @@ internal class GivenSharesEngine(
         }
     }
 
-    /**
-     * Resolves a [ShareReceiver.WebIdReceiver] whose IRI is a bare profile **document** URL (no
-     * fragment, e.g. `…/card`) to the real WebID it describes (e.g. `…/card#me`), via the
-     * profile's `foaf:primaryTopic` / `foaf:isPrimaryTopicOf`.
-     *
-     * WAC matches `acl:agent` against the receiver's *authenticated* WebID, which is
-     * fragment-qualified — so granting to the bare document URL silently grants no access, and a
-     * later accept-request (carrying the receiver's real WebID) creates a duplicate index row.
-     * Resolving up front grants the right agent and keeps a single record. Already-fragmented
-     * WebIDs and non-WebID receivers pass through untouched; any failure falls back to the
-     * original IRI so a share is never blocked.
-     */
     private suspend fun canonicalizeReceiver(
         viewerWebId: String,
         receiver: ShareReceiver,

@@ -14,12 +14,6 @@ import org.junit.Before
 import org.junit.Test
 import java.net.URI
 
-/**
- * Behavioural tests for [AcpBackend] — the Access Control Policy backend used by
- * ESS/CSS pods in ACP mode. Grants are observed through [AcpBackend.listShares]
- * (the round-trip a caller sees) and, where structure matters, by inspecting the
- * ACR quads the backend PUT.
- */
 class AcpBackendTest {
 
     private val alice = "https://alice.pod/profile/card#me"
@@ -53,7 +47,6 @@ class AcpBackendTest {
         return ownerMatches && controlAllowed
     }
 
-    /** The `acp:allow` modes of the policy whose matcher targets `acp:PublicAgent`. */
     private fun publicPolicyModes(res: String): Set<String> {
         val quads = acrQuadsOf(res)
         val publicMatchers = quads

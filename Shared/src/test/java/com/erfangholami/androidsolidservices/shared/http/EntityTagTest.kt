@@ -44,7 +44,6 @@ class EntityTagTest {
         val headers = SolidHeaders(mapOf("ETag" to listOf("W/\"weak-1\"")))
         assertEquals("weak-1", headers.getEntityTag()?.value)
         assertTrue(headers.getEntityTag()!!.weak)
-        // getETag is strong-only, so a weak tag reads as absent (it can't satisfy If-Match).
         assertNull(headers.getETag())
     }
 

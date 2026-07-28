@@ -15,18 +15,6 @@ import com.erfangholami.androidsolidservices.shared.rdf.sharing.GivenSharesIndex
 import com.erfangholami.androidsolidservices.shared.vocab.PIM
 import java.net.URI
 
-/**
- * In-memory pod for exercising the sharing engine's `createShare` path end to
- * end: it serves the owner's WebID (with a `pim:storage`), round-trips WAC ACLs
- * through the N-Triples codec (so a grant/revoke actually changes observable
- * state), returns an empty given-shares index, and — the seam under test —
- * fails the `PATCH` on the given-shares index so the index write inside
- * `createShare` throws and drives the rollback branch.
- *
- * Every non-`.acl` URI is reported as existing and advertises a same-origin
- * `acl` link, which forces the WAC backend (never ACP) and lets the container
- * bootstrap short-circuit without creating anything.
- */
 internal class InMemorySharingPod(
     private val ownerWebId: String,
     private val podRoot: String,
@@ -37,7 +25,6 @@ internal class InMemorySharingPod(
     private val acls = mutableMapOf<String, Doc>()
     private var etagSeq = 0
 
-    /** Every ACL/ACR URI written, in order — grant then (on rollback) revoke. */
     val aclPutLog: MutableList<String> = mutableListOf()
 
     private val givenIndexUri = "${podRoot}solidshare/shares/given_shares.ttl"

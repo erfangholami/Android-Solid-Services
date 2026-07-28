@@ -4,15 +4,8 @@ import android.util.Base64
 import com.erfangholami.androidsolidservices.shared.model.profile.UserInfo
 import org.json.JSONObject
 
-/**
- * Reads claims from an OIDC ID token's payload segment.
- *
- * This decodes the (already-trusted) token body only — signature verification is the job of
- * [IdTokenVerifier]. Kept separate from the auth flow so the claim parsing is independently testable.
- */
 internal object IdTokenClaims {
 
-    /** The caller's WebID: the `webid` claim, falling back to `sub`. */
     fun webId(idToken: String): String =
         try {
             webIdFrom(payload(idToken))
@@ -20,19 +13,11 @@ internal object IdTokenClaims {
             throw IllegalStateException("Unable to parse ID token", ex)
         }
 
-    /**
-     * Picks the WebID out of decoded ID-token claims: the Solid-OIDC `webid` claim — lower-case, as
-     * the spec mandates — falling back to `sub`. Kept as an internal seam so the wire claim name is
-     * unit-testable without decoding a JWT, and so a blanket identifier rename can't silently
-     * camel-case the over-the-wire key again.
-     */
     internal fun webIdFrom(claims: JSONObject): String =
         claims.optString("webid").takeIf { it.isNotEmpty() } ?: claims.getString("sub")
 
-    /** The WebID wrapped as [UserInfo]. */
     fun userInfo(idToken: String): UserInfo = UserInfo(webId(idToken))
 
-    /** The token issuer (`iss`), or `null` if absent or unparseable. */
     fun issuer(idToken: String): String? =
         try {
             payload(idToken).optString("iss").takeIf { it.isNotEmpty() }

@@ -17,44 +17,6 @@ import java.util.UUID
 
 private const val TAG = "AcpBackend"
 
-/**
- * ACP implementation of [AccessBackend].
- *
- * Emits the canonical "policy-per-(receiver, mode)" shape used by Inrupt
- * ESS and CSS in ACP mode:
- *
- * ```turtle
- * <>
- *     a acp:AccessControlResource ;
- *     acp:resource     <resource> ;
- *     acp:accessControl <#ac-abc> .
- *
- * <#ac-abc> a acp:AccessControl ; acp:apply <#policy-abc> .
- *
- * <#policy-abc>
- *     a acp:Policy ;
- *     acp:allow acl:Read ;
- *     acp:allOf <#matcher-abc> .
- *
- * <#matcher-abc>
- *     a acp:Matcher ;
- *     acp:agent <https://bob.example/profile#me> .
- * ```
- *
- * Owner self-rules use `acp:agent <ownerWebId>` and grant the full WAC
- * mode set. Public matchers use `acp:agent acp:PublicAgent`. ACP has no
- * native agent-group primitive (unlike WAC's `acl:agentGroup`), so group
- * receivers are rejected here rather than written as an `acp:vc` matcher
- * that would grant no one; share to explicit member WebIDs instead.
- *
- * Containers add an `acp:memberAccessControl <#ac-…>` triple to the ACR
- * mirroring `acp:accessControl`, so descendants inherit the same policies.
- *
- * ACR updates use conditional writes (If-Match / ETag), matching the
- * behaviour of [WacBackend].
- *
- * Spec: https://solidproject.org/TR/acp
- */
 internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend {
 
     override suspend fun grant(
@@ -251,23 +213,9 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         val acrUri: String,
         val acr: SolidRDFResource,
         val etag: String?,
-        /**
-         * `true` when the ACR endpoint returned a body we could **not** parse
-         * (so [acr] is an empty placeholder). An existing-but-unparseable ACR is
-         * *indeterminate*, not "empty": both read ([listShares]) and write
-         * (grant / revoke / ensureOwnerOnly / reclaimOwnerControl) paths
-         * fail-fast via [orThrowIfUnparseable] rather than act on it. Reading it
-         * as "no shares" would prune live rows; writing a fresh document over it
-         * would silently strip every co-receiver's grant.
-         */
         val parseFailed: Boolean = false,
     )
 
-    /**
-     * Guards against acting on an ACR that exists but could not be parsed (e.g.
-     * a Turtle-serialised ACR before the Turtle reader lands, or malformed
-     * JSON-LD). Surfaces a typed failure instead of silently dropping grants.
-     */
     private fun AcrRead.orThrowIfUnparseable(resourceUri: String): AcrRead {
         if (parseFailed) {
             throw SharingException.UnsupportedAuthBackend(
@@ -277,12 +225,6 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
         return this
     }
 
-    /**
-     * ACP has no native agent-group primitive (unlike WAC's `acl:agentGroup`),
-     * so a group receiver can't be expressed as a matcher that actually grants
-     * its members access. Reject it explicitly rather than write an `acp:vc`
-     * matcher that matches no one.
-     */
     private fun rejectUnsupportedReceiver(receiver: ShareReceiver, resourceUri: String) {
         if (receiver is ShareReceiver.GroupReceiver) {
             throw SharingException.UnsupportedAuthBackend(
@@ -456,8 +398,5 @@ internal class AcpBackend(private val rm: SolidResourceManager) : AccessBackend 
             if (agent == ACP.PUBLIC_AGENT) add(ShareReceiver.Public)
             else add(ShareReceiver.WebIdReceiver(agent))
         }
-        // acp:vc is the verifiable-credential matcher, not an agent group: it is
-        // deliberately not surfaced as a receiver (mapping it to a group both
-        // misrepresents a real VC matcher and resurrects legacy no-op group rows).
     }
 }

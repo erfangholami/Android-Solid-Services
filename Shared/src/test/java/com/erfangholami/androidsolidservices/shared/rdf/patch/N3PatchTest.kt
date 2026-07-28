@@ -10,11 +10,6 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Tests the N3 Patch builder's escaping (the injection boundary — patches are
- * built from user-controlled contact names, notes, etc.) and its serialization
- * to both N3 and SPARQL Update.
- */
 class N3PatchTest {
 
     private val subject = "https://alice.pod/contacts/p1#this"
@@ -25,7 +20,6 @@ class N3PatchTest {
             insertLiteral(subject, VCARD.NOTE, "a\"b\nc\td\\e")
         }.toN3String()
 
-        // a"b<NL>c<TAB>d\e  →  a\"b\nc\td\\e   (each control neutralised)
         assertTrue(n3.contains("""a\"b\nc\td\\e"""))
     }
 
@@ -36,7 +30,6 @@ class N3PatchTest {
             insertLiteral(subject, VCARD.FN, malicious)
         }.toN3String()
 
-        // The closing quote is escaped, so the injected triple stays inert text.
         assertTrue("the injected quote must be escaped", n3.contains("""x\" ."""))
         assertFalse(
             "the injected value must not appear as an unescaped break-out",

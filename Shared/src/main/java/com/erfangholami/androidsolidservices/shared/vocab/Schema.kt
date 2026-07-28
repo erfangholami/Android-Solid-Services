@@ -8,7 +8,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object Schema {
     public const val NAMESPACE: String = "https://schema.org/"
 
-    // Types
     public const val THING: String = "${NAMESPACE}Thing"
     public const val CREATIVE_WORK: String = "${NAMESPACE}CreativeWork"
     public const val MEDIA_OBJECT: String = "${NAMESPACE}MediaObject"
@@ -24,8 +23,6 @@ public object Schema {
     public const val PRODUCT: String = "${NAMESPACE}Product"
     public const val OFFER: String = "${NAMESPACE}Offer"
 
-    // Wallet types — reservations. The booking envelope: schema.org's `Ticket` has no outbound
-    // link to what it admits you to, so a reservation points at the ticket instead.
     public const val RESERVATION: String = "${NAMESPACE}Reservation"
     public const val EVENT_RESERVATION: String = "${NAMESPACE}EventReservation"
     public const val FLIGHT_RESERVATION: String = "${NAMESPACE}FlightReservation"
@@ -34,7 +31,6 @@ public object Schema {
     public const val BOAT_RESERVATION: String = "${NAMESPACE}BoatReservation"
     public const val LODGING_RESERVATION: String = "${NAMESPACE}LodgingReservation"
 
-    // Wallet types — the two-ended journey, and the places it runs between.
     public const val TRIP: String = "${NAMESPACE}Trip"
     public const val FLIGHT: String = "${NAMESPACE}Flight"
     public const val TRAIN_TRIP: String = "${NAMESPACE}TrainTrip"
@@ -46,7 +42,6 @@ public object Schema {
     public const val BOAT_TERMINAL: String = "${NAMESPACE}BoatTerminal"
     public const val LODGING_BUSINESS: String = "${NAMESPACE}LodgingBusiness"
 
-    // Wallet types — event flavours, parties, and value objects.
     public const val MUSIC_EVENT: String = "${NAMESPACE}MusicEvent"
     public const val SPORTS_EVENT: String = "${NAMESPACE}SportsEvent"
     public const val SCREENING_EVENT: String = "${NAMESPACE}ScreeningEvent"
@@ -58,7 +53,6 @@ public object Schema {
     public const val POSTAL_ADDRESS: String = "${NAMESPACE}PostalAddress"
     public const val GEO_COORDINATES: String = "${NAMESPACE}GeoCoordinates"
 
-    // Enumeration members.
     public const val RESERVATION_CONFIRMED: String = "${NAMESPACE}ReservationConfirmed"
     public const val RESERVATION_PENDING: String = "${NAMESPACE}ReservationPending"
     public const val RESERVATION_HOLD: String = "${NAMESPACE}ReservationHold"
@@ -71,7 +65,6 @@ public object Schema {
     public const val GROUP_BOARDING_POLICY: String = "${NAMESPACE}GroupBoardingPolicy"
     public const val ZONE_BOARDING_POLICY: String = "${NAMESPACE}ZoneBoardingPolicy"
 
-    // Reservation predicates.
     public const val RESERVED_TICKET: String = "${NAMESPACE}reservedTicket"
     public const val RESERVATION_FOR: String = "${NAMESPACE}reservationFor"
     public const val RESERVATION_ID: String = "${NAMESPACE}reservationId"
@@ -89,8 +82,6 @@ public object Schema {
     public const val NUM_ADULTS: String = "${NAMESPACE}numAdults"
     public const val NUM_CHILDREN: String = "${NAMESPACE}numChildren"
 
-    // Trip predicates. `provider` is schema.org-pending, but `Flight.carrier` is superseded *by*
-    // it, so it is the only forward-looking way to name the operating carrier.
     public const val DEPARTURE_TIME: String = "${NAMESPACE}departureTime"
     public const val ARRIVAL_TIME: String = "${NAMESPACE}arrivalTime"
     public const val PROVIDER: String = "${NAMESPACE}provider"
@@ -113,12 +104,10 @@ public object Schema {
     public const val BUS_NAME: String = "${NAMESPACE}busName"
     public const val DEPARTURE_BUS_STOP: String = "${NAMESPACE}departureBusStop"
     public const val ARRIVAL_BUS_STOP: String = "${NAMESPACE}arrivalBusStop"
-    // Pending in schema.org, but the only terms it offers for a boat trip's terminals.
     public const val DEPARTURE_BOAT_TERMINAL: String = "${NAMESPACE}departureBoatTerminal"
     public const val ARRIVAL_BOAT_TERMINAL: String = "${NAMESPACE}arrivalBoatTerminal"
     public const val IATA_CODE: String = "${NAMESPACE}iataCode"
 
-    // Event predicates.
     public const val DOOR_TIME: String = "${NAMESPACE}doorTime"
     public const val EVENT_STATUS: String = "${NAMESPACE}eventStatus"
     public const val PREVIOUS_START_DATE: String = "${NAMESPACE}previousStartDate"
@@ -127,7 +116,6 @@ public object Schema {
     public const val AWAY_TEAM: String = "${NAMESPACE}awayTeam"
     public const val WORK_PRESENTED: String = "${NAMESPACE}workPresented"
 
-    // Place, address and geo predicates.
     public const val GEO: String = "${NAMESPACE}geo"
     public const val LATITUDE: String = "${NAMESPACE}latitude"
     public const val LONGITUDE: String = "${NAMESPACE}longitude"
@@ -141,7 +129,6 @@ public object Schema {
     public const val POSTAL_CODE: String = "${NAMESPACE}postalCode"
     public const val ADDRESS_COUNTRY: String = "${NAMESPACE}addressCountry"
 
-    // Seat, membership and person predicates.
     public const val SEATING_TYPE: String = "${NAMESPACE}seatingType"
     public const val PROGRAM_NAME: String = "${NAMESPACE}programName"
     public const val MEMBERSHIP_NUMBER: String = "${NAMESPACE}membershipNumber"
@@ -150,7 +137,6 @@ public object Schema {
     public const val HONORIFIC_PREFIX: String = "${NAMESPACE}honorificPrefix"
     public const val HONORIFIC_SUFFIX: String = "${NAMESPACE}honorificSuffix"
 
-    // Descriptive predicates
     public const val NAME: String = "${NAMESPACE}name"
     public const val DESCRIPTION: String = "${NAMESPACE}description"
     public const val IMAGE: String = "${NAMESPACE}image"
@@ -159,7 +145,6 @@ public object Schema {
     public const val SAME_AS: String = "${NAMESPACE}sameAs"
     public const val ADDITIONAL_TYPE: String = "${NAMESPACE}additionalType"
 
-    // Creative work predicates
     public const val DATE_CREATED: String = "${NAMESPACE}dateCreated"
     public const val DATE_MODIFIED: String = "${NAMESPACE}dateModified"
     public const val DATE_PUBLISHED: String = "${NAMESPACE}datePublished"
@@ -175,7 +160,6 @@ public object Schema {
     public const val THUMBNAIL_URL: String = "${NAMESPACE}thumbnailUrl"
     public const val LICENSE: String = "${NAMESPACE}license"
 
-    // Person / Organization predicates
     public const val GIVEN_NAME: String = "${NAMESPACE}givenName"
     public const val FAMILY_NAME: String = "${NAMESPACE}familyName"
     public const val EMAIL: String = "${NAMESPACE}email"
@@ -185,18 +169,15 @@ public object Schema {
     public const val KNOWS: String = "${NAMESPACE}knows"
     public const val BIRTH_DATE: String = "${NAMESPACE}birthDate"
 
-    // Event predicates
     public const val START_DATE: String = "${NAMESPACE}startDate"
     public const val END_DATE: String = "${NAMESPACE}endDate"
     public const val LOCATION: String = "${NAMESPACE}location"
     public const val ORGANIZER: String = "${NAMESPACE}organizer"
     public const val ATTENDEE: String = "${NAMESPACE}attendee"
 
-    // Ticket types
     public const val TICKET: String = "${NAMESPACE}Ticket"
     public const val SEAT: String = "${NAMESPACE}Seat"
 
-    // Ticket predicates
     public const val TICKET_NUMBER: String = "${NAMESPACE}ticketNumber"
 
     /** The opaque token/payload encoded in the ticket's barcode. */

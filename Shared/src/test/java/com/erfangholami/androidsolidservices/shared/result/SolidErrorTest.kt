@@ -10,11 +10,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.net.ssl.SSLException
 
-/**
- * Tests the single HTTP-status and throwable classification points — the "map
- * statuses exactly once" contract that replaces status ints scattered across
- * every feature.
- */
 class SolidErrorTest {
 
     @Test
@@ -47,7 +42,6 @@ class SolidErrorTest {
         assertTrue(SolidError.fromHttp(502).retryable)
         assertFalse(SolidError.fromHttp(403).retryable)
         assertFalse(SolidError.fromHttp(404).retryable)
-        // 412 needs a fresh ETag, not a blind retry.
         assertFalse(SolidError.fromHttp(412).retryable)
         assertFalse(SolidError.fromHttp(418).retryable)
     }

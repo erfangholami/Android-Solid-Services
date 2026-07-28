@@ -13,12 +13,6 @@ import org.junit.Before
 import org.junit.Test
 import java.net.URI
 
-/**
- * Behavioural tests for [WacBackend] — the code that writes Web Access Control
- * rules that grant access to pod resources. Exercises the full read-modify-write
- * ACL cycle against an in-memory pod that round-trips the document through the
- * library's own N-Triples codec.
- */
 class WacBackendTest {
 
     private val alice = "https://alice.pod/profile/card#me"

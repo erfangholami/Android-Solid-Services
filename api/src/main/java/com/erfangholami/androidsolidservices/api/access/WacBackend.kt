@@ -15,21 +15,6 @@ import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import java.util.UUID
 
-/**
- * WAC implementation of [AccessBackend].
- *
- *  - ACL writes are **conditional** (`If-Match: <etag>`) when an ETag is
- *    available from the prior read. Concurrent writes are surfaced as
- *    [SharingException.StaleAcl] so the caller can retry instead of
- *    silently clobbering.
- *  - [listShares] returns one [GivenShare] per receiver, collapsed to the
- *    strongest granted mode (Write ⊇ Append ⊇ Read), so a single grant
- *    shows as one row rather than one row per `acl:mode`.
- *  - The owner's full Read/Write/Control rule is re-asserted on every
- *    write, so a write can never lock the owner out of their own resource.
- *
- * Spec: https://solidproject.org/TR/wac
- */
 internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend {
 
     private companion object {
@@ -124,9 +109,6 @@ internal class WacBackend(private val rm: SolidResourceManager) : AccessBackend 
     ): List<GivenShare> {
         val read = readAcl(webId, resourceUri)
         val shares = mutableListOf<GivenShare>()
-        // When the resource has no ACL of its own, effective access is defined by the
-        // nearest ancestor container's acl:default authorizations (WAC inheritance);
-        // baseAuthorizations returns those, mapped onto this resource, in that case.
         val authorizations = baseAuthorizations(
             webId, resourceUri, read, isContainer = resourceUri.endsWith("/"),
         )

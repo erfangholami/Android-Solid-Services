@@ -15,10 +15,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests the profile conveniences ([readProfile], [updateProfile], [setAvatar]) and the
- * reified [read] extension over the configurable [FakeSolidResourceManager].
- */
 class ProfileOperationsTest {
 
     private val webId = "https://alice.pod/profile/card#me"

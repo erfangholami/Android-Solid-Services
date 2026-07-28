@@ -204,7 +204,6 @@ class ASSNotificationsService : LifecycleService() {
                     ownerWebId,
                     requesterWebId,
                     resourceUri,
-                    // -1 is the wire encoding for "no mode applies" (the param is nullable).
                     mode.takeIf { it >= 0 }?.let { ShareMode.entries[it] },
                     reason,
                 )

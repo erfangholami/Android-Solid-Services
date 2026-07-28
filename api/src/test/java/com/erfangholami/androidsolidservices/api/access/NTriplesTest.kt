@@ -10,11 +10,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URI
 
-/**
- * Round-trip and escaping tests for the hand-rolled [NTriples] codec that
- * serialises every ACL/ACR this library writes. A serialize→parse cycle must
- * reproduce the exact quads, including literals containing control characters.
- */
 class NTriplesTest {
 
     private val s = "https://alice.pod/r"

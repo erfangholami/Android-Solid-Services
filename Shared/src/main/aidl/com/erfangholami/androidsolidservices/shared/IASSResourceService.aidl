@@ -55,8 +55,6 @@ interface IASSResourceService {
     void deleteRdf(String webId, in SolidRDFResource resource, IASSSolidRdfResourceCallback callback);
     void deleteContainer(String webId, String containerUrl, IASSUnitCallback callback);
 
-    // ---- Derived verbs, executed server-side (one round trip instead of N) ----
-
     /** true if the resource exists; a 404 is `false`, anything indeterminate is an error. */
     void exists(String webId, String uri, IASSBooleanCallback callback);
 
@@ -89,8 +87,6 @@ interface IASSResourceService {
     /** Moves a resource to a sibling name in the same container. */
     void rename(String webId, String sourceUri, String newName, IASSStringCallback callback);
 
-    // ---- Unauthenticated reads ----
-
     /** Reads a world-readable resource with no Authorization header (e.g. a foreign WebID doc). */
     void readPublicRdf(String uri, IASSSolidRdfResourceCallback callback);
 
@@ -99,8 +95,6 @@ interface IASSResourceService {
 
     /** HEADs a world-readable resource with no Authorization header. */
     void headPublic(String uri, IASSSolidMetadataCallback callback);
-
-    // ---- Raw writes ----
 
     /** PUTs an opaque body. ifMatch: null = unconditional, "*" = must exist, ETag = CAS. */
     void putRaw(
@@ -142,8 +136,6 @@ interface IASSResourceService {
         in SolidRDFResource resource,
         IASSStringCallback callback
     );
-
-    // ---- Streaming (bytes travel through a pipe, never through a parcel) ----
 
     /**
      * Opens the resource body as a live stream. The service pipes the bytes across; the

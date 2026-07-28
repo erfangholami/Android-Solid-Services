@@ -18,22 +18,8 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import java.net.URI
 
-/**
- * Network-behaviour tests for [SolidHttpClient] driven with a real
- * [MockWebServer]. Covers the DPoP-nonce retry, the expired-token
- * force-refresh, conditional-write status handling, redirects, and that the
- * auth headers assembled by [AuthSession] actually reach the wire.
- *
- * The response cache is disabled so every logical call maps to a deterministic
- * network exchange.
- */
 class SolidHttpClientTest {
 
-    /**
-     * Records nonce updates and refresh calls, and returns canned auth headers.
-     * The [TokenResponse] it hands back is only null-checked by the client, so a
-     * bare mock suffices.
-     */
     private class FakeAuthSession : AuthSession {
         val recordedNonces = mutableListOf<String>()
         var forceRefreshCount = 0

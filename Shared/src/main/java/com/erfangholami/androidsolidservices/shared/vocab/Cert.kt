@@ -8,12 +8,10 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object Cert {
     public const val NAMESPACE: String = "http://www.w3.org/ns/auth/cert#"
 
-    //Types
     public const val KEY_TYPE: String = "${NAMESPACE}Key"
     public const val RSA_PUBLIC_KEY: String = "${NAMESPACE}RSAPublicKey"
     public const val CERTIFICATE: String = "${NAMESPACE}Certificate"
 
-    //Predicates
     /** Links a WebID to a public key. */
     public const val KEY: String = "${NAMESPACE}key"
 

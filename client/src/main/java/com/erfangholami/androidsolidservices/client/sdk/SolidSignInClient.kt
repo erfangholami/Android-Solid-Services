@@ -126,10 +126,6 @@ public class SolidSignInClient private constructor(
         })
     }
 
-    /**
-     * Returns the bound auth service once the ASS app is installed, connected, and a user is
-     * logged in; otherwise throws the matching [SolidException].
-     */
     private fun requireLoggedInService(): IASSAuthenticatorService {
         if (!hasInstalledAndroidSolidServices()) {
             throw SolidAppNotFoundException("Please install Android Solid Services app on your device.")

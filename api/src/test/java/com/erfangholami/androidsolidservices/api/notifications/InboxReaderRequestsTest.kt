@@ -20,12 +20,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests the incoming-access-request gate in [InboxReader.listRequests]: an
- * `interop:AccessRequest` is surfaced only when its object resource actually
- * belongs to the reader, so a peer cannot fish for access to a resource the
- * reader does not own by dropping a request in their inbox.
- */
 class InboxReaderRequestsTest {
 
     private val readerWebId = "https://alice.pod/profile/card#me"

@@ -11,12 +11,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URI
 
-/**
- * Regression test for the single-flight follower loop: a follower coroutine
- * that is cancelled while awaiting the in-flight leader must surface the
- * [CancellationException] promptly, not swallow it and busy-spin as a would-be
- * new leader.
- */
 class SolidResponseCacheCancellationTest {
 
     private val uri = URI.create("https://pod.example/r")
@@ -31,7 +25,6 @@ class SolidResponseCacheCancellationTest {
         val k = key()
         val leaderGate = CompletableDeferred<Unit>()
 
-        // Leader registers in-flight and parks until we release the gate.
         val leader = launch {
             cache.cachedRead(k, ttlMillis = 0, uri = uri) {
                 leaderGate.await()

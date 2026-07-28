@@ -5,7 +5,6 @@ package com.erfangholami.androidsolidservices.shared.http
  * See https://solidproject.org/TR/protocol for Solid-specific headers.
  */
 public object HTTPHeaderName {
-    //Standard request headers
     public const val AUTHORIZATION: String = "Authorization"
     public const val ACCEPT: String = "Accept"
     public const val CONTENT_TYPE: String = "Content-Type"
@@ -18,7 +17,6 @@ public object HTTPHeaderName {
     public const val ORIGIN: String = "Origin"
     public const val HOST: String = "Host"
 
-    //Standard response headers
     public const val ETAG: String = "ETag"
     public const val LAST_MODIFIED: String = "Last-Modified"
     public const val LOCATION: String = "Location"
@@ -26,23 +24,19 @@ public object HTTPHeaderName {
     public const val VARY: String = "Vary"
     public const val WWW_AUTHENTICATE: String = "WWW-Authenticate"
 
-    //CORS headers
     public const val ACCESS_CONTROL_ALLOW_ORIGIN: String = "Access-Control-Allow-Origin"
     public const val ACCESS_CONTROL_ALLOW_METHODS: String = "Access-Control-Allow-Methods"
     public const val ACCESS_CONTROL_ALLOW_HEADERS: String = "Access-Control-Allow-SolidHeaders"
     public const val ACCESS_CONTROL_EXPOSE_HEADERS: String = "Access-Control-Expose-SolidHeaders"
     public const val ACCESS_CONTROL_MAX_AGE: String = "Access-Control-Max-Age"
 
-    //Content negotiation
     public const val ACCEPT_PATCH: String = "Accept-Patch"
     public const val ACCEPT_POST: String = "Accept-Post"
     public const val ACCEPT_PUT: String = "Accept-Put"
 
-    //DPoP (Solid-OIDC)
     public const val DPOP: String = "DPoP"
     public const val DPOP_NONCE: String = "DPoP-Nonce"
 
-    //WAC (Web Access Control)
     /** WAC-Allow: user="read write", public="read" */
     public const val WAC_ALLOW: String = "WAC-Allow"
 }
@@ -51,7 +45,6 @@ public object HTTPHeaderName {
  * HTTP media type / content type constants.
  */
 public object HTTPAcceptType {
-    //RDF formats
     public const val JSON_LD: String = "application/ld+json"
     public const val TURTLE: String = "text/turtle"
     public const val N3: String = "text/n3"
@@ -61,11 +54,9 @@ public object HTTPAcceptType {
     public const val RDF_XML: String = "application/rdf+xml"
     public const val JSON_RDF: String = "application/rdf+json"
 
-    //PATCH formats
     /** SPARQL 1.1 Update — accepted by every major Solid server for PATCH. */
     public const val SPARQL_UPDATE: String = "application/sparql-update"
 
-    //General
     public const val JSON: String = "application/json"
     public const val OCTET_STREAM: String = "application/octet-stream"
     public const val FORM_URL_ENCODED: String = "application/x-www-form-urlencoded"

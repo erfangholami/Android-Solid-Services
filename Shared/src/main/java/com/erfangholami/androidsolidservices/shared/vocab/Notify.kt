@@ -8,14 +8,12 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object Notify {
     public const val NAMESPACE: String = "http://www.w3.org/ns/solid/notifications#"
 
-    //Channel types
     public const val WEB_SOCKET_CHANNEL_2023: String = "${NAMESPACE}WebSocketChannel2023"
     public const val EVENT_SOURCE_CHANNEL_2023: String = "${NAMESPACE}EventSourceChannel2023"
     public const val WEBHOOK_CHANNEL_2023: String = "${NAMESPACE}WebhookChannel2023"
     public const val STREAMING_HTTP_CHANNEL_2023: String = "${NAMESPACE}StreamingHTTPChannel2023"
     public const val LDN_CHANNEL_2023: String = "${NAMESPACE}LDNChannel2023"
 
-    //Subscription predicates
     /** Storage advertises one or more subscription endpoints via this predicate. */
     public const val SUBSCRIPTION: String = "${NAMESPACE}subscription"
 
@@ -31,7 +29,6 @@ public object Notify {
     /** Receive notifications from this endpoint (pull/SSE/WS pattern). */
     public const val RECEIVE_FROM: String = "${NAMESPACE}receiveFrom"
 
-    //Channel feature predicates
     /** Start sending notifications after this datetime (xsd:dateTime). */
     public const val START_AT: String = "${NAMESPACE}startAt"
 
@@ -47,7 +44,6 @@ public object Notify {
     /** Accepted media types for notifications. */
     public const val ACCEPT: String = "${NAMESPACE}accept"
 
-    //Notification message predicates
     /** The last known ETag / state of the resource at time of notification. */
     public const val LAST_KNOWN_STATE: String = "${NAMESPACE}lastKnownState"
 }

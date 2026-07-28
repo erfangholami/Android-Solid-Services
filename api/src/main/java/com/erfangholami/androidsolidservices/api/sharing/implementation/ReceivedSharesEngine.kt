@@ -17,14 +17,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * The received-shares half of the sharing engine: the "shared-with-me" index — reading it,
- * re-verifying live access, adding/removing rows, and reconciling it against inbox
- * notifications. Split out of the sharing facade; behaviour is unchanged.
- *
- * Writes to a user's received-shares index are serialised per-WebID by [receivedIndexLock] so
- * concurrent refresh/add/remove/sync can't interleave and lose rows.
- */
 internal class ReceivedSharesEngine(
     private val rm: SolidResourceManager,
     private val helper: SharingManagerHelper,
@@ -243,9 +235,6 @@ internal class ReceivedSharesEngine(
             )
         }.getOrNull()?.takeIf { IriUtils.isValid(it) }?.let { return it }
 
-        // The last-resort owner hint is an origin, which needs the IRI's scheme and authority
-        // components — one of the few genuine parses left. encodeUriString is idempotent, so
-        // re-parsing the already-canonical identifier here does not re-encode it.
         val parsed = encodeUriString(resourceUri)
         val origin = "${parsed.scheme}://${parsed.authority}"
         Log.w(

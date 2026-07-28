@@ -86,8 +86,6 @@ internal class ContactEngine(
             read = { pod.solidResourceManager.read(ownerWebId, contactUri, ContactRDF::class.java) },
             mutate = { contactRdf ->
                 oldName = runCatching { contactRdf.getFullName() }.getOrNull()
-                // Replace the writable vCard state in place: keeps the photo link and any
-                // triples another app wrote, and carries the existing UID forward when absent.
                 val effectiveData = if (data.uid == null) data.copy(uid = contactRdf.getUid()) else data
                 contactRdf.setContactData(effectiveData)
                 true

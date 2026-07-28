@@ -9,7 +9,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 public object AS {
     public const val NAMESPACE: String = "https://www.w3.org/ns/activitystreams#"
 
-    //Activity types (notification event types)
     public const val CREATE: String = "${NAMESPACE}Create"
     public const val UPDATE: String = "${NAMESPACE}Update"
     public const val DELETE: String = "${NAMESPACE}Delete"
@@ -30,14 +29,12 @@ public object AS {
     /** Accept activity — sent to a requester when their AccessRequest is granted. */
     public const val ACCEPT: String = "${NAMESPACE}Accept"
 
-    //Object types
     public const val OBJECT_TYPE: String = "${NAMESPACE}Object"
     public const val ACTIVITY: String = "${NAMESPACE}Activity"
     public const val COLLECTION: String = "${NAMESPACE}Collection"
     public const val ORDERED_COLLECTION: String = "${NAMESPACE}OrderedCollection"
     public const val LINK: String = "${NAMESPACE}Link"
 
-    // Predicates
     /** The object affected by the activity. */
     public const val OBJECT: String = "${NAMESPACE}object"
 

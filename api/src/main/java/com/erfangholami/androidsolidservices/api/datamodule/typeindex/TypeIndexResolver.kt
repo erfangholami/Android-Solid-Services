@@ -13,25 +13,6 @@ import com.erfangholami.androidsolidservices.shared.model.typeindex.SettingTypeI
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 
-/**
- * Resolves (and bootstraps, when missing) a user's Solid type indexes, and is the
- * single place they are mutated.
- *
- * Shared by every data module that registers its instances in the private or
- * public type index (contacts address books, tickets containers, …). Resolution
- * follows the WebID profile: the type index link is looked up on the profile
- * document, then on the extended profile; when absent from both, the link is
- * written to the extended profile and an empty index resource is created under
- * the user's storage.
- *
- * A pod's type index is shared by every app the user has authorised, so it is the
- * library's most contended document. Registration therefore goes through
- * [addInstance] / [addInstanceContainer] / [removeResource], which compare-and-swap
- * (see [casUpdate]) rather than blind-write: a naive read-modify-write would drop a
- * registration another app wrote in the meantime. The mutations are also idempotent —
- * re-registering an already-registered URI is a no-op instead of appending a duplicate
- * `solid:TypeRegistration` node — so `ensure…`-style callers can run on every start.
- */
 internal object TypeIndexResolver {
 
     suspend fun getPrivateTypeIndex(
@@ -54,10 +35,6 @@ internal object TypeIndexResolver {
             PublicTypeIndex::class.java
         ).getOrThrow()
 
-    /**
-     * Registers [instanceUri] as a `solid:instance` of [forClass]. No-op when it is
-     * already registered.
-     */
     suspend fun addInstance(
         resourceManager: SolidResourceManager,
         webIdString: String,
@@ -72,10 +49,6 @@ internal object TypeIndexResolver {
         }
     }
 
-    /**
-     * Registers [containerUri] as a `solid:instanceContainer` of [forClass]. No-op when
-     * it is already registered.
-     */
     suspend fun addInstanceContainer(
         resourceManager: SolidResourceManager,
         webIdString: String,
@@ -90,14 +63,6 @@ internal object TypeIndexResolver {
         }
     }
 
-    /**
-     * Removes the registration pointing at [resourceUri], looking in the private index
-     * first and falling back to the public one. No-op when it is registered in neither.
-     *
-     * Unlike the `add` verbs this never bootstraps an index: deregistering something the
-     * user never registered must not have the side effect of provisioning a type index —
-     * least of all the *public* one — on their pod.
-     */
     suspend fun removeResource(
         resourceManager: SolidResourceManager,
         webIdString: String,
@@ -121,11 +86,6 @@ internal object TypeIndexResolver {
         }
     }
 
-    /**
-     * Applies [change] to the index at [indexUri] under a compare-and-swap: the index is
-     * re-read on every attempt, so [change] always sees the pod's latest state and decides
-     * afresh whether a write is needed (returning `false` skips it entirely).
-     */
     private suspend fun mutate(
         resourceManager: SolidResourceManager,
         webIdString: String,
@@ -156,7 +116,6 @@ internal object TypeIndexResolver {
         if (isPrivate) resolvePrivateTypeIndexUri(resourceManager, webIdString)
         else resolvePublicTypeIndexUri(resourceManager, webIdString)
 
-    /** Looks the index link up on the profile, then the extended profile. Never bootstraps. */
     private suspend fun findTypeIndexUri(
         resourceManager: SolidResourceManager,
         webIdString: String,
@@ -246,13 +205,6 @@ internal object TypeIndexResolver {
         return indexUri
     }
 
-    /**
-     * Creates the empty index, tolerating the case where another app bootstrapped it
-     * between our profile read and this write. [SolidResourceManager.create] is already a
-     * conditional `If-None-Match: *` PUT, so the loser of that race gets a `CONFLICT`
-     * rather than overwriting the winner's index — but it must not be treated as an error,
-     * or a second app on the same pod would fail to start.
-     */
     private suspend fun <T : Resource> createIfAbsent(
         resourceManager: SolidResourceManager,
         webIdString: String,
@@ -265,12 +217,6 @@ internal object TypeIndexResolver {
         }
     }
 
-    /**
-     * Resolves the storage root the type index is allocated under, preferring the
-     * profile's own `pim:storage` and falling back to [StorageDiscovery] (extended
-     * profiles + a walk-up HEAD probe). Fails with a clear message instead of the old
-     * `getStorages()[0]` `IndexOutOfBoundsException` when no storage can be found.
-     */
     private suspend fun resolveStorage(
         resourceManager: SolidResourceManager,
         webIdString: String,
@@ -280,14 +226,6 @@ internal object TypeIndexResolver {
             ?: StorageDiscovery.discover(resourceManager, webIdString)
             ?: error("No pim:storage could be discovered for $webIdString")
 
-    /**
-     * Registers a type-index link on the profile via a targeted N3 PATCH that inserts
-     * only the single `solid:privateTypeIndex` / `solid:publicTypeIndex` triple, rather
-     * than a full-document PUT. A PUT would re-serialise and overwrite the whole profile
-     * — silently dropping any concurrent or server-managed triple it can't round-trip —
-     * and would need `acl:Write` on the entire document; the PATCH needs only to append
-     * one triple.
-     */
     private suspend fun registerTypeIndexLink(
         resourceManager: SolidResourceManager,
         webIdString: String,
@@ -299,11 +237,6 @@ internal object TypeIndexResolver {
         resourceManager.patch(webIdString, profileDocUri, patch).getOrThrow()
     }
 
-    /**
-     * Ensures the parent container of [resourceUri] (and any missing ancestors) exists so a
-     * freshly provisioned pod accepts the type-index bootstrap write, delegating to
-     * [SolidResourceManager.ensureContainer].
-     */
     private suspend fun ensureContainer(
         resourceManager: SolidResourceManager,
         ownerWebId: String,

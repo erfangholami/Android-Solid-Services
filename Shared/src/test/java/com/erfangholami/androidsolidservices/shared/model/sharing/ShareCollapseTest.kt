@@ -3,12 +3,6 @@ package com.erfangholami.androidsolidservices.shared.model.sharing
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * Tests the collapse of a flat, per-acl:mode share list into one row per
- * counterpart at the strongest effective level — the transform that turns the
- * several triples a grant writes (Read+Write for "Edit") into the single row
- * the UI shows.
- */
 class ShareCollapseTest {
 
     private val resource = "https://alice.pod/notes/n1"

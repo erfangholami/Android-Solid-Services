@@ -9,12 +9,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests the default (buffered) implementations of [SolidResourceManager.readStream] /
- * [SolidResourceManager.writeStream] — the fallback any manager without a native streaming
- * transport inherits. The production manager overrides these to stream off the network
- * (covered by SolidHttpClientTest).
- */
 class StreamingFallbackTest {
 
     private val webId = "https://alice.pod/profile/card#me"

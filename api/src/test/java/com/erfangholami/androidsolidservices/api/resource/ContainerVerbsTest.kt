@@ -18,17 +18,10 @@ import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.net.URI
 
-/**
- * Tests the derived container verbs — [SolidResourceManager.listContainer],
- * [SolidResourceManager.copy], [SolidResourceManager.move], [SolidResourceManager.rename] —
- * over a filesystem-like in-memory pod that models GET (container listing + binary bytes),
- * HEAD, create, PUT, and recursive delete.
- */
 class ContainerVerbsTest {
 
     private val webId = "https://alice.pod/profile/card#me"
 
-    /** A pod modelling leaves (bytes + content-type) and containers, with a HEAD counter. */
     private class FsPod : SolidResourceManager {
         val files = linkedMapOf<String, Pair<ByteArray, String>>()
         val containers = linkedSetOf<String>()

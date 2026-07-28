@@ -3,22 +3,6 @@ package com.erfangholami.androidsolidservices.api.resource.implementation
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 
-/**
- * Discovers a user's Solid storage (pod) root.
- *
- * The Solid Protocol offers two discovery mechanisms; this tries both, most
- * authoritative first:
- *  1. the `pim:storage` triple in the WebID profile (and, failing that, in the
- *     linked extended-profile documents);
- *  2. walking up from the WebID document, issuing `HEAD` on each ancestor container
- *     and returning the first that advertises itself as a storage via
- *     `Link: rel="type" <http://www.w3.org/ns/pim/space#Storage>`.
- *
- * Returns `null` only when neither the profile nor the container hierarchy reveals a
- * storage. Callers that require one should surface a typed error rather than index
- * into an empty `WebId.getStorages()` (which throws) — this helper replaces that
- * crash-prone `getStorages()[0]` pattern.
- */
 internal object StorageDiscovery {
 
     private const val MAX_ANCESTOR_WALK = 32

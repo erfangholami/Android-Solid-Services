@@ -16,14 +16,6 @@ import net.openid.appauth.RegistrationRequest
 import net.openid.appauth.RegistrationResponse
 import kotlin.coroutines.resume
 
-/**
- * Discovers an OpenID provider's configuration and obtains a client registration for it — reusing a
- * dynamic registration already held for the same issuer, or performing a fresh one. Split out of
- * [AuthenticatorImplementation]; behaviour is unchanged.
- *
- * A hosted Solid-OIDC Client Identifier needs no registration, so the login flow only reaches here
- * when it must register (or reuse a prior registration for the same issuer) dynamically.
- */
 internal class ClientRegistrationService(
     private val authService: AuthorizationService,
     private val profileManager: ProfileManager,

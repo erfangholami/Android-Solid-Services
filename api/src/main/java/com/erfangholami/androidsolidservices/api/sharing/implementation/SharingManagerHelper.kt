@@ -38,19 +38,6 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 
-/**
- * Low-level helpers for the sharing pipeline:
- *
- * - pod-root resolution
- * - container and index file bootstrap
- * - container detection (via `Link: rel="type" <ldp:BasicContainer>`)
- * - delegation to an [AccessBackend] for grant / revoke / list
- * - N3-Patch driven updates of the given/received indexes, including a
- *   `vcard:Group` disambiguation marker for group receiver rows
- *
- * All methods either succeed or throw — callers wrap them in
- * [SolidResult] at the public boundary.
- */
 internal class SharingManagerHelper {
 
     companion object {
@@ -61,7 +48,6 @@ internal class SharingManagerHelper {
         @Volatile
         private var INSTANCE: SharingManagerHelper? = null
 
-        /** Clears the process-global singleton so a test gets a fresh, isolated instance. */
         internal fun resetForTest() {
             INSTANCE = null
         }
@@ -137,13 +123,6 @@ internal class SharingManagerHelper {
         sharesContainerReady[webId] = true
     }
 
-    /**
-     * Registers the shares container as a `solid:instanceContainer` for
-     * `solidshare:Share` in the owner's private type index, so the shares
-     * bookkeeping is discoverable there (alongside contacts and tickets)
-     * rather than only at the fixed `solidshare/` path. Idempotent, and
-     * best-effort: a failure here never blocks the sharing flow.
-     */
     private suspend fun registerSharesContainer(webId: String, containerUri: String) {
         TypeIndexResolver.addInstanceContainer(
             resourceManager = rm,
@@ -158,7 +137,6 @@ internal class SharingManagerHelper {
         ensureContainer(webId, solidshareContainerUri(podRoot))
     }
 
-    /** Creates the LDN inbox container if it doesn't already exist. */
     suspend fun ensureInboxContainer(webId: String, inboxUri: String) {
         ensureContainer(webId, inboxUri)
     }
@@ -187,11 +165,6 @@ internal class SharingManagerHelper {
     private fun SolidError.isMissing(): Boolean =
         code == SolidErrorCode.NOT_FOUND
 
-    /**
-     * Returns `true` if the server advertises [resourceUri] as an LDP
-     * container (BasicContainer or any subtype). Used to choose between
-     * `acl:accessTo` and `acl:default` when authoring an authorization.
-     */
     suspend fun isContainer(webId: String, resourceUri: String): Boolean {
         val head = rm.head(webId, resourceUri)
         if (head !is SolidResult.Success) {
@@ -210,11 +183,6 @@ internal class SharingManagerHelper {
         return linkTypes.any { it in containerTypes }
     }
 
-    /**
-     * Picks the right [AccessBackend] for [resourceUri] based on the Link
-     * headers returned by HEAD. Defaults to WAC if HEAD fails so the caller
-     * always gets a non-throwing reference.
-     */
     suspend fun backendFor(webId: String, resourceUri: String): AccessBackend {
         val metadata = when (val head = rm.head(webId, resourceUri)) {
             is SolidResult.Success -> head.value
@@ -273,14 +241,6 @@ internal class SharingManagerHelper {
         backend.ensureOwnerOnly(webId, resourceUri, isContainer)
     }
 
-    /**
-     * Recovers owner access to [resourceUri] after an ACL/ACR edit locked the
-     * owner out: re-asserts the owner's Read/Write/Control additively (other
-     * shares are kept). A successful HEAD is required — it selects the right
-     * backend (WAC vs ACP) and detects whether the target is a container. If
-     * the HEAD itself is denied, the ACL/ACR can't be discovered through the
-     * app and the lockout must be cleared with the pod provider's tooling.
-     */
     suspend fun reclaimOwnerControl(webId: String, resourceUri: String) {
         val metadata = when (val head = rm.head(webId, resourceUri)) {
             is SolidResult.Success -> head.value
@@ -309,12 +269,6 @@ internal class SharingManagerHelper {
     suspend fun readReceivedShares(webId: String, podRoot: String): List<ReceivedShare> =
         readReceivedIndex(webId, podRoot).getShares(vocabulary)
 
-    /**
-     * Replaces the record for `(receiver, share.resourceUri)` in the index with
-     * a single-mode record for [share], carrying [GivenShare.createdAt]. Any
-     * existing record's `dcterms:created` is preserved (so a mode change keeps
-     * the original time).
-     */
     suspend fun replaceGivenShare(webId: String, podRoot: String, share: GivenShare) {
         setShareModesForReceiver(
             webId, podRoot,
@@ -325,13 +279,6 @@ internal class SharingManagerHelper {
         )
     }
 
-    /**
-     * Records exactly [modes] for `(receiver, resourceUri)` as a reified
-     * `solidshare:Share` node. An existing node's `dcterms:created` is kept; a
-     * new node is stamped with [createdAt] (may be `null` when unknown, e.g. a
-     * pair reconstructed from an ACL scan). Any legacy bare-triple rows for the
-     * pair are migrated into the node.
-     */
     suspend fun setShareModesForReceiver(
         webId: String,
         podRoot: String,
@@ -394,12 +341,6 @@ internal class SharingManagerHelper {
         }
     }
 
-    /**
-     * Removes the record for `(receiver, resourceUri)` — the reified node and
-     * any legacy bare-triple rows. If the receiver is a
-     * [ShareReceiver.GroupReceiver] and this was its last reference anywhere in
-     * the index, the `rdf:type vcard:Group` marker is dropped too.
-     */
     suspend fun removeGivenShare(
         webId: String,
         podRoot: String,
@@ -446,12 +387,6 @@ internal class SharingManagerHelper {
         }
     }
 
-    /**
-     * Records [share] in the received index as a reified `solidshare:Share`
-     * node owned by [ReceivedShare.ownerWebId], carrying [ReceivedShare.addedAt].
-     * An existing record's time is preserved; only the mode is updated when it
-     * differs. Legacy bare-triple rows for the pair are migrated.
-     */
     suspend fun replaceReceivedShare(webId: String, podRoot: String, share: ReceivedShare) {
         val uri = receivedSharesUri(podRoot)
         val ownerIri = share.ownerWebId
@@ -531,12 +466,6 @@ internal class SharingManagerHelper {
         }
     }
 
-    /**
-     * A stable record-node IRI for a `(counterpart, resource)` pair, as a
-     * fragment on the index document. Deterministic so re-creating the same pair
-     * reuses the node; callers prefer an already-parsed node's subject when one
-     * exists.
-     */
     private fun shareNodeIri(indexUri: String, counterpartIri: String, resourceUri: String): String {
         val digest = MessageDigest.getInstance("SHA-1")
             .digest("$counterpartIri|$resourceUri".toByteArray(Charsets.UTF_8))
@@ -568,20 +497,6 @@ internal class SharingManagerHelper {
         }
     }
 
-    /**
-     * HEADs [resourceUri] from the receiver's perspective and reports access as
-     * a tri-state:
-     *
-     *  - [ReceivedAccess.Granted] — a confirmed grant (strongest observed mode +
-     *    `solid:owner` link if any). A successful HEAD proves at least Read, so
-     *    an absent `WAC-Allow` header (permitted by spec) is reported as
-     *    `Granted(READ)`, not a revocation.
-     *  - [ReceivedAccess.Denied] — authoritative no-access: 403, 404/410, or a
-     *    `WAC-Allow` header listing no recognized mode.
-     *  - [ReceivedAccess.Unknown] — cannot authoritatively decide (401
-     *    token-refresh blip, 5xx, transport/parse exception). Callers must keep
-     *    stored rows and must not surface AccessDenied in this case.
-     */
     suspend fun probeReceivedAccess(
         webId: String,
         resourceUri: String,
@@ -596,7 +511,6 @@ internal class SharingManagerHelper {
     }
 }
 
-/** Tri-state result of [SharingManagerHelper.probeReceivedAccess]. */
 internal sealed interface ReceivedAccess {
     data class Granted(val mode: ShareMode, val owner: String?) : ReceivedAccess
     data object Denied : ReceivedAccess
@@ -606,6 +520,5 @@ internal sealed interface ReceivedAccess {
 internal fun String.ensureTrailingSlash(): String =
     if (endsWith("/")) this else "$this/"
 
-/** The current instant as an `xsd:dateTime` literal in UTC, seconds precision (`…Z`). */
 internal fun nowIsoDateTime(): String =
     Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()

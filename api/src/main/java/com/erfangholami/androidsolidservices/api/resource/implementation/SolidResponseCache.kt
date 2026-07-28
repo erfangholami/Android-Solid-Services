@@ -10,24 +10,6 @@ import okhttp3.Headers
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * In-memory response cache for Solid GET/HEAD reads.
- *
- * Solid server round-trips are expensive (DPoP verify + server processing),
- * so a standard [okhttp3.Cache] 304-revalidation is still a full round-trip.
- * This cache serves a recently-fetched representation straight from memory
- * within [cachedRead]'s `ttlMillis` freshness window, and falls back to an
- * `If-None-Match` / `If-Modified-Since` conditional request otherwise.
- *
- * Correctness:
- *  - Keyed by `(principal, method, url, accept)` — multi-account and
- *    content-negotiation never cross. `principal` is the caller's WebID (or
- *    [PUBLIC_PRINCIPAL]), never the rotating access token.
- *  - The caller's own writes invalidate the cache, so read-after-write within
- *    this process is always fresh.
- *  - Concurrent identical reads are coalesced into one network call.
- *  - Only `200` responses are stored.
- */
 internal class SolidResponseCache(
     private val maxEntries: Int = DEFAULT_MAX_ENTRIES,
     private val maxBytes: Long = DEFAULT_MAX_BYTES,
@@ -73,12 +55,6 @@ internal class SolidResponseCache(
 
     private val inFlight = ConcurrentHashMap<Key, CompletableDeferred<SolidRawResponse>>()
 
-    /**
-     * Returns the cached representation for [key] if it is within [ttlMillis] of being
-     * fetched; otherwise performs (a single, coalesced) [fetch], revalidating against any
-     * stored validator. [fetch] receives the conditional request headers to attach and
-     * must return the raw network response.
-     */
     suspend fun cachedRead(
         key: Key,
         ttlMillis: Long,
@@ -98,7 +74,6 @@ internal class SolidResponseCache(
         }
     }
 
-    /** Drops every cached representation of [url] (all principals, methods, accepts). */
     fun invalidate(url: String) {
         synchronized(lock) {
             val iterator = store.entries.iterator()
@@ -112,7 +87,6 @@ internal class SolidResponseCache(
         }
     }
 
-    /** Invalidates [url] and the listing of its parent container (for create/delete/move). */
     fun invalidateWithParent(url: String) {
         invalidate(url)
         parentContainer(url)?.let { invalidate(it) }

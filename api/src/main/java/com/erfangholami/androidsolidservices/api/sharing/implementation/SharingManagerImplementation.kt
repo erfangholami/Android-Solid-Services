@@ -45,7 +45,6 @@ internal class SharingManagerImplementation : SharingManager {
         @Volatile
         private var INSTANCE: SharingManager? = null
 
-        /** Clears the process-global singleton so a test gets a fresh, isolated instance. */
         internal fun resetForTest() {
             INSTANCE = null
         }
@@ -397,11 +396,6 @@ internal class SharingManagerImplementation : SharingManager {
 
 }
 
-/**
- * Runs a sharing operation on [Dispatchers.IO], returning its value as [SolidResult.Success] or
- * mapping a thrown exception to a typed [SolidResult.Failure] (cancellation propagates). Shared by
- * the sharing facade and its engines so every operation has one failure contract.
- */
 internal suspend fun <T> wrapSharing(block: suspend () -> T): SolidResult<T> =
     withContext(Dispatchers.IO) {
         try {

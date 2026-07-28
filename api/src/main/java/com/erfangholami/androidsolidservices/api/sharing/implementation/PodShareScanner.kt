@@ -12,15 +12,6 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.net.URI
 
-/**
- * Walks a pod breadth-first (bounded concurrency) reading every resource's effective ACL, so
- * [SharingManagerImplementation.rebuildGivenIndex] can reconstruct the given-shares index from
- * the live grants on the pod. Split out of the sharing facade; behaviour is unchanged.
- *
- * A node that can't be read (403 on a locked ACL, a failed container listing) is skipped and left
- * *unobserved* so its stored index rows are preserved rather than pruned; that also flips the
- * scan's [PodScan.complete] flag so the caller can log the gap.
- */
 internal class PodShareScanner(
     private val rm: SolidResourceManager,
     private val helper: SharingManagerHelper,
@@ -28,17 +19,8 @@ internal class PodShareScanner(
 ) {
 
     data class PodScan(
-        /** Every share observed across the entire tree. */
         val shares: List<GivenShare>,
-        /**
-         * URIs whose effective ACL was read authoritatively. Only these are reconciled against
-         * the stored index; unread resources keep their rows.
-         */
         val observedResources: Set<String>,
-        /**
-         * `true` only if the entire tree was fully observed. A single unreadable branch flips it
-         * to `false`, allowing the caller to log the gap.
-         */
         val complete: Boolean,
     )
 
@@ -49,12 +31,6 @@ internal class PodShareScanner(
         val complete: Boolean,
     )
 
-    /**
-     * Whether [resourceUri] matches one of the active profile's excluded scan paths (the engine's
-     * own bookkeeping, the inbox, the public profile document). Drives both halves of the
-     * exclusion: the walk never descends into such a resource, and a rebuild prunes any index row
-     * already stored for one instead of treating it as a user-managed share.
-     */
     fun isExcludedFromScan(resourceUri: String): Boolean =
         profile.storageLayout.excludedScanPaths().any { resourceUri.contains(it) }
 
@@ -121,9 +97,6 @@ internal class PodShareScanner(
             )
         }.getOrNull() ?: return NodeObservation(live, emptyList(), observed, complete = false)
 
-        // Children are walked as identifier strings; the parse is a validity check only, so a
-        // malformed entry in the container listing is skipped (and flips the scan to partial)
-        // rather than being handed to the resource manager.
         val children = container.getContained().mapNotNull { ref ->
             runCatching { URI.create(ref.identifier) }
                 .onFailure { t ->

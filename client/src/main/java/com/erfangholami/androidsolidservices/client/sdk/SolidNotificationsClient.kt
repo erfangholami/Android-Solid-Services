@@ -202,7 +202,6 @@ public class SolidNotificationsClient private constructor(context: Context) {
         mode: ShareMode? = null,
         reason: String? = null,
     ): Unit = connector.await { service, bridge ->
-        // -1 is the wire encoding for "no mode applies".
         service.recordDecisionRejected(
             ownerWebId, requesterWebId, resourceUri, mode?.ordinal ?: -1, reason, unitCallback(bridge),
         )

@@ -13,12 +13,6 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import java.net.URI
 
-/**
- * Tests inbox discovery for a foreign actor. The key behaviour: the inbox is used
- * only where the target actually advertises it (ldp:inbox triple or Link header) —
- * a `{storage}inbox/` URL is never fabricated, because posting a notification to a
- * container the target never declared delivers it into the void.
- */
 class InboxDiscoveryTest {
 
     private val target = "https://carol.pod/profile/card#me"
@@ -29,7 +23,6 @@ class InboxDiscoveryTest {
 
     @Test
     fun `resolveInboxOf returns null when the target advertises no inbox`() {
-        // Storage is declared, but no inbox is — the old code fabricated {storage}inbox/.
         val profile = profile(RdfQuad(target, PIM.STORAGE, "https://carol.pod/", null, null))
         val rm = FakeSolidResourceManager(
             onReadPublic = { SolidResult.Success(profile) },
