@@ -68,6 +68,9 @@ class ContactRDFDataTest {
         category("Friends")
         category("Colleagues")
         gender = Gender.FEMALE
+        geo("geo:52.3676,4.9041")
+        language("nl")
+        language("en-GB")
         webId("https://jane.solidcommunity.net/profile/card#me")
         url("https://jane.example", URLType.Homepage)
         uid = "urn:uuid:2f1c0000-0000-0000-0000-000000000001"
@@ -120,6 +123,74 @@ class ContactRDFDataTest {
         contact.setContactData(contactData { fullName = "Jane" })
         assertEquals(emptyList<String>(), contact.toContactData().categories)
         assertNull(contact.toContactData().gender)
+    }
+
+    @Test
+    fun `geos round-trip as direct hasGeo IRIs and bare pairs gain the scheme`() {
+        val contact = ContactRDF(contactUri).apply {
+            setContactData(
+                contactData {
+                    fullName = "Jane"
+                    geo("geo:52.3676,4.9041")
+                    geo("48.8566, 2.3522")
+                },
+            )
+        }
+        assertEquals(
+            listOf("geo:52.3676,4.9041", "geo:48.8566,2.3522"),
+            contact.toContactData().geos,
+        )
+        val geoObjects = contact.getAllQuads()
+            .filter { it.predicate == VCARD.HAS_GEO }
+            .map { it.`object` }
+        assertEquals(listOf("geo:52.3676,4.9041", "geo:48.8566,2.3522"), geoObjects)
+    }
+
+    @Test
+    fun `foreign geo entry stored on a value node still reads`() {
+        val contact = ContactRDF(contactUri).apply {
+            setFullName("Jane")
+            addQuad(getIdentifier(), VCARD.HAS_GEO, "_:g0")
+            addQuadLiteral("_:g0", VCARD.VALUE, "geo:1.0,2.0", XSD.STRING)
+        }
+        assertEquals(listOf("geo:1.0,2.0"), contact.getGeos())
+    }
+
+    @Test
+    fun `languages round-trip on lang entry nodes and dedupe case-insensitively`() {
+        val contact = ContactRDF(contactUri).apply {
+            setContactData(
+                contactData {
+                    fullName = "Jane"
+                    language("nl")
+                    language("en-GB")
+                    language("NL")
+                },
+            )
+        }
+        assertEquals(listOf("nl", "en-GB"), contact.toContactData().languages)
+        val langNodes = contact.getAllQuads()
+            .filter { it.predicate == VCARD.HAS_LANGUAGE }
+            .map { it.`object` }
+        assertEquals(listOf("_:lang0", "_:lang1"), langNodes)
+        assertTrue(
+            contact.getAllQuads().any {
+                it.subject == "_:lang0" && it.predicate == VCARD.LANGUAGE && it.`object` == "nl"
+            },
+        )
+    }
+
+    @Test
+    fun `setContactData clears stale geos and languages`() {
+        val contact = ContactRDF(contactUri).apply {
+            setContactData(
+                contactData { fullName = "Jane"; geo("geo:1.0,1.0"); language("de") },
+            )
+        }
+        contact.setContactData(contactData { fullName = "Jane" })
+        assertEquals(emptyList<String>(), contact.toContactData().geos)
+        assertEquals(emptyList<String>(), contact.toContactData().languages)
+        assertFalse(contact.getAllQuads().any { it.subject == "_:lang0" })
     }
 
     @Test

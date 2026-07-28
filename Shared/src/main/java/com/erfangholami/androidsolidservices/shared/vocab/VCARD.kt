@@ -88,6 +88,11 @@ public object VCARD {
 
     public const val HAS_CATEGORY: String = "${NAMESPACE}hasCategory"
 
+    public const val HAS_GEO: String = "${NAMESPACE}hasGeo"
+
+    public const val HAS_LANGUAGE: String = "${NAMESPACE}hasLanguage"
+    public const val LANGUAGE: String = "${NAMESPACE}language"
+
     public const val HAS_GENDER: String = "${NAMESPACE}hasGender"
     public const val MALE: String = "${NAMESPACE}Male"
     public const val FEMALE: String = "${NAMESPACE}Female"

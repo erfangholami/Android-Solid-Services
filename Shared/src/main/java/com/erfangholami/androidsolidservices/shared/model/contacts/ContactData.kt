@@ -78,6 +78,8 @@ public data class ContactData(
     val note: String? = null,
     val categories: List<String> = emptyList(),
     val gender: Gender? = null,
+    val geos: List<String> = emptyList(),
+    val languages: List<String> = emptyList(),
     val urls: List<UrlEntry> = emptyList(),
     val uid: String? = null,
 ) : Parcelable {
@@ -131,6 +133,8 @@ public class ContactDataBuilder internal constructor(seed: ContactData? = null) 
     private val impps: MutableList<ImEntry> = seed?.impps.orEmpty().toMutableList()
     private val addresses: MutableList<AddressEntry> = seed?.addresses.orEmpty().toMutableList()
     private val categories: MutableList<String> = seed?.categories.orEmpty().toMutableList()
+    private val geos: MutableList<String> = seed?.geos.orEmpty().toMutableList()
+    private val languages: MutableList<String> = seed?.languages.orEmpty().toMutableList()
     private val urls: MutableList<UrlEntry> = seed?.urls.orEmpty().toMutableList()
 
     public fun name(block: NameBuilder.() -> Unit) {
@@ -159,6 +163,28 @@ public class ContactDataBuilder internal constructor(seed: ContactData? = null) 
         if (trimmed.isNotBlank() && trimmed !in categories) categories.add(trimmed)
     }
 
+    /**
+     * Adds a vCard 4.0 `GEO` position (`vcard:hasGeo`). [value] is kept verbatim — a
+     * `geo:` URI (`geo:37.386013,-122.082932`) or a bare `lat,lng` pair, which the RDF
+     * codec prefixes with the `geo:` scheme on write.
+     */
+    public fun geo(value: String) {
+        val trimmed = value.trim()
+        if (trimmed.isNotBlank() && trimmed !in geos) geos.add(trimmed)
+    }
+
+    /**
+     * Adds a vCard 4.0 `LANG` contact language (`vcard:hasLanguage`), a BCP-47 tag such
+     * as `en` or `fa-IR`. List order carries the vCard preference order. De-duplicated
+     * case-insensitively.
+     */
+    public fun language(tag: String) {
+        val trimmed = tag.trim()
+        if (trimmed.isNotBlank() && languages.none { it.equals(trimmed, ignoreCase = true) }) {
+            languages.add(trimmed)
+        }
+    }
+
     public fun url(value: String, type: URLType) {
         if (value.isNotBlank()) urls.add(UrlEntry(type, value.trim()))
     }
@@ -184,6 +210,8 @@ public class ContactDataBuilder internal constructor(seed: ContactData? = null) 
         note = note?.takeIf { it.isNotBlank() },
         categories = categories.toList(),
         gender = gender,
+        geos = geos.toList(),
+        languages = languages.toList(),
         urls = urls.toList(),
         uid = uid?.takeIf { it.isNotBlank() },
     )

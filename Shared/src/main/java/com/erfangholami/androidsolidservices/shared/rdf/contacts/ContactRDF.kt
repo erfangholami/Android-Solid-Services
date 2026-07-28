@@ -509,6 +509,55 @@ public class ContactRDF : SolidRDFResource {
         }
     }
 
+    /**
+     * The contact's geographic positions (`vcard:hasGeo`), as stored IRIs — typically
+     * `geo:` URIs. An entry stored on a blank node by a foreign writer is read through
+     * its `vcard:value`.
+     */
+    public fun getGeos(): List<String> =
+        findAllPropertiesForSubject(getIdentifier(), VCARD.HAS_GEO).mapNotNull { obj ->
+            if (obj.startsWith("_:")) nodeValue(obj) else obj
+        }
+
+    /**
+     * Replaces the contact's geographic positions with [geos] (trimmed, de-duplicated,
+     * blanks dropped). Each entry is stored as a direct IRI object per the W3C vCard
+     * ontology (`vcard:hasGeo <geo:…>`); a bare `lat,lng` pair is prefixed with the
+     * `geo:` scheme so the stored object is always a valid IRI.
+     */
+    public fun setGeos(geos: List<String>) {
+        clearEntryNodes(VCARD.HAS_GEO)
+        geos.map { it.trim() }.filter { it.isNotBlank() }.map { geoIri(it) }.distinct().forEach {
+            addQuad(getIdentifier(), VCARD.HAS_GEO, it, maxNumber = Int.MAX_VALUE)
+        }
+    }
+
+    /**
+     * The contact's languages (`vcard:hasLanguage` entry nodes' `vcard:language` tags),
+     * in stored order.
+     */
+    public fun getLanguages(): List<String> =
+        entryNodes(VCARD.HAS_LANGUAGE).mapNotNull { node ->
+            findPropertyForSubject(node, VCARD.LANGUAGE)
+        }
+
+    /**
+     * Replaces the contact's languages with [languages] (BCP-47 tags; trimmed,
+     * de-duplicated case-insensitively, blanks dropped). Each tag lives on a
+     * counter-labelled blank node (`_:lang{n}`) carrying `vcard:language`, the W3C
+     * vCard ontology mapping of the vCard 4.0 `LANG` property.
+     */
+    public fun setLanguages(languages: List<String>) {
+        clearEntryNodes(VCARD.HAS_LANGUAGE)
+        languages.map { it.trim() }.filter { it.isNotBlank() }
+            .distinctBy { it.lowercase() }
+            .forEach { tag ->
+                val node = freshBlankNode("lang")
+                addQuad(getIdentifier(), VCARD.HAS_LANGUAGE, node, maxNumber = Int.MAX_VALUE)
+                addQuadLiteral(node, VCARD.LANGUAGE, tag, XSD.STRING)
+            }
+    }
+
     /** The contact's gender (`vcard:hasGender`, an ontology gender-class IRI), or `null`. */
     public fun getGender(): Gender? =
         when (findPropertyForSubject(getIdentifier(), VCARD.HAS_GENDER)) {
@@ -564,6 +613,8 @@ public class ContactRDF : SolidRDFResource {
         setNote(data.note)
         setCategories(data.categories)
         setGender(data.gender)
+        setGeos(data.geos)
+        setLanguages(data.languages)
         data.urls.forEach { addUrl(it.type, it.value) }
         setUid(data.uid)
     }
@@ -588,6 +639,8 @@ public class ContactRDF : SolidRDFResource {
         note = getNote(),
         categories = getCategories(),
         gender = getGender(),
+        geos = getGeos(),
+        languages = getLanguages(),
         urls = getUrlEntries(),
         uid = getUid(),
     )
@@ -709,6 +762,9 @@ public class ContactRDF : SolidRDFResource {
 
     private fun mailtoIri(address: String): String =
         "mailto:" + percentEncodeIriSuffix(address.trim())
+
+    private fun geoIri(value: String): String =
+        if (ABSOLUTE_IRI_SCHEME.containsMatchIn(value)) value else "geo:" + value.replace(" ", "")
 
     private companion object {
         private val TEL_VISUAL_SEPARATORS = Regex("""[\s().\-/]""")
