@@ -39,13 +39,6 @@ internal class SolidHttpClient(
     httpClient: OkHttpClient = defaultHttpClient(),
 ) {
 
-    /**
-     * Redirects are handled manually in [executeAuthenticated] so each hop can re-sign
-     * its DPoP proof for the new URL (a transparently-followed redirect would reuse the
-     * proof bound to the original `htu` and get a `401`), and so credentials are only
-     * re-sent to a same-origin target. The transport is therefore forced to surface
-     * `3xx` responses rather than chase them.
-     */
     private val httpClient: OkHttpClient =
         httpClient.newBuilder().followRedirects(false).followSslRedirects(false).build()
 
@@ -96,15 +89,6 @@ internal class SolidHttpClient(
         SolidRawResponse(statusCode, responseHeaders, bodyBytes, effectiveUri)
     }
 
-    /**
-     * Sends one **unauthenticated** request, manually following redirects — the transport has
-     * them disabled (see [httpClient]), and the authenticated paths re-implement the walk in
-     * [executeAuthenticated]. The anonymous read path needs the same treatment: identity hosts
-     * serve public WebID profiles behind a `303` (e.g. `id.inrupt.com/<name>` → `…?lookup`),
-     * so a single-shot GET surfaces the redirect as a failure and callers wrongly conclude the
-     * document is unreadable. There are no credentials here, so every hop can be followed
-     * as-is; a `303` downgrades a non-GET to GET per HTTP semantics.
-     */
     private suspend fun sendPublicFollowingRedirects(
         method: String,
         uri: URI,
@@ -200,9 +184,6 @@ internal class SolidHttpClient(
                 ifMatch = ifMatch,
             )
             if (response.statusCode == HTTP_UNSUPPORTED_MEDIA_TYPE) {
-                // The Solid Protocol mandates text/n3 PATCH support, but some servers accept
-                // only one of the two formats. We prefer the more widely accepted sparql-update
-                // and fall back to the spec-required text/n3 when the server 415s it.
                 response = executeAuthenticated(
                     method = "PATCH",
                     webId = webId,
@@ -482,12 +463,6 @@ internal class SolidHttpClient(
         if (cacheEnabled) cache.invalidateWithParent(uri.toString())
     }
 
-    /**
-     * Streaming GET: returns the response body as a live [StreamingResource] (the OkHttp
-     * response stays open until the caller closes it), bypassing the buffered cache. Runs the
-     * DPoP-nonce / expired-token / redirect handshake itself, since a GET has no request body
-     * to consume it is safe to re-issue.
-     */
     suspend fun getStream(webId: String, uri: URI): SolidResult<StreamingResource> =
         withContext(Dispatchers.IO) {
             try {
@@ -550,11 +525,6 @@ internal class SolidHttpClient(
             }
         }
 
-    /**
-     * Streaming PUT: sends the body from a re-openable [openSource] via a [StreamingRequestBody]
-     * (so the DPoP-nonce/refresh retry can re-send it), reporting bytes written through
-     * [onProgress].
-     */
     suspend fun putStream(
         webId: String,
         uri: URI,
@@ -633,7 +603,6 @@ internal class SolidHttpClient(
         return StreamingResource(uri.toString(), contentType, body.contentLength(), body.byteStream()) { response.close() }
     }
 
-    /** Maps a caught throwable to a [SolidResult.Failure], rethrowing coroutine cancellation. */
     private fun <T> solidFailure(e: Throwable): SolidResult<T> {
         if (e is kotlinx.coroutines.CancellationException) throw e
         return SolidResult.Failure(SolidError.fromThrowable(e))
@@ -657,8 +626,6 @@ internal class SolidHttpClient(
         var currentBody = body
         var hops = 0
         while (true) {
-            // Credentials (and their DPoP proof, bound to the target's htu) are re-attached
-            // only for a same-origin hop, so a redirect can't forward the token to a foreign host.
             val attachAuth = sameOrigin(uri, currentUri)
             val response = sendWithAuthRetry(
                 currentMethod, webId, currentUri, contentType, accept, linkHeader,
@@ -677,11 +644,6 @@ internal class SolidHttpClient(
         }
     }
 
-    /**
-     * Sends one request to a fixed [uri], applying the DPoP-nonce retry and the single
-     * expired-token force-refresh. [attachAuth] is `false` for a cross-origin redirect
-     * hop — no credentials are sent and the response is returned as-is (no auth retry).
-     */
     private suspend fun sendWithAuthRetry(
         method: String,
         webId: String,
@@ -731,17 +693,16 @@ internal class SolidHttpClient(
             if (didForceRefresh) {
                 return response
             }
+            Log.i(
+                TAG,
+                "AuthTrace: 401 at $uri (WWW-Authenticate: ${wwwAuth.take(120)}) — forcing token refresh for $webId",
+            )
             requireAuth().getLastTokenResponse(webId, forceRefresh = true)
             didForceRefresh = true
         }
         return lastResponse!!
     }
 
-    /**
-     * The redirect target for a `3xx` [response] with a `Location`, resolved against
-     * [from] (so a relative `Location` works), or `null` when this is not a redirect
-     * the client follows.
-     */
     internal fun redirectTarget(response: SolidRawResponse, from: URI): URI? {
         if (response.statusCode !in REDIRECT_CODES) return null
         val location = response.headers[HTTPHeaderName.LOCATION]?.takeIf { it.isNotBlank() } ?: return null
@@ -755,38 +716,25 @@ internal class SolidHttpClient(
     internal companion object {
         const val MAX_AUTH_ATTEMPTS = 3
 
-        /** HTTP 415 — the server rejected the request body's media type (drives the PATCH format fallback). */
         const val HTTP_UNSUPPORTED_MEDIA_TYPE = 415
 
-        /** HTTP 303 — a redirect that turns the follow-up request into a `GET`. */
         const val HTTP_SEE_OTHER = 303
 
-        /** Redirect status codes this client follows manually (re-signing DPoP per hop). */
         val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
 
-        /** Cap on redirect hops before giving up and returning the last `3xx` response. */
         const val MAX_REDIRECTS = 5
 
-        /** Freshness window for ordinary data resources — served from memory without a network call. */
         const val TTL_DATA_MS = 5_000L
 
-        /** Longer freshness window for rarely-changing documents (WebID profiles, ACL/ACR resources). */
         const val TTL_STABLE_MS = 60_000L
 
-        /**
-         * Master switch for the in-memory [SolidResponseCache]. On by default; flip off
-         * (in code or via reflection in a test) to force every read back to the network.
-         */
         @JvmStatic
         var cacheEnabled: Boolean = true
 
-        /** Tag used by the optional HTTP-trace log emitted when [DEBUG_TRACE] is on. */
         const val TAG = "SolidHttp"
 
-        /** Max characters of the response body to include in error log lines. */
         const val BODY_EXCERPT = 512
 
-        /** When `true`, logs every HTTP request/response pair. Off by default. */
         @JvmStatic
         var DEBUG_TRACE: Boolean = false
     }
@@ -809,11 +757,6 @@ internal class SolidHttpClient(
         )
 }
 
-/**
- * An OkHttp [RequestBody] that streams from a re-openable [openSource], reporting bytes written
- * via [onProgress]. Not one-shot: [writeTo] re-opens the source each call, so a retried request
- * (DPoP-nonce prime, token refresh) re-sends a fresh stream.
- */
 private class StreamingRequestBody(
     private val contentType: String,
     private val length: Long,

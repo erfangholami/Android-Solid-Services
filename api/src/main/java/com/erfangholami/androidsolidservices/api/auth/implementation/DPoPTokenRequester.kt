@@ -1,25 +1,26 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
+import android.util.Log
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import net.openid.appauth.AuthorizationServiceDiscovery
+import okhttp3.OkHttpClient
 import org.json.JSONObject
 import java.net.URI
 import java.net.URLEncoder
 
-/**
- * Performs a DPoP-bound token request against an authorization server's token endpoint, handling
- * the [RFC 9449](https://datatracker.ietf.org/doc/html/rfc9449) nonce challenge that AppAuth's
- * `performTokenRequest` cannot: it reads the `DPoP-Nonce` response header and retries once when the
- * server answers `400 use_dpop_nonce`.
- *
- * This exists because AppAuth never surfaces a token response's HTTP headers to its callers, so the
- * authorization-server nonce is invisible through it — which makes silent token refresh impossible
- * on servers that enforce a token-endpoint nonce (e.g. Inrupt ESS).
- */
+private const val AUTH_LOG_TAG = "Authenticator"
+
+private fun tracedTokenHttpClient(): OkHttpClient = OkHttpClient.Builder()
+    .addNetworkInterceptor { chain ->
+        Log.i(AUTH_LOG_TAG, "AuthTrace: wire → ${chain.request().method} ${chain.request().url}")
+        chain.proceed(chain.request())
+    }
+    .build()
+
 internal class DPoPTokenRequester(
-    private val http: SolidHttpClient = SolidHttpClient(),
+    private val http: SolidHttpClient = SolidHttpClient(httpClient = tracedTokenHttpClient()),
 ) {
 
     suspend fun request(
@@ -47,14 +48,22 @@ internal class DPoPTokenRequester(
                     body = body,
                     headers = headers,
                 )
+            } catch (cancellation: kotlinx.coroutines.CancellationException) {
+                throw cancellation
             } catch (e: Exception) {
-                // Transport failure (no HTTP response). Recoverable — must not invalidate the session.
+                Log.w(
+                    AUTH_LOG_TAG,
+                    "AuthTrace: tokenEndpoint transport failure on attempt=${attempt + 1}: " +
+                        "${e.javaClass.simpleName}: ${e.message} — NOTE: the request may still have " +
+                        "reached the server (and spent the refresh token) even though no response arrived",
+                )
                 return DPoPTokenResult.Failure(statusCode = 0, error = null, errorDescription = e.message)
             }
 
             response.headers[HTTPHeaderName.DPOP_NONCE]?.let { dpop.updateNonce(tokenEndpoint.toString(), it) }
 
             if (response.statusCode in 200..299) {
+                Log.i(AUTH_LOG_TAG, "AuthTrace: tokenEndpoint attempt=${attempt + 1} status=${response.statusCode}")
                 return runCatching { DPoPTokenResult.Success(JSONObject(response.body)) }
                     .getOrElse {
                         DPoPTokenResult.Failure(response.statusCode, null, "Malformed token response")
@@ -62,6 +71,11 @@ internal class DPoPTokenRequester(
             }
 
             val (error, description) = parseOAuthError(response.body)
+            Log.w(
+                AUTH_LOG_TAG,
+                "AuthTrace: tokenEndpoint attempt=${attempt + 1} status=${response.statusCode} " +
+                    "error=$error desc=$description nonceHeader=${response.headers[HTTPHeaderName.DPOP_NONCE] != null}",
+            )
             val failure = DPoPTokenResult.Failure(response.statusCode, error, description)
             lastFailure = failure
 

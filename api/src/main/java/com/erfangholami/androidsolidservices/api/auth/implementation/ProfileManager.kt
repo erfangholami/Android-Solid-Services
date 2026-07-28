@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.content.Context
+import android.util.Log
 import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import com.erfangholami.androidsolidservices.shared.model.profile.ProfileList
 import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
@@ -50,12 +51,6 @@ internal class ProfileManager private constructor(
         }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    /**
-     * Accounts that were signed in but whose session has terminally expired (a token refresh was
-     * rejected with `invalid_grant`/`invalid_client`, so [net.openid.appauth.AuthState] is no
-     * longer authorized). Their local state — identity, WebID document, DPoP key — is retained;
-     * signing in again with the same WebID restores the account in place.
-     */
     val expiredProfilesFlow: StateFlow<List<Profile>> = allProfilesFlow
         .map { profileList ->
             profileList.profiles.values.filter {
@@ -79,7 +74,6 @@ internal class ProfileManager private constructor(
         .map { it.isNotEmpty() }
         .stateIn(scope, SharingStarted.Eagerly, false)
 
-    /** Public, AppAuth-free projections of [activeProfileFlow] / [loggedInProfilesFlow]. */
     val activeAccountFlow: StateFlow<SolidAccount?> = activeProfileFlow
         .map { it?.toAccount() }
         .stateIn(scope, SharingStarted.Eagerly, null)
@@ -108,14 +102,6 @@ internal class ProfileManager private constructor(
         }
     }
 
-    /**
-     * Keeps the persisted active WebID pointing at a usable account. When the active account's
-     * session expires (or its profile disappears) while another signed-in account remains, the
-     * selection moves to that account instead of dangling on one that is no longer authorized —
-     * previously the UI listed the remaining signed-in accounts with none of them selected. An
-     * expired account stays selected only when no authorized account remains, so a re-login
-     * surface can still show which account to restore.
-     */
     private suspend fun reconcileActiveWebId(profileList: ProfileList, activeId: String?) {
         val activeProfile = activeId?.let { profileList.profiles[it] }
         val activeIsUsable = activeProfile != null &&
@@ -127,8 +113,22 @@ internal class ProfileManager private constructor(
         }?.key
 
         when {
-            fallback != null -> userRepository.setActiveWebId(fallback)
-            activeId != null && activeProfile == null -> userRepository.setActiveWebId(null)
+            fallback != null -> {
+                Log.w(
+                    "Authenticator",
+                    "AuthTrace: reconciler moving active WebID $activeId -> $fallback " +
+                        "(profiles=${profileList.profiles.size}, activeUsable=false)",
+                )
+                userRepository.setActiveWebId(fallback)
+            }
+            activeId != null && activeProfile == null -> {
+                Log.w(
+                    "Authenticator",
+                    "AuthTrace: reconciler CLEARING active WebID $activeId " +
+                        "(no matching profile; profiles=${profileList.profiles.size})",
+                )
+                userRepository.setActiveWebId(null)
+            }
         }
     }
 

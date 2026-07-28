@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.repository.implementation
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
@@ -45,16 +46,23 @@ internal class UserRepositoryImplementation private constructor(
                 if (bytes.isEmpty()) return ProfileList()
                 val json = try {
                     KeystoreCipher.decrypt(bytes).decodeToString()
-                } catch (_: Exception) {
-                    // Installs from before encryption stored this file as plaintext JSON. Read it
-                    // once so the session survives the upgrade; the next write re-persists it
-                    // encrypted. (GCM authentication makes a false-positive decrypt impossible, so
-                    // genuine ciphertext never reaches this branch.)
+                } catch (e: Exception) {
+                    Log.w(
+                        "Authenticator",
+                        "AuthTrace: profile store decrypt failed (${e.javaClass.simpleName}: ${e.message}) — " +
+                            "falling back to plaintext parse",
+                    )
                     bytes.decodeToString()
                 }
                 return try {
                     Json.decodeFromString<ProfileList>(json)
                 } catch (serialization: SerializationException) {
+                    Log.e(
+                        "Authenticator",
+                        "AuthTrace: profile store UNREADABLE — the corruption handler will now REPLACE it " +
+                            "with an empty store, signing every account out",
+                        serialization,
+                    )
                     throw CorruptionException("Unable to read profiles", serialization)
                 }
             }
@@ -83,8 +91,6 @@ internal class UserRepositoryImplementation private constructor(
     private val Context.profilesDataStore: DataStore<ProfileList> by dataStore(
         fileName = PROFILES_FILE_NAME,
         serializer = ProfileListSerializer,
-        // If the store can't be read (e.g. the Keystore key is gone after a restore to a new
-        // device), drop it and start empty — the user re-authenticates — rather than crashing.
         corruptionHandler = ReplaceFileCorruptionHandler { ProfileList() },
     )
 

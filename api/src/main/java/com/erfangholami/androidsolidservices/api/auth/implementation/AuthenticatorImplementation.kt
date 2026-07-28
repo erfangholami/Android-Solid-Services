@@ -101,8 +101,6 @@ internal class AuthenticatorImplementation internal constructor(
             )
         }
 
-        // A Solid-OIDC Client Identifier (a hosted Client ID Document, passed as [clientId]) is used
-        // as-is and needs no dynamic registration; without one, register a client dynamically.
         val regResponse = if (clientId == null) {
             registrationService.findExistingRegistration(conf.discoveryDoc?.issuer)
                 ?: registrationService.registerToOpenId(conf, appName, redirectUri)
@@ -114,8 +112,6 @@ internal class AuthenticatorImplementation internal constructor(
 
         val authState = AuthState(conf)
         if (regResponse != null) authState.update(regResponse)
-        // Mint a fresh DPoP key id for this login so the issued tokens bind to a key unique to the
-        // resulting account; it is carried through the code exchange and persisted with the profile.
         inProgressAuth.set(Profile(authState = authState, dpopKeyId = UUID.randomUUID().toString().replace("-", "")))
 
         val existingProfile = if (webId != null) profileManager.getProfileOrNull(webId) else null
@@ -179,10 +175,6 @@ internal class AuthenticatorImplementation internal constructor(
             nonceSink = { forUri, nonce -> updateInProgressDPoPNonce(forUri, nonce) },
         )
 
-        // Solid-OIDC: the issuer that minted this token must be one the WebID document explicitly
-        // authorizes via solid:oidcIssuer. If the profile declares none — or none that match — the
-        // issuer cannot be trusted to speak for this WebID, so the login is rejected rather than
-        // accepting an unverified `webId` claim.
         val tokenIss = IdTokenClaims.issuer(idToken)?.trimEnd('/')
         val declaredIssuers = webIdProfile.getOidcIssuers().map { it.toString().trimEnd('/') }
         if (tokenIss == null || tokenIss !in declaredIssuers) {
@@ -210,10 +202,14 @@ internal class AuthenticatorImplementation internal constructor(
             )
         }
         val previousKeyId = profileManager.getProfileOrNull(realWebId)?.dpopKeyId
+        Log.i(
+            AUTH_LOG_TAG,
+            "AuthTrace: login persisted for $realWebId " +
+                "rt=${tokenFp(finalProfile.authState.refreshToken)} keyId=${finalProfile.dpopKeyId}",
+        )
         profileManager.writeProfile(realWebId, finalProfile)
         profileManager.setActiveWebId(realWebId)
         inProgressAuth.clear()
-        // A re-login replaces this account's DPoP key; discard the superseded one.
         if (previousKeyId != null && previousKeyId != finalProfile.dpopKeyId) {
             DPoPGenerator.deleteKeys(previousKeyId)
         }
@@ -288,6 +284,11 @@ internal class AuthenticatorImplementation internal constructor(
             nonceSink = { forUri, nonce -> updateDPoPNonce(webId, forUri, nonce) },
         )
         val updated = profileManager.getProfile(webId).copy(webId = refreshedWebId)
+        Log.i(
+            AUTH_LOG_TAG,
+            "AuthTrace: reloadProfile persisting $webId rt=${tokenFp(updated.authState.refreshToken)} — " +
+                "if this fingerprint is OLDER than the last 'refresh ok' line, a rotated token was just clobbered",
+        )
         profileManager.writeProfile(webId, updated)
         return updated.toAccount()
     }

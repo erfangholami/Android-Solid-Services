@@ -7,9 +7,11 @@ import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstan
 import com.erfangholami.androidsolidservices.api.auth.preferredTokenEndpointAuthMethod
 import com.erfangholami.androidsolidservices.api.auth.supportsDPop
 import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationException
 import net.openid.appauth.AuthorizationService
@@ -24,33 +26,14 @@ import kotlin.coroutines.resume
 
 private const val AUTH_LOG_TAG = "Authenticator"
 
-/** Window during which concurrent refreshes for the same WebID reuse the first one's result. */
 private const val REFRESH_COALESCE_MS = 5_000L
 
 private const val REFRESH_LEAD_MS = 60_000L
 
-/**
- * Synthetic OAuth error for a refresh attempted on a session that holds no refresh token.
- * Deliberately **not** in [TokenRefreshCoordinator.isTerminalRefreshError]'s set: "cannot
- * refresh" must never be conflated with the server revoking the grant (`invalid_grant`).
- */
 private const val ERROR_NO_REFRESH_TOKEN = "no_refresh_token"
 
-/**
- * Synthetic OAuth error recorded when a refresh-token-less session's access token finally
- * expires — the one case where such a session genuinely ends and re-login is required.
- */
 private const val ERROR_SESSION_EXPIRED = "session_expired"
 
-/**
- * Acquires and refreshes OAuth tokens for a WebID: the initial code-for-token exchange, DPoP-bound
- * silent refresh (RFC 9449 nonce handling that AppAuth cannot do), refresh-token-reuse coalescing,
- * and the expiry policy. Split out of [AuthenticatorImplementation]; behaviour is unchanged.
- *
- * Owns the coalescing state ([recentRefresh] + the per-WebID [refreshMutexes]) so a burst of
- * concurrent refreshes spends the rotated refresh token exactly once — servers that detect
- * refresh-token reuse (e.g. Inrupt) otherwise revoke the whole token family.
- */
 internal class TokenRefreshCoordinator(
     private val authService: AuthorizationService,
     private val profileManager: ProfileManager,
@@ -62,20 +45,12 @@ internal class TokenRefreshCoordinator(
     private val refreshMutexes = ConcurrentHashMap<String, Mutex>()
     private fun mutexFor(webId: String) = refreshMutexes.getOrPut(webId) { Mutex() }
 
-    /**
-     * The most recent successful refresh per WebID (timestamp + resulting profile), used to
-     * coalesce a burst of concurrent `forceRefresh` calls onto a single token request. Without
-     * this, several requests that race on a 401 would each spend the (now rotated) refresh token,
-     * and servers that detect refresh-token reuse (e.g. Inrupt) revoke the whole token family.
-     */
     private val recentRefresh = ConcurrentHashMap<String, Pair<Long, Profile>>()
 
-    /** Forgets any coalesced refresh for [webId] (a profile was removed). */
     fun forget(webId: String) {
         recentRefresh.remove(webId)
     }
 
-    /** Forgets every coalesced refresh (all profiles were removed). */
     fun forgetAll() {
         recentRefresh.clear()
     }
@@ -87,19 +62,12 @@ internal class TokenRefreshCoordinator(
         if (profile.authState.lastAuthorizationResponse == null) {
             return Pair(null, profile.authState.authorizationException)
         }
-        // Without a refresh token there is nothing to send to the token endpoint: AppAuth's
-        // createTokenRefreshRequest() would throw, and the DPoP path used to synthesize
-        // invalid_grant here — which read as "the server revoked the session" and terminally
-        // expired an account whose access token was still perfectly valid.
         if (isRefresh && profile.authState.refreshToken == null) {
             return Pair(null, tokenError(ERROR_NO_REFRESH_TOKEN, "No refresh token held for this session."))
         }
 
         val discoveryDoc = profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!
 
-        // A DPoP refresh must bypass AppAuth: performTokenRequest is single-shot and never exposes
-        // the token endpoint's DPoP-Nonce response header, so it cannot satisfy a `use_dpop_nonce`
-        // challenge (RFC 9449 §8) — which servers such as Inrupt require on the refresh_token grant.
         if (isRefresh && discoveryDoc.supportsDPop()) {
             return dpopRefresh(profile, discoveryDoc)
         }
@@ -166,11 +134,24 @@ internal class TokenRefreshCoordinator(
                 }.getOrNull()
                 val refreshedIdToken = token?.idToken
                 when {
-                    token == null ->
+                    token == null -> {
+                        Log.w(
+                            AUTH_LOG_TAG,
+                            "AuthTrace: 2xx token response could not be parsed for ${profile.userInfo?.webId} — " +
+                                "if the provider rotated the refresh token, the new token is being DISCARDED here",
+                        )
                         Pair(null, tokenError("invalid_token_response", null))
+                    }
                     refreshedIdToken != null &&
-                        !isRefreshedIdTokenValid(refreshedIdToken, profile, discoveryDoc) ->
+                        !isRefreshedIdTokenValid(refreshedIdToken, profile, discoveryDoc) -> {
+                        Log.w(
+                            AUTH_LOG_TAG,
+                            "AuthTrace: 2xx refresh REJECTED by ID-token validation for ${profile.userInfo?.webId} — " +
+                                "rotated refresh token rtNew=${tokenFp(token.refreshToken)} is being DISCARDED " +
+                                "while rtSent=${tokenFp(authState.refreshToken)} was already spent server-side",
+                        )
                         Pair(null, tokenError("invalid_id_token", "Refreshed ID token failed validation"))
+                    }
                     else -> Pair(token, null)
                 }
             }
@@ -190,20 +171,23 @@ internal class TokenRefreshCoordinator(
             AuthorizationException.TokenRequestErrors.OTHER, error, description, null,
         )
 
-    /**
-     * Validates an ID token returned by a refresh: its signature against the issuer's JWKS, that its
-     * issuer matches discovery, and — critically — that the identity has not changed (a refresh must
-     * never switch the account it belongs to). A returned `false` rejects the refresh.
-     */
     private suspend fun isRefreshedIdTokenValid(
         idToken: String,
         profile: Profile,
         discoveryDoc: AuthorizationServiceDiscovery,
     ): Boolean {
         return try {
-            IdTokenVerifier.verify(idToken, URI.create(discoveryDoc.jwksUri.toString())) &&
-                IdTokenClaims.issuer(idToken)?.trimEnd('/') == discoveryDoc.issuer.trimEnd('/') &&
-                (profile.userInfo?.webId?.let { IdTokenClaims.webId(idToken) == it } ?: true)
+            val signatureOk = IdTokenVerifier.verify(idToken, URI.create(discoveryDoc.jwksUri.toString()))
+            val issuerOk = IdTokenClaims.issuer(idToken)?.trimEnd('/') == discoveryDoc.issuer.trimEnd('/')
+            val identityOk = profile.userInfo?.webId?.let { IdTokenClaims.webId(idToken) == it } ?: true
+            if (!signatureOk || !issuerOk || !identityOk) {
+                Log.w(
+                    AUTH_LOG_TAG,
+                    "AuthTrace: refreshed ID token checks for ${profile.userInfo?.webId}: " +
+                        "signature/JWKS=$signatureOk issuer=$issuerOk identity=$identityOk",
+                )
+            }
+            signatureOk && issuerOk && identityOk
         } catch (e: Exception) {
             Log.w(AUTH_LOG_TAG, "Refreshed ID token validation failed for ${profile.userInfo?.webId}", e)
             false
@@ -217,10 +201,15 @@ internal class TokenRefreshCoordinator(
     ): Profile {
         if (!forceRefresh && !needsTokenRefresh(profile)) return profile
         return mutexFor(webId).withLock {
-            // Coalesce a burst of concurrent refreshes: if one just succeeded, reuse its result
-            // rather than spending the (now rotated) refresh token a second time.
             recentRefresh[webId]?.let { (at, refreshed) ->
-                if (now() - at < REFRESH_COALESCE_MS) return@withLock refreshed
+                if (now() - at < REFRESH_COALESCE_MS) {
+                    Log.i(
+                        AUTH_LOG_TAG,
+                        "AuthTrace: refresh coalesced for $webId — reusing result from ${now() - at}ms ago " +
+                            "(rt=${tokenFp(refreshed.authState.refreshToken)})",
+                    )
+                    return@withLock refreshed
+                }
             }
 
             val currentProfile = profileManager.getProfileOrNull(webId) ?: return@withLock profile
@@ -229,6 +218,14 @@ internal class TokenRefreshCoordinator(
                 return@withLock expireOnlyIfAccessTokenSpent(webId, currentProfile)
             }
 
+            Log.i(
+                AUTH_LOG_TAG,
+                "AuthTrace: refresh start for $webId force=$forceRefresh " +
+                    "rtSent=${tokenFp(currentProfile.authState.refreshToken)} " +
+                    "accessExpiresInMs=${currentProfile.authState.lastTokenResponse?.accessTokenExpirationTime?.minus(now())} " +
+                    "isAuthorized=${currentProfile.authState.isAuthorized}",
+            )
+            withContext(NonCancellable) {
             val (tokenResponse, exception) = requestToken(currentProfile, isRefresh = true)
             when {
                 tokenResponse != null -> {
@@ -236,16 +233,21 @@ internal class TokenRefreshCoordinator(
                     updatedAuthState.update(tokenResponse, null)
                     val updated = currentProfile.copy(authState = updatedAuthState)
                     recentRefresh[webId] = now() to updated
+                    Log.i(
+                        AUTH_LOG_TAG,
+                        "AuthTrace: refresh ok for $webId rt " +
+                            "${tokenFp(currentProfile.authState.refreshToken)} -> ${tokenFp(updatedAuthState.refreshToken)}" +
+                            (if (tokenResponse.refreshToken == null) " (response carried no new refresh token)" else " (rotated)"),
+                    )
                     profileManager.writeProfile(webId, updated)
                     updated
                 }
 
                 isTerminalRefreshError(exception) -> {
-                    // The refresh token can no longer be used; record the failure so the session
-                    // reads as unauthorized and the user is prompted to sign in again.
                     Log.w(
                         AUTH_LOG_TAG,
-                        "Token refresh failed terminally for $webId: error=${exception?.error}",
+                        "Token refresh failed terminally for $webId: error=${exception?.error} " +
+                            "(AuthTrace: rtSent=${tokenFp(currentProfile.authState.refreshToken)})",
                         exception,
                     )
                     val updatedAuthState = deepCopyAuthState(currentProfile.authState)
@@ -256,33 +258,23 @@ internal class TokenRefreshCoordinator(
                 }
 
                 else -> {
-                    // Recoverable (DPoP nonce, transport error, 5xx): keep the existing session so a
-                    // transient failure cannot force a re-login. The next call retries.
                     Log.w(
                         AUTH_LOG_TAG,
                         "Token refresh failed transiently for $webId: " +
-                            "error=${exception?.error}, desc=${exception?.errorDescription}",
+                            "error=${exception?.error}, desc=${exception?.errorDescription} " +
+                            "(AuthTrace: rtSent=${tokenFp(currentProfile.authState.refreshToken)} — " +
+                            "this token will be RE-SENT on the next attempt)",
                         exception,
                     )
                     currentProfile
                 }
             }
+            }
         }
     }
 
-    /**
-     * Resolves a refresh request for a session that was never issued a refresh token (some
-     * providers withhold `offline_access` — e.g. Community Solid Server grants it only when the
-     * user ticks "remember me" on its consent screen). Being unable to refresh is not, by
-     * itself, the end of the session: the existing access token keeps authenticating requests
-     * until it genuinely expires — a `401`-driven forced refresh must not kill a still-valid
-     * session. Only once the access token is spent is the terminal expiry recorded, so the
-     * account surfaces in `expiredProfilesFlow` for re-login instead of erroring forever.
-     */
     private suspend fun expireOnlyIfAccessTokenSpent(webId: String, profile: Profile): Profile {
         if (!isAccessTokenHardExpired(profile)) return profile
-        // Already terminally recorded — repeated probes of a dead session must not keep
-        // re-logging and re-writing the same expiry.
         if (!profile.authState.isAuthorized) return profile
         Log.w(
             AUTH_LOG_TAG,
@@ -299,11 +291,6 @@ internal class TokenRefreshCoordinator(
         return updated
     }
 
-    /**
-     * A token-endpoint error meaning the refresh token can no longer be used, so the user must sign
-     * in again. Everything else (DPoP nonce challenges, transport failures, 5xx) is transient and
-     * must not invalidate a still-usable session.
-     */
     private fun isTerminalRefreshError(exception: AuthorizationException?): Boolean {
         val error = exception?.error ?: return false
         return error == "invalid_grant" || error == "invalid_client"
