@@ -15,6 +15,11 @@ android {
     compileSdk = 37
     resourcePrefix = "ass_"
 
+    lint {
+        // AGP 9 always generates every report format; only the failure policy is settable.
+        abortOnError = true
+    }
+
     defaultConfig {
         minSdk = 26
 

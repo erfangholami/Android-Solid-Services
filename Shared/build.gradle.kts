@@ -15,6 +15,11 @@ android {
     namespace = "com.erfangholami.androidsolidservices.shared"
     compileSdk = 37
 
+    lint {
+        // AGP 9 always generates every report format; only the failure policy is settable.
+        abortOnError = true
+    }
+
     defaultConfig {
         minSdk = 26
 
