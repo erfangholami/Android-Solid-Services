@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.google.hilt.android)
     alias(libs.plugins.google.devtools.ksp)
-    alias(libs.plugins.google.protobuf)
 }
 
 android {
@@ -148,8 +147,6 @@ dependencies {
     //Local DataBase - Datasource
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.google.protobuf.javalite)
-    implementation(libs.google.protobuf.kotlinlite)
 
     //Navigation
     implementation(libs.androidx.navigation.fragment.ktx)

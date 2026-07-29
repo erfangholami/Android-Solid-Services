@@ -210,7 +210,7 @@ The host application. Users interact with this; third-party apps bind to its ser
 | AppAuth (`net.openid:appauth`) | OpenID Connect                               |
 | `SolidHttpClient`              | Custom OkHttp-based Solid HTTP client (replaces Inrupt Java Client SDK); in-memory response cache since 0.5.0 |
 | Titanium JSON-LD               | RDF, JSON-LD parsing (internal `implementation` dependency — off the public API surface since 0.5.0) |
-| DataStore + Protobuf           | Local persistence; token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0 |
+| DataStore                      | Local persistence (Preferences + a kotlinx.serialization JSON `Serializer`); token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0 |
 | kotlinx.serialization          | JSON serialization (replaced Gson in v0.3.0) |
 | API Validator plugin           | Binary API compatibility enforcement via `.api` files |
 | Min SDK                        | 26 (Android 8.0)                             |

@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.jetbrains.kotlin.serialization)
-    alias(libs.plugins.google.protobuf)
     `maven-publish`
 }
 

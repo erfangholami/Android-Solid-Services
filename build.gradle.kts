@@ -17,7 +17,6 @@ plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.google.hilt.android) apply false
-    alias(libs.plugins.google.protobuf) apply false
     alias(libs.plugins.vanniktech.maven.publish) apply false
     alias(libs.plugins.kotlinx.binary.compatibility.validator)
 }

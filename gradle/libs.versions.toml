@@ -10,8 +10,6 @@ composeBom = "2026.06.01"
 composeActivity = "1.13.0"
 composeMaterial = "1.11.4"
 datasource = "1.2.1"
-googleProtobufLite = "4.35.1"
-googleProtobuf = "0.10.0"
 googleDagger = "2.60.1"
 androidxHilt = "1.4.0"
 navigation = "2.9.8"
@@ -78,8 +76,6 @@ androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-s
 #Local Database - Datastroe
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datasource" }
 androidx-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datasource" }
-google_protobuf_javalite = { group = "com.google.protobuf", name = "protobuf-javalite", version.ref = "googleProtobufLite" }
-google_protobuf_kotlinlite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "googleProtobufLite" }
 
 #Hilt
 google-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "googleDagger" }
@@ -145,9 +141,6 @@ android-library = { id = "com.android.library", version.ref = "android" }
 google-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "googleDagger" }
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
-androidx-navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
-
-google-protobuf = { id = "com.google.protobuf", version.ref = "googleProtobuf" }
 
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
 kotlinx-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }
