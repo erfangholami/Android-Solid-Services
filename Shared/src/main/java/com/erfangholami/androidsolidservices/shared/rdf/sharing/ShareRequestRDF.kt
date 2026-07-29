@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.shared.rdf.sharing
 
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
@@ -10,7 +10,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.SAI
 import com.erfangholami.androidsolidservices.shared.vocab.ShareNotificationVocabulary
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShareNotificationVocabulary
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * RDF wrapper for an `solidshare:AccessRequest` inbox notification — the

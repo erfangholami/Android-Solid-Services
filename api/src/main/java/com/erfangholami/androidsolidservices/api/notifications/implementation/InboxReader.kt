@@ -4,8 +4,6 @@ import android.util.Log
 import com.erfangholami.androidsolidservices.api.exceptions.SharingException
 import com.erfangholami.androidsolidservices.api.notifications.ShareNotificationProfile
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
@@ -14,6 +12,8 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificat
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.ShareNotificationRDF
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.ShareRequestRDF
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.AS

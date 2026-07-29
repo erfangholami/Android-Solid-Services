@@ -6,21 +6,20 @@ import android.os.ParcelFileDescriptor
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_CRUD_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.CallbackBridge
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
+import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
 import com.erfangholami.androidsolidservices.shared.IASSResourceService
+import com.erfangholami.androidsolidservices.shared.IASSStringCallback
 import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
 import com.erfangholami.androidsolidservices.shared.model.resource.IASSAccessProbeCallback
-import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSourceReferenceListCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSStreamCallback
-import com.erfangholami.androidsolidservices.shared.IASSStringCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidSourceReference
 import com.erfangholami.androidsolidservices.shared.model.resource.IASSContainerCallback
 import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidMetadataCallback
 import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidNonRdfResourceCallback
 import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidRdfResourceCallback
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSSourceReferenceListCallback
+import com.erfangholami.androidsolidservices.shared.model.resource.IASSStreamCallback
 import com.erfangholami.androidsolidservices.shared.model.resource.NonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
@@ -28,6 +27,7 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidResource
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidSourceReference
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import kotlinx.coroutines.flow.Flow
 import java.io.InputStream
@@ -51,7 +51,7 @@ public class SolidResourceClient private constructor(
 
     public companion object {
         @Volatile
-        private var INSTANCE: SolidResourceClient? = null
+        private var instance: SolidResourceClient? = null
 
         /**
          * Returns the application-scoped singleton [SolidResourceClient].
@@ -63,9 +63,9 @@ public class SolidResourceClient private constructor(
             context: Context,
             hasInstalledAndroidSolidServices: () -> Boolean,
         ): SolidResourceClient =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidResourceClient(context, hasInstalledAndroidSolidServices)
-                    .also { INSTANCE = it }
+            instance ?: synchronized(this) {
+                instance ?: SolidResourceClient(context, hasInstalledAndroidSolidServices)
+                    .also { instance = it }
             }
     }
 

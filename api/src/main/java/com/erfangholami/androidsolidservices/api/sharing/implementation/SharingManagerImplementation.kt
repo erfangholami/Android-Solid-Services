@@ -2,16 +2,12 @@ package com.erfangholami.androidsolidservices.api.sharing.implementation
 
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
-import com.erfangholami.androidsolidservices.api.exceptions.SharingException
+import com.erfangholami.androidsolidservices.api.exceptions.toSolidError
 import com.erfangholami.androidsolidservices.api.notifications.NotificationsManager
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.SharingManager
 import com.erfangholami.androidsolidservices.api.sharing.SharingProfile
 import com.erfangholami.androidsolidservices.api.sharing.SolidShareProfile
-import com.erfangholami.androidsolidservices.api.exceptions.toSolidError
-import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
-import kotlinx.coroutines.CancellationException
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrant
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrantDirection
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrantSource
@@ -26,9 +22,11 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificat
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.CatalogRDF
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
-import com.erfangholami.androidsolidservices.shared.vocab.Solid
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -43,29 +41,29 @@ internal class SharingManagerImplementation : SharingManager {
         private const val SHARING_LOG_TAG = "SharingManager"
 
         @Volatile
-        private var INSTANCE: SharingManager? = null
+        private var instance: SharingManager? = null
 
         internal fun resetForTest() {
-            INSTANCE = null
+            instance = null
         }
 
         fun getInstance(
             authenticator: Authenticator,
             profile: SharingProfile = SolidShareProfile,
         ): SharingManager =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SharingManagerImplementation(
+            instance ?: synchronized(this) {
+                instance ?: SharingManagerImplementation(
                     SolidResourceManager.getInstance(authenticator), profile,
-                ).also { INSTANCE = it }
+                ).also { instance = it }
             }
 
         fun getInstance(
             resourceManager: SolidResourceManager,
             profile: SharingProfile = SolidShareProfile,
         ): SharingManager =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SharingManagerImplementation(resourceManager, profile)
-                    .also { INSTANCE = it }
+            instance ?: synchronized(this) {
+                instance ?: SharingManagerImplementation(resourceManager, profile)
+                    .also { instance = it }
             }
     }
 
@@ -393,7 +391,6 @@ internal class SharingManagerImplementation : SharingManager {
         profile.linkCodec.bareUrl(resourceUri)
 
     private suspend fun <T> wrap(block: suspend () -> T): SolidResult<T> = wrapSharing(block)
-
 }
 
 internal suspend fun <T> wrapSharing(block: suspend () -> T): SolidResult<T> =

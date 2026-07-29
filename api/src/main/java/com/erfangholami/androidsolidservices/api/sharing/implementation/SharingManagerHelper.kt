@@ -6,23 +6,23 @@ import com.erfangholami.androidsolidservices.api.access.WacBackend
 import com.erfangholami.androidsolidservices.api.access.pickBackend
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.typeindex.TypeIndexResolver
-import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
-import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
-import com.erfangholami.androidsolidservices.shared.result.SolidError
-import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
-import com.erfangholami.androidsolidservices.shared.model.profile.WebId
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.api.sharing.SharingProfile
 import com.erfangholami.androidsolidservices.api.sharing.SolidShareProfile
+import com.erfangholami.androidsolidservices.shared.model.profile.WebId
+import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.GivenSharesIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.ReceivedSharesIndexRDF
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.util.getETag
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.DC
@@ -31,12 +31,12 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShare
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
+import kotlinx.coroutines.delay
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
-import kotlinx.coroutines.delay
 
 internal class SharingManagerHelper {
 
@@ -46,28 +46,28 @@ internal class SharingManagerHelper {
         private const val INDEX_PATCH_JITTER_MS = 150L
 
         @Volatile
-        private var INSTANCE: SharingManagerHelper? = null
+        private var instance: SharingManagerHelper? = null
 
         internal fun resetForTest() {
-            INSTANCE = null
+            instance = null
         }
 
         fun getInstance(
             authenticator: Authenticator,
             profile: SharingProfile = SolidShareProfile,
         ): SharingManagerHelper =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SharingManagerHelper(
+            instance ?: synchronized(this) {
+                instance ?: SharingManagerHelper(
                     SolidResourceManager.getInstance(authenticator), profile,
-                ).also { INSTANCE = it }
+                ).also { instance = it }
             }
 
         fun getInstance(
             resourceManager: SolidResourceManager,
             profile: SharingProfile = SolidShareProfile,
         ): SharingManagerHelper =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SharingManagerHelper(resourceManager, profile).also { INSTANCE = it }
+            instance ?: synchronized(this) {
+                instance ?: SharingManagerHelper(resourceManager, profile).also { instance = it }
             }
     }
 

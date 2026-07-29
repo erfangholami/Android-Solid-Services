@@ -6,10 +6,10 @@ import com.erfangholami.androidsolidservices.api.auth.implementation.asSession
 import com.erfangholami.androidsolidservices.api.notifications.NotificationTransport
 import com.erfangholami.androidsolidservices.api.notifications.RawNotification
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.result.SolidError
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.Notify
 import kotlinx.coroutines.CoroutineDispatcher
@@ -34,25 +34,25 @@ internal class NotificationTransportImplementation private constructor(
         private const val SLUG_HEADER = "Slug"
 
         @Volatile
-        private var INSTANCE: NotificationTransportImplementation? = null
+        private var instance: NotificationTransportImplementation? = null
 
         fun getInstance(authenticator: Authenticator): NotificationTransport {
-            INSTANCE?.takeIf { it.hasAuth }?.let { return it }
+            instance?.takeIf { it.hasAuth }?.let { return it }
             return synchronized(this) {
-                INSTANCE?.takeIf { it.hasAuth } ?: create(
+                instance?.takeIf { it.hasAuth } ?: create(
                     SolidResourceManager.getInstance(authenticator),
                     auth = authenticator.asSession(),
-                ).also { INSTANCE = it }
+                ).also { instance = it }
             }
         }
 
         fun getInstance(resourceManager: SolidResourceManager): NotificationTransport =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: create(resourceManager).also { INSTANCE = it }
+            instance ?: synchronized(this) {
+                instance ?: create(resourceManager).also { instance = it }
             }
 
         internal fun resetForTest() {
-            INSTANCE = null
+            instance = null
         }
 
         fun create(

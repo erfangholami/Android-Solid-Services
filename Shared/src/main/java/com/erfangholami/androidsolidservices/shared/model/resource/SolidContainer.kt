@@ -2,14 +2,13 @@ package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.RDFS
 import com.erfangholami.androidsolidservices.shared.vocab.STAT
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * Represents an LDP BasicContainer resource.

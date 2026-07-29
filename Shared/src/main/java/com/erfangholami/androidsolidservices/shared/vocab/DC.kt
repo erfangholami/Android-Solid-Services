@@ -4,7 +4,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.DC.ELEMENT_NAMESPACE
 import com.erfangholami.androidsolidservices.shared.vocab.DC.NAMESPACE
 import com.erfangholami.androidsolidservices.shared.vocab.DC.TITLE
 
-
 /**
  * Dublin Core Metadata Terms vocabulary constants.
  * http://purl.org/dc/terms/  (dcterms — preferred)

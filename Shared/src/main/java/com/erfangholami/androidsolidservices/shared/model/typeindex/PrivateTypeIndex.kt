@@ -1,7 +1,6 @@
 package com.erfangholami.androidsolidservices.shared.model.typeindex
-import com.apicatalog.jsonld.http.media.MediaType
-import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
+import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 
 /**
  * A Solid private type index document (`solid:TypeIndex` + `solid:UnlistedDocument`).

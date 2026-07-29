@@ -1,13 +1,12 @@
 package com.erfangholami.androidsolidservices.shared.model.resource
 
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.util.getOwnerUri
 import com.erfangholami.androidsolidservices.shared.util.getStorageDescriptionUri
 import com.erfangholami.androidsolidservices.shared.util.tryParseUri
 import com.erfangholami.androidsolidservices.shared.vocab.PIM
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * Represents a Solid pod storage root container.

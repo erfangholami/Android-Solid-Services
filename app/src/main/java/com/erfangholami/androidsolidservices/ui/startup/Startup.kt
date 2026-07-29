@@ -23,7 +23,6 @@ fun Startup(
     navController: NavHostController,
     viewModel: StartupViewModel,
 ) {
-
     LaunchedEffect(Unit) {
         viewModel.decideStartDestination()
     }

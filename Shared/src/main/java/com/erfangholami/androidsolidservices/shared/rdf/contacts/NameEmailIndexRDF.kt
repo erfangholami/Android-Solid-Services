@@ -1,13 +1,12 @@
 package com.erfangholami.androidsolidservices.shared.rdf.contacts
 
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.contacts.Contact
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * RDF representation of the people (name-email) index document for a Solid address book.

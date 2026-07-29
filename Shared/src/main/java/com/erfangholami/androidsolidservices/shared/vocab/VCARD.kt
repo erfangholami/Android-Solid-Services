@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD.HAS_MEMBER
 
-
 /**
  * vCard Ontology vocabulary constants.
  * http://www.w3.org/2006/vcard/ns#

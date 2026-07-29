@@ -4,9 +4,9 @@ import android.content.Intent
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.StateFlow
 
 @Singleton
 class AuthRepositoryImplementation @Inject constructor(

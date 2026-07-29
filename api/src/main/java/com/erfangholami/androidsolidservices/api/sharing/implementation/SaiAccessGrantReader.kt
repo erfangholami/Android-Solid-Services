@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.sharing.implementation
 
 import android.util.Log
+import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrant
@@ -11,7 +12,6 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.SAI
-import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import java.net.URI
 
 internal class SaiAccessGrantReader(private val rm: SolidResourceManager) {

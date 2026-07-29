@@ -6,8 +6,6 @@ import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.implementation.StorageDiscovery
 import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
 import com.erfangholami.androidsolidservices.api.sharing.implementation.nowIsoDateTime
-import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.tickets.LEGACY_TICKETS_INDEX_FILE_NAME
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
@@ -22,6 +20,8 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.TicketSummary
 import com.erfangholami.androidsolidservices.shared.model.typeindex.SettingTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.tickets.TicketRDF
 import com.erfangholami.androidsolidservices.shared.rdf.tickets.TicketsIndexRDF
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import java.net.URI
@@ -31,25 +31,25 @@ internal class SolidTicketsDataModuleHelper {
 
     companion object {
         @Volatile
-        private var INSTANCE: SolidTicketsDataModuleHelper? = null
+        private var instance: SolidTicketsDataModuleHelper? = null
 
         internal fun resetForTest() {
-            INSTANCE = null
+            instance = null
         }
 
         fun getInstance(
             authenticator: Authenticator,
         ): SolidTicketsDataModuleHelper {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidTicketsDataModuleHelper(authenticator).also { INSTANCE = it }
+            return instance ?: synchronized(this) {
+                instance ?: SolidTicketsDataModuleHelper(authenticator).also { instance = it }
             }
         }
 
         fun getInstance(
             resourceManager: SolidResourceManager,
         ): SolidTicketsDataModuleHelper {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidTicketsDataModuleHelper(resourceManager).also { INSTANCE = it }
+            return instance ?: synchronized(this) {
+                instance ?: SolidTicketsDataModuleHelper(resourceManager).also { instance = it }
             }
         }
     }

@@ -2,9 +2,9 @@ package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.STAT
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * An [RDFResource] retrieved from a Solid server.

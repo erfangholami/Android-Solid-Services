@@ -115,7 +115,6 @@ class ProfileSelectionActivity : ComponentActivity() {
             }
         }
     }
-
 }
 
 @Composable

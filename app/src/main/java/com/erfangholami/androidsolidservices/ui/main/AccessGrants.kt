@@ -45,7 +45,6 @@ fun AccessGrants(
     navController: NavController,
     viewModel: AccessGrantViewModel,
 ) {
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val grantedApps = uiState.grantedApps
 
@@ -104,7 +103,6 @@ fun AccessGrants(
                 )
             }
         }
-
     }
 }
 

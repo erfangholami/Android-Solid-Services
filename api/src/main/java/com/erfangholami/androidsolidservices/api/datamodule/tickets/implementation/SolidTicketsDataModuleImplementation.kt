@@ -9,21 +9,21 @@ internal class SolidTicketsDataModuleImplementation : SolidTicketsDataModule {
 
     companion object {
         @Volatile
-        private var INSTANCE: SolidTicketsDataModule? = null
+        private var instance: SolidTicketsDataModule? = null
 
         fun getInstance(
             authenticator: Authenticator,
         ): SolidTicketsDataModule {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidTicketsDataModuleImplementation(authenticator).also { INSTANCE = it }
+            return instance ?: synchronized(this) {
+                instance ?: SolidTicketsDataModuleImplementation(authenticator).also { instance = it }
             }
         }
 
         fun getInstance(
             resourceManager: SolidResourceManager,
         ): SolidTicketsDataModule {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidTicketsDataModuleImplementation(resourceManager).also { INSTANCE = it }
+            return instance ?: synchronized(this) {
+                instance ?: SolidTicketsDataModuleImplementation(resourceManager).also { instance = it }
             }
         }
     }

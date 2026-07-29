@@ -5,14 +5,13 @@ import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.auth.implementation.asSession
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.StreamingResource
-import java.io.InputStream
+import com.erfangholami.androidsolidservices.shared.model.resource.Resource
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
-import com.erfangholami.androidsolidservices.shared.model.resource.Resource
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +22,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import java.io.InputStream
 import java.net.URI
 
 internal class SolidResourceManagerImplementation : SolidResourceManager {
@@ -36,16 +36,16 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
         private val TRANSIENT_DELETE_STATUS_CODES = setOf(408, 429, 500, 502, 503, 504)
 
         @Volatile
-        private var INSTANCE: SolidResourceManager? = null
+        private var instance: SolidResourceManager? = null
 
         internal fun getInstance(authenticator: Authenticator): SolidResourceManager {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidResourceManagerImplementation(authenticator).also { INSTANCE = it }
+            return instance ?: synchronized(this) {
+                instance ?: SolidResourceManagerImplementation(authenticator).also { instance = it }
             }
         }
 
         internal fun setHttpTrace(enabled: Boolean) {
-            SolidHttpClient.DEBUG_TRACE = enabled
+            SolidHttpClient.debugTrace = enabled
         }
     }
 

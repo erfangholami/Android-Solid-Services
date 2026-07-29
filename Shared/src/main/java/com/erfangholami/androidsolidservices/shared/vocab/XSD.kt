@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 
 import com.erfangholami.androidsolidservices.shared.vocab.XSD.LANG_STRING
 
-
 /**
  * XML Schema Datatypes (XSD) vocabulary constants.
  * http://www.w3.org/2001/XMLSchema#

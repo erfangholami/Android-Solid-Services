@@ -3,10 +3,10 @@ package com.erfangholami.androidsolidservices.api.notifications
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.notifications.implementation.NotificationsManagerImplementation
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 /**
  * Single entry point for the LDN (Linked Data Notifications) inbox layer

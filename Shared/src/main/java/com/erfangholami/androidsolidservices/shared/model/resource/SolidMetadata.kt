@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.shared.model.resource
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.access.WacAllow
 import com.erfangholami.androidsolidservices.shared.util.getAcceptPatch
 import com.erfangholami.androidsolidservices.shared.util.getAcceptPost
@@ -23,8 +24,6 @@ import com.erfangholami.androidsolidservices.shared.util.getStorageDescriptionUr
 import com.erfangholami.androidsolidservices.shared.util.getWacAllow
 import com.erfangholami.androidsolidservices.shared.util.getWwwAuthenticate
 import com.erfangholami.androidsolidservices.shared.util.isStorage
-import com.erfangholami.androidsolidservices.shared.util.tryParseUri
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * Solid-specific metadata extracted from HTTP response headers for a resource

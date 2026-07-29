@@ -33,7 +33,6 @@ fun Main(
     navController: NavController,
     viewModel: MainViewModel,
 ) {
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val storagesExpanded = remember { mutableStateOf(false) }
@@ -47,7 +46,6 @@ fun Main(
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
             Text(
                 text = stringResource(R.string.welcome_to_solid),
                 color = MaterialTheme.colorScheme.primary,
@@ -122,7 +120,6 @@ fun Main(
                         }
                     }
                 }
-
             }
         }
     }

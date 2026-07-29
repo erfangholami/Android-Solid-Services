@@ -17,7 +17,6 @@ fun ASSAppTheme(
     dynamicColors: Boolean = false,
     content: @Composable () -> Unit
 ) {
-
     val lightColorScheme = lightColorScheme()
     val darkColorScheme = darkColorScheme()
 

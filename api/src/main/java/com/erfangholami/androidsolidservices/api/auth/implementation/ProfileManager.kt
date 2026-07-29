@@ -2,10 +2,10 @@ package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.content.Context
 import android.util.Log
+import com.erfangholami.androidsolidservices.api.repository.UserRepository
 import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import com.erfangholami.androidsolidservices.shared.model.profile.ProfileList
 import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
-import com.erfangholami.androidsolidservices.api.repository.UserRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,11 +24,11 @@ internal class ProfileManager private constructor(
 ) {
     companion object {
         @Volatile
-        private var INSTANCE: ProfileManager? = null
+        private var instance: ProfileManager? = null
 
         fun getInstance(context: Context): ProfileManager {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: ProfileManager(context.applicationContext).also { INSTANCE = it }
+            return instance ?: synchronized(this) {
+                instance ?: ProfileManager(context.applicationContext).also { instance = it }
             }
         }
     }

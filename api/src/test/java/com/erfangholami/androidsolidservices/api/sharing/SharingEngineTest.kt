@@ -4,17 +4,15 @@ import com.erfangholami.androidsolidservices.api.access.WacBackend
 import com.erfangholami.androidsolidservices.api.notifications.implementation.NotificationsManagerImplementation
 import com.erfangholami.androidsolidservices.api.sharing.implementation.SharingManagerHelper
 import com.erfangholami.androidsolidservices.api.sharing.implementation.SharingManagerImplementation
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.net.URI
 
 class SharingEngineTest {
 

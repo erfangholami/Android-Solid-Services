@@ -7,8 +7,8 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.DetailPlacemen
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBarcode
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBarcodeFormat
-import com.erfangholami.androidsolidservices.shared.model.tickets.TicketCategory
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketBeacon
+import com.erfangholami.androidsolidservices.shared.model.tickets.TicketCategory
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketDetail
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEvent
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketEventStatus

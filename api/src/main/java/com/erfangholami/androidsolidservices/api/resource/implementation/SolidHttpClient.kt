@@ -3,24 +3,24 @@ package com.erfangholami.androidsolidservices.api.resource.implementation
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
 import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
-import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient.Companion.DEBUG_TRACE
-import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.api.resource.StreamingResource
+import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient.Companion.debugTrace
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
-import com.erfangholami.androidsolidservices.shared.result.SolidError
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.util.encodeUri
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.erfangholami.androidsolidservices.api.resource.StreamingResource
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -53,7 +53,7 @@ internal class SolidHttpClient(
         body: ByteArray? = null,
         headers: Map<String, String> = emptyMap(),
     ): SolidRawResponse = withContext(Dispatchers.IO) {
-        if (DEBUG_TRACE) Log.d(TAG, "→ $method $uri")
+        if (debugTrace) Log.d(TAG, "→ $method $uri")
         val mediaType = contentType?.toMediaTypeOrNull()
         val requestBody: RequestBody? = when {
             body != null -> body.toRequestBody(mediaType)
@@ -81,7 +81,7 @@ internal class SolidHttpClient(
         val statusCode = response.code
         val responseHeaders = response.headers
         response.close()
-        if (DEBUG_TRACE) {
+        if (debugTrace) {
             val excerpt = if (statusCode in 200..299) ""
             else " — ${bodyBytes.decodeToString(throwOnInvalidSequence = false).take(BODY_EXCERPT)}"
             Log.d(TAG, "← $statusCode $method $uri$excerpt")
@@ -736,7 +736,7 @@ internal class SolidHttpClient(
         const val BODY_EXCERPT = 512
 
         @JvmStatic
-        var DEBUG_TRACE: Boolean = false
+        var debugTrace: Boolean = false
     }
 
     private suspend fun buildAuthHeaders(

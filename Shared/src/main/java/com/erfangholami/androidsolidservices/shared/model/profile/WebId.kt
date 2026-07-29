@@ -1,7 +1,6 @@
 package com.erfangholami.androidsolidservices.shared.model.profile
 
-import com.apicatalog.jsonld.document.JsonDocument
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId.Companion.writeToString
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
@@ -20,7 +19,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * Represents a Solid WebID identity document — both for reading profile data

@@ -4,7 +4,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.RDFS.COMMENT
 import com.erfangholami.androidsolidservices.shared.vocab.RDFS.LABEL
 import com.erfangholami.androidsolidservices.shared.vocab.RDFS.SUB_CLASS_OF
 
-
 /**
  * RDF Schema (RDFS) vocabulary constants.
  * http://www.w3.org/2000/01/rdf-schema#

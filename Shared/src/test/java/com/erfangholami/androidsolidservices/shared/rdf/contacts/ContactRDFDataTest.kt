@@ -7,11 +7,9 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.EmailType
 import com.erfangholami.androidsolidservices.shared.model.contacts.Gender
 import com.erfangholami.androidsolidservices.shared.model.contacts.ImEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.ImType
-import com.erfangholami.androidsolidservices.shared.model.contacts.Name
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneType
 import com.erfangholami.androidsolidservices.shared.model.contacts.URLType
-import com.erfangholami.androidsolidservices.shared.model.contacts.UrlEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.contactData
 import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad

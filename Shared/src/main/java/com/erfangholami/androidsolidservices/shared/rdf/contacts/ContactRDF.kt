@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.shared.rdf.contacts
 
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressEntry
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressType
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
@@ -19,7 +19,6 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResou
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * RDF representation of a single Solid contact (`vcard:Individual`).

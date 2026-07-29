@@ -7,14 +7,14 @@ import com.erfangholami.androidsolidservices.api.notifications.NotificationsMana
 import com.erfangholami.androidsolidservices.api.notifications.ShareNotificationProfile
 import com.erfangholami.androidsolidservices.api.notifications.SolidShareNotificationProfile
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
-import com.erfangholami.androidsolidservices.shared.result.SolidError
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.util.getETag
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
@@ -37,10 +37,10 @@ internal class NotificationsManagerImplementation private constructor(
         private const val NOTIFS_LOG_TAG = "NotificationsManager"
 
         @Volatile
-        private var INSTANCE: NotificationsManager? = null
+        private var instance: NotificationsManager? = null
 
         internal fun resetForTest() {
-            INSTANCE = null
+            instance = null
         }
 
         fun getInstance(
@@ -53,9 +53,9 @@ internal class NotificationsManagerImplementation private constructor(
             resourceManager: SolidResourceManager,
             profile: ShareNotificationProfile = SolidShareNotificationProfile,
         ): NotificationsManager =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: NotificationsManagerImplementation(resourceManager, profile).also {
-                    INSTANCE = it
+            instance ?: synchronized(this) {
+                instance ?: NotificationsManagerImplementation(resourceManager, profile).also {
+                    instance = it
                 }
             }
     }

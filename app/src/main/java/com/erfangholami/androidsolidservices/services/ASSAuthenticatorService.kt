@@ -12,17 +12,16 @@ import com.erfangholami.androidsolidservices.domain.repository.AccessGrantReposi
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.RevokeAppAccessUseCase
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLoginCallback
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.SOLID_NOT_LOGGED_IN
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.UNKNOWN
+import com.erfangholami.androidsolidservices.shared.model.auth.IASSLoginCallback
+import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
 import com.erfangholami.androidsolidservices.ui.ProfileSelectionActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class ASSAuthenticatorService : LifecycleService(), SavedStateRegistryOwner {

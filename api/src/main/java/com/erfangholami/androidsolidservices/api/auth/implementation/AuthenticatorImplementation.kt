@@ -24,7 +24,6 @@ import net.openid.appauth.TokenResponse
 import java.net.URI
 import java.util.UUID
 
-
 private const val AUTH_LOG_TAG = "Authenticator"
 
 internal class AuthenticatorImplementation internal constructor(
@@ -35,12 +34,12 @@ internal class AuthenticatorImplementation internal constructor(
     companion object {
 
         @Volatile
-        private var INSTANCE: Authenticator? = null
+        private var instance: Authenticator? = null
 
         fun getInstance(context: Context): Authenticator {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: AuthenticatorImplementation(context.applicationContext).also {
-                    INSTANCE = it
+            return instance ?: synchronized(this) {
+                instance ?: AuthenticatorImplementation(context.applicationContext).also {
+                    instance = it
                 }
             }
         }

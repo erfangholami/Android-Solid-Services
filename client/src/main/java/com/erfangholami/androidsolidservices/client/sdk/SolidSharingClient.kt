@@ -3,8 +3,8 @@ package com.erfangholami.androidsolidservices.client.sdk
 import android.content.Context
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_SHARING_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
-import com.erfangholami.androidsolidservices.shared.IASSharingService
 import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.IASSharingService
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrant
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
@@ -38,11 +38,11 @@ public class SolidSharingClient private constructor(context: Context) {
 
     public companion object {
         @Volatile
-        private var INSTANCE: SolidSharingClient? = null
+        private var instance: SolidSharingClient? = null
 
         public fun getInstance(context: Context): SolidSharingClient =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidSharingClient(context).also { INSTANCE = it }
+            instance ?: synchronized(this) {
+                instance ?: SolidSharingClient(context).also { instance = it }
             }
     }
 

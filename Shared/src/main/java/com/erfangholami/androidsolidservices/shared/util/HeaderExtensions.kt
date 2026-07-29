@@ -1,12 +1,12 @@
 package com.erfangholami.androidsolidservices.shared.util
 
-import com.erfangholami.androidsolidservices.shared.model.access.WacAllow
 import com.erfangholami.androidsolidservices.shared.http.EntityTag
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.http.HTTPLinkRelation
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
+import com.erfangholami.androidsolidservices.shared.model.access.WacAllow
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.PIM
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.net.URI
 
 /**

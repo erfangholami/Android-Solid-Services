@@ -91,9 +91,7 @@ kotlin {
 }
 
 composeCompiler {
-
 }
-
 
 dependencies {
 
@@ -112,7 +110,6 @@ dependencies {
     implementation(libs.androidx.constraintLayout)
     implementation(libs.androidx.legacy.support)
     implementation(libs.androidx.exifInterface)
-
 
     //DI - Hilt
     implementation(libs.google.hilt.android)
@@ -168,5 +165,4 @@ dependencies {
 
     implementation(project(":api"))
     implementation(project(":client"))
-
 }

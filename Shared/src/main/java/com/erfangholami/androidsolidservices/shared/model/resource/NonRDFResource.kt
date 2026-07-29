@@ -2,10 +2,9 @@ package com.erfangholami.androidsolidservices.shared.model.resource
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.erfangholami.androidsolidservices.shared.util.encodeUri
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import kotlinx.serialization.json.Json
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -51,7 +50,6 @@ public open class NonRDFResource : Resource {
             }
         }
     }
-
 
     protected constructor(inParcel: Parcel) {
         this.identifier = inParcel.readString()!!

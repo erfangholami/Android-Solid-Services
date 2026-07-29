@@ -1,9 +1,9 @@
 package com.erfangholami.androidsolidservices.shared.rdf.patch
 
-import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch.Companion.build
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch.Companion.build
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid

@@ -3,9 +3,9 @@ package com.erfangholami.androidsolidservices.data.repository
 import com.erfangholami.androidsolidservices.data.local.AccessGrantLocalDataSource
 import com.erfangholami.androidsolidservices.domain.model.GrantedApp
 import com.erfangholami.androidsolidservices.domain.repository.AccessGrantRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.Flow
 
 @Singleton
 class AccessGrantRepositoryImplementation @Inject constructor(

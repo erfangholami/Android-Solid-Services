@@ -13,24 +13,24 @@ internal class SolidContactsDataModuleImplementation private constructor(
 
     companion object {
         @Volatile
-        private var INSTANCE: SolidContactsDataModule? = null
+        private var instance: SolidContactsDataModule? = null
 
         fun getInstance(
             authenticator: Authenticator,
         ): SolidContactsDataModule {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidContactsDataModuleImplementation(
+            return instance ?: synchronized(this) {
+                instance ?: SolidContactsDataModuleImplementation(
                     SolidResourceManager.getInstance(authenticator),
-                ).also { INSTANCE = it }
+                ).also { instance = it }
             }
         }
 
         fun getInstance(
             resourceManager: SolidResourceManager,
         ): SolidContactsDataModule {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidContactsDataModuleImplementation(resourceManager)
-                    .also { INSTANCE = it }
+            return instance ?: synchronized(this) {
+                instance ?: SolidContactsDataModuleImplementation(resourceManager)
+                    .also { instance = it }
             }
         }
     }

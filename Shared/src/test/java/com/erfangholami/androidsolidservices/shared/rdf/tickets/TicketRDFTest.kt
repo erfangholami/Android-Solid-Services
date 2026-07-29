@@ -351,5 +351,4 @@ class TicketRDFTest {
         assertEquals("the artifact link survives a replace", "$documentUri.pkpass", rdf.getArtifactUri())
         assertEquals("dcterms:created survives a replace", "2026-07-02T09:15:00Z", rdf.getCreated())
     }
-
 }

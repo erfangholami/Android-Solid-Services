@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.shared.rdf.sharing
 
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
@@ -9,7 +9,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.ShareVocabulary
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShareVocabulary
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 
 /**
  * RDF wrapper for `{podRoot}/solidshare/catalog.ttl`, the owner-published

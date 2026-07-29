@@ -10,7 +10,7 @@ import com.apicatalog.jsonld.http.media.MediaType
 import com.apicatalog.jsonld.serialization.QuadsToJsonld
 import com.apicatalog.jsonld.uri.UriValidationPolicy
 import com.apicatalog.rdf.api.RdfQuadConsumer
-import com.erfangholami.androidsolidservices.shared.util.encodeUri
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.ACP
@@ -33,7 +33,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import jakarta.json.spi.JsonProvider
 import kotlinx.serialization.json.Json
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.io.IOException
 import java.io.InputStream
 import java.io.UncheckedIOException

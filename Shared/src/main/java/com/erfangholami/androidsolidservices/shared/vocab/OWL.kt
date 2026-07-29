@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 
 import com.erfangholami.androidsolidservices.shared.vocab.OWL.SAME_AS
 
-
 /**
  * Web Ontology Language (OWL) vocabulary constants.
  * http://www.w3.org/2002/07/owl#

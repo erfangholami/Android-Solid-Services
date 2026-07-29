@@ -1,11 +1,10 @@
 package com.erfangholami.androidsolidservices.shared.model.typeindex
-import com.apicatalog.jsonld.http.media.MediaType
+import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
-import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import java.util.UUID
 
 /**
@@ -20,15 +19,15 @@ import java.util.UUID
  */
 public abstract class SettingTypeIndex : SolidRDFResource {
 
-    protected val typeKey : String = RDF.TYPE
-    protected val typeRegistration : String = Solid.TYPE_REGISTRATION
-    protected val forClassKey : String = Solid.FOR_CLASS
-    protected val instanceKey : String = Solid.INSTANCE
-    protected val instanceContainerKey : String = Solid.INSTANCE_CONTAINER
-    protected val typeIndex : String = Solid.TYPE_INDEX
-    protected val unlistedDocument : String = Solid.UNLISTED_DOCUMENT
-    protected val listedDocument : String = Solid.LISTED_DOCUMENT
-    protected val addressBook : String = VCARD.ADDRESS_BOOK
+    protected val typeKey: String = RDF.TYPE
+    protected val typeRegistration: String = Solid.TYPE_REGISTRATION
+    protected val forClassKey: String = Solid.FOR_CLASS
+    protected val instanceKey: String = Solid.INSTANCE
+    protected val instanceContainerKey: String = Solid.INSTANCE_CONTAINER
+    protected val typeIndex: String = Solid.TYPE_INDEX
+    protected val unlistedDocument: String = Solid.UNLISTED_DOCUMENT
+    protected val listedDocument: String = Solid.LISTED_DOCUMENT
+    protected val addressBook: String = VCARD.ADDRESS_BOOK
 
     public constructor(
         identifier: String,

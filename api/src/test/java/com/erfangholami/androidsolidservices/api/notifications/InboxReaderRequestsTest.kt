@@ -2,13 +2,13 @@ package com.erfangholami.androidsolidservices.api.notifications
 
 import com.erfangholami.androidsolidservices.api.notifications.implementation.InboxDiscovery
 import com.erfangholami.androidsolidservices.api.notifications.implementation.InboxReader
-import com.erfangholami.androidsolidservices.shared.result.SolidError
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.ShareRequestRDF
+import com.erfangholami.androidsolidservices.shared.result.SolidError
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.AS
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
@@ -18,7 +18,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.SAI
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.net.URI
 
 class InboxReaderRequestsTest {
 

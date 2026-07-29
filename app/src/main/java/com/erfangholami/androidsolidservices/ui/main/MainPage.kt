@@ -110,7 +110,6 @@ fun MainPage(
 
     val changeTab: (_: Any) -> Unit = { tabRoute ->
         nestedNavController.navigate(tabRoute) {
-
             popUpTo(nestedNavController.graph.findStartDestination().id) {
                 saveState = true
             }

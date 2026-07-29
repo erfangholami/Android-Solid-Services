@@ -1,8 +1,8 @@
 package com.erfangholami.androidsolidservices.api.resource
 
 import com.erfangholami.androidsolidservices.api.notifications.FakeSolidResourceManager
-import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
 import com.erfangholami.androidsolidservices.shared.model.access.WacAllow
+import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.result.SolidError
@@ -11,7 +11,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.net.URI
 
 class ProbeAccessTest {
 

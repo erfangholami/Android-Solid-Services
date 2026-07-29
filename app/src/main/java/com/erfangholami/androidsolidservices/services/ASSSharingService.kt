@@ -4,12 +4,12 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.erfangholami.androidsolidservices.di.IoDispatcher
 import com.erfangholami.androidsolidservices.api.sharing.SharingManager
+import com.erfangholami.androidsolidservices.di.IoDispatcher
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
-import com.erfangholami.androidsolidservices.shared.IASSharingService
 import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.IASSharingService
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSAccessGrantListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSCatalogEntryListCallback
@@ -17,8 +17,8 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import dagger.hilt.android.AndroidEntryPoint

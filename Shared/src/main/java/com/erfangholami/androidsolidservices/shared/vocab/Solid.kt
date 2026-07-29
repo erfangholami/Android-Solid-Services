@@ -3,7 +3,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 import com.erfangholami.androidsolidservices.shared.vocab.Solid.OIDC_ISSUER
 import com.erfangholami.androidsolidservices.shared.vocab.Solid.STORAGE_DESCRIPTION
 
-
 /**
  * Solid Terms vocabulary constants.
  * http://www.w3.org/ns/solid/terms#

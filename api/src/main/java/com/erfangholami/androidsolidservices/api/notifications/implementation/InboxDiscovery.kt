@@ -1,9 +1,9 @@
 package com.erfangholami.androidsolidservices.api.notifications.implementation
 
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
-import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 internal class InboxDiscovery(private val rm: SolidResourceManager) {
 

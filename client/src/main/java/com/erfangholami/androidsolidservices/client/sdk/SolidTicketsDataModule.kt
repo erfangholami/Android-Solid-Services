@@ -29,11 +29,11 @@ public class SolidTicketsDataModule private constructor(context: Context) {
 
     public companion object {
         @Volatile
-        private var INSTANCE: SolidTicketsDataModule? = null
+        private var instance: SolidTicketsDataModule? = null
 
         public fun getInstance(context: Context): SolidTicketsDataModule =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidTicketsDataModule(context).also { INSTANCE = it }
+            instance ?: synchronized(this) {
+                instance ?: SolidTicketsDataModule(context).also { instance = it }
             }
     }
 

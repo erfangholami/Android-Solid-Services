@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.shared.vocab
 
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF.AGENT
 
-
 /**
  * Friend of a Friend (FOAF) vocabulary constants.
  * http://xmlns.com/foaf/0.1/

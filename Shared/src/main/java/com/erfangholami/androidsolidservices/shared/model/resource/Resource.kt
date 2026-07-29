@@ -49,5 +49,4 @@ public interface Resource : AutoCloseable, Parcelable {
      */
     @Throws(IOException::class)
     public fun getEntity(): InputStream
-
 }

@@ -10,10 +10,10 @@ import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.erfangholami.androidsolidservices.api.repository.UserRepository
 import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import com.erfangholami.androidsolidservices.shared.model.profile.ProfileList
 import com.erfangholami.androidsolidservices.shared.model.profile.contains
-import com.erfangholami.androidsolidservices.api.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -35,7 +35,7 @@ internal class UserRepositoryImplementation private constructor(
         private val ACTIVE_WEB_ID_KEY = stringPreferencesKey("active_web_id")
 
         @Volatile
-        private var INSTANCE: UserRepository? = null
+        private var instance: UserRepository? = null
 
         object ProfileListSerializer : Serializer<ProfileList> {
             override val defaultValue: ProfileList
@@ -82,8 +82,8 @@ internal class UserRepositoryImplementation private constructor(
         fun getInstance(
             context: Context,
         ): UserRepository {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: UserRepositoryImplementation(context).also { INSTANCE = it }
+            return instance ?: synchronized(this) {
+                instance ?: UserRepositoryImplementation(context).also { instance = it }
             }
         }
     }

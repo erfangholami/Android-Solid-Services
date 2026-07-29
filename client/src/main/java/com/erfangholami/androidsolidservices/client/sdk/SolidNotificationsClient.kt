@@ -4,10 +4,10 @@ import android.content.Context
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_NOTIFICATIONS_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.CallbackBridge
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
-import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
-import com.erfangholami.androidsolidservices.shared.IASSStringCallback
 import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
+import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
+import com.erfangholami.androidsolidservices.shared.IASSStringCallback
+import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareNotificationListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareRequestListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
@@ -35,11 +35,11 @@ public class SolidNotificationsClient private constructor(context: Context) {
 
     public companion object {
         @Volatile
-        private var INSTANCE: SolidNotificationsClient? = null
+        private var instance: SolidNotificationsClient? = null
 
         public fun getInstance(context: Context): SolidNotificationsClient =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidNotificationsClient(context).also { INSTANCE = it }
+            instance ?: synchronized(this) {
+                instance ?: SolidNotificationsClient(context).also { instance = it }
             }
     }
 

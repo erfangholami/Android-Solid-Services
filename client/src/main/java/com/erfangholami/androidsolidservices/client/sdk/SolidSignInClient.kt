@@ -31,7 +31,7 @@ public class SolidSignInClient private constructor(
 
     public companion object {
         @Volatile
-        private var INSTANCE: SolidSignInClient? = null
+        private var instance: SolidSignInClient? = null
 
         /**
          * Returns the application-scoped singleton [SolidSignInClient].
@@ -45,9 +45,9 @@ public class SolidSignInClient private constructor(
             applicationInfo: ApplicationInfo,
             hasInstalledAndroidSolidServices: () -> Boolean,
         ): SolidSignInClient =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SolidSignInClient(context, applicationInfo, hasInstalledAndroidSolidServices)
-                    .also { INSTANCE = it }
+            instance ?: synchronized(this) {
+                instance ?: SolidSignInClient(context, applicationInfo, hasInstalledAndroidSolidServices)
+                    .also { instance = it }
             }
     }
 
