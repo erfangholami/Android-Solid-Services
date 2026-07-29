@@ -9,6 +9,8 @@ import android.os.IBinder
 import android.os.RemoteException
 import com.erfangholami.androidsolidservices.client.sdk.SolidException
 import com.erfangholami.androidsolidservices.client.sdk.handleSolidException
+import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
+import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,28 +38,38 @@ internal class ServiceConnector<S : Any>(
     @Volatile
     private var bound: Boolean = false
 
+    private val serviceLabel: String = serviceClassName.substringAfterLast('.')
+
     private val deathRecipient = IBinder.DeathRecipient {
+        Telemetry.log("ass.ipc $serviceLabel binder died")
         service = null
         _connectionState.value = false
     }
 
     private val connection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName, binder: IBinder) {
+        override fun onServiceConnected(
+            name: ComponentName,
+            binder: IBinder,
+        ) {
             service = asInterface(binder)
             runCatching { binder.linkToDeath(deathRecipient, 0) }
             _connectionState.value = true
+            Telemetry.log("ass.ipc $serviceLabel connected")
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
+            Telemetry.log("ass.ipc $serviceLabel disconnected")
             service = null
             _connectionState.value = false
         }
 
         override fun onBindingDied(name: ComponentName) {
+            Telemetry.log("ass.ipc $serviceLabel binding died — rebinding")
             rebind()
         }
 
         override fun onNullBinding(name: ComponentName) {
+            Telemetry.log("ass.ipc $serviceLabel returned a null binding")
             _connectionState.value = false
         }
     }
@@ -77,16 +89,15 @@ internal class ServiceConnector<S : Any>(
         _connectionState.value = false
     }
 
-    suspend fun <T> await(register: (S, CallbackBridge<T>) -> Unit): T =
-        try {
-            awaitOnce(register)
-        } catch (_: DeadObjectException) {
-            rebind()
-            awaitOnce(register)
-        } catch (_: RemoteException) {
-            rebind()
-            awaitOnce(register)
-        }
+    suspend fun <T> await(register: (S, CallbackBridge<T>) -> Unit): T = try {
+        awaitOnce(register)
+    } catch (_: DeadObjectException) {
+        rebind()
+        awaitOnce(register)
+    } catch (_: RemoteException) {
+        rebind()
+        awaitOnce(register)
+    }
 
     private suspend fun <T> awaitOnce(register: (S, CallbackBridge<T>) -> Unit): T {
         val connectedService = awaitService()
@@ -101,9 +112,27 @@ internal class ServiceConnector<S : Any>(
 
     private suspend fun awaitService(): S {
         service?.let { return it }
-        if (!bound) bind()
-        withTimeoutOrNull(CONNECT_TIMEOUT_MS) { connectionState.first { it } }
-        return service ?: throw SolidException.SolidServiceConnectionException()
+        val span = Telemetry.startSpan("ass_ipc_bind")
+        span.putAttribute("service", serviceLabel)
+        try {
+            if (!bound) bind()
+            withTimeoutOrNull(CONNECT_TIMEOUT_MS) { connectionState.first { it } }
+            val connected = service
+            if (connected == null) {
+                span.putAttribute(TelemetryAttribute.OUTCOME, TelemetryAttribute.OUTCOME_ERROR)
+                val failure = SolidException.SolidServiceConnectionException()
+                Telemetry.recordException(
+                    failure,
+                    TelemetryAttribute.OPERATION to "ass.ipc.bind",
+                    "service" to serviceLabel,
+                )
+                throw failure
+            }
+            span.putAttribute(TelemetryAttribute.OUTCOME, TelemetryAttribute.OUTCOME_SUCCESS)
+            return connected
+        } finally {
+            span.stop()
+        }
     }
 
     private fun bind() {
@@ -131,13 +160,17 @@ internal class ServiceConnector<S : Any>(
     }
 }
 
-internal class CallbackBridge<T>(private val cont: CancellableContinuation<T>) {
-
+internal class CallbackBridge<T>(
+    private val cont: CancellableContinuation<T>,
+) {
     fun onResult(value: T) {
         if (cont.isActive) cont.resume(value)
     }
 
-    fun onError(errorCode: Int, errorMessage: String?) {
+    fun onError(
+        errorCode: Int,
+        errorMessage: String?,
+    ) {
         if (cont.isActive) {
             cont.resumeWithException(handleSolidException(errorCode, errorMessage ?: ""))
         }

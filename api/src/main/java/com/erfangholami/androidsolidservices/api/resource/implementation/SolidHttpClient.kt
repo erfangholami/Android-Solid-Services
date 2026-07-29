@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.api.resource.implementation
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
 import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
+import com.erfangholami.androidsolidservices.api.http.telemetryOrigin
 import com.erfangholami.androidsolidservices.api.resource.StreamingResource
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient.Companion.debugTrace
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
@@ -16,6 +17,8 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
+import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
 import com.erfangholami.androidsolidservices.shared.util.encodeUri
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
@@ -29,6 +32,7 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.BufferedSink
+import java.io.IOException
 import java.io.InputStream
 import java.net.URI
 
@@ -38,9 +42,12 @@ internal class SolidHttpClient(
     private val auth: AuthSession? = null,
     httpClient: OkHttpClient = defaultHttpClient(),
 ) {
-
     private val httpClient: OkHttpClient =
-        httpClient.newBuilder().followRedirects(false).followSslRedirects(false).build()
+        httpClient
+            .newBuilder()
+            .followRedirects(false)
+            .followSslRedirects(false)
+            .build()
 
     private val cache = SolidResponseCache()
 
@@ -60,7 +67,8 @@ internal class SolidHttpClient(
             method in setOf("POST", "PUT", "PATCH") -> ByteArray(0).toRequestBody(null)
             else -> null
         }
-        val request = Request.Builder()
+        val request = Request
+            .Builder()
             .url(encodeUri(uri).toString())
             .apply {
                 if (accept != null) header(HTTPHeaderName.ACCEPT, accept)
@@ -68,25 +76,36 @@ internal class SolidHttpClient(
                 if (linkHeader != null) header(HTTPHeaderName.LINK, linkHeader)
                 headers.forEach { (k, v) -> addHeader(k, v) }
                 method(method, requestBody)
-            }
-            .build()
+            }.build()
 
-        val response = httpClient.newCall(request).execute()
-        val bodyBytes = response.body?.bytes() ?: ByteArray(0)
-        val effectiveUri = try {
-            response.request.url.toUri()
-        } catch (_: Exception) {
-            uri
+        val span = Telemetry.startNetworkSpan(uri.telemetryOrigin(), method)
+        requestBody?.contentLength()?.takeIf { it >= 0 }?.let(span::setRequestPayloadSize)
+        try {
+            val response = httpClient.newCall(request).execute()
+            val bodyBytes = response.body?.bytes() ?: ByteArray(0)
+            val effectiveUri = try {
+                response.request.url.toUri()
+            } catch (_: Exception) {
+                uri
+            }
+            val statusCode = response.code
+            val responseHeaders = response.headers
+            response.close()
+            span.setResponseCode(statusCode)
+            span.setResponsePayloadSize(bodyBytes.size.toLong())
+            span.setResponseContentType(responseHeaders[HTTPHeaderName.CONTENT_TYPE])
+            if (debugTrace) {
+                val excerpt = if (statusCode in 200..299) {
+                    ""
+                } else {
+                    " — ${bodyBytes.decodeToString(throwOnInvalidSequence = false).take(BODY_EXCERPT)}"
+                }
+                Log.d(TAG, "← $statusCode $method $uri$excerpt")
+            }
+            SolidRawResponse(statusCode, responseHeaders, bodyBytes, effectiveUri)
+        } finally {
+            span.stop()
         }
-        val statusCode = response.code
-        val responseHeaders = response.headers
-        response.close()
-        if (debugTrace) {
-            val excerpt = if (statusCode in 200..299) ""
-            else " — ${bodyBytes.decodeToString(throwOnInvalidSequence = false).take(BODY_EXCERPT)}"
-            Log.d(TAG, "← $statusCode $method $uri$excerpt")
-        }
-        SolidRawResponse(statusCode, responseHeaders, bodyBytes, effectiveUri)
     }
 
     private suspend fun sendPublicFollowingRedirects(
@@ -112,7 +131,7 @@ internal class SolidHttpClient(
     suspend fun <T : Resource> get(
         webId: String,
         uri: URI,
-        clazz: Class<T>
+        clazz: Class<T>,
     ): SolidResult<T> {
         return try {
             val accept =
@@ -172,7 +191,7 @@ internal class SolidHttpClient(
         webId: String,
         uri: URI,
         patch: N3Patch,
-        ifMatch: String? = null
+        ifMatch: String? = null,
     ): SolidResult<Unit> {
         return try {
             var response = executeAuthenticated(
@@ -209,7 +228,7 @@ internal class SolidHttpClient(
         webId: String,
         uri: URI,
         n3Body: String,
-        ifMatch: String? = null
+        ifMatch: String? = null,
     ): SolidResult<Unit> {
         return try {
             val response = executeAuthenticated(
@@ -232,14 +251,17 @@ internal class SolidHttpClient(
         }
     }
 
-    suspend fun head(webId: String, uri: URI): SolidResult<SolidMetadata> {
+    suspend fun head(
+        webId: String,
+        uri: URI,
+    ): SolidResult<SolidMetadata> {
         return try {
             val response = readCached(
                 webId,
                 "HEAD",
                 uri,
                 accept = null,
-                ttlMillis = ttlFor(uri, null)
+                ttlMillis = ttlFor(uri, null),
             ) { cond ->
                 executeAuthenticated("HEAD", webId, uri, additionalHeaders = cond)
             }
@@ -261,7 +283,11 @@ internal class SolidHttpClient(
             val accept =
                 if (RDFResource::class.java.isAssignableFrom(clazz)) HTTPAcceptType.JSON_LD else HTTPAcceptType.ANY
             val response = readCached(
-                SolidResponseCache.PUBLIC_PRINCIPAL, "GET", uri, accept, ttlFor(uri, clazz)
+                SolidResponseCache.PUBLIC_PRINCIPAL,
+                "GET",
+                uri,
+                accept,
+                ttlFor(uri, clazz),
             ) { cond ->
                 sendPublicFollowingRedirects(method = "GET", uri = uri, accept = accept, headers = cond)
             }
@@ -282,7 +308,7 @@ internal class SolidHttpClient(
                 "HEAD",
                 uri,
                 accept = null,
-                ttlMillis = ttlFor(uri, null)
+                ttlMillis = ttlFor(uri, null),
             ) { cond ->
                 sendPublicFollowingRedirects(method = "HEAD", uri = uri, accept = null, headers = cond)
             }
@@ -401,7 +427,7 @@ internal class SolidHttpClient(
     suspend fun delete(
         webId: String,
         uri: URI,
-        ifMatch: String? = null
+        ifMatch: String? = null,
     ): SolidResult<Boolean> {
         return try {
             val response = executeAuthenticated("DELETE", webId, uri, ifMatch = ifMatch)
@@ -453,7 +479,10 @@ internal class SolidHttpClient(
         return cache.cachedRead(key, ttlMillis, uri, fetch)
     }
 
-    private fun ttlFor(uri: URI, clazz: Class<*>?): Long {
+    private fun ttlFor(
+        uri: URI,
+        clazz: Class<*>?,
+    ): Long {
         if (clazz != null && WebId::class.java.isAssignableFrom(clazz)) return TTL_STABLE_MS
         val path = uri.path.orEmpty()
         return if (path.endsWith(".acl") || path.endsWith(".acr")) TTL_STABLE_MS else TTL_DATA_MS
@@ -463,67 +492,70 @@ internal class SolidHttpClient(
         if (cacheEnabled) cache.invalidateWithParent(uri.toString())
     }
 
-    suspend fun getStream(webId: String, uri: URI): SolidResult<StreamingResource> =
-        withContext(Dispatchers.IO) {
-            try {
-                var currentUri = uri
-                var didForceRefresh = false
-                var lastCode = 0
-                repeat(MAX_AUTH_ATTEMPTS + MAX_REDIRECTS) {
-                    val headers = buildAuthHeaders(webId, "GET", currentUri.toString())
-                    val request = Request.Builder()
-                        .url(encodeUri(currentUri).toString())
-                        .apply {
-                            headers.forEach { (k, v) -> addHeader(k, v) }
-                            get()
-                        }
-                        .build()
-                    val response = httpClient.newCall(request).execute()
-                    response.header(HTTPHeaderName.DPOP_NONCE)?.let { nonce ->
-                        requireAuth().updateDPoPNonce(webId, currentUri.toString(), nonce)
+    suspend fun getStream(
+        webId: String,
+        uri: URI,
+    ): SolidResult<StreamingResource> = withContext(Dispatchers.IO) {
+        try {
+            var currentUri = uri
+            var didForceRefresh = false
+            var lastCode = 0
+            repeat(MAX_AUTH_ATTEMPTS + MAX_REDIRECTS) {
+                val headers = buildAuthHeaders(webId, "GET", currentUri.toString())
+                val request = Request
+                    .Builder()
+                    .url(encodeUri(currentUri).toString())
+                    .apply {
+                        headers.forEach { (k, v) -> addHeader(k, v) }
+                        get()
+                    }.build()
+                val response = httpClient.newCall(request).execute()
+                response.header(HTTPHeaderName.DPOP_NONCE)?.let { nonce ->
+                    requireAuth().updateDPoPNonce(webId, currentUri.toString(), nonce)
+                }
+                lastCode = response.code
+                when {
+                    response.isSuccessful ->
+                        return@withContext SolidResult.Success(streamingResourceFrom(currentUri, response))
+
+                    response.code in REDIRECT_CODES -> {
+                        val location = response.header(HTTPHeaderName.LOCATION)
+                        response.close()
+                        currentUri = location
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { runCatching { currentUri.resolve(it) }.getOrNull() }
+                            ?: return@withContext SolidResult.Failure(
+                                SolidError.fromHttp(response.code, "streaming GET: unusable redirect"),
+                            )
                     }
-                    lastCode = response.code
-                    when {
-                        response.isSuccessful ->
-                            return@withContext SolidResult.Success(streamingResourceFrom(currentUri, response))
 
-                        response.code in REDIRECT_CODES -> {
-                            val location = response.header(HTTPHeaderName.LOCATION)
-                            response.close()
-                            currentUri = location?.takeIf { it.isNotBlank() }
-                                ?.let { runCatching { currentUri.resolve(it) }.getOrNull() }
-                                ?: return@withContext SolidResult.Failure(
-                                    SolidError.fromHttp(response.code, "streaming GET: unusable redirect"),
-                                )
-                        }
-
-                        response.code == 401 -> {
-                            val wwwAuth = response.header(HTTPHeaderName.WWW_AUTHENTICATE) ?: ""
-                            response.close()
-                            val isNonceChallenge = wwwAuth.contains("use_dpop_nonce", true) &&
-                                !wwwAuth.contains("invalid_token", true) &&
-                                !wwwAuth.contains("expired_token", true)
-                            if (!isNonceChallenge) {
-                                if (didForceRefresh) {
-                                    return@withContext SolidResult.Failure(SolidError.fromHttp(401))
-                                }
-                                requireAuth().getLastTokenResponse(webId, forceRefresh = true)
-                                didForceRefresh = true
+                    response.code == 401 -> {
+                        val wwwAuth = response.header(HTTPHeaderName.WWW_AUTHENTICATE) ?: ""
+                        response.close()
+                        val isNonceChallenge = wwwAuth.contains("use_dpop_nonce", true) &&
+                            !wwwAuth.contains("invalid_token", true) &&
+                            !wwwAuth.contains("expired_token", true)
+                        if (!isNonceChallenge) {
+                            if (didForceRefresh) {
+                                return@withContext SolidResult.Failure(SolidError.fromHttp(401))
                             }
+                            requireAuth().getLastTokenResponse(webId, forceRefresh = true)
+                            didForceRefresh = true
                         }
+                    }
 
-                        else -> {
-                            val detail = response.body?.string()?.take(BODY_EXCERPT)
-                            response.close()
-                            return@withContext SolidResult.Failure(SolidError.fromHttp(response.code, detail))
-                        }
+                    else -> {
+                        val detail = response.body?.string()?.take(BODY_EXCERPT)
+                        response.close()
+                        return@withContext SolidResult.Failure(SolidError.fromHttp(response.code, detail))
                     }
                 }
-                SolidResult.Failure(SolidError.fromHttp(lastCode.takeIf { it != 0 } ?: 500, "streaming GET: retries exhausted"))
-            } catch (e: Exception) {
-                solidFailure(e)
             }
+            SolidResult.Failure(SolidError.fromHttp(lastCode.takeIf { it != 0 } ?: 500, "streaming GET: retries exhausted"))
+        } catch (e: Exception) {
+            solidFailure(e)
         }
+    }
 
     suspend fun putStream(
         webId: String,
@@ -543,13 +575,13 @@ internal class SolidHttpClient(
                     putAll(buildAuthHeaders(webId, "PUT", uri.toString()))
                     if (ifMatch != null) put(HTTPHeaderName.IF_MATCH, if (ifMatch == "*") "*" else "\"$ifMatch\"")
                 }
-                val request = Request.Builder()
+                val request = Request
+                    .Builder()
                     .url(encodeUri(uri).toString())
                     .apply {
                         headers.forEach { (k, v) -> addHeader(k, v) }
                         put(requestBody)
-                    }
-                    .build()
+                    }.build()
                 val response = httpClient.newCall(request).execute()
                 val code = response.code
                 val wwwAuth = response.header(HTTPHeaderName.WWW_AUTHENTICATE) ?: ""
@@ -591,7 +623,10 @@ internal class SolidHttpClient(
         }
     }
 
-    private fun streamingResourceFrom(uri: URI, response: Response): StreamingResource {
+    private fun streamingResourceFrom(
+        uri: URI,
+        response: Response,
+    ): StreamingResource {
         val body = response.body
             ?: run {
                 response.close()
@@ -605,6 +640,15 @@ internal class SolidHttpClient(
 
     private fun <T> solidFailure(e: Throwable): SolidResult<T> {
         if (e is kotlinx.coroutines.CancellationException) throw e
+        if (e is IOException) {
+            Telemetry.log("solid.http failed: ${e.javaClass.simpleName}: ${e.message}")
+        } else {
+            Telemetry.recordException(
+                e,
+                TelemetryAttribute.OPERATION to "solid.http",
+                TelemetryAttribute.ERROR_TYPE to e.javaClass.simpleName,
+            )
+        }
         return SolidResult.Failure(SolidError.fromThrowable(e))
     }
 
@@ -628,8 +672,17 @@ internal class SolidHttpClient(
         while (true) {
             val attachAuth = sameOrigin(uri, currentUri)
             val response = sendWithAuthRetry(
-                currentMethod, webId, currentUri, contentType, accept, linkHeader,
-                currentBody, ifMatch, ifUnmodifiedSince, ifNoneMatchStar, additionalHeaders,
+                currentMethod,
+                webId,
+                currentUri,
+                contentType,
+                accept,
+                linkHeader,
+                currentBody,
+                ifMatch,
+                ifUnmodifiedSince,
+                ifNoneMatchStar,
+                additionalHeaders,
                 attachAuth,
             )
 
@@ -684,8 +737,8 @@ internal class SolidHttpClient(
 
             val wwwAuth = response.headers[HTTPHeaderName.WWW_AUTHENTICATE] ?: ""
             val isPureNonceChallenge = wwwAuth.contains("use_dpop_nonce", ignoreCase = true) &&
-                    !wwwAuth.contains("invalid_token", ignoreCase = true) &&
-                    !wwwAuth.contains("expired_token", ignoreCase = true)
+                !wwwAuth.contains("invalid_token", ignoreCase = true) &&
+                !wwwAuth.contains("expired_token", ignoreCase = true)
 
             if (isPureNonceChallenge) {
                 return@repeat
@@ -703,15 +756,20 @@ internal class SolidHttpClient(
         return lastResponse!!
     }
 
-    internal fun redirectTarget(response: SolidRawResponse, from: URI): URI? {
+    internal fun redirectTarget(
+        response: SolidRawResponse,
+        from: URI,
+    ): URI? {
         if (response.statusCode !in REDIRECT_CODES) return null
         val location = response.headers[HTTPHeaderName.LOCATION]?.takeIf { it.isNotBlank() } ?: return null
         return runCatching { from.resolve(location) }.getOrNull()
     }
 
-    internal fun sameOrigin(a: URI, b: URI): Boolean =
-        a.scheme.equals(b.scheme, ignoreCase = true) &&
-                a.authority.equals(b.authority, ignoreCase = true)
+    internal fun sameOrigin(
+        a: URI,
+        b: URI,
+    ): Boolean = a.scheme.equals(b.scheme, ignoreCase = true) &&
+        a.authority.equals(b.authority, ignoreCase = true)
 
     internal companion object {
         const val MAX_AUTH_ATTEMPTS = 3
@@ -742,7 +800,7 @@ internal class SolidHttpClient(
     private suspend fun buildAuthHeaders(
         webId: String,
         method: String,
-        uri: String
+        uri: String,
     ): Map<String, String> {
         val authenticator = requireAuth()
         authenticator.getLastTokenResponse(webId)
@@ -750,11 +808,10 @@ internal class SolidHttpClient(
         return authenticator.getAuthHeaders(webId, method, uri)
     }
 
-    private fun requireAuth(): AuthSession =
-        auth ?: throw IllegalStateException(
-            "An authenticated session is required for CRUD operations. " +
-                    "Construct SolidHttpClient with an AuthSession instance."
-        )
+    private fun requireAuth(): AuthSession = auth ?: throw IllegalStateException(
+        "An authenticated session is required for CRUD operations. " +
+            "Construct SolidHttpClient with an AuthSession instance.",
+    )
 }
 
 private class StreamingRequestBody(
@@ -763,7 +820,6 @@ private class StreamingRequestBody(
     private val onProgress: ((Long, Long?) -> Unit)?,
     private val openSource: () -> InputStream,
 ) : RequestBody() {
-
     override fun contentType(): MediaType? = contentType.toMediaTypeOrNull()
 
     override fun contentLength(): Long = length
