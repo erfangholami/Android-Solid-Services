@@ -34,7 +34,6 @@ jakartaJson = "2.0.1"
 lifecycleRuntime = "2.11.0"
 vanniktechMavenPublish = "0.36.0"
 jjwt = "0.13.0"
-binaryCompatibilityValidator = "0.18.1"
 robolectric = "4.16.1"
 mockito = "5.23.0"
 orgJson = "20260719"
@@ -143,6 +142,5 @@ google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
-kotlinx-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }
 
 [bundles]

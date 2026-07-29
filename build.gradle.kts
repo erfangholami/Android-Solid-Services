@@ -18,12 +18,13 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.google.hilt.android) apply false
     alias(libs.plugins.vanniktech.maven.publish) apply false
-    alias(libs.plugins.kotlinx.binary.compatibility.validator)
 }
 
-apiValidation {
-    ignoredProjects += setOf("app")
-}
+// No public-API guard is configured. binary-compatibility-validator was removed because it
+// registers no tasks under AGP 9: it hooks on the standalone Kotlin Android plugin, which AGP
+// replaces with KotlinBaseApiPlugin and refuses to let you apply. KGP's own ABI validation is
+// blocked by the same gap — finalizeAndroidVariant() needs a KotlinTarget that AGP-driven
+// Kotlin never registers, so its dumps come out empty.
 
 tasks.register("clean", Delete::class) {
     delete(project.layout.buildDirectory)
