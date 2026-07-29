@@ -10,6 +10,13 @@ on:
       - 'docs/**'
       - 'mkdocs.yml'
       - 'docs-requirements.txt'
+      # The API reference is generated from the published libraries' sources, so a change
+      # to any of them makes the deployed docs stale.
+      - 'Shared/src/main/**'
+      - 'api/src/main/**'
+      - 'client/src/main/**'
+      - '**/build.gradle.kts'
+      - 'gradle/libs.versions.toml'
   workflow_dispatch:
 
 permissions:
@@ -20,6 +27,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Writes the Dokka HTML into docs/api, which mkdocs.yml already navigates to. The
+      # directory is gitignored and only ever exists inside a build.
+      - name: Generate API reference
+        run: >-
+          ./gradlew dokkaToDocs
+          -Dorg.gradle.java.installations.auto-detect=false
+          -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
 
       - uses: actions/setup-python@v5
         with:

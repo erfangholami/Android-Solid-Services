@@ -218,6 +218,10 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: ignore
 
+      # Catches broken KDoc here rather than when Deploy Docs runs on main.
+      - name: Build API reference
+        run: ./gradlew dokkaGeneratePublicationHtml $GRADLE_ARGS
+
   instrumented:
     name: Instrumented tests
     runs-on: ubuntu-latest

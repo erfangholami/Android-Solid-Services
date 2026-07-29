@@ -37,6 +37,7 @@ jjwt = "0.13.0"
 robolectric = "4.16.1"
 mockito = "5.23.0"
 orgJson = "20260719"
+dokka = "2.2.0"
 spotless = "7.0.4"
 ktlint = "1.6.0"
 detekt = "1.23.8"
@@ -146,6 +147,7 @@ google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
 
+jetbrains-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 diffplug-spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 

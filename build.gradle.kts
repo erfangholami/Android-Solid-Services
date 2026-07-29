@@ -20,6 +20,30 @@ plugins {
     alias(libs.plugins.vanniktech.maven.publish) apply false
     alias(libs.plugins.diffplug.spotless) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.jetbrains.dokka)
+}
+
+// API reference for the three published libraries, aggregated into one site.
+// `app` is excluded: it ships no public API.
+//   ./gradlew dokkaGeneratePublicationHtml   -> build/dokka/html
+dependencies {
+    dokka(project(":Shared"))
+    dokka(project(":api"))
+    dokka(project(":client"))
+}
+
+dokka {
+    moduleName.set("Android Solid Services")
+}
+
+// Stages the generated API reference where MkDocs expects it (mkdocs.yml already navigates to
+// api/index.html). Sync rather than Copy so removed declarations do not linger. The output is
+// generated, not committed — see .gitignore.
+tasks.register<Sync>("dokkaToDocs") {
+    description = "Generates the API reference into docs/api for the MkDocs site."
+    group = "documentation"
+    from(tasks.named("dokkaGeneratePublicationHtml"))
+    into(layout.projectDirectory.dir("docs/api"))
 }
 
 // No public-API guard is configured. binary-compatibility-validator was removed because it
