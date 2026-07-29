@@ -14,3 +14,8 @@ local.properties
 /app/build
 # Generated API reference (./gradlew dokkaToDocs) — built in CI, never committed
 /docs/api/
+
+# Firebase CLI working files. firebase.json exists only so `firebase login:use` binds an
+# account to this directory instead of globally; .firebaserc pins the default project.
+/.firebaserc
+/firebase.json
