@@ -18,6 +18,9 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.google.hilt.android) apply false
     alias(libs.plugins.vanniktech.maven.publish) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+    alias(libs.plugins.firebase.perf) apply false
     alias(libs.plugins.diffplug.spotless) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.jetbrains.dokka)

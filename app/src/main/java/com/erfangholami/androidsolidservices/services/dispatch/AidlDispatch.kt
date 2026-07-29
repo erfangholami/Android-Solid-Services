@@ -5,6 +5,9 @@ import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
+import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -32,29 +35,52 @@ fun <T> SolidResult<T>.handle(
     }
 }
 
+private fun beginAttributedCall(): String {
+    val caller = CallerAttribution.currentCaller()
+    Telemetry.setKey(TelemetryAttribute.CALLING_APP, caller)
+    return caller
+}
+
 fun <T> CoroutineScope.dispatchNetwork(
     dispatcher: CoroutineDispatcher,
     onError: (Int, String) -> Unit,
     onSuccess: (T) -> Unit,
     block: suspend () -> SolidResult<T>,
-): Job = launch(dispatcher) { block().handle(onSuccess, onError) }
+): Job {
+    beginAttributedCall()
+    return launch(dispatcher) { block().handle(onSuccess, onError) }
+}
 
 fun CoroutineScope.dispatchUnit(
     dispatcher: CoroutineDispatcher,
     onError: (Int, String) -> Unit,
     onResult: () -> Unit,
     block: suspend () -> SolidResult<Unit>,
-): Job = launch(dispatcher) { block().handle({ onResult() }, onError) }
+): Job {
+    beginAttributedCall()
+    return launch(dispatcher) { block().handle({ onResult() }, onError) }
+}
 
 fun <T : Parcelable> CoroutineScope.dispatchDataModule(
     dispatcher: CoroutineDispatcher,
     onError: (Int, String) -> Unit,
     onSuccess: (T?) -> Unit,
     block: suspend () -> SolidResult<T>,
-): Job = launch(dispatcher) {
-    try {
-        block().handle(onSuccess, onError)
-    } catch (t: Throwable) {
-        onError(ExceptionsErrorCode.UNKNOWN, t.message ?: t.toString())
+): Job {
+    val caller = beginAttributedCall()
+    return launch(dispatcher) {
+        try {
+            block().handle(onSuccess, onError)
+        } catch (c: CancellationException) {
+            throw c
+        } catch (t: Throwable) {
+            Telemetry.recordException(
+                t,
+                TelemetryAttribute.OPERATION to "aidl.dataModule",
+                TelemetryAttribute.ERROR_TYPE to t.javaClass.simpleName,
+                TelemetryAttribute.CALLING_APP to caller,
+            )
+            onError(ExceptionsErrorCode.UNKNOWN, t.message ?: t.toString())
+        }
     }
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "15040566580",
+    "project_id": "solid-services-503813",
+    "storage_bucket": "solid-services-503813.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:15040566580:android:cac53bfa68baf6d492c161",
+        "android_client_info": {
+          "package_name": "com.erfangholami.androidsolidservices"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5NtTynuu9s7grnBxWJDxVs838w-0gW6M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

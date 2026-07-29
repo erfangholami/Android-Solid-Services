@@ -8,6 +8,39 @@ Correctness and data-integrity hardening on top of the in-progress 0.6.0 contact
 a **unified result/error model** that replaces the library's six historical error idioms. The
 result-type change is **source-breaking** for SDK consumers (pre-1.0); the rest is behaviour-only.
 
+### Added
+
+- **Crash reporting and performance monitoring.** The app now ships Firebase Crashlytics and
+  Firebase Performance Monitoring, and the libraries are instrumented to feed them — without taking
+  on a Firebase dependency themselves.
+  - **`shared.telemetry` is the seam.** `api`, `client` and `Shared` emit through a `Telemetry`
+    facade backed by a `TelemetrySink` interface (`TelemetrySpan`, `TelemetryNetworkSpan`). Until a
+    host application calls `Telemetry.install(...)`, every call is a no-op: the published artifacts
+    gain no monitoring dependency, and nothing is collected or transmitted. Third-party apps
+    embedding the SDK can install their own sink (Sentry, OpenTelemetry, logs) and get the same
+    signals. A sink that throws is isolated — it can never fail the pod operation it observes.
+  - **The app installs the Firebase bridge** (`FirebaseTelemetrySink`) from `ASSApplication`.
+    Reported: uncaught crashes; non-fatals for exceptions `AidlDispatch` would otherwise swallow at
+    the IPC boundary, for non-transport request faults, and for terminal token-refresh failures —
+    the silent-logout path behind the `invalid_grant` investigation, tagged with the OIDC error code
+    and issuer host; spans for HTTP requests, token refresh, and `client` IPC bind latency.
+  - **Pod URLs never leave the device.** A Solid pod URL's path names the user's containers and
+    resources, so network spans report the origin (`scheme://host[:port]`) only, and Firebase
+    Performance's automatic OkHttp instrumentation — which would capture complete URLs — is turned
+    off via `firebasePerformanceInstrumentationEnabled=false`. App-start and screen-render traces are
+    unaffected. Firebase Analytics is not included. Transport failures (offline, connection reset)
+    are breadcrumbs rather than non-fatals, so a device losing signal does not generate hundreds of
+    identical reports.
+  - **Failures are attributed to the integrating app.** Every report carries a `calling_app` key
+    naming the application whose IPC call was being serviced (`self` for in-app work), resolved from
+    `Binder.getCallingUid()` on the binder thread before the work moves to a coroutine. Since `api`
+    executes inside the ASS process, a third-party app driving the SDK over IPC produces reports in
+    the ASS Firebase project tagged with that app's package name.
+  - **Collection is release-only.** Debug builds initialise Firebase but gather nothing: the
+    `firebase_*_collection_enabled` manifest flags are `false` and `BuildConfig.TELEMETRY_ENABLED`
+    keeps the no-op sink in place, so no pod activity from a development device reaches Firebase.
+    See [docs/monitoring.md](docs/monitoring.md).
+
 ### Changed (breaking)
 
 - **One result type everywhere: `SolidResult<T>` + `SolidError`.** Every public operation across

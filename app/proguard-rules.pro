@@ -10,6 +10,12 @@
 #
 # Keep line-number info so release crash reports deobfuscate against the generated mapping.txt,
 # while still obfuscating the original .kt file names. Remove these two lines if deobfuscatable
-# stack traces are not needed.
+# stack traces are not needed. Crashlytics requires both to symbolicate uploaded reports.
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
+
+# Crashlytics groups non-fatals by exception class name, so keep the names of the exception types
+# the SDK reports (SharingException, SolidException and the rest) readable in the console.
+# Scoped to this project and -keepnames rather than -keep: an unqualified rule also pins ~260
+# unrelated library exceptions, and -keep would block shrinking of the ones that go unused.
+-keepnames class com.erfangholami.androidsolidservices.** extends java.lang.Exception

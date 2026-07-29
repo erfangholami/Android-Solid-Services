@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.google.hilt.android)
     alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.firebase.perf)
 }
 
 android {
@@ -46,6 +49,9 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            manifestPlaceholders["crashlyticsEnabled"] = true
+            manifestPlaceholders["performanceEnabled"] = true
+            buildConfigField("boolean", "TELEMETRY_ENABLED", "true")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -56,6 +62,9 @@ android {
         }
         debug {
             isMinifyEnabled = false
+            manifestPlaceholders["crashlyticsEnabled"] = false
+            manifestPlaceholders["performanceEnabled"] = false
+            buildConfigField("boolean", "TELEMETRY_ENABLED", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -163,6 +172,10 @@ dependencies {
     implementation(libs.androidx.work.gcm)
     androidTestImplementation(libs.androidx.work.testing)
     implementation(libs.androidx.work.multiProcess)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.performance)
 
     //Testing
     androidTestImplementation(libs.androidx.test.ext.junit)

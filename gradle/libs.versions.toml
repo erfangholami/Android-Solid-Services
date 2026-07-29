@@ -37,6 +37,10 @@ jjwt = "0.13.0"
 robolectric = "4.16.1"
 mockito = "5.23.0"
 orgJson = "20260719"
+firebaseBom = "34.16.0"
+googleServices = "4.5.0"
+firebaseCrashlyticsPlugin = "3.0.7"
+firebasePerfPlugin = "2.0.2"
 dokka = "2.2.0"
 spotless = "7.0.4"
 ktlint = "1.6.0"
@@ -114,6 +118,12 @@ titanium-json-ld-jre8 = { group = "com.apicatalog", name = "titanium-json-ld-jre
 glassfish-jakarta-json = { group = "org.glassfish", name = "jakarta.json", version.ref = "jakartaJson" }
 
 
+#Firebase — app module only; the published libraries stay Firebase-free and report through
+#shared.telemetry instead (see Telemetry / TelemetrySink).
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
+firebase-performance = { group = "com.google.firebase", name = "firebase-perf" }
+
 io-jsonwebtoken-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
 io-jsonwebtoken-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
 io-jsonwebtoken-orgjson = { group = "io.jsonwebtoken", name = "jjwt-orgjson", version.ref = "jjwt" }
@@ -144,6 +154,9 @@ android-library = { id = "com.android.library", version.ref = "android" }
 google-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "googleDagger" }
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
 
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
 
