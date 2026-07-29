@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>FunctionOnlyReturningConstant:ManagerModule.kt$ManagerModule$@Provides @Singleton @Named(Constants.ASS_ACCOUNT_NAME) fun provideASSAccountName(): String</ID>
+    <ID>LongMethod:Login.kt$@Composable private fun LoginContent( errorMessage: String?, onLoginInrupt: () -&gt; Unit, onLoginSolidCommunity: () -&gt; Unit, onLoginCustomUrl: (String) -&gt; Unit, )</ID>
+    <ID>LongMethod:Main.kt$@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class) @Composable fun Main( navController: NavController, viewModel: MainViewModel, )</ID>
+    <ID>LongMethod:MainPage.kt$@Composable fun MainPage( navController: NavController, )</ID>
+    <ID>LongMethod:ProfileSelectionActivity.kt$@Composable private fun ProfileSelectionScreen( callerName: String, callerIcon: Bitmap?, profiles: List&lt;SolidAccount&gt;, onProfileSelected: (String) -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
+    <ID>LongMethod:Setting.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun Setting( navController: NavController, viewModel: SettingViewModel, )</ID>
+    <ID>UnusedParameter:AccessGrants.kt$navController: NavController</ID>
+    <ID>UnusedParameter:FirebaseTelemetryInstaller.kt$context: Context</ID>
+    <ID>UnusedParameter:Main.kt$navController: NavController</ID>
+  </CurrentIssues>
+</SmellBaseline>

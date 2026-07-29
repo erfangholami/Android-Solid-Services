@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:InboxReader.kt$InboxReader$private suspend fun parseAsNotification( webId: String, itemUri: URI, profileCache: MutableMap&lt;String, WebId?&gt;, ): ShareNotification?</ID>
+    <ID>CyclomaticComplexMethod:NTriples.kt$NTriples$private fun readLiteral(line: String, start: Int, base: URI?): Pair&lt;ObjTerm, Int&gt;</ID>
+    <ID>CyclomaticComplexMethod:SharingManagerHelper.kt$SharingManagerHelper$suspend fun setShareModesForReceiver( webId: String, podRoot: String, resourceUri: String, receiver: ShareReceiver, modes: Set&lt;ShareMode&gt;, createdAt: String?, )</ID>
+    <ID>LargeClass:SolidHttpClient.kt$SolidHttpClient</ID>
+    <ID>LongMethod:NotificationsManagerImplementation.kt$NotificationsManagerImplementation$override suspend fun compactInbox( webId: String, olderThanIso: String?, ): SolidResult&lt;Int&gt;</ID>
+    <ID>LongMethod:TokenRefreshCoordinator.kt$TokenRefreshCoordinator$suspend fun checkTokenAndRefresh( webId: String, profile: Profile, forceRefresh: Boolean = false, ): Profile</ID>
+    <ID>LongParameterList:SolidHttpClient.kt$SolidHttpClient$( method: String, webId: String, uri: URI, contentType: String?, accept: String?, linkHeader: String?, body: ByteArray?, ifMatch: String?, ifUnmodifiedSince: String?, ifNoneMatchStar: Boolean, additionalHeaders: Map&lt;String, String&gt;, attachAuth: Boolean, )</ID>
+    <ID>LongParameterList:SolidTicketsDataModuleHelper.kt$SolidTicketsDataModuleHelper$( ownerWebId: String, storage: String?, newTicket: NewTicket, artifact: ByteArray?, artifactContentType: String?, images: NewTicketImages?, isPrivate: Boolean, container: String?, )</ID>
+    <ID>LoopWithTooManyJumpStatements:InruptAcrJson.kt$InruptAcrJson$for</ID>
+    <ID>ReturnCount:AuthenticatorImplementation.kt$AuthenticatorImplementation$override suspend fun submitAuthorizationResponse(responseData: Intent?): String?</ID>
+    <ID>SwallowedException:IdTokenClaims.kt$IdTokenClaims$ex: Exception</ID>
+    <ID>ThrowsCount:NotificationsManagerImplementation.kt$NotificationsManagerImplementation$private fun InboxPostResult.requireSuccess(targetWebId: String)</ID>
+    <ID>TooGenericExceptionThrown:WebIdResolver.kt$WebIdResolver$throw Exception("Could not resolve WebID '$webIdUri'. HTTP ${response.statusCode}")</ID>
+    <ID>UseCheckOrError:AuthenticatorImplementation.kt$AuthenticatorImplementation$throw IllegalStateException("No token available for $webId. Call getLastTokenResponse first.")</ID>
+    <ID>UseRequire:DPoPGenerator.kt$DPoPGenerator$throw IllegalArgumentException("Configuration doesn't support DPoP")</ID>
+  </CurrentIssues>
+</SmellBaseline>

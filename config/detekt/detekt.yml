@@ -1,0 +1,96 @@
+build:
+  maxIssues: 0
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+comments:
+  active: true
+  # The repo's comment policy is "public-API KDoc only", enforced by review rather
+  # than by detekt; enabling these would flag every internal declaration.
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
+
+complexity:
+  LongMethod:
+    active: true
+    threshold: 80
+    excludes: ['**/test/**', '**/androidTest/**']
+  LongParameterList:
+    active: true
+    functionThreshold: 8
+    constructorThreshold: 12
+    ignoreAnnotated: ['Composable']
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 30
+    thresholdInClasses: 30
+    thresholdInInterfaces: 30
+    ignorePrivate: true
+    ignoreOverridden: true
+    excludes: ['**/test/**', '**/androidTest/**']
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 20
+  NestedBlockDepth:
+    active: true
+    threshold: 6
+
+exceptions:
+  # `api` deliberately catches broadly to convert any failure into the sealed
+  # SolidNetworkResponse.Exception / DataModuleResult types, and dispatches on the
+  # exception type inside those catches. Both rules fight that design rather than
+  # finding defects, so they stay off instead of being baselined.
+  TooGenericExceptionCaught:
+    active: false
+  InstanceOfCheckForException:
+    active: false
+  SwallowedException:
+    active: true
+    ignoredExceptionTypes: ['InterruptedException', 'CancellationException']
+  ThrowingExceptionsWithoutMessageOrCause:
+    active: false
+
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][_A-Z0-9]*'
+
+performance:
+  SpreadOperator:
+    active: false
+
+style:
+  # ktlint owns formatting; leaving these on double-reports every violation.
+  MaxLineLength:
+    active: false
+  MagicNumber:
+    active: false
+  ReturnCount:
+    active: true
+    max: 6
+    excludeGuardClauses: true
+  ThrowsCount:
+    active: true
+    max: 4
+  UnusedPrivateMember:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+  ForbiddenComment:
+    active: true
+    comments:
+      - reason: 'Forbidden FIXME marker — resolve or convert to a tracked issue.'
+        value: 'FIXME:'
+    excludes: ['**/test/**', '**/androidTest/**']
+  DestructuringDeclarationWithTooManyEntries:
+    active: true
+    maxDestructuringEntries: 4

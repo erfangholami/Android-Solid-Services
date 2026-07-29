@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>FunctionOnlyReturningConstant:SolidNonRDFResource.kt$SolidNonRDFResource$public fun getCreatedTime(): Long?</ID>
+    <ID>LargeClass:TicketRDF.kt$TicketRDF : SolidRDFResource</ID>
+    <ID>TooManyFunctions:ContactRDF.kt$ContactRDF : SolidRDFResource</ID>
+    <ID>TooManyFunctions:IriUtils.kt$IriUtils</ID>
+    <ID>UnusedParameter:TicketRDF.kt$TicketRDF$mode: TransportMode</ID>
+  </CurrentIssues>
+</SmellBaseline>
