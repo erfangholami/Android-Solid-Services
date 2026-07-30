@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId = "com.erfangholami.androidsolidservices"
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 36
         versionCode = 10
         versionName = "0.6.0"
 
