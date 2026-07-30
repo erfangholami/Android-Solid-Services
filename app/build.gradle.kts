@@ -177,7 +177,6 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.work.rxJava2)
-    implementation(libs.androidx.work.gcm)
     androidTestImplementation(libs.androidx.work.testing)
     implementation(libs.androidx.work.multiProcess)
 
