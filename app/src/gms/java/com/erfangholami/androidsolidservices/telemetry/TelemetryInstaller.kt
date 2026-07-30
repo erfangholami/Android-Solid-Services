@@ -10,7 +10,7 @@ import com.google.firebase.perf.FirebasePerformance
 
 private const val TAG = "Telemetry"
 
-fun installFirebaseTelemetry(context: Context) {
+fun installTelemetry(context: Context) {
     val firebaseApp = runCatching { FirebaseApp.getInstance() }.getOrNull()
     if (firebaseApp == null) {
         Log.w(TAG, "Firebase default app failed to initialise — telemetry stays disabled")

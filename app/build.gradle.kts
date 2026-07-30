@@ -33,6 +33,14 @@ android {
         manifestPlaceholders["appAuthRedirectScheme"] = "com.erfangholami.androidsolidservices"
     }
 
+    // `foss` carries no Firebase or Google Play Services dependency, because F-Droid rejects
+    // apps containing proprietary analytics outright. `gms` is what ships to Google Play.
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("gms") { dimension = "distribution" }
+        create("foss") { dimension = "distribution" }
+    }
+
     fun credential(
         property: String,
         environment: String,
@@ -105,6 +113,20 @@ android {
         }
     }
 }
+
+// The Google plugins register a task per variant and cannot be applied per flavour, so they also
+// run for `foss` — where google-services.json deliberately does not exist and there is no Firebase
+// SDK to read the resources or consume the mapping upload. Disabling their foss tasks keeps the
+// plugins applied for `gms` without leaking a Firebase config into the F-Droid build.
+tasks
+    .matching { task ->
+        task.name.contains("Foss") &&
+            (
+                task.name.endsWith("GoogleServices") ||
+                    task.name.contains("Crashlytics") ||
+                    task.name.contains("FirebasePerf")
+            )
+    }.configureEach { enabled = false }
 
 kotlin {
     compilerOptions {
@@ -180,9 +202,10 @@ dependencies {
     androidTestImplementation(libs.androidx.work.testing)
     implementation(libs.androidx.work.multiProcess)
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.performance)
+    // Firebase reaches only the gms flavour; foss must stay free of it to be F-Droid-eligible.
+    "gmsImplementation"(platform(libs.firebase.bom))
+    "gmsImplementation"(libs.firebase.crashlytics)
+    "gmsImplementation"(libs.firebase.performance)
 
     //Testing
     androidTestImplementation(libs.androidx.test.ext.junit)

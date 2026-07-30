@@ -113,7 +113,8 @@ jobs:
           :Shared:testDebugUnitTest
           :api:testDebugUnitTest
           :client:testDebugUnitTest
-          :app:testDebugUnitTest
+          :app:testFossDebugUnitTest
+          :app:testGmsDebugUnitTest
           $GRADLE_ARGS
 
       - name: Upload test reports
@@ -153,7 +154,8 @@ jobs:
           :Shared:lintDebug
           :api:lintDebug
           :client:lintDebug
-          :app:lintDebug
+          :app:lintFossDebug
+          :app:lintGmsDebug
           $GRADLE_ARGS
 
       - name: Collect Lint SARIF
@@ -205,7 +207,8 @@ jobs:
       - name: Assemble
         run: >-
           ./gradlew
-          :app:assembleDebug
+          :app:assembleFossDebug
+          :app:assembleGmsDebug
           :Shared:assembleDebug
           :api:assembleDebug
           :client:assembleDebug
@@ -215,7 +218,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/*/debug/*.apk
           if-no-files-found: ignore
 
       # Catches broken KDoc here rather than when Deploy Docs runs on main.
@@ -260,7 +263,15 @@ jobs:
           target: default
           arch: x86_64
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest $GRADLE_ARGS
+          # Named per module: :app has flavours, so connectedDebugAndroidTest no longer
+          # exists there and a bare task name would silently skip it.
+          script: >-
+            ./gradlew
+            :Shared:connectedDebugAndroidTest
+            :api:connectedDebugAndroidTest
+            :client:connectedDebugAndroidTest
+            :app:connectedFossDebugAndroidTest
+            $GRADLE_ARGS
 
       - name: Upload instrumented test reports
         if: always()
