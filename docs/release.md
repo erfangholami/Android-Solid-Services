@@ -10,6 +10,75 @@ Library versions are published to Maven Central:
 
 ---
 
+## v0.6.0 — July 2026
+
+Tickets, WebID profiles, streaming and live notifications, on a unified result type. Adds crash
+reporting on the Play build and a Firebase-free build for F-Droid. **Source-breaking** for SDK
+consumers (the project is pre-1.0 and unstable).
+
+### New — Tickets
+
+- Store passes and reservations on a pod, with full `.pkpass` parity — pass identity and
+  web-service block, beacons, relevancy interval, colours and rich detail fields — plus BCBP
+  coverage for boarding passes.
+- Pass images live in per-ticket sub-containers; colours are cached on index rows so a wallet list
+  paints from a single GET.
+
+### New — Profiles, streaming and live updates
+
+- **WebID profile API**: read a profile (merging linked documents), update name fields, set an avatar.
+- **Streaming read/write with progress**, so large files no longer buffer entirely in memory.
+- **Live resource notifications** over `WebSocketChannel2023`, exposed as a lifecycle-scoped `Flow`
+  alongside the existing inbox polling.
+
+### New — Monitoring and distribution
+
+- Crash reporting and performance monitoring on the **Google Play build**, through a `TelemetrySink`
+  seam in `Shared`. The published libraries take on no monitoring dependency and stay silent until a
+  host app installs a sink — you can plug in your own (Sentry, OpenTelemetry, logs).
+- Network spans report the **origin only** (`scheme://host[:port]`), never pod paths. See the
+  [Privacy Policy](privacy.md).
+- A **FOSS build flavour** with no Firebase or Play Services, for F-Droid.
+
+### Improvements
+
+- **One result type**: every API returns `SolidResult<T>` with a typed `SolidError` (machine code,
+  retryable), replacing six historical error idioms. **Breaking.**
+- **String IRIs** replace `URI` across the public API. **Breaking.**
+- The `client` SDK reaches **every `api` capability** over IPC — tickets, contacts, derived resource
+  verbs and streaming.
+- **Lost-update protection**: contact, group and ticket edits use conditional `If-Match` writes with
+  retry, falling back to weak ETags on servers like NSS.
+- New resource helpers — `exists`, `ensureContainer`, `probeAccess`.
+- Contacts gain instant-messaging handles, vCard `GEO` and `LANG`.
+- Type-index registration uses compare-and-swap instead of a blind write.
+- Narrowed the `api` consumer R8 rules: jjwt's implementation tree keeps only what is reached
+  reflectively instead of every member, so apps embedding `api` pin far less.
+- Build and tooling: ktlint and detekt in CI on every PR, a published
+  [API reference](api/index.html), `targetSdk` 36, AGP and SDK 37.
+
+### Bug fixes
+
+- **Login**: restored the lowercase Solid-OIDC `webid` scope and ID-token claim, and 303 redirects
+  are now followed when resolving a WebID.
+- **Sessions**: accounts issued no refresh token stay signed in until their access token actually
+  expires; expired sessions stay visible instead of silently disappearing.
+- **Sharing**: ACP grant/revoke fails fast instead of silently wiping co-shares; WAC surfaces
+  inherited access.
+- **Transport**: redirects re-sign DPoP per hop, PATCH negotiates its format, and pod storage is
+  discovered rather than assumed.
+- Fixed binary corruption over IPC; cancellation is no longer retried.
+
+---
+
+## v0.5.1 — June 2026
+
+### Improvements
+
+- The libraries ship consumer ProGuard rules, so minified apps need no keep rules of their own.
+
+---
+
 ## v0.5.0 — June 2026
 
 Headline release: **resource sharing** and a **Linked Data Notifications inbox**, plus a

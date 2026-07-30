@@ -2,124 +2,66 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.6.0] — July 2026
 
-Correctness and data-integrity hardening on top of the in-progress 0.6.0 contacts/tickets work, plus
-a **unified result/error model** that replaces the library's six historical error idioms. The
-result-type change is **source-breaking** for SDK consumers (pre-1.0); the rest is behaviour-only.
+Tickets, WebID profiles, streaming and live notifications, on a unified result type. Adds crash
+reporting on the Play build and a Firebase-free build for F-Droid. **Source-breaking** for SDK
+consumers (pre-1.0).
 
-### Added
+### Features
 
-- **Crash reporting and performance monitoring.** The app now ships Firebase Crashlytics and
-  Firebase Performance Monitoring, and the libraries are instrumented to feed them — without taking
-  on a Firebase dependency themselves.
-  - **`shared.telemetry` is the seam.** `api`, `client` and `Shared` emit through a `Telemetry`
-    facade backed by a `TelemetrySink` interface (`TelemetrySpan`, `TelemetryNetworkSpan`). Until a
-    host application calls `Telemetry.install(...)`, every call is a no-op: the published artifacts
-    gain no monitoring dependency, and nothing is collected or transmitted. Third-party apps
-    embedding the SDK can install their own sink (Sentry, OpenTelemetry, logs) and get the same
-    signals. A sink that throws is isolated — it can never fail the pod operation it observes.
-  - **The app installs the Firebase bridge** (`FirebaseTelemetrySink`) from `ASSApplication`.
-    Reported: uncaught crashes; non-fatals for exceptions `AidlDispatch` would otherwise swallow at
-    the IPC boundary, for non-transport request faults, and for terminal token-refresh failures —
-    the silent-logout path behind the `invalid_grant` investigation, tagged with the OIDC error code
-    and issuer host; spans for HTTP requests, token refresh, and `client` IPC bind latency.
-  - **Pod URLs never leave the device.** A Solid pod URL's path names the user's containers and
-    resources, so network spans report the origin (`scheme://host[:port]`) only, and Firebase
-    Performance's automatic OkHttp instrumentation — which would capture complete URLs — is turned
-    off via `firebasePerformanceInstrumentationEnabled=false`. App-start and screen-render traces are
-    unaffected. Firebase Analytics is not included. Transport failures (offline, connection reset)
-    are breadcrumbs rather than non-fatals, so a device losing signal does not generate hundreds of
-    identical reports.
-  - **Failures are attributed to the integrating app.** Every report carries a `calling_app` key
-    naming the application whose IPC call was being serviced (`self` for in-app work), resolved from
-    `Binder.getCallingUid()` on the binder thread before the work moves to a coroutine. Since `api`
-    executes inside the ASS process, a third-party app driving the SDK over IPC produces reports in
-    the ASS Firebase project tagged with that app's package name.
-  - **Collection is release-only.** Debug builds initialise Firebase but gather nothing: the
-    `firebase_*_collection_enabled` manifest flags are `false` and `BuildConfig.TELEMETRY_ENABLED`
-    keeps the no-op sink in place, so no pod activity from a development device reaches Firebase.
-    See [docs/monitoring.md](docs/monitoring.md).
+- **Tickets data module** — store passes and reservations on a pod, with full `.pkpass` parity
+  (identity and web-service block, beacons, relevancy, colours, rich detail fields) and BCBP
+  coverage. Pass images live in per-ticket sub-containers.
+- **WebID profile API** — read a profile (merging linked documents), update name fields, set an
+  avatar.
+- **Live resource notifications** — `WebSocketChannel2023` changes exposed as a lifecycle-scoped
+  `Flow`, alongside the existing inbox polling.
+- **Streaming read/write with progress**, so large files no longer buffer in memory.
+- **Full IPC parity** — the `client` SDK now reaches every `api` capability, including tickets,
+  contacts, derived resource verbs and streaming.
+- **Resource helpers** — `exists`, `ensureContainer` and `probeAccess` replace duplicated call sites.
+- **Contacts** gain instant-messaging handles, vCard `GEO` and `LANG`.
+- **Crash reporting and performance monitoring** on the Google Play build, via a `TelemetrySink`
+  seam in `Shared`. The libraries take on no monitoring dependency and stay silent until a host app
+  installs a sink. Network spans report the origin only, never pod paths.
+- **A FOSS build flavour** with no Firebase or Play Services, so the app can ship to F-Droid.
 
-### Changed (breaking)
+### Improvements
 
-- **One result type everywhere: `SolidResult<T>` + `SolidError`.** Every public operation across
-  `SolidResourceManager`, the contacts/tickets data modules, `SharingManager`, and
-  `NotificationsManager` now returns `SolidResult<T>` (= `Success(value)` | `Failure(SolidError)`)
-  instead of the former mix of `SolidNetworkResponse`, `DataModuleResult`, thrown `SharingException`,
-  nullable returns, and `Success(empty)`-on-failure. `SolidError` is a typed, sealed superset of every
-  failure — HTTP statuses (401/403/404/405/409/412/429/5xx/…), transport (network/timeout/TLS),
-  local (malformed/cancelled/not-authenticated), and the sharing/notification/access domain — each
-  carrying a machine `code` (`SolidErrorCode`), a `retryable` hint, the originating `httpStatus`, and
-  the `cause`. Callers now branch on `error.code` instead of parsing a status int or a prose string.
-  HTTP is classified in exactly one place (`SolidError.fromHttp`); throwables via
-  `SolidError.fromThrowable`; coroutine cancellation is never swallowed. `SolidResult` provides
-  `map`/`flatMap`/`fold`/`recover`/`getOrNull`/`errorOrNull`/`getOrThrow`. The legacy
-  `SolidNetworkResponse` and `DataModuleResult` types (and their transitional bridges) have been
-  **removed** — `SolidResult` is the sole result type.
+- **One result type.** Every API returns `SolidResult<T>` with a typed `SolidError` (machine code,
+  retryable), replacing six historical error idioms. **Breaking.**
+- **String IRIs** replace `URI` across the public API. **Breaking.**
+- **Lost-update protection** — contact, group and ticket edits use conditional `If-Match` writes with
+  retry, falling back to weak ETags on servers like NSS.
+- **Type-index registration** uses compare-and-swap instead of a blind write.
+- Narrowed the `api` consumer R8 rules: jjwt's implementation tree keeps only what is reached
+  reflectively instead of every member, so apps embedding `api` pin far less.
+- Sharing and authentication split into focused collaborators; the facades shrink substantially.
+- Pass colours cached on index rows, so the wallet list paints from a single GET.
+- Build and tooling: Spotless/ktlint and detekt with baselines, CI on every PR gating releases, a
+  published Dokka API reference, `targetSdk` 36, AGP and SDK 37, v3 signing. Drops `work-gcm` and
+  protobuf.
 
-### Fixed
+### Bug fixes
 
-- **Binary resources no longer corrupt over IPC**: `NonRDFResource` parcels its body as raw bytes
-  instead of round-tripping through a UTF-8 string, so images, PDFs, and `.pkpass` files survive AIDL
-  transport byte-for-byte. The ~1 MB binder limit is now documented on the type.
-- **Binary reads carry their metadata**: `SolidResourceManager.read(...)` on a non-RDF resource now
-  returns the server's response headers (ETag, `Content-Length`, `WAC-Allow`, …) instead of empty
-  metadata, so conditional requests and size/last-modified are available without a separate `HEAD`.
-- **Foreign RDF types are preserved**: the contacts/tickets/address-book/group codecs no longer strip
-  an `rdf:type` written by another application (e.g. `foaf:Person`) when re-serialising a document; a
-  new `RDFResource.ensureType(...)` appends the codec's own type without clobbering others.
-- **Safer contact/ticket deletes**: the pod resource is deleted first and the result is checked, then
-  the index row is removed — a failed delete now surfaces as a failure and leaves the index
-  consistent instead of reporting success and leaving a ghost row. `404`/`410` are treated as
-  already-deleted.
-- **Contact UID is preserved on update**: updating a contact without an explicit `uid` carries the
-  existing persistent identifier forward instead of erasing it.
-- **Valid `tel:` / `mailto:` IRIs**: phone numbers are stripped of RFC 3966 visual separators and
-  remaining illegal characters are percent-encoded, so ordinary formatted numbers no longer produce
-  malformed IRIs; a non-IRI contact UID is wrapped as `urn:uid:` and unwrapped on read.
-- **Correct date typing**: date-only values (birthday, anniversary, ticket/event dates) are typed
-  `xsd:date` rather than `xsd:dateTime`.
-- **URI encoding preserves reserved characters**: `encodeUri` / `encodeUriString` now rebuild from the
-  raw components and only percent-encode genuinely-illegal characters, so an identifier containing an
-  encoded `%2F` / `%23` is no longer corrupted; the operation is idempotent.
-- **Optimistic-concurrency cache correctness**: a `412 Precondition Failed` on write now invalidates
-  the response cache so a compare-and-swap retry reads fresh state; share-index patch retries add
-  randomised backoff, and a failed `updateShare` index write no longer revokes a receiver's existing
-  live access.
-- **Cancellation is honoured**: the response-cache single-flight follower and the contacts/tickets
-  result wrappers rethrow `CancellationException` instead of swallowing it (which previously let a
-  cancelled reader busy-spin).
-- **Notification impersonation gate hardened**: an inbound share offer is dropped unless its actor is
-  provably the resource owner; the bare "same host as the actor's WebID" fallback that let any user on
-  a shared multi-tenant pod forge an offer for another user's resource has been removed.
-- Tickets reject a blank title; blank seat parts are dropped; group documents are named by UUID rather
-  than a title-derived path (so a `#`/`/` in a group name can't corrupt the target URI). The
-  in-progress DPoP token-type check is now case-insensitive, matching the post-login path.
-
-### Internal
-
-- Library unit tests now run in CI (`.github/workflows/ci.yml`) and as a gate before release; added a
-  Robolectric + coroutines-test harness and ~40 new tests covering the fixes above.
-- **Test safety net for the untested core** — added ~40 more tests pinning the behaviour of the code
-  that grants access and moves bytes, all of which previously had zero coverage: `WacBackend` and
-  `AcpBackend` grant/revoke/list matrices (implied modes, owner re-assertion, append-only, container
-  inheritance, 412 retry) against an in-memory ACL/ACR pod that round-trips through the N-Triples
-  codec; `SolidHttpClient` over a real `MockWebServer` (DPoP-nonce retry, expired-token
-  force-refresh, conditional-write status, redirects, header propagation); the `createShare` index
-  write/rollback contract; the `ShareMode`/collapse logic; and the inbox access-request gate. Adds
-  `mockwebserver` + `mockito-core` test dependencies.
-- **Codec & server-quirk shields pinned** — round-trip/escaping tests for the RDF codecs that carry
-  user-controlled and cross-server data: `N3Patch` (literal escaping so a contact name/note can't
-  inject triples; N3 + SPARQL-Update rendering; `fromDiff`), the hand-rolled `NTriples` writer/parser
-  (typed/language/control-character literals, blank nodes, relative-IRI resolution), the `InruptAcrJson`
-  quirk parser (maps Inrupt's remote-`@context` ACR straight to ACP quads instead of an empty set, and
-  declines non-Inrupt bodies), and the `GivenSharesIndexRDF` reified-share/legacy-row reader. Adds an
-  `org.json` test dependency.
+- **Login** — restored the lowercase Solid-OIDC `webid` scope and ID-token claim, broken by a rename;
+  303 redirects are now followed when resolving a WebID.
+- **Sessions** — accounts issued no refresh token stay alive until their access token expires instead
+  of being dropped on the first forced refresh. Expired sessions remain visible via
+  `expiredProfilesFlow` rather than disappearing.
+- **Sharing** — ACP grant/revoke fails fast instead of silently wiping co-shares; WAC surfaces
+  inherited access.
+- **Transport** — redirects re-sign DPoP per hop, PATCH negotiates its format, pod storage is
+  discovered rather than assumed.
+- Binary IPC corruption and empty non-RDF metadata; cancellation is no longer treated as retryable.
 
 ## [0.5.1] — June 2026
 
-Added consumer and proguard rules. 
+### Improvements
+
+- Ship consumer ProGuard rules with the libraries, so minified apps need no keep rules of their own.
+- Add the app's own R8 rules.
 
 ## [0.5.0] — June 2026
 
