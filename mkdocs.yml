@@ -51,6 +51,7 @@ nav:
       - API Reference: api/index.html
       - Releases: release.md
       - Troubleshooting: troubleshooting.md
+      - Privacy Policy: privacy.md
 
 plugins:
   - search
