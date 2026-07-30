@@ -47,7 +47,7 @@ nav:
       - Architecture: architecture.md
       - The App: app.md
       - Monitoring: monitoring.md
-  - Reference:
+  - Documentation:
       - API Reference: api/index.html
       - Releases: release.md
       - Troubleshooting: troubleshooting.md

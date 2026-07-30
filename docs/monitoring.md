@@ -112,8 +112,9 @@ so release stack traces deobfuscate. It needs network access. To build a release
 ./gradlew :app:assembleRelease -x uploadCrashlyticsMappingFileRelease
 ```
 
-`app/proguard-rules.pro` keeps `SourceFile,LineNumberTable` and exception class names, which
-Crashlytics needs to symbolicate and group reports.
+`app/proguard-rules.pro` keeps `SourceFile,LineNumberTable`, which Crashlytics needs to
+symbolicate, and `-keepnames` the SDK's own exception classes, which is how Crashlytics groups
+non-fatals by type.
 
 ## Plugging in your own backend
 

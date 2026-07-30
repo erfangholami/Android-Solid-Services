@@ -107,10 +107,10 @@ sequenceDiagram
 
     App->>Client: resourceClient.read(url, MyNote::class.java)
     Client->>Binder: AIDL call: read(url, className)
-    Binder->>RM: resourceManager.read(webid, uri, clazz)
+    Binder->>RM: resourceManager.read(webId, uri, clazz)
     RM->>Pod: GET /data/note.ttl<br/>Authorization: DPoP …<br/>DPoP: <proof>
     Pod-->>RM: 200 OK  (Turtle body)
-    RM-->>Binder: SolidNetworkResponse.Success(note)
+    RM-->>Binder: SolidResult.Success(note)
     Binder-->>Client: AIDL callback: onResult(note)
     Client-->>App: returns MyNote
 ```
@@ -149,7 +149,7 @@ When your app calls `resourceClient.read(url, clazz)`, ASS:
 2. Refreshes it if expired (using the stored refresh token, plus a fresh DPoP proof when DPoP is in use).
 3. Issues a `GET` with the negotiated auth headers — `Authorization: DPoP` + a `DPoP` proof, or a plain `Authorization: Bearer`.
 4. Parses the response body (Turtle, JSON-LD, or raw bytes) into your data class.
-5. Returns `SolidNetworkResponse.Success(data)` or an error variant — never throws.
+5. Returns `SolidResult.Success(value)` or `SolidResult.Failure(error)` — never throws.
 
 For `update()` and `patch()`, passing an `ifMatch` ETag from a prior `head()` or `read()` adds conditional write protection: the server rejects the write with `412 Precondition Failed` if someone else changed the resource since you last read it.
 

@@ -104,10 +104,10 @@ You no longer call `updateDPoPNonce` or `getLastTokenResponse` — both were **r
 **Fix:** Re-read the resource to get the latest ETag and version, merge your changes, and retry:
 
 ```kotlin
-val latest = resourceManager.read(webid, uri, MyNote::class.java)
+val latest = resourceManager.read(webId, uri, MyNote::class.java)
     .getOrThrow()
 val merged = mergeChanges(latest, myChanges)
-resourceManager.update(webid, merged, ifMatch = latest.etag)
+resourceManager.update(webId, merged, ifMatch = latest.etag)
 ```
 
 ---
@@ -127,7 +127,7 @@ resourceManager.update(webid, merged, ifMatch = latest.etag)
 **Fix:** Use `head()` to inspect the `WAC-Allow` header before attempting a write:
 
 ```kotlin
-val meta = resourceManager.head(webid, uri).getOrNull()
+val meta = resourceManager.head(webId, uri).getOrNull()
 val allowed = meta?.wacAllow  // contains read/write/append/control booleans
 ```
 
@@ -171,9 +171,10 @@ If access should be granted, check the ACL/ACP policy on the pod server side.
 
 ---
 
-### `SharingException` on `createShare` / `revokeShare`
+### Sharing failures on `createShare` / `revokeShare`
 
-Common variants and what they mean:
+These now arrive as `SolidResult.Failure` with a typed `SolidError`, rather than a thrown
+`SharingException`. Common cases:
 
 - **`NoInbox`** — the target WebID advertises no `ldp:inbox`; the share succeeded but no notification was sent.
 - **`InboxUnauthorized` / `InboxForbidden`** — the receiver's inbox rejected the notification POST (401 / 403).

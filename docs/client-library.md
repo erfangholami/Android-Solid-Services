@@ -19,7 +19,7 @@ android {
     }
 }
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.5.0")
+    implementation("com.erfangholami.androidsolidservices:client:0.6.0")
 }
 ```
 
@@ -134,7 +134,7 @@ suspend fun <T : SolidResource> update(webId: String, resource: T, ifMatch: Stri
 
 // Apply an N3 Patch to an RDF resource — atomic partial update, no full read needed.
 // Preferred over update() when only a subset of triples changes.  (since 0.5.0)
-suspend fun patch(webId: String, uri: URI, patch: N3Patch)
+suspend fun patch(webId: String, uri: String, patch: N3Patch)
 
 // Delete a resource
 suspend fun <T : SolidResource> delete(webId: String, resource: T): T
@@ -143,7 +143,7 @@ suspend fun <T : SolidResource> delete(webId: String, resource: T): T
 suspend fun readContainer(webId: String, containerUrl: String): SolidContainer
 
 // Recursively delete a container and all of its contents (containerUri must end with '/')
-suspend fun deleteContainer(webId: String, containerUri: URI)
+suspend fun deleteContainer(webId: String, containerUri: String)
 ```
 
 !!! tip "N3 Patch & ETags over IPC (0.5.0)"

@@ -20,7 +20,7 @@ android {
     }
 }
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.5.0")
+    implementation("com.erfangholami.androidsolidservices:api:0.6.0")
 }
 ```
 
@@ -121,23 +121,31 @@ suspend fun removeAllProfiles()
 
 ## SolidResourceManager
 
-Performs authenticated CRUD operations on Solid pod resources. All methods are `suspend` functions and return `SolidNetworkResponse<T>`.
+Performs authenticated CRUD operations on Solid pod resources. All methods are `suspend` functions and return `SolidResult<T>`.
 
 ```kotlin
 val resourceManager = SolidResourceManager.getInstance(context)
 ```
 
-### SolidNetworkResponse
+### SolidResult
+
+Every API returns `SolidResult<T>` — nothing throws.
 
 ```kotlin
-sealed class SolidNetworkResponse<T> {
-    data class Success<T>(val data: T)                              // operation succeeded
-    data class Error<T>(val errorCode: Int, val errorMessage: String) // HTTP / server error
-    data class Exception<T>(val exception: Throwable)               // unexpected exception
+sealed class SolidResult<out T> {
+    data class Success<out T>(val value: T)
+    data class Failure(val error: SolidError)
 }
 ```
 
-Convenience methods: `getOrThrow()`, `getOrNull()`, `getOrDefault(default)`.
+`SolidError` is sealed, with a machine-readable `code: SolidErrorCode`, a `message`, an optional
+`httpStatus`, a `retryable` flag, and an optional `cause`. Variants include `Unauthorized`,
+`Forbidden`, `NotFound`, `Conflict`, `PreconditionFailed` and `RateLimited`, so you can branch on
+the case rather than parse a status code.
+
+Convenience members: `isSuccess` / `isFailure`, `getOrNull()`, `errorOrNull()`, `getOrThrow()`,
+`getOrDefault(default)`, `getOrElse { }`, `map { }`, `flatMap { }`, `fold(onSuccess, onFailure)`,
+`recover { }`, `onSuccess { }`, `onFailure { }`.
 
 ### Methods
 
@@ -146,69 +154,97 @@ Convenience methods: `getOrThrow()`, `getOrNull()`, `getOrDefault(default)`.
 // WAC-Allow, ACL link, Accept-Patch/Post, Last-Modified, and other Solid headers.
 // Ideal for caching checks and permission discovery before a full read.
 suspend fun head(
-    webid: String,
-    uri: URI,
-): SolidNetworkResponse<SolidMetadata>
+    webId: String,
+    uri: String,
+): SolidResult<SolidMetadata>
 
 // Read a resource from the pod
 suspend fun <T : Resource> read(
-    webid: String,    // WebID of the authenticated user
-    resource: URI,    // full URI of the resource
+    webId: String,    // WebID of the authenticated user
+    resource: String,    // full URI of the resource
     clazz: Class<T>,  // expected type (must extend RDFSource or NonRDFSource)
-): SolidNetworkResponse<T>
+): SolidResult<T>
 
 // Create a new resource on the pod (conditional PUT — fails if the URI already exists)
 suspend fun <T : Resource> create(
-    webid: String,
+    webId: String,
     resource: T,      // identifier on the resource determines the target URI
-): SolidNetworkResponse<T>
+): SolidResult<T>
 
 // Replace an existing resource. Pass ifMatch (an ETag from head/read) for
 // optimistic-concurrency protection — the server returns 412 on version mismatch.
 suspend fun <T : Resource> update(
-    webid: String,
+    webId: String,
     newResource: T,
     ifMatch: String? = null,
-): SolidNetworkResponse<T>
+): SolidResult<T>
 
 // Apply an N3 Patch to an RDF resource — atomic partial update, no full read required.
 // Use N3Patch.build { ... } or N3Patch.fromDiff(original, updated) to construct the patch.
 suspend fun patch(
-    webid: String,
-    uri: URI,
+    webId: String,
+    uri: String,
     patch: N3Patch,
     ifMatch: String? = null,
-): SolidNetworkResponse<Unit>
+): SolidResult<Unit>
 
 // Apply a pre-serialised text/n3 patch body (e.g. when the patch crossed an IPC boundary).
 suspend fun patchRaw(
-    webid: String,
-    uri: URI,
+    webId: String,
+    uri: String,
     n3Body: String,
     ifMatch: String? = null,
-): SolidNetworkResponse<Unit>
+): SolidResult<Unit>
 
 // Delete a resource by resource object (containers are deleted recursively)
 suspend fun <T : Resource> delete(
-    webid: String,
+    webId: String,
     resource: T,
-): SolidNetworkResponse<T>
+): SolidResult<T>
 
 // Delete a resource by URI directly — no prior read needed.
 // URIs ending with '/' are treated as containers and deleted recursively.
 suspend fun delete(
-    webid: String,
-    resourceUri: URI,
-): SolidNetworkResponse<Boolean>
+    webId: String,
+    resourceUri: String,
+): SolidResult<Boolean>
 
 // Create a resource inside a container via POST (the server assigns the name, returned as the URI).
 // Lets an add-only recipient (Append access) upload into a shared container without Write.  (0.5.0)
 suspend fun <T : Resource> createInContainer(
-    webid: String,
-    containerUri: URI,
+    webId: String,
+    containerUri: String,
     resource: T,
-): SolidNetworkResponse<URI?>
+): SolidResult<String?>
+
+// --- Helpers (0.6.0) ---
+
+// Does the resource exist? (HEAD, no body)
+suspend fun exists(webId: String, uri: String): SolidResult<Boolean>
+
+// Create the container if it is missing; succeeds if it already exists.
+suspend fun ensureContainer(webId: String, containerUri: String): SolidResult<Unit>
+
+// What can this account do with the resource? Reads WAC-Allow / ACR without writing anything.
+suspend fun probeAccess(webId: String, uri: String): SolidResult<AccessProbe>
+
+// --- Streaming (0.6.0) ---
+
+// Read without buffering the whole body in memory — for large files.
+suspend fun readStream(webId: String, uri: String): SolidResult<StreamingResource>
+
+// Write from a stream, with progress callbacks.
+suspend fun writeStream(
+    webId: String,
+    uri: String,
+    /* ... */
+): SolidResult<Unit>
 ```
+
+!!! tip "Full API surface"
+    This page is a guide to the main entry points. The complete, generated reference for every
+    public declaration in `api`, `client` and `shared` lives in the
+    [API Reference](api/index.html).
 
 !!! note "Response cache (0.5.0)"
     The underlying `SolidHttpClient` now keeps an in-memory response cache — per-account keyed, with
@@ -250,24 +286,29 @@ Your data classes must extend one of:
 ### Example
 
 ```kotlin
-val response = resourceManager.read(
-    webid = "https://yourpod.example/profile/card#me",
-    resource = URI("https://yourpod.example/data/note.ttl"),
+val result = resourceManager.read(
+    webId = "https://yourpod.example/profile/card#me",
+    resource = "https://yourpod.example/data/note.ttl",
     clazz = MyNote::class.java
 )
 
-when (response) {
-    is SolidNetworkResponse.Success   -> display(response.data)
-    is SolidNetworkResponse.Error     -> showError(response.errorCode, response.errorMessage)
-    is SolidNetworkResponse.Exception -> handleException(response.exception)
+when (result) {
+    is SolidResult.Success -> display(result.value)
+    is SolidResult.Failure -> showError(result.error.code, result.error.message)
 }
+
+// or, without branching
+result.fold(
+    onSuccess = ::display,
+    onFailure = { error -> if (error.retryable) retry() else showError(error.code, error.message) },
+)
 ```
 
 ---
 
 ## SolidContactsDataModule
 
-Manages address books, contacts, and groups on a Solid pod using the [Solid Contacts spec](https://www.w3.org/TR/vcard-rdf/). All methods are `suspend` and return `DataModuleResult<T>`.
+Manages address books, contacts, and groups on a Solid pod using the [Solid Contacts spec](https://www.w3.org/TR/vcard-rdf/). All methods are `suspend` and return `SolidResult<T>`.
 
 ```kotlin
 val contactsModule = SolidContactsDataModule.getInstance(context)
@@ -276,7 +317,7 @@ val contactsModule = SolidContactsDataModule.getInstance(context)
 ### Address Books
 
 ```kotlin
-suspend fun getAddressBooks(ownerWebId: String): DataModuleResult<AddressBookList>
+suspend fun getAddressBooks(ownerWebId: String): SolidResult<AddressBookList>
 
 suspend fun createAddressBook(
     ownerWebId: String,
@@ -284,17 +325,17 @@ suspend fun createAddressBook(
     isPrivate: Boolean = true,
     storage: String,
     container: String? = null,
-): DataModuleResult<AddressBook>
+): SolidResult<AddressBook>
 
-suspend fun getAddressBook(ownerWebId: String, addressBookUri: String): DataModuleResult<AddressBook>
+suspend fun getAddressBook(ownerWebId: String, addressBookUri: String): SolidResult<AddressBook>
 
 suspend fun renameAddressBook(
     ownerWebId: String,
     addressBookUri: String,
     newName: String,
-): DataModuleResult<AddressBook>
+): SolidResult<AddressBook>
 
-suspend fun deleteAddressBook(ownerWebId: String, addressBookUri: String): DataModuleResult<AddressBook>
+suspend fun deleteAddressBook(ownerWebId: String, addressBookUri: String): SolidResult<AddressBook>
 ```
 
 ### Contacts
@@ -305,21 +346,21 @@ suspend fun createNewContact(
     addressBookString: String,
     newContact: NewContact,
     groupStrings: List<String> = emptyList(),
-): DataModuleResult<FullContact>
+): SolidResult<FullContact>
 
-suspend fun getContact(ownerWebId: String, contactString: String): DataModuleResult<FullContact>
+suspend fun getContact(ownerWebId: String, contactString: String): SolidResult<FullContact>
 
-suspend fun renameContact(ownerWebId: String, contactString: String, newName: String): DataModuleResult<FullContact>
+suspend fun renameContact(ownerWebId: String, contactString: String, newName: String): SolidResult<FullContact>
 
-suspend fun addNewPhoneNumber(ownerWebId: String, contactString: String, newPhoneNumber: String): DataModuleResult<FullContact>
+suspend fun addNewPhoneNumber(ownerWebId: String, contactString: String, newPhoneNumber: String): SolidResult<FullContact>
 
-suspend fun addNewEmailAddress(ownerWebId: String, contactString: String, newEmailAddress: String): DataModuleResult<FullContact>
+suspend fun addNewEmailAddress(ownerWebId: String, contactString: String, newEmailAddress: String): SolidResult<FullContact>
 
-suspend fun removePhoneNumber(ownerWebId: String, contactString: String, phoneNumber: String): DataModuleResult<FullContact>
+suspend fun removePhoneNumber(ownerWebId: String, contactString: String, phoneNumber: String): SolidResult<FullContact>
 
-suspend fun removeEmailAddress(ownerWebId: String, contactString: String, emailAddress: String): DataModuleResult<FullContact>
+suspend fun removeEmailAddress(ownerWebId: String, contactString: String, emailAddress: String): SolidResult<FullContact>
 
-suspend fun deleteContact(ownerWebId: String, addressBookUri: String, contactUri: String): DataModuleResult<FullContact>
+suspend fun deleteContact(ownerWebId: String, addressBookUri: String, contactUri: String): SolidResult<FullContact>
 ```
 
 ### Groups
@@ -330,15 +371,15 @@ suspend fun createNewGroup(
     addressBookString: String,
     title: String,
     contactUris: List<String> = emptyList(),
-): DataModuleResult<FullGroup>
+): SolidResult<FullGroup>
 
-suspend fun getGroup(ownerWebId: String, groupString: String): DataModuleResult<FullGroup>
+suspend fun getGroup(ownerWebId: String, groupString: String): SolidResult<FullGroup>
 
-suspend fun deleteGroup(ownerWebId: String, addressBookString: String, groupString: String): DataModuleResult<FullGroup>
+suspend fun deleteGroup(ownerWebId: String, addressBookString: String, groupString: String): SolidResult<FullGroup>
 
-suspend fun addContactToGroup(ownerWebId: String, contactString: String, groupString: String): DataModuleResult<FullGroup>
+suspend fun addContactToGroup(ownerWebId: String, contactString: String, groupString: String): SolidResult<FullGroup>
 
-suspend fun removeContactFromGroup(ownerWebId: String, contactString: String, groupString: String): DataModuleResult<FullGroup>
+suspend fun removeContactFromGroup(ownerWebId: String, contactString: String, groupString: String): SolidResult<FullGroup>
 ```
 
 ---
@@ -351,7 +392,7 @@ Creates, lists, and revokes shares of pod resources. Built on Web Access Control
 Access Control Policy (ACP) are supported through a pluggable access-control backend selected from the
 resource's advertised authorization links. A private index pair under `{podRoot}/solidshare/shares/`
 lets the user see what they have shared and received without re-walking the pod. All methods are
-`suspend` and return `SolidNetworkResponse<T>`.
+`suspend` and return `SolidResult<T>`.
 
 ```kotlin
 val sharingManager = SharingManager.getInstance(authenticator)
@@ -367,34 +408,34 @@ The `ShareMode` (`READ` / `APPEND` / `WRITE`, surfaced as View / Add / Edit) and
 
 ```kotlin
 // --- Shares you give ---
-suspend fun createShare(webId: String, resourceUri: String, mode: ShareMode, receiver: ShareReceiver, notifyReceiver: Boolean = true): SolidNetworkResponse<GivenShare>
-suspend fun updateShare(webId: String, resourceUri: String, mode: ShareMode, receiver: ShareReceiver, notifyReceiver: Boolean = false): SolidNetworkResponse<GivenShare>
-suspend fun revokeShare(webId: String, resourceUri: String, receiver: ShareReceiver): SolidNetworkResponse<Unit>
+suspend fun createShare(webId: String, resourceUri: String, mode: ShareMode, receiver: ShareReceiver, notifyReceiver: Boolean = true): SolidResult<GivenShare>
+suspend fun updateShare(webId: String, resourceUri: String, mode: ShareMode, receiver: ShareReceiver, notifyReceiver: Boolean = false): SolidResult<GivenShare>
+suspend fun revokeShare(webId: String, resourceUri: String, receiver: ShareReceiver): SolidResult<Unit>
 
-suspend fun getStoredGivenShares(webId: String): SolidNetworkResponse<List<GivenShare>>
-suspend fun refreshGivenShares(webId: String): SolidNetworkResponse<List<GivenShare>>
-suspend fun getGivenSharesForResource(webId: String, resourceUri: String): SolidNetworkResponse<List<GivenShare>>
-suspend fun rebuildGivenIndex(webId: String): SolidNetworkResponse<List<GivenShare>>   // expensive: walks the pod's ACLs
+suspend fun getStoredGivenShares(webId: String): SolidResult<List<GivenShare>>
+suspend fun refreshGivenShares(webId: String): SolidResult<List<GivenShare>>
+suspend fun getGivenSharesForResource(webId: String, resourceUri: String): SolidResult<List<GivenShare>>
+suspend fun rebuildGivenIndex(webId: String): SolidResult<List<GivenShare>>   // expensive: walks the pod's ACLs
 
 // Reset a resource to owner-only (make it private); re-assert owner Read/Write/Control after a lockout
-suspend fun makePrivate(webId: String, resourceUri: String): SolidNetworkResponse<Unit>
-suspend fun repairOwnerControl(webId: String, resourceUri: String): SolidNetworkResponse<Unit>
+suspend fun makePrivate(webId: String, resourceUri: String): SolidResult<Unit>
+suspend fun repairOwnerControl(webId: String, resourceUri: String): SolidResult<Unit>
 
 // --- Shares you receive ---
-suspend fun getStoredReceivedShares(webId: String): SolidNetworkResponse<List<ReceivedShare>>
-suspend fun refreshReceivedShares(webId: String): SolidNetworkResponse<List<ReceivedShare>>
-suspend fun addReceivedShare(webId: String, resourceUri: String, ownerHint: String? = null): SolidNetworkResponse<ReceivedShare?>
-suspend fun removeReceivedShare(webId: String, resourceUri: String, ownerWebId: String): SolidNetworkResponse<Unit>
+suspend fun getStoredReceivedShares(webId: String): SolidResult<List<ReceivedShare>>
+suspend fun refreshReceivedShares(webId: String): SolidResult<List<ReceivedShare>>
+suspend fun addReceivedShare(webId: String, resourceUri: String, ownerHint: String? = null): SolidResult<ReceivedShare?>
+suspend fun removeReceivedShare(webId: String, resourceUri: String, ownerWebId: String): SolidResult<Unit>
 // Reconcile received shares against a batch of notifications already read from the inbox
-suspend fun syncReceivedShares(webId: String, notifications: List<ShareNotification>): SolidNetworkResponse<List<ReceivedShare>>
+suspend fun syncReceivedShares(webId: String, notifications: List<ShareNotification>): SolidResult<List<ReceivedShare>>
 
 // --- Access grants, requests, catalog ---
-suspend fun getAccessGrants(webId: String): SolidNetworkResponse<List<AccessGrant>>     // given + received + requests + SAI grants
-suspend fun acceptShareRequest(webId: String, request: ShareRequest): SolidNetworkResponse<GivenShare>
-suspend fun rejectShareRequest(webId: String, request: ShareRequest, reason: String? = null): SolidNetworkResponse<Unit>
-suspend fun publishCatalogEntry(webId: String, entry: CatalogEntry): SolidNetworkResponse<Unit>
-suspend fun removeCatalogEntry(webId: String, resourceUri: String): SolidNetworkResponse<Unit>
-suspend fun getOwnerCatalog(viewerWebId: String, ownerWebId: String): SolidNetworkResponse<List<CatalogEntry>>
+suspend fun getAccessGrants(webId: String): SolidResult<List<AccessGrant>>     // given + received + requests + SAI grants
+suspend fun acceptShareRequest(webId: String, request: ShareRequest): SolidResult<GivenShare>
+suspend fun rejectShareRequest(webId: String, request: ShareRequest, reason: String? = null): SolidResult<Unit>
+suspend fun publishCatalogEntry(webId: String, entry: CatalogEntry): SolidResult<Unit>
+suspend fun removeCatalogEntry(webId: String, resourceUri: String): SolidResult<Unit>
+suspend fun getOwnerCatalog(viewerWebId: String, ownerWebId: String): SolidResult<List<CatalogEntry>>
 
 // --- Share links ---
 fun getShareDeepLink(resourceUri: String, ownerWebId: String? = null): String   // https://solidshare.app/s?resource=…&owner=… App Link
@@ -413,7 +454,7 @@ incoming offers and access requests, sends the matching outgoing notifications, 
 user's inbox. **Pull-only** — there is no push subscription; refresh on demand or from a periodic
 worker. `SharingManager` calls into this internally on `createShare` / `updateShare` / `revokeShare`,
 so most apps only need the read and request methods directly. All methods return
-`SolidNetworkResponse<T>`.
+`SolidResult<T>`.
 
 ```kotlin
 val notifications = NotificationsManager.getInstance(authenticator)
@@ -422,21 +463,21 @@ val notifications = NotificationsManager.getInstance(authenticator)
 
 ```kotlin
 // Read the inbox
-suspend fun listNotifications(webId: String): SolidNetworkResponse<List<ShareNotification>>  // syncs received_shares.ttl as a side effect
-suspend fun listRequests(webId: String): SolidNetworkResponse<List<ShareRequest>>
+suspend fun listNotifications(webId: String): SolidResult<List<ShareNotification>>  // syncs received_shares.ttl as a side effect
+suspend fun listRequests(webId: String): SolidResult<List<ShareRequest>>
 
 // Provision / maintain the inbox
-suspend fun ensureInbox(webId: String): SolidNetworkResponse<String>          // public append-but-not-read; idempotent
-suspend fun compactInbox(webId: String, olderThanIso: String? = null): SolidNetworkResponse<Int>
-suspend fun deleteNotification(webId: String, notificationUri: String): SolidNetworkResponse<Boolean>
+suspend fun ensureInbox(webId: String): SolidResult<String>          // public append-but-not-read; idempotent
+suspend fun compactInbox(webId: String, olderThanIso: String? = null): SolidResult<Int>
+suspend fun deleteNotification(webId: String, notificationUri: String): SolidResult<Boolean>
 
 // Outgoing notifications (offer / update / withdraw — used internally by SharingManager)
-suspend fun sendOffer(ownerWebId: String, receiverWebId: String, resourceUri: String, mode: ShareMode): SolidNetworkResponse<Unit>
-suspend fun sendUpdate(ownerWebId: String, receiverWebId: String, resourceUri: String, mode: ShareMode): SolidNetworkResponse<Unit>
-suspend fun sendUndo(ownerWebId: String, receiverWebId: String, resourceUri: String): SolidNetworkResponse<Unit>
+suspend fun sendOffer(ownerWebId: String, receiverWebId: String, resourceUri: String, mode: ShareMode): SolidResult<Unit>
+suspend fun sendUpdate(ownerWebId: String, receiverWebId: String, resourceUri: String, mode: ShareMode): SolidResult<Unit>
+suspend fun sendUndo(ownerWebId: String, receiverWebId: String, resourceUri: String): SolidResult<Unit>
 
 // Request-to-share flow
-suspend fun sendRequest(requesterWebId: String, ownerWebId: String, resourceUri: String, requestedMode: ShareMode, summary: String? = null): SolidNetworkResponse<Unit>
-suspend fun sendAccept(ownerWebId: String, requesterWebId: String, resourceUri: String, mode: ShareMode, requestUri: String? = null): SolidNetworkResponse<Unit>
-suspend fun sendReject(ownerWebId: String, requesterWebId: String, resourceUri: String, reason: String? = null): SolidNetworkResponse<Unit>
+suspend fun sendRequest(requesterWebId: String, ownerWebId: String, resourceUri: String, requestedMode: ShareMode, summary: String? = null): SolidResult<Unit>
+suspend fun sendAccept(ownerWebId: String, requesterWebId: String, resourceUri: String, mode: ShareMode, requestUri: String? = null): SolidResult<Unit>
+suspend fun sendReject(ownerWebId: String, requesterWebId: String, resourceUri: String, reason: String? = null): SolidResult<Unit>
 ```
