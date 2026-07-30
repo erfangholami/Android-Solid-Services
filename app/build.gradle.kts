@@ -33,14 +33,22 @@ android {
         manifestPlaceholders["appAuthRedirectScheme"] = "com.erfangholami.androidsolidservices"
     }
 
-    val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
+    fun credential(
+        property: String,
+        environment: String,
+    ): String? = project.findProperty(property) as String? ?: System.getenv(environment)
+
+    val keystorePath = credential("keystore.path", "RELEASE_KEYSTORE_PATH")
     if (keystorePath != null) {
         signingConfigs {
             create("release") {
                 storeFile = file(keystorePath)
-                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
-                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+                storePassword = credential("keystore.password", "RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = credential("assKey.alias", "RELEASE_KEY_ALIAS")
+                keyPassword = credential("assKey.password", "RELEASE_KEY_PASSWORD")
+
+                enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }

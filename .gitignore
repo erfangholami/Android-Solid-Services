@@ -19,3 +19,7 @@ local.properties
 # account to this directory instead of globally; .firebaserc pins the default project.
 /.firebaserc
 /firebase.json
+
+# Android developer verification token — account-bound, and only needed transiently to
+# register a signing key. Never commit it.
+/app/src/main/assets/adi-registration.properties
