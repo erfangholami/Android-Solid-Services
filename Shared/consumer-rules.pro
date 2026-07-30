@@ -16,13 +16,27 @@
 # on every RDF and non-RDF subtype so reflective construction survives R8. The `extends` form
 # covers Shared's own models (SolidRDFResource, SolidContainer, SolidNonRDFResource), the
 # api-module subtypes (CatalogRDF, WebId, *RDF, SolidACLResource, …), and any resource subtype a
-# downstream SDK consumer defines — all of which a package-scoped rule would miss.
+# downstream SDK consumer defines — all of which a package-scoped rule would miss; `extends` does
+# not match the named class itself, so the base classes get their own rules.
+# The signatures must mirror the getConstructor(...) call sites exactly — the identifier parameter
+# is java.lang.String, and the non-RDF lookup tries all three parameter orders. A signature that
+# drifts from the call sites matches nothing, R8 strips the constructors, and every reflective
+# read fails with NoSuchMethodException in minified builds only.
+-keepclassmembers class com.erfangholami.androidsolidservices.shared.model.resource.RDFResource {
+    <init>(java.lang.String, java.lang.String, java.util.List, com.erfangholami.androidsolidservices.shared.http.SolidHeaders);
+}
 -keepclassmembers class * extends com.erfangholami.androidsolidservices.shared.model.resource.RDFResource {
-    <init>(java.net.URI, java.lang.String, java.util.List, com.erfangholami.androidsolidservices.shared.http.SolidHeaders);
+    <init>(java.lang.String, java.lang.String, java.util.List, com.erfangholami.androidsolidservices.shared.http.SolidHeaders);
+}
+-keepclassmembers class com.erfangholami.androidsolidservices.shared.model.resource.NonRDFResource {
+    <init>(java.lang.String, java.lang.String, java.io.InputStream);
+    <init>(java.lang.String, java.lang.String, com.erfangholami.androidsolidservices.shared.http.SolidHeaders, java.io.InputStream);
+    <init>(java.lang.String, java.lang.String, java.io.InputStream, com.erfangholami.androidsolidservices.shared.http.SolidHeaders);
 }
 -keepclassmembers class * extends com.erfangholami.androidsolidservices.shared.model.resource.NonRDFResource {
-    <init>(java.net.URI, java.lang.String, java.io.InputStream);
-    <init>(java.net.URI, java.lang.String, com.erfangholami.androidsolidservices.shared.http.SolidHeaders, java.io.InputStream);
+    <init>(java.lang.String, java.lang.String, java.io.InputStream);
+    <init>(java.lang.String, java.lang.String, com.erfangholami.androidsolidservices.shared.http.SolidHeaders, java.io.InputStream);
+    <init>(java.lang.String, java.lang.String, java.io.InputStream, com.erfangholami.androidsolidservices.shared.http.SolidHeaders);
 }
 
 # titanium-json-ld parses JSON-LD through the jakarta.json (JSON-P) SPI. The Glassfish provider
