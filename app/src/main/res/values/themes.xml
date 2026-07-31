@@ -1,10 +1,24 @@
 <resources>
+    <!--
+      An activity that must look like nothing but the card it draws. The window is transparent,
+      but a theme still colours the system bars and still shows a starting window — which is what
+      made a purple bar flash as the dialog opened and closed. Everything below removes a way for
+      the activity itself to become visible.
+    -->
     <style name="Theme.AndroidSolidServices.Dialog" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActivityTransitions">false</item>
         <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- Leave the caller's own bars showing through instead of repainting them. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">false</item>
+        <!-- No enter/exit animation, and no themed placeholder before the first frame. -->
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowDisablePreview">true</item>
     </style>
 
     <!-- Base application theme. -->
