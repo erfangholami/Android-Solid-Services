@@ -3,216 +3,92 @@
 [![Docs](https://img.shields.io/badge/docs-site-blueviolet)](https://androidsolidservices.erfangholami.com)
 [![License](https://img.shields.io/github/license/erfangholami/Android-Solid-Services)](LICENSE)
 
-This project consists of three parts:
+# Android Solid Services
 
-- [Android Solid Services app](#android-solid-services-app)
-- [Android Solid Services Client library](#android-solid-services-client-library)
-- [Android Solid Services API library](#android-solid-services-api-library)
+Single sign-in to [Solid](https://solidproject.org/) for Android. One app holds the user's pod
+accounts; every other app on the device reaches those pods through it, with the user's permission
+and without ever handling a credential.
 
-## What's New in v0.4.0
+📖 **[Full documentation](https://androidsolidservices.erfangholami.com)** — guides, API reference
+and troubleshooting.
 
-- **`head()` resource metadata** — fetch ETag, Content-Type, WAC-Allow, and other headers via HTTP HEAD without downloading the resource body.
-- **N3 Patch support** — `patch()` and the new `N3Patch` type (DSL builder + diff factory) enable atomic partial updates to RDF resources.
-- **Conditional writes** — `update()` now accepts an `ifMatch` ETag for optimistic-concurrency protection.
-- **Delete by URI** — `delete(webid, uri)` removes a resource without reading it first.
-- **DPoP algorithm negotiation** — the token generator now picks the best algorithm the server supports, improving pod compatibility.
-- **Removed Inrupt Java Client** — replaced with a custom `SolidHttpClient`; significantly lighter dependency footprint.
-- **Bug fixes** — DPoP nonce race condition, WebID parsing, contacts DC namespace, ETag casing.
+## The problem
 
-## Android Solid Services app
+Solid gives people their own data, but on Android every app that wants to use a pod has to become
+an identity client: run the OIDC flow, mint and rotate DPoP tokens, store them safely, and repeat
+all of it in the next app. The user signs in again in each one, and each app's mistakes are theirs
+alone to make.
 
-This app allows you to do single [Solid](https://solidproject.org/) sign-in in Android ecosystem. It
-is used by other apps to communicate through this app to do access resources requests, resource
-management and contacts data modules on the already-logged-in users' pod.
-The app supports multiple Solid accounts — you can log in with different pod providers and switch
-between them from the Settings page.
-You can download the app
-from [here](https://github.com/erfangholami/Android-Solid-Services/releases) at the moment.
+## How this solves it
 
-### How to use locally
+Android Solid Services owns the login. Tokens are DPoP-bound to keys generated in the Android
+Keystore and never leave the app; other apps talk to it over AIDL and get results, never
+credentials. The user signs in once, grants each app access explicitly, and can revoke it at any
+time — and an app integrates with one dependency and no auth code at all.
 
-This project requires JDK 17 (JBR v17.0.9 recommended).
-In case of having any problem during the build process, set your `JAVA_HOME` variable to your JDK 17
-path.
-Gradle is the default build tool used in this project.
-In the root directory of the project run command:
-
-```sh
-./gradlew assembleDebug
-```
-
-You can find the generated ```.apk``` file in the path:
-`./app/build/outputs/apk/debug`
-
-You can open it for instance with Android Studio. It will take a while for the emulator to start up, 
-but then you'll be presented with a login screen,
-and you can log in to your pod there. Here are some screenshots from the application:
-|![Screenshot_20260414_00260](https://github.com/user-attachments/assets/9afe2f9d-f4a3-4e05-ae77-ab6e13febf84)|![Screenshot_20241218_152854](https://github.com/user-attachments/assets/543b2d9e-2f51-481f-b50d-934ece61172f)|![Screenshot_20260414_002657](https://github.com/user-attachments/assets/3deabd3a-d907-407a-9fbb-b27e26882206)|![Screenshot_20241218_152952](https://github.com/user-attachments/assets/b6df9725-321d-4572-b9fa-07cf28de3e9a)|
+|![Login](https://github.com/user-attachments/assets/9afe2f9d-f4a3-4e05-ae77-ab6e13febf84)|![Accounts](https://github.com/user-attachments/assets/543b2d9e-2f51-481f-b50d-934ece61172f)|![Access grants](https://github.com/user-attachments/assets/3deabd3a-d907-407a-9fbb-b27e26882206)|![Settings](https://github.com/user-attachments/assets/b6df9725-321d-4572-b9fa-07cf28de3e9a)|
 |-|-|-|-|
 
-## Android Solid Services Client library
+## Features
 
-This android library has the responsibility to check your app already has access grant, request to
-access the pod resources, resource management requests and access data modules (currently Contacts
-data module).
-You can add this library to your android project by adding this line to your module-level
-```build.gradle.kts``` file:
+- **One sign-in, many apps** — several accounts from different pod providers, active at once.
+- **Native account picker** — sign-in launches from the calling app's own foreground, so no
+  special permissions are involved.
+- **Solid accounts in Android Settings**, alongside every other account on the device.
+- **Full pod access over IPC** — resources (CRUD, containers, patches, streaming), sharing,
+  Linked Data Notifications, and data modules for contacts and tickets.
+- **Per-app grants** the user reviews and revokes.
+- **Two libraries** — `client` for apps that go through Android Solid Services, `api` for apps
+  that prefer to speak to pods directly.
 
-```kotlin
-// build.gradle.kts (module level)
-android {
-    defaultConfig {
-        manifestPlaceholders["appAuthRedirectScheme"] = "YOUR_APP_PACKAGE_NAME"
-    }
-}
-dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.4.1")
-}
-```
+## Install
 
-or if you are using another building system,
-check [here](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/client).
+The app is on [GitHub Releases](https://github.com/erfangholami/Android-Solid-Services/releases);
+Google Play and F-Droid are in progress.
 
-All the requests are handled by Android Inter-process Communication with Android Solid Services app.
-Before using any service you check if the service is already connected and then do your requests.
-For the authentication you can use this code:
+For your own app, one dependency:
 
 ```kotlin
-val solidSignInClient = Solid.getSignInClient(context)
-solidSignInClient.authServiceConnectionState().collect { hasConnected ->
-    if(hasConnected) {
-        //Auth service has connected
-        
-        //This code returns your account if you already have access, null if you don't have access.
-        //You need to pass the webid you want to check
-        val account = solidSignInClient.getAccount(SAVED_WEBID ?: "")
-        
-        if (account == null) {
-            solidSignInClient.requestLogin { webid, exception ->
-                if (exception == null) {
-                    if (!webid.isNullOrEmpty()) {
-                        //User gave access grant to your app and you need to save webid locally for future calls
-                    } else {
-                        //User declined your access grant request
-                    }
-                } else {
-                    //Some error happened during the access request.
-                }
-            }
-        }
-    } else {
-        //Auth service hasn't been connected and you can show a message to user
-    }
-}
+implementation("com.erfangholami.androidsolidservices:client:0.6.1")
 ```
 
-After this step you can request for resources or data modules.
-Resources must inherit from ```com.erfangholami.androidsolidservices.shared.domain.resource.SolidResource``` or for better
-implementation, ```com.erfangholami.androidsolidservices.shared.domain.SolidRDFResource``` or
-```com.erfangholami.androidsolidservices.shared.domain.SolidNonRDFResource```.
-Depending on your data class, you can choose one. NonRDFSource is used for raw files and resources
-without structure such as .txt, image files, etc. However, RDFSource is used for data classes in RDF
-format (common in Solid ecosystem).
+Then follow **[Getting Started](https://androidsolidservices.erfangholami.com/getting-started/)**.
+There is also a [sample app](https://github.com/erfangholami/Android-Solid-Service_client-sample)
+that runs every SDK call against a live pod, shown next to the code that makes it.
 
-All resource operations are `suspend` functions and throw `SolidException` on failure:
+## Build
 
-```kotlin
-val resourceClient = Solid.getResourceClient(context)
+Requires **JDK 17** (or JetBrains Runtime 17.0.9); set `JAVA_HOME` if the build complains.
 
-resourceClient.resourceServiceConnectionState().collect { hasConnected ->
-    if(hasConnected) {
-        //Service has connected and you can call methods below.
-    } else {
-        //Service has not been connected.
-    }
-}
-
-try {
-    //Read
-    val resource = resourceClient.read(SAVED_WEBID, RESOURCE_URL, YOUR_CLASS::class.java)
-
-    //Create
-    val created = resourceClient.create(SAVED_WEBID, RESOURCE_OBJ)
-
-    //Update - for already existing resource
-    val updated = resourceClient.update(SAVED_WEBID, RESOURCE_OBJ)
-
-    //Delete - for already existing resource
-    val deleted = resourceClient.delete(SAVED_WEBID, RESOURCE_OBJ)
-} catch (e: SolidException) {
-    // Handle error
-}
+```sh
+./gradlew assembleFossDebug     # the app, without Google services
+./gradlew test                  # unit tests, all modules
+./gradlew spotlessApply detekt  # format, then static analysis
 ```
 
-In case your data classes are contacts, you can use contacts data module functions (also `suspend`):
+The APK lands in `app/build/outputs/apk/foss/debug`. Versions come from the git tag, so a working
+copy needs no version edits. The
+[Architecture](https://androidsolidservices.erfangholami.com/architecture/) page explains how the
+modules fit together.
 
-```kotlin
-val contactsDataModule = Solid.getContactsDataModule(context)
+## Contributing
 
-contactsDataModule.contactsDataModuleServiceConnectionState().collect { hasConnected ->
-    if(hasConnected) {
-        //Service has connected and you can call methods below.
-    } else {
-        //Service has not been connected.
-    }
-}
+Contributions are welcome — bug reports, fixes, docs and pod-server compatibility reports all
+help.
 
-val addressBooks = contactsDataModule.getAddressBooks(SAVED_WEBID)
-val addressBook = contactsDataModule.getAddressBook(SAVED_WEBID, ADDRESSBOOK_URI)
-val contact = contactsDataModule.getContact(SAVED_WEBID, CONTACT_URI)
-val group = contactsDataModule.getGroup(SAVED_WEBID, GROUP_URI)
-//Check the module class for more functions on address books, contacts and groups.
+- Branch from `dev` and open your pull request against it; CI runs style, static analysis, unit
+  tests and the instrumented IPC suite.
+- Run `./gradlew spotlessApply detekt test` before pushing.
+- Cover behaviour with a test where you can. The client SDK's tests drive real calls across a
+  process boundary, which is where most defects here have lived.
+- Found something odd against a particular pod server? Say which server and how it responded —
+  those reports have led to several fixes.
 
-```
-
-For seeing some examples, you can refer
-to [Solid Contacts app](https://github.com/pondersource/Solid-Contacts) which works with Solid
-Contacts data module based on this library.
-
-## Android Solid Services API library
-
-This library is used in the Android Solid Services app to interact with Solid. In case you have any
-problem with installing the app or want to connect to Solid directly you can add it to your android
-project by adding this line to your module level ```build.gradle.kts``` file.
-
-```kotlin
-// build.gradle.kts (module level)
-android {
-    defaultConfig {
-        manifestPlaceholders["appAuthRedirectScheme"] = "YOUR_APP_PACKAGE_NAME"
-    }
-}
-dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.4.1")
-}
-```
-
-or if you are using another building system,
-check [here](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/api).
-
-For authentication, you can use:
-```com.erfangholami.androidsolidservices.api.auth.Authenticator.getInstance(context)```.
-There are couples of steps to authenticate user with OpenID Connect protocol (with DPoP support) such
-as register your app to OpenID and then ask for the intent to transfer the user to browser to enter
-their username/password of the selected IDP. For a better understanding please refer to Android
-Solid Services app codes.
-
-After authenticating successfully, you can interact with Solid resources and data modules similar to
-what have been explained in [Android Solid Services Client](#android-solid-services-client-library) section with the
-difference that you need to get the class instance with:
-
-```kotlin
-val resourceManager = com.erfangholami.androidsolidservices.api.resource.SolidResourceManager.getInstance(authenticator)
-val contactModule = com.erfangholami.androidsolidservices.api.datamodule.contacts.SolidContactsDataModule.getInstance(resourceManager)
-```
-
----
-For a better understanding of the project structure you can refer to this diagram:
-![AndroidSolidServices (1)](https://github.com/user-attachments/assets/1b953cc9-3334-4827-9aac-63c29b4f7203)
+Please open an issue first for anything large, so the approach can be agreed before you spend time
+on it.
 
 ## Acknowledgments
 
 Thanks to funding
 from [NLnet](https://nlnet.nl/) <img src="https://nlnet.nl/logo/banner.svg" style="width: 5%; margin: 0 1% 0 1%;">
 / <img src="https://nlnet.nl/image/logos/NGI0Entrust_tag.svg" style="width: 5%; margin: 0 1% 0 1%;">
-
