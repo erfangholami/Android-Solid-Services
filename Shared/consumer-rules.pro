@@ -10,6 +10,18 @@
     public static final ** CREATOR;
 }
 
+# ...and their NAMES have to survive too, which keeping CREATOR alone does not achieve.
+#
+# A nested Parcelable is written with Parcel.writeParcelable, which stamps getClass().getName()
+# into the parcel for the reader to resolve. Minified, that name is the obfuscated one: the ASS app
+# wrote "xt5" for WacAllow inside SolidMetadata, and "by4" for SolidMetadata inside
+# SolidSourceReference. A third-party app has no such classes, so unmarshalling threw
+# BadParcelableException — meaning every release build broke `head`, `headPublic`, `readContainer`
+# and enriched `listContainer` for every consumer, while debug builds worked perfectly.
+#
+# -keepnames (keep, but still allow shrinking) so unused models can still be removed.
+-keepnames class com.erfangholami.androidsolidservices.shared.model.** implements android.os.Parcelable
+
 # Resource types are reconstructed reflectively via Class.getConstructor(...).newInstance(...) by
 # api's SolidResourceParser (in the ASS app process) and by client's SolidResourceClient
 # (reconstructRdf/reconstructNonRdf, in a third-party process). Keep the canonical constructors
