@@ -45,9 +45,9 @@ import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
  * The account picker and consent surface, shared by both entry paths: the legacy overlay flow
  * ([ProfileSelectionActivity]) and the launched-for-result flow ([AuthorizeActivity]).
  *
- * @param onOpenApp When non-null and no account is signed in, a button offers to open Android
- *   Solid Services so the user can sign in; the profile list is live, so a granted login shows
- *   up here on return without relaunching the flow.
+ * @param onAddAccount When non-null, an "Add account" button hands off to Android Solid
+ *   Services' login. The profile list is live, so the new account appears here on return — which
+ *   is also the way out when nothing is signed in yet.
  */
 @Composable
 internal fun ProfileSelectionScreen(
@@ -56,7 +56,7 @@ internal fun ProfileSelectionScreen(
     profiles: List<SolidAccount>,
     onProfileSelected: (String) -> Unit,
     onDismiss: () -> Unit,
-    onOpenApp: (() -> Unit)? = null,
+    onAddAccount: (() -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier
@@ -97,7 +97,7 @@ internal fun ProfileSelectionScreen(
                 AccountsSection(
                     profiles = profiles,
                     onProfileSelected = onProfileSelected,
-                    onOpenApp = onOpenApp,
+                    onAddAccount = onAddAccount,
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -147,7 +147,7 @@ private fun CallerHeader(callerName: String, callerIcon: Bitmap?) {
 private fun AccountsSection(
     profiles: List<SolidAccount>,
     onProfileSelected: (String) -> Unit,
-    onOpenApp: (() -> Unit)?,
+    onAddAccount: (() -> Unit)?,
 ) {
     if (profiles.isEmpty()) {
         Text(
@@ -156,15 +156,6 @@ private fun AccountsSection(
             color = MaterialTheme.colorScheme.error,
             modifier = Modifier.padding(vertical = 16.dp),
         )
-        if (onOpenApp != null) {
-            OutlinedButton(
-                onClick = onOpenApp,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(text = stringResource(R.string.app_name))
-            }
-            Spacer(Modifier.height(8.dp))
-        }
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
@@ -174,6 +165,13 @@ private fun AccountsSection(
                 val webId = profile.userInfo?.webId ?: return@items
                 ProfileItem(webId = webId, onClick = { onProfileSelected(webId) })
             }
+        }
+    }
+
+    if (onAddAccount != null) {
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(onClick = onAddAccount, modifier = Modifier.fillMaxWidth()) {
+            Text(text = stringResource(R.string.add_account))
         }
     }
 }

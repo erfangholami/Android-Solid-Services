@@ -25,10 +25,10 @@ import dagger.hilt.android.AndroidEntryPoint
  * genuinely awaiting a result, which is also why launching without one is refused rather than
  * guessed at.
  *
- * The profile list is live: with no account signed in, the screen offers to open Android Solid
- * Services, and a login made there appears here on return without restarting the flow. Picking
- * an account records the grant and finishes with `RESULT_OK` + the WebID; dismissing finishes
- * with `RESULT_CANCELED`. The Intent protocol is [SolidAuthorization]; the client SDK wraps it
+ * The profile list is live, so "Add account" can hand off to Android Solid Services' login and
+ * the new account shows up here on return — no need to restart the flow, and no dead end when
+ * nothing is signed in yet. Picking an account records the grant and finishes with `RESULT_OK`
+ * + the WebID; dismissing finishes with `RESULT_CANCELED`. The Intent protocol is [SolidAuthorization]; the client SDK wraps it
  * as the `AuthorizeWithSolid` ActivityResultContract.
  */
 @AndroidEntryPoint
@@ -87,9 +87,10 @@ class AuthorizeActivity : ComponentActivity() {
                         setResult(RESULT_CANCELED)
                         finish()
                     },
-                    onOpenApp = {
+                    onAddAccount = {
                         startActivity(
                             Intent(this, MainActivity::class.java)
+                                .putExtra(MainActivity.EXTRA_ADD_ACCOUNT, true)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                         )
                     },
