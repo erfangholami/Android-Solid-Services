@@ -26,6 +26,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        // The instrumentation APK is a real application, so AppAuth's manifest placeholder has to
+        // resolve. Never used at runtime — no authorization flow is started from these tests.
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.erfangholami.androidsolidservices.client.test"
     }
 
     buildTypes {
@@ -84,7 +88,10 @@ dependencies {
     //Testing
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.jetbrains.kotlinx.coroutines.test)
     testImplementation(libs.junit)
+    testImplementation(libs.jetbrains.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
 
     implementation(libs.androidx.appcompat)
     implementation(libs.google.android.material)

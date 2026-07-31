@@ -528,9 +528,9 @@ public class SolidResourceClient private constructor(
     private fun <T : SolidResource> reconstructNonRdf(source: SolidNonRDFResource, clazz: Class<T>): T {
         if (clazz.isInstance(source)) return source as T
         return clazz.getConstructor(
-            String::class.java, String::class.java, SolidHeaders::class.java, InputStream::class.java
+            String::class.java, String::class.java, InputStream::class.java, SolidHeaders::class.java
         ).newInstance(
-            source.getIdentifier(), source.getContentType(), source.getHeaders(), source.getEntity()
+            source.getIdentifier(), source.getContentType(), source.getEntity(), source.getHeaders()
         )
     }
 }

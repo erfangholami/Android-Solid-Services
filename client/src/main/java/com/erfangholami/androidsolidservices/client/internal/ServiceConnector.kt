@@ -24,8 +24,18 @@ import kotlin.coroutines.resumeWithException
 internal class ServiceConnector<S : Any>(
     context: Context,
     serviceClassName: String,
+    // Instrumented tests point this at the test APK, which hosts a fake service in its own
+    // process. `asInterface` stays last so callers can keep passing it as a trailing lambda.
+    private val servicePackageName: String,
     private val asInterface: (IBinder) -> S,
 ) {
+    /** Binds to the installed Android Solid Services app. */
+    constructor(
+        context: Context,
+        serviceClassName: String,
+        asInterface: (IBinder) -> S,
+    ) : this(context, serviceClassName, ANDROID_SOLID_SERVICES_PACKAGE_NAME, asInterface)
+
     private val appContext: Context = context.applicationContext
     private val serviceClassName: String = serviceClassName
 
@@ -137,7 +147,7 @@ internal class ServiceConnector<S : Any>(
 
     private fun bind() {
         if (bound) return
-        val intent = Intent().setClassName(ANDROID_SOLID_SERVICES_PACKAGE_NAME, serviceClassName)
+        val intent = Intent().setClassName(servicePackageName, serviceClassName)
         bound = runCatching {
             appContext.bindService(
                 intent,

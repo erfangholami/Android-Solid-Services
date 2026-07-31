@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    Instrumentation-only manifest.
+
+    android:process puts the fake service in its own process, so binder genuinely marshals every
+    argument and return value. Without it, Android passes object references directly within the
+    process and the Parcelable path — the part most likely to break — would never run.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <service
+            android:name="com.erfangholami.androidsolidservices.client.internal.FakeAuthenticatorService"
+            android:exported="false"
+            android:process=":fakeass" />
+    </application>
+
+</manifest>
