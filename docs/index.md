@@ -18,6 +18,7 @@ Despite Solid's growing adoption, the Android ecosystem had no native way to int
 - **Multi-account** — manage multiple Solid pod accounts and switch between them from Settings.
 - **Permission control** — each app must request access; you approve or deny from within ASS.
 - **Resource sharing** — share pod resources and containers with other people at View / Add / Edit access (Web Access Control or Access Control Policy), with share links and a Linked Data Notifications inbox for offers and access requests.
+- **Data modules** — ready-made models for contacts (address books, groups) and tickets, stored as standard RDF on the pod.
 - **SDK** — two libraries (`client`, `api`) let developers integrate Solid into their Android apps with just a few lines of Kotlin.
 
 ## See It in Action
@@ -30,7 +31,7 @@ Despite Solid's growing adoption, the Android ecosystem had no native way to int
 
 | Component                                         | Role                                              | Published                                                                                                     |
 |---------------------------------------------------|---------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| [Android Solid Services App](app.md)              | Host app — manages accounts, exposes IPC services | [GitHub Releases](https://github.com/erfangholami/Android-Solid-Services/releases)                            |
+| Android Solid Services App                        | Host app — manages accounts, exposes IPC services | [GitHub Releases](https://github.com/erfangholami/Android-Solid-Services/releases)                            |
 | [Android Solid Services API Library](api-library.md)       | Direct Solid server communication                 | [Maven Central](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/api)       |
 | [Android Solid Services Client Library](client-library.md) | IPC client for third-party apps                   | [Maven Central](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/client) |
 

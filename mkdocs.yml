@@ -20,6 +20,8 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
   features:
     - navigation.tabs
     - navigation.sections
@@ -31,27 +33,23 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
-extra_javascript:
-  - https://unpkg.com/mermaid@11/dist/mermaid.min.js
-
 nav:
   - Home: index.md
-  - Get Started:
+  - Get started:
       - Getting Started: getting-started.md
       - How It Works: concepts.md
   - Integrate:
       - Client Library: client-library.md
       - API Library: api-library.md
       - Solid-OIDC Client ID Document: client-id-document/README.md
-  - Internals:
-      - Architecture: architecture.md
-      - The App: app.md
-      - Monitoring: monitoring.md
-  - Documentation:
-      - API Reference: api/index.html
-      - Releases: release.md
+  - Architecture: architecture.md
+  - More:
       - Troubleshooting: troubleshooting.md
+      - Releases: release.md
       - Privacy Policy: privacy.md
+  # A tab that leaves the site: it opens the generated Dokka reference directly, rather than a
+  # page that merely links to it. `dokkaToDocs` writes it into docs/api before the site builds.
+  - API reference: api/index.html
 
 plugins:
   - search
