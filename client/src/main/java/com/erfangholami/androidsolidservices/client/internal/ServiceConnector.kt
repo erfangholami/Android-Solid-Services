@@ -18,14 +18,28 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+/**
+ * Owns one binding to an Android Solid Services AIDL service and turns its callback-style calls
+ * into `suspend` calls.
+ *
+ * [servicePackageName] is separate so instrumented tests can point the binding at the test APK,
+ * which hosts fakes under the production class names; `asInterface` stays last so callers keep
+ * passing it as a trailing lambda.
+ *
+ * Death handling: a call parked on an AIDL callback is never resumed by the framework when the
+ * service process dies, so the connector tracks parked continuations and fails them itself —
+ * with [DeadObjectException], which [await] answers by rebinding and retrying once, exactly as
+ * it treats a death during the call's registration. A deliberate [unbind] fails them with
+ * [SolidException.SolidServiceConnectionException] instead, so no retry resurrects a binding
+ * the caller tore down.
+ */
 internal class ServiceConnector<S : Any>(
     context: Context,
     serviceClassName: String,
-    // Instrumented tests point this at the test APK, which hosts a fake service in its own
-    // process. `asInterface` stays last so callers can keep passing it as a trailing lambda.
     private val servicePackageName: String,
     private val asInterface: (IBinder) -> S,
 ) {
@@ -50,10 +64,13 @@ internal class ServiceConnector<S : Any>(
 
     private val serviceLabel: String = serviceClassName.substringAfterLast('.')
 
+    private val pending = ConcurrentHashMap.newKeySet<CancellableContinuation<*>>()
+
     private val deathRecipient = IBinder.DeathRecipient {
         Telemetry.log("ass.ipc $serviceLabel binder died")
         service = null
         _connectionState.value = false
+        failPending(DeadObjectException())
     }
 
     private val connection = object : ServiceConnection {
@@ -71,10 +88,12 @@ internal class ServiceConnector<S : Any>(
             Telemetry.log("ass.ipc $serviceLabel disconnected")
             service = null
             _connectionState.value = false
+            failPending(DeadObjectException())
         }
 
         override fun onBindingDied(name: ComponentName) {
             Telemetry.log("ass.ipc $serviceLabel binding died — rebinding")
+            failPending(DeadObjectException())
             rebind()
         }
 
@@ -97,12 +116,10 @@ internal class ServiceConnector<S : Any>(
         service = null
         bound = false
         _connectionState.value = false
+        failPending(SolidException.SolidServiceConnectionException())
     }
 
     suspend fun <T> await(register: (S, CallbackBridge<T>) -> Unit): T = try {
-        awaitOnce(register)
-    } catch (_: DeadObjectException) {
-        rebind()
         awaitOnce(register)
     } catch (_: RemoteException) {
         rebind()
@@ -111,12 +128,29 @@ internal class ServiceConnector<S : Any>(
 
     private suspend fun <T> awaitOnce(register: (S, CallbackBridge<T>) -> Unit): T {
         val connectedService = awaitService()
-        return suspendCancellableCoroutine { cont ->
-            try {
-                register(connectedService, CallbackBridge(cont))
-            } catch (e: Throwable) {
-                if (cont.isActive) cont.resumeWithException(e)
+        var parked: CancellableContinuation<T>? = null
+        try {
+            return suspendCancellableCoroutine { cont ->
+                parked = cont
+                pending.add(cont)
+                try {
+                    register(connectedService, CallbackBridge(cont))
+                } catch (e: Throwable) {
+                    if (cont.isActive) cont.resumeWithException(e)
+                }
             }
+        } finally {
+            parked?.let(pending::remove)
+        }
+    }
+
+    private fun failPending(cause: Throwable) {
+        val parked = pending.toList()
+        pending.removeAll(parked.toSet())
+        parked.forEach { cont ->
+            @Suppress("UNCHECKED_CAST")
+            val continuation = cont as CancellableContinuation<Any?>
+            if (continuation.isActive) continuation.resumeWithException(cause)
         }
     }
 

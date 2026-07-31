@@ -8,6 +8,7 @@ import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.model.auth.IASSLoginCallback
 import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
+import java.io.File
 
 /**
  * Stands in for the ASS app's authenticator service.
@@ -52,9 +53,13 @@ class ASSAuthenticatorService : Service() {
             when (webId) {
                 AUTHORIZED_WEB_ID -> callback?.onResult(true)
                 DOUBLE_ANSWER_WEB_ID -> {
-                    // A misbehaving service answering twice must not crash the caller.
                     callback?.onResult(true)
                     callback?.onResult(true)
+                }
+
+                HANG_ONCE_WEB_ID -> {
+                    val marker = File(filesDir, HANG_MARKER)
+                    if (!marker.createNewFile()) callback?.onResult(true)
                 }
 
                 else -> callback?.onError(ExceptionsErrorCode.SOLID_NOT_LOGGED_IN, "not signed in")
@@ -66,7 +71,19 @@ class ASSAuthenticatorService : Service() {
 
     companion object {
         const val AUTHORIZED_WEB_ID: String = "https://alice.pod.example/profile/card#me"
+
+        /** No session for this one — calls with it take the error path. */
         const val UNKNOWN_WEB_ID: String = "https://mallory.pod.example/profile/card#me"
+
+        /** Answers the callback twice; a misbehaving service must not crash the caller. */
         const val DOUBLE_ANSWER_WEB_ID: String = "https://double.pod.example/profile/card#me"
+
+        /**
+         * Parks the first call forever and answers every one after. The marker file survives a
+         * process kill, which is how the death-recovery test gets a hang, a kill, and then a
+         * successful retry out of one fake.
+         */
+        const val HANG_ONCE_WEB_ID: String = "https://hang-once.pod.example/profile/card#me"
+        const val HANG_MARKER: String = "hang-once.marker"
     }
 }

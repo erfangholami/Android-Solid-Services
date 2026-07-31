@@ -6,9 +6,15 @@ import com.erfangholami.androidsolidservices.client.internal.fakes.FakeSdk
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
 import com.erfangholami.androidsolidservices.client.sdk.SolidResourceClient
 import com.erfangholami.androidsolidservices.client.sdk.SolidSharingClient
+import com.erfangholami.androidsolidservices.services.ASSAuthenticatorService
+import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
+import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
@@ -35,13 +41,50 @@ class ConnectionResilienceTest {
         get() = SolidResourceClient.getInstance(sdk.context) { true }
 
     @Test
+    fun a_call_parked_on_a_dying_service_fails_over_instead_of_hanging(): Unit = runBlocking {
+        java.io.File(sdk.context.filesDir, ASSAuthenticatorService.HANG_MARKER).delete()
+
+        val auth = ServiceConnector(
+            sdk.context,
+            ASSAuthenticatorService::class.java.name,
+            sdk.context.packageName,
+            IASSAuthenticatorService.Stub::asInterface,
+        )
+        try {
+            withTimeout(CONNECT_TIMEOUT) { auth.connectionState.first { it } }
+
+            val killer = launch(Dispatchers.Default) {
+                delay(1_000)
+                killFakeProcess()
+            }
+
+            val granted = withTimeout(RECOVERY_TIMEOUT) {
+                auth.await<Boolean> { service, bridge ->
+                    service.disconnectFromSolid(
+                        ASSAuthenticatorService.HANG_ONCE_WEB_ID,
+                        object : IASSLogoutCallback.Stub() {
+                            override fun onResult(granted: Boolean) = bridge.onResult(granted)
+
+                            override fun onError(errorCode: Int, errorMessage: String?) =
+                                bridge.onError(errorCode, errorMessage)
+                        },
+                    )
+                }
+            }
+
+            killer.join()
+            assertTrue("the retry after the service death should have answered", granted)
+        } finally {
+            auth.unbind()
+        }
+    }
+
+    @Test
     fun a_call_succeeds_again_after_the_service_process_is_killed(): Unit = runBlocking {
         assertTrue(client.exists(Fixtures.WEB_ID, Fixtures.RESOURCE))
 
         killFakeProcess()
 
-        // The binder the connector holds is now dead. The call must rebind rather than propagate a
-        // DeadObjectException — this is the whole recovery contract.
         assertTrue(
             "the connector did not recover from a dead binder",
             client.exists(Fixtures.WEB_ID, Fixtures.RESOURCE),
@@ -60,8 +103,6 @@ class ConnectionResilienceTest {
 
     @Test
     fun concurrent_calls_on_one_connector_all_resolve(): Unit = runBlocking {
-        // Binder dispatches each reply on its own thread, so several parked continuations are
-        // resumed concurrently. One continuation resuming another's caller would show up here.
         val results = (1..8).map { index ->
             async { client.copy(Fixtures.WEB_ID, "${Fixtures.RESOURCE}-$index", Fixtures.DESTINATION) }
         }.awaitAll()
@@ -72,7 +113,6 @@ class ConnectionResilienceTest {
 
     @Test
     fun each_client_binds_its_own_service_independently(): Unit = runBlocking {
-        // A shared connector would mean one client's disconnect silently breaking another's.
         val sharing = SolidSharingClient.getInstance(sdk.context)
 
         withTimeout(TIMEOUT) { client.resourceServiceConnectionState().first { it } }
@@ -92,8 +132,6 @@ class ConnectionResilienceTest {
 
         android.os.Process.killProcess(pid)
 
-        // Wait for the death notification to land before the next call, otherwise the connector
-        // still believes it holds a live binder and the retry path is never entered.
         val deadline = System.currentTimeMillis() + TIMEOUT
         while (System.currentTimeMillis() < deadline) {
             val alive = activityManager.runningAppProcesses.orEmpty().any { it.processName == target }
@@ -104,5 +142,7 @@ class ConnectionResilienceTest {
 
     private companion object {
         const val TIMEOUT = 10_000L
+        const val CONNECT_TIMEOUT = 10_000L
+        const val RECOVERY_TIMEOUT = 30_000L
     }
 }
