@@ -14,9 +14,10 @@ class SystemAccountRepositoryImplementation @Inject constructor(
     @param:Named(Constants.ASS_ACCOUNT_NAME) private val accountType: String,
 ) : SystemAccountRepository {
 
+    // Asking for one type rather than filtering the device-wide list: these are accounts this app
+    // authenticates, so they come back without GET_ACCOUNTS — a Contacts-group permission.
     override fun getAccountWebIds(): Set<String> =
-        accountManager.accounts
-            .filter { it.type == accountType }
+        accountManager.getAccountsByType(accountType)
             .map { it.name }
             .toSet()
 
