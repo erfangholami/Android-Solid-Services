@@ -1,0 +1,616 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SolidError</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":Shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":Shared/release" data-filter=":Shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Shared::com.erfangholami.androidsolidservices.shared.result/SolidError///PointingToDeclaration//1769164051">
+  <div class="breadcrumbs"><a href="../../index.html">Shared</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.shared.result</a><span class="delimiter">/</span><span class="current">SolidError</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Solid</span><wbr><span><span>Error</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="index.html">SolidError</a></div><p class="paragraph">The single failure type for every operation in the library.</p><p class="paragraph">A <code class="lang-kotlin">SolidError</code> carries a stable machine <a href="code.html">code</a>, a developer-facing <a href="message.html">message</a> (diagnostic — not for end users; branch on <a href="code.html">code</a> and localize that), the originating <a href="http-status.html">httpStatus</a> when a server responded, a <a href="retryable.html">retryable</a> hint, and the underlying <a href="cause.html">cause</a> when one exists. It replaces the library's former mix of per-feature result types, thrown domain exceptions, nullable returns, and <code class="lang-kotlin">Success(empty)</code>-on-failure.</p><p class="paragraph">HTTP responses map to an error exactly once via <a href="-companion/from-http.html">fromHttp</a>; local throwables via <a href="-companion/from-throwable.html">fromThrowable</a>.</p><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-unauthorized/index.html">Unauthorized</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-forbidden/index.html">Forbidden</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-not-found/index.html">NotFound</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-method-not-allowed/index.html">MethodNotAllowed</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-conflict/index.html">Conflict</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-precondition-failed/index.html">PreconditionFailed</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-rate-limited/index.html">RateLimited</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-server-error/index.html">ServerError</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-unexpected-response/index.html">UnexpectedResponse</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-network/index.html">Network</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-timeout/index.html">Timeout</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-tls/index.html">Tls</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-malformed/index.html">Malformed</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-cancelled/index.html">Cancelled</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-not-authenticated/index.html">NotAuthenticated</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-access-denied/index.html">AccessDenied</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-access-indeterminate/index.html">AccessIndeterminate</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-no-inbox/index.html">NoInbox</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-inbox-unauthorized/index.html">InboxUnauthorized</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-inbox-forbidden/index.html">InboxForbidden</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-notification-delivery/index.html">NotificationDelivery</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-impersonation-detected/index.html">ImpersonationDetected</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-stale-acl/index.html">StaleAcl</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-unsupported-auth-backend/index.html">UnsupportedAuthBackend</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-unknown/index.html">Unknown</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-704201898%2FClasslikes%2F1769164051" anchor-label="AccessDenied" id="-704201898%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-access-denied/index.html"><span>Access</span><wbr><span><span>Denied</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-704201898%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-access-denied/index.html">AccessDenied</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>ownerWebId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"No access to "</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">Definitive no-access to a resource; the UI can offer to send an access request.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-615003786%2FClasslikes%2F1769164051" anchor-label="AccessIndeterminate" id="-615003786%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-access-indeterminate/index.html"><span>Access</span><wbr><span><span>Indeterminate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-615003786%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-access-indeterminate/index.html">AccessIndeterminate</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Could not verify access to "</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">Access could not be authoritatively determined (transient); retry rather than deny.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1842560540%2FClasslikes%2F1769164051" anchor-label="Cancelled" id="1842560540%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-cancelled/index.html"><span><span>Cancelled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1842560540%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-cancelled/index.html">Cancelled</a> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">The operation was cancelled (coroutine cancellation).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1536992063%2FClasslikes%2F1769164051" anchor-label="Companion" id="-1536992063%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1536992063%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2062998781%2FClasslikes%2F1769164051" anchor-label="Conflict" id="-2062998781%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-conflict/index.html"><span><span>Conflict</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2062998781%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-conflict/index.html">Conflict</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Conflict (409)."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">409 — the request conflicts with the resource's current state.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1459591284%2FClasslikes%2F1769164051" anchor-label="Forbidden" id="1459591284%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-forbidden/index.html"><span><span>Forbidden</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1459591284%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-forbidden/index.html">Forbidden</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Forbidden (403)."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">403 — authenticated but not allowed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-660397489%2FClasslikes%2F1769164051" anchor-label="ImpersonationDetected" id="-660397489%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-impersonation-detected/index.html"><span>Impersonation</span><wbr><span><span>Detected</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-660397489%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-impersonation-detected/index.html">ImpersonationDetected</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>notificationUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>claimedActor<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>actualOwner<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>"Notification $notificationUri claims actor=$claimedActor but owner is " +
+                "${actualOwner ?: "unknown"}."</span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">An inbound notification's actor doesn't match the resource owner; it was dropped.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1017053470%2FClasslikes%2F1769164051" anchor-label="InboxForbidden" id="-1017053470%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-inbox-forbidden/index.html"><span>Inbox</span><wbr><span><span>Forbidden</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1017053470%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-inbox-forbidden/index.html">InboxForbidden</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>inboxUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Inbox at "</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">The recipient's inbox returned 403.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="464103667%2FClasslikes%2F1769164051" anchor-label="InboxUnauthorized" id="464103667%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-inbox-unauthorized/index.html"><span>Inbox</span><wbr><span><span>Unauthorized</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="464103667%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-inbox-unauthorized/index.html">InboxUnauthorized</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>inboxUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Inbox at "</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">The recipient's inbox returned 401.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-287713550%2FClasslikes%2F1769164051" anchor-label="Malformed" id="-287713550%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-malformed/index.html"><span><span>Malformed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-287713550%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-malformed/index.html">Malformed</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Malformed data."</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">A response body (or local payload) could not be parsed/serialized.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2037591103%2FClasslikes%2F1769164051" anchor-label="MethodNotAllowed" id="2037591103%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-method-not-allowed/index.html"><span>Method</span><wbr><span>Not</span><wbr><span><span>Allowed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2037591103%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-method-not-allowed/index.html">MethodNotAllowed</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Method not allowed (405)."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">405 — the server does not allow this method on the resource.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1925129951%2FClasslikes%2F1769164051" anchor-label="Network" id="1925129951%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-network/index.html"><span><span>Network</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1925129951%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-network/index.html">Network</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Network error."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">A network I/O failure before a response was obtained; retryable.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-461388888%2FClasslikes%2F1769164051" anchor-label="NoInbox" id="-461388888%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-no-inbox/index.html"><span>No</span><wbr><span><span>Inbox</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-461388888%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-no-inbox/index.html">NoInbox</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>targetWebId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"No inbox advertised for "</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">The target agent's profile advertises no <code class="lang-kotlin">ldp:inbox</code>, so a notification can't be delivered.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="927042041%2FClasslikes%2F1769164051" anchor-label="NotAuthenticated" id="927042041%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-not-authenticated/index.html"><span>Not</span><wbr><span><span>Authenticated</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="927042041%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-not-authenticated/index.html">NotAuthenticated</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Not authenticated. Complete sign-in first."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">No authorized local session exists for the WebID — complete sign-in first.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1943011590%2FClasslikes%2F1769164051" anchor-label="NotFound" id="1943011590%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-not-found/index.html"><span>Not</span><wbr><span><span>Found</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1943011590%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-not-found/index.html">NotFound</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Not found (404)."</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>httpStatus<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">404</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">404 / 410 — the resource does not exist.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1803106442%2FClasslikes%2F1769164051" anchor-label="NotificationDelivery" id="-1803106442%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-notification-delivery/index.html"><span>Notification</span><wbr><span><span>Delivery</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1803106442%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-notification-delivery/index.html">NotificationDelivery</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>inboxUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>"Notification delivery to $inboxUri failed" +
+            (status?.let { " (HTTP $it)" } ?: "") + "."</span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">A non-auth failure delivering a notification to an inbox.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-837286144%2FClasslikes%2F1769164051" anchor-label="PreconditionFailed" id="-837286144%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-precondition-failed/index.html"><span>Precondition</span><wbr><span><span>Failed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-837286144%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-precondition-failed/index.html">PreconditionFailed</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Precondition failed (412)."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">412 — an <code class="lang-kotlin">If-Match</code> / <code class="lang-kotlin">If-None-Match</code> precondition failed (the resource changed since it was read). Re-read to obtain a fresh ETag, then retry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-825786381%2FClasslikes%2F1769164051" anchor-label="RateLimited" id="-825786381%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rate-limited/index.html"><span>Rate</span><wbr><span><span>Limited</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-825786381%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-rate-limited/index.html">RateLimited</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Too many requests (429)."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">429 — rate limited; retry after a delay.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1767747992%2FClasslikes%2F1769164051" anchor-label="ServerError" id="-1767747992%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-server-error/index.html"><span>Server</span><wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1767747992%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-server-error/index.html">ServerError</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Server error ("</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">5xx — a server-side failure; typically transient.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="789380484%2FClasslikes%2F1769164051" anchor-label="StaleAcl" id="789380484%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-stale-acl/index.html"><span>Stale</span><wbr><span><span>Acl</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="789380484%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-stale-acl/index.html">StaleAcl</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>aclUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"ACL at "</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">A conditional ACL/ACR write was rejected (412) by a concurrent change; re-read and retry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-943447284%2FClasslikes%2F1769164051" anchor-label="Timeout" id="-943447284%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-timeout/index.html"><span><span>Timeout</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-943447284%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-timeout/index.html">Timeout</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Timed out."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">A request or connection timed out; retryable.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="441908914%2FClasslikes%2F1769164051" anchor-label="Tls" id="441908914%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-tls/index.html"><span><span>Tls</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="441908914%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-tls/index.html">Tls</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"TLS failure."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">A TLS/certificate failure.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1055207903%2FClasslikes%2F1769164051" anchor-label="Unauthorized" id="-1055207903%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unauthorized/index.html"><span><span>Unauthorized</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1055207903%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-unauthorized/index.html">Unauthorized</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Unauthorized (401)."</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">401 — no valid credentials for the target (distinct from <a href="-not-authenticated/index.html">NotAuthenticated</a>, a missing local session).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="164002339%2FClasslikes%2F1769164051" anchor-label="UnexpectedResponse" id="164002339%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unexpected-response/index.html"><span>Unexpected</span><wbr><span><span>Response</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="164002339%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-unexpected-response/index.html">UnexpectedResponse</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Unexpected response ("</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">A non-success status with no more specific mapping.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1837093821%2FClasslikes%2F1769164051" anchor-label="Unknown" id="-1837093821%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unknown/index.html"><span><span>Unknown</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1837093821%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-unknown/index.html">Unknown</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Unknown error."</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">Anything with no more specific mapping.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1578903838%2FClasslikes%2F1769164051" anchor-label="UnsupportedAuthBackend" id="1578903838%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unsupported-auth-backend/index.html"><span>Unsupported</span><wbr><span>Auth</span><wbr><span><span>Backend</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1578903838%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-unsupported-auth-backend/index.html">UnsupportedAuthBackend</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>backend<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"Auth backend "</span></span></span><span class="token punctuation">)</span> : <a href="index.html">SolidError</a></div><div class="brief "><p class="paragraph">The resource's access-control backend isn't supported.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1776380495%2FProperties%2F1769164051" anchor-label="cause" id="-1776380495%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="cause.html"><span><span>cause</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1776380495%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="cause.html">cause</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The underlying throwable, when this error wraps one.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="617349267%2FProperties%2F1769164051" anchor-label="code" id="617349267%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="code.html"><span><span>code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="617349267%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="code.html">code</a><span class="token operator">: </span><a href="../-solid-error-code/index.html">SolidErrorCode</a></div><div class="brief "><p class="paragraph">Stable classification; safe to branch on and localize.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-514443706%2FProperties%2F1769164051" anchor-label="httpStatus" id="-514443706%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="http-status.html"><span>http</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-514443706%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="http-status.html">httpStatus</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator"> = </span>null</div><div class="brief "><p class="paragraph">The HTTP status that produced this error, or <code class="lang-kotlin">null</code> for local/transport errors.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1265474707%2FProperties%2F1769164051" anchor-label="message" id="1265474707%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="message.html"><span><span>message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1265474707%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="message.html">message</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Developer-facing diagnostic description. Not an end-user string.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="294096312%2FProperties%2F1769164051" anchor-label="retryable" id="294096312%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retryable.html"><span><span>retryable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="294096312%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="retryable.html">retryable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></div><div class="brief "><p class="paragraph"><code class="lang-kotlin">true</code> when retrying the same request may succeed on its own (transient server/transport conditions). A <code class="lang-kotlin">false</code> value does not mean "never retry" — e.g. <a href="-precondition-failed/index.html">PreconditionFailed</a> needs a fresh ETag first (branch on <a href="code.html">code</a>).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-481271139%2FFunctions%2F1769164051" anchor-label="asException" id="-481271139%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="as-exception.html"><span>as</span><wbr><span><span>Exception</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-481271139%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="as-exception.html"><span class="token function">asException</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-solid-result-exception/index.html">SolidResultException</a></div><div class="brief "><p class="paragraph">Wraps this error in a throwable for <code class="lang-kotlin">getOrThrow</code>-style propagation, preserving <a href="cause.html">cause</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

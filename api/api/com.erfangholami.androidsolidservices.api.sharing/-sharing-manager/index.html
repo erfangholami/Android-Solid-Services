@@ -1,0 +1,490 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SharingManager</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":api/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":api/release" data-filter=":api/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="api::com.erfangholami.androidsolidservices.api.sharing/SharingManager///PointingToDeclaration//1788699184">
+  <div class="breadcrumbs"><a href="../../index.html">api</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.api.sharing</a><span class="delimiter">/</span><span class="current">SharingManager</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Sharing</span><wbr><span><span>Manager</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">SharingManager</a></div><p class="paragraph">Creates, lists, and revokes shares of pod resources.</p><p class="paragraph">Sharing is built on Web Access Control (WAC); pods that use Access Control Policy (ACP) are supported through a pluggable access-control backend. The manager keeps a private bookkeeping pair (<code class="lang-kotlin">given_shares.ttl</code>, <code class="lang-kotlin">received_shares.ttl</code>) under <code class="lang-kotlin">{podRoot}/solidshare/shares/</code> so the user can see what they have shared and what they have received without re-walking the pod every time.</p><p class="paragraph">Notification plumbing (LDN inbox push, listing, accept/reject of incoming requests) lives in <a href="../../com.erfangholami.androidsolidservices.api.notifications/-notifications-manager/index.html">com.erfangholami.androidsolidservices.api.notifications.NotificationsManager</a>. <code class="lang-kotlin">SharingManager</code> calls into it internally on <code class="lang-kotlin">createShare</code> / <code class="lang-kotlin">revokeShare</code>, and exposes high-level accept/reject helpers for share requests because those translate into a share creation or rejection.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="973062511%2FClasslikes%2F1788699184" anchor-label="Companion" id="973062511%2FClasslikes%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="973062511%2FClasslikes%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1366759383%2FFunctions%2F1788699184" anchor-label="acceptShareRequest" id="-1366759383%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="accept-share-request.html"><span>accept</span><wbr><span>Share</span><wbr><span><span>Request</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1366759383%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="accept-share-request.html"><span class="token function">acceptShareRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">request<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-request/index.html">ShareRequest</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-given-share/index.html">GivenShare</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Approves a <a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-request/index.html">ShareRequest</a> previously received in this user's inbox.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-161955190%2FFunctions%2F1788699184" anchor-label="addReceivedShare" id="-161955190%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-received-share.html"><span>add</span><wbr><span>Received</span><wbr><span><span>Share</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-161955190%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="add-received-share.html"><span class="token function">addReceivedShare</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">ownerHint<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-received-share/index.html">ReceivedShare</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Verifies access to <a href="add-received-share.html">resourceUri</a> from the current user's perspective and syncs <code class="lang-kotlin">received_shares.ttl</code> accordingly:</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1995378068%2FFunctions%2F1788699184" anchor-label="createShare" id="-1995378068%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-share.html"><span>create</span><wbr><span><span>Share</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1995378068%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="create-share.html"><span class="token function">createShare</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">mode<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-mode/index.html">ShareMode</a><span class="token punctuation">, </span></span><span class="parameter ">receiver<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-receiver/index.html">ShareReceiver</a><span class="token punctuation">, </span></span><span class="parameter ">notifyReceiver<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-given-share/index.html">GivenShare</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Adds (or replaces) an authorization on <a href="create-share.html">resourceUri</a> granting <a href="create-share.html">mode</a> to <a href="create-share.html">receiver</a>, and updates the given-shares index.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-750744275%2FFunctions%2F1788699184" anchor-label="getAccessGrants" id="-750744275%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-access-grants.html"><span>get</span><wbr><span>Access</span><wbr><span><span>Grants</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-750744275%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-access-grants.html"><span class="token function">getAccessGrants</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-access-grant/index.html">AccessGrant</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns every access relationship the library can observe for <a href="get-access-grants.html">webId</a>, unified into one list (see <a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-access-grant/index.html">AccessGrant</a>):</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1853088157%2FFunctions%2F1788699184" anchor-label="getGivenSharesForResource" id="1853088157%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-given-shares-for-resource.html"><span>get</span><wbr><span>Given</span><wbr><span>Shares</span><wbr><span>For</span><wbr><span><span>Resource</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1853088157%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-given-shares-for-resource.html"><span class="token function">getGivenSharesForResource</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-given-share/index.html">GivenShare</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns only the given shares affecting <a href="get-given-shares-for-resource.html">resourceUri</a> — read directly from that resource's ACL (authoritative, may differ from the index).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1483736995%2FFunctions%2F1788699184" anchor-label="getOwnerCatalog" id="-1483736995%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-owner-catalog.html"><span>get</span><wbr><span>Owner</span><wbr><span><span>Catalog</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1483736995%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-owner-catalog.html"><span class="token function">getOwnerCatalog</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">viewerWebId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">ownerWebId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-catalog-entry/index.html">CatalogEntry</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Reads <a href="get-owner-catalog.html">ownerWebId</a>'s public catalog from the viewer's perspective. Used by a requester to browse what an owner is willing to entertain requests for.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1780571632%2FFunctions%2F1788699184" anchor-label="getShareBareUrl" id="-1780571632%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-share-bare-url.html"><span>get</span><wbr><span>Share</span><wbr><span>Bare</span><wbr><span><span>Url</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1780571632%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-share-bare-url.html"><span class="token function">getShareBareUrl</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Returns the bare <code class="lang-kotlin">https://…</code> URL to encode in QR codes for non-Solid receivers and any "open in any browser" path. Equivalent to the resource URI; provided as a named helper so callers can document the choice between the two encodings.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-88253923%2FFunctions%2F1788699184" anchor-label="getShareDeepLink" id="-88253923%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-share-deep-link.html"><span>get</span><wbr><span>Share</span><wbr><span>Deep</span><wbr><span><span>Link</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-88253923%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-share-deep-link.html"><span class="token function">getShareDeepLink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">ownerWebId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Encoding used inside QR codes when the target is a Solid-aware receiver. Returns a <code class="lang-kotlin">solidshare://</code> deep-link wrapping the original <a href="get-share-deep-link.html">resourceUri</a> so the SolidShare app picks it up directly.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1018765258%2FFunctions%2F1788699184" anchor-label="getStoredGivenShares" id="1018765258%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-stored-given-shares.html"><span>get</span><wbr><span>Stored</span><wbr><span>Given</span><wbr><span><span>Shares</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1018765258%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-stored-given-shares.html"><span class="token function">getStoredGivenShares</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-given-share/index.html">GivenShare</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the locally-tracked given shares (fast — single HTTP read of the index file). Use <a href="refresh-given-shares.html">refreshGivenShares</a> to re-validate against the actual ACLs on the pod.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1619040438%2FFunctions%2F1788699184" anchor-label="getStoredReceivedShares" id="-1619040438%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-stored-received-shares.html"><span>get</span><wbr><span>Stored</span><wbr><span>Received</span><wbr><span><span>Shares</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1619040438%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-stored-received-shares.html"><span class="token function">getStoredReceivedShares</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-received-share/index.html">ReceivedShare</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns the locally-tracked received shares (fast). Use <a href="refresh-received-shares.html">refreshReceivedShares</a> to re-validate.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="682821558%2FFunctions%2F1788699184" anchor-label="makePrivate" id="682821558%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="make-private.html"><span>make</span><wbr><span><span>Private</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="682821558%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="make-private.html"><span class="token function">makePrivate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Resets <a href="make-private.html">resourceUri</a>'s ACL/ACR to <strong>owner-only</strong> — dropping every other agent's access so only <a href="make-private.html">webId</a> can reach it. Use to make a resource private, e.g. a freshly duplicated copy that must not inherit the original's shares. On WAC this writes a single owner Read/Write/Control rule (with <code class="lang-kotlin">acl:default</code> for containers, so members inherit owner-only); on ACP an equivalent owner-only policy. Requires the caller to hold Control on the resource.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1809802532%2FFunctions%2F1788699184" anchor-label="parseShareDeepLink" id="1809802532%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="parse-share-deep-link.html"><span>parse</span><wbr><span>Share</span><wbr><span>Deep</span><wbr><span><span>Link</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1809802532%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="parse-share-deep-link.html"><span class="token function">parseShareDeepLink</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">deepLink<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-parsed-share-link/index.html">ParsedShareLink</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Extracts the resource URI — and, when present, the embedded owner WebID — from a <a href="get-share-deep-link.html">getShareDeepLink</a> string. Returns null when <a href="parse-share-deep-link.html">deepLink</a> is not a <code class="lang-kotlin">solidshare://</code> link.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1046299290%2FFunctions%2F1788699184" anchor-label="publishCatalogEntry" id="1046299290%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="publish-catalog-entry.html"><span>publish</span><wbr><span>Catalog</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1046299290%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="publish-catalog-entry.html"><span class="token function">publishCatalogEntry</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">entry<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-catalog-entry/index.html">CatalogEntry</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Adds (or replaces) an entry in the owner's public catalog at <code class="lang-kotlin">{podRoot}/solidshare/catalog.ttl</code>. The catalog lets potential requesters discover what to ask for; the listed resources stay private until access is granted via <a href="accept-share-request.html">acceptShareRequest</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2065219924%2FFunctions%2F1788699184" anchor-label="rebuildGivenIndex" id="-2065219924%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rebuild-given-index.html"><span>rebuild</span><wbr><span>Given</span><wbr><span><span>Index</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2065219924%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="rebuild-given-index.html"><span class="token function">rebuildGivenIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-given-share/index.html">GivenShare</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Walks the entire pod tree, reads every resource's ACL, and rebuilds <code class="lang-kotlin">given_shares.ttl</code> from scratch. Use this to recover shares that were created on another client, outside this app's index.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-842135928%2FFunctions%2F1788699184" anchor-label="refreshGivenShares" id="-842135928%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="refresh-given-shares.html"><span>refresh</span><wbr><span>Given</span><wbr><span><span>Shares</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-842135928%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="refresh-given-shares.html"><span class="token function">refreshGivenShares</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-given-share/index.html">GivenShare</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Re-validates each tracked given share by re-reading the relevant resource ACL. Drops any entries whose ACL no longer grants the receiver the recorded mode and persists the verified list back to the index.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-288415796%2FFunctions%2F1788699184" anchor-label="refreshReceivedShares" id="-288415796%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="refresh-received-shares.html"><span>refresh</span><wbr><span>Received</span><wbr><span><span>Shares</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-288415796%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="refresh-received-shares.html"><span class="token function">refreshReceivedShares</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-received-share/index.html">ReceivedShare</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Re-validates each tracked received share via HEAD (uses <code class="lang-kotlin">WAC-Allow</code> and <code class="lang-kotlin">Link rel="solid:owner"</code>). Stale entries are dropped.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1431215774%2FFunctions%2F1788699184" anchor-label="rejectShareRequest" id="1431215774%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reject-share-request.html"><span>reject</span><wbr><span>Share</span><wbr><span><span>Request</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1431215774%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="reject-share-request.html"><span class="token function">rejectShareRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">request<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-request/index.html">ShareRequest</a><span class="token punctuation">, </span></span><span class="parameter ">reason<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Declines a <a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-request/index.html">ShareRequest</a> by posting an <code class="lang-kotlin">as:Reject</code> notification to the requester's inbox, optionally with a <a href="reject-share-request.html">reason</a> carried as <code class="lang-kotlin">as:summary</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="712912372%2FFunctions%2F1788699184" anchor-label="removeCatalogEntry" id="712912372%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="remove-catalog-entry.html"><span>remove</span><wbr><span>Catalog</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="712912372%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="remove-catalog-entry.html"><span class="token function">removeCatalogEntry</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Removes the entry for <a href="remove-catalog-entry.html">resourceUri</a> from the owner's catalog, if present. Does not affect the resource itself or any share state.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="858245248%2FFunctions%2F1788699184" anchor-label="removeReceivedShare" id="858245248%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="remove-received-share.html"><span>remove</span><wbr><span>Received</span><wbr><span><span>Share</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="858245248%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="remove-received-share.html"><span class="token function">removeReceivedShare</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">ownerWebId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Removes a tracked received share. Does not affect the resource itself.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1073118770%2FFunctions%2F1788699184" anchor-label="repairOwnerControl" id="-1073118770%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="repair-owner-control.html"><span>repair</span><wbr><span>Owner</span><wbr><span><span>Control</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1073118770%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="repair-owner-control.html"><span class="token function">repairOwnerControl</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Re-asserts the signed-in owner's Read/Write/Control on <a href="repair-owner-control.html">resourceUri</a>'s ACL/ACR <strong>without removing anyone else's access</strong>, to recover from an ACL/ACR edit that accidentally locked the owner out of their own resource.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1308912907%2FFunctions%2F1788699184" anchor-label="revokeShare" id="1308912907%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="revoke-share.html"><span>revoke</span><wbr><span><span>Share</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1308912907%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="revoke-share.html"><span class="token function">revokeShare</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">receiver<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-receiver/index.html">ShareReceiver</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Removes the authorization for <a href="revoke-share.html">receiver</a> on <a href="revoke-share.html">resourceUri</a> and removes the matching index triple. If <a href="revoke-share.html">receiver</a> is a WebID, an <code class="lang-kotlin">as:Undo</code> is posted to their inbox (best-effort).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="183728693%2FFunctions%2F1788699184" anchor-label="syncReceivedShares" id="183728693%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="sync-received-shares.html"><span>sync</span><wbr><span>Received</span><wbr><span><span>Shares</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="183728693%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="sync-received-shares.html"><span class="token function">syncReceivedShares</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">notifications<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-notification/index.html">ShareNotification</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-received-share/index.html">ReceivedShare</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Reconciles the user's received-shares index against a batch of share <a href="sync-received-shares.html">notifications</a> already read — and ownership-gated — from their inbox, then returns the updated stored received shares.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="464734841%2FFunctions%2F1788699184" anchor-label="updateShare" id="464734841%2FFunctions%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-share.html"><span>update</span><wbr><span><span>Share</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="464734841%2FFunctions%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="update-share.html"><span class="token function">updateShare</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">mode<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-mode/index.html">ShareMode</a><span class="token punctuation">, </span></span><span class="parameter ">receiver<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-share-receiver/index.html">ShareReceiver</a><span class="token punctuation">, </span></span><span class="parameter ">notifyReceiver<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.result/-solid-result/index.html">SolidResult</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.sharing/-given-share/index.html">GivenShare</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Updates the access mode of an existing share — replacing <a href="update-share.html">receiver</a>'s authorization on <a href="update-share.html">resourceUri</a> with <a href="update-share.html">mode</a> (widening or narrowing it) and patching the given-shares index, while preserving the share's original <code class="lang-kotlin">dcterms:created</code> time. Equivalent to <a href="create-share.html">createShare</a> with the new mode.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

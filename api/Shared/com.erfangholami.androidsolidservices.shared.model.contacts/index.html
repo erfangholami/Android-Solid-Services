@@ -1,0 +1,658 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>com.erfangholami.androidsolidservices.shared.model.contacts</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":Shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":Shared/release" data-filter=":Shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageids="Shared::com.erfangholami.androidsolidservices.shared.model.contacts////PointingToDeclaration//1769164051">
+  <div class="breadcrumbs"><a href="../index.html">Shared</a><span class="delimiter">/</span><span class="current">com.erfangholami.androidsolidservices.shared.model.contacts</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-404700818%2FClasslikes%2F1769164051" anchor-label="AddressBook" id="-404700818%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-address-book/index.html"><span>Address</span><wbr><span><span>Book</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-404700818%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-address-book/index.html">AddressBook</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>title<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>contacts<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-contact/index.html">Contact</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>groups<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-group/index.html">Group</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2090407952%2FClasslikes%2F1769164051" anchor-label="AddressBookList" id="-2090407952%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-address-book-list/index.html"><span>Address</span><wbr><span>Book</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2090407952%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-address-book-list/index.html">AddressBookList</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>publicAddressBookUris<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>privateAddressBookUris<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2062166224%2FClasslikes%2F1769164051" anchor-label="AddressBuilder" id="-2062166224%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-address-builder/index.html"><span>Address</span><wbr><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2062166224%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-address-builder/index.html">AddressBuilder</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="947672249%2FClasslikes%2F1769164051" anchor-label="AddressEntry" id="947672249%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-address-entry/index.html"><span>Address</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="947672249%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-address-entry/index.html">AddressEntry</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>street<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>locality<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>region<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>postalCode<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>countryName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>poBox<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>type<span class="token operator">: </span><a href="-address-type/index.html">AddressType</a><span class="token operator"> = </span>AddressType.OTHER</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1709324861%2FClasslikes%2F1769164051" anchor-label="AddressType" id="1709324861%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-address-type/index.html"><span>Address</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1709324861%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-address-type/index.html">AddressType</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-address-type/index.html">AddressType</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="342255787%2FClasslikes%2F1769164051" anchor-label="Contact" id="342255787%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-contact/index.html"><span><span>Contact</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="342255787%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-contact/index.html">Contact</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">A contact as it appears in a listing: just enough to render a row.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1598369569%2FClasslikes%2F1769164051" anchor-label="ContactData" id="1598369569%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-contact-data/index.html"><span>Contact</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1598369569%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-contact-data/index.html">ContactData</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>fullName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="-name/index.html">Name</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>nickname<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>phones<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-phone-entry/index.html">PhoneEntry</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>emails<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-email-entry/index.html">EmailEntry</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>impps<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-im-entry/index.html">ImEntry</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>addresses<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-address-entry/index.html">AddressEntry</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>birthday<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>anniversary<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>organizationName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>organizationUnit<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>role<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>title<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>note<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>categories<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>gender<span class="token operator">: </span><a href="-gender/index.html">Gender</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>geos<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>languages<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>urls<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-url-entry/index.html">UrlEntry</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>uid<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1829427238%2FClasslikes%2F1769164051" anchor-label="ContactDataBuilder" id="1829427238%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-contact-data-builder/index.html"><span>Contact</span><wbr><span>Data</span><wbr><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1829427238%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-contact-data-builder/index.html">ContactDataBuilder</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1349704636%2FClasslikes%2F1769164051" anchor-label="ContactDataDsl" id="-1349704636%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-contact-data-dsl/index.html"><span>Contact</span><wbr><span>Data</span><wbr><span><span>Dsl</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1349704636%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-dsl-marker/index.html"><span class="token annotation builtin">DslMarker</span></a></div></div><span class="token keyword">annotation class </span><a href="-contact-data-dsl/index.html">ContactDataDsl</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-387413518%2FClasslikes%2F1769164051" anchor-label="ContactMatch" id="-387413518%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-contact-match/index.html"><span>Contact</span><wbr><span><span>Match</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-387413518%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-contact-match/index.html">ContactMatch</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>contact<span class="token operator">: </span><a href="-solid-contact/index.html">SolidContact</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>addressBookUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="861669925%2FClasslikes%2F1769164051" anchor-label="ContactPhoto" id="861669925%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-contact-photo/index.html"><span>Contact</span><wbr><span><span>Photo</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="861669925%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-contact-photo/index.html">ContactPhoto</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>contentType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>bytes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-366125087%2FClasslikes%2F1769164051" anchor-label="EmailEntry" id="-366125087%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-email-entry/index.html"><span>Email</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-366125087%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-email-entry/index.html">EmailEntry</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>address<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>type<span class="token operator">: </span><a href="-email-type/index.html">EmailType</a><span class="token operator"> = </span>EmailType.OTHER</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="835660309%2FClasslikes%2F1769164051" anchor-label="EmailType" id="835660309%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-email-type/index.html"><span>Email</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="835660309%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-email-type/index.html">EmailType</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-email-type/index.html">EmailType</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-6063333%2FClasslikes%2F1769164051" anchor-label="FullGroup" id="-6063333%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-full-group/index.html"><span>Full</span><wbr><span><span>Group</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-6063333%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-full-group/index.html">FullGroup</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>contacts<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-contact/index.html">Contact</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-977911626%2FClasslikes%2F1769164051" anchor-label="Gender" id="-977911626%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-gender/index.html"><span><span>Gender</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-977911626%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-gender/index.html">Gender</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-gender/index.html">Gender</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">vCard 4.0 <code class="lang-kotlin">GENDER</code> (W3C vCard ontology <code class="lang-kotlin">vcard:hasGender</code>), mapped to the ontology's gender classes: <code class="lang-kotlin">vcard:Male</code>, <code class="lang-kotlin">vcard:Female</code>, <code class="lang-kotlin">vcard:Other</code>, <code class="lang-kotlin">vcard:None</code>, <code class="lang-kotlin">vcard:Unknown</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="477793708%2FClasslikes%2F1769164051" anchor-label="Group" id="477793708%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-group/index.html"><span><span>Group</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="477793708%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-group/index.html">Group</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1286711005%2FClasslikes%2F1769164051" anchor-label="ImEntry" id="1286711005%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-im-entry/index.html"><span>Im</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1286711005%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-im-entry/index.html">ImEntry</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>handle<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>type<span class="token operator">: </span><a href="-im-type/index.html">ImType</a><span class="token operator"> = </span>ImType.OTHER</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">An instant-messaging handle (vCard <code class="lang-kotlin">IMPP</code> / <code class="lang-kotlin">vcard:hasInstantMessage</code>). <a href="../../Shared/com.erfangholami.androidsolidservices.shared.model.contacts/-im-entry/--root--.html">handle</a> is stored verbatim — a scheme-qualified URI (<code class="lang-kotlin">xmpp:alice@example.com</code>) or a bare protocol handle — so it round-trips whatever a device or <code class="lang-kotlin">.vcf</code> provides.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-496495719%2FClasslikes%2F1769164051" anchor-label="ImType" id="-496495719%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-im-type/index.html"><span>Im</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-496495719%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-im-type/index.html">ImType</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-im-type/index.html">ImType</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="687636908%2FClasslikes%2F1769164051" anchor-label="Name" id="687636908%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-name/index.html"><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="687636908%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-name/index.html">Name</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>familyName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>givenName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>additionalName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>honorificPrefix<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>honorificSuffix<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div><div class="brief "><p class="paragraph">The structured-name parts of a contact (<code class="lang-kotlin">vcard:hasName</code>).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="521577275%2FClasslikes%2F1769164051" anchor-label="NameBuilder" id="521577275%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-name-builder/index.html"><span>Name</span><wbr><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="521577275%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="-name-builder/index.html">NameBuilder</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="473880115%2FClasslikes%2F1769164051" anchor-label="PhoneEntry" id="473880115%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-phone-entry/index.html"><span>Phone</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="473880115%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-phone-entry/index.html">PhoneEntry</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>number<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>type<span class="token operator">: </span><a href="-phone-type/index.html">PhoneType</a><span class="token operator"> = </span>PhoneType.OTHER</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="862757251%2FClasslikes%2F1769164051" anchor-label="PhoneType" id="862757251%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-phone-type/index.html"><span>Phone</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="862757251%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-phone-type/index.html">PhoneType</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-phone-type/index.html">PhoneType</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="505844354%2FClasslikes%2F1769164051" anchor-label="SolidContact" id="505844354%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-solid-contact/index.html"><span>Solid</span><wbr><span><span>Contact</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="505844354%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-solid-contact/index.html">SolidContact</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>etag<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>modified<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>photoUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>data<span class="token operator">: </span><a href="-contact-data/index.html">ContactData</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1854533884%2FClasslikes%2F1769164051" anchor-label="SolidContactList" id="-1854533884%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-solid-contact-list/index.html"><span>Solid</span><wbr><span>Contact</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1854533884%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-solid-contact-list/index.html">SolidContactList</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>contacts<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-solid-contact/index.html">SolidContact</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1261287412%2FClasslikes%2F1769164051" anchor-label="UrlEntry" id="1261287412%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-url-entry/index.html"><span>Url</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1261287412%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-url-entry/index.html">UrlEntry</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>type<span class="token operator">: </span><a href="-u-r-l-type/index.html">URLType</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1769703330%2FClasslikes%2F1769164051" anchor-label="URLType" id="1769703330%2FClasslikes%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-r-l-type/index.html"><span><span>URLType</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1769703330%2FClasslikes%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-u-r-l-type/index.html">URLType</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-u-r-l-type/index.html">URLType</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">The kind of link a <code class="lang-kotlin">vcard:hasURL</code> node carries.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="800347235%2FProperties%2F1769164051" anchor-label="CONTACTS_DIRECTORY_SUFFIX" id="800347235%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-o-n-t-a-c-t-s_-d-i-r-e-c-t-o-r-y_-s-u-f-f-i-x.html"><span>CONTACTS_</span><wbr><span>DIRECTORY_</span><wbr><span>SUFFIX</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="800347235%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-c-o-n-t-a-c-t-s_-d-i-r-e-c-t-o-r-y_-s-u-f-f-i-x.html">CONTACTS_DIRECTORY_SUFFIX</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1067977691%2FProperties%2F1769164051" anchor-label="GROUP_DIRECTORY_SUFFIX" id="-1067977691%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-o-u-p_-d-i-r-e-c-t-o-r-y_-s-u-f-f-i-x.html"><span>GROUP_</span><wbr><span>DIRECTORY_</span><wbr><span>SUFFIX</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1067977691%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-o-u-p_-d-i-r-e-c-t-o-r-y_-s-u-f-f-i-x.html">GROUP_DIRECTORY_SUFFIX</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-852027131%2FProperties%2F1769164051" anchor-label="GROUPS_FILE_NAME" id="-852027131%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-o-u-p-s_-f-i-l-e_-n-a-m-e.html"><span>GROUPS_</span><wbr><span>FILE_</span><wbr><span>NAME</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-852027131%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-o-u-p-s_-f-i-l-e_-n-a-m-e.html">GROUPS_FILE_NAME</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1558390095%2FProperties%2F1769164051" anchor-label="INDEX_FILE_NAME" id="-1558390095%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-d-e-x_-f-i-l-e_-n-a-m-e.html"><span>INDEX_</span><wbr><span>FILE_</span><wbr><span>NAME</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1558390095%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-n-d-e-x_-f-i-l-e_-n-a-m-e.html">INDEX_FILE_NAME</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1437829343%2FProperties%2F1769164051" anchor-label="PEOPLE_DIRECTORY_SUFFIX" id="1437829343%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-e-o-p-l-e_-d-i-r-e-c-t-o-r-y_-s-u-f-f-i-x.html"><span>PEOPLE_</span><wbr><span>DIRECTORY_</span><wbr><span>SUFFIX</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1437829343%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-e-o-p-l-e_-d-i-r-e-c-t-o-r-y_-s-u-f-f-i-x.html">PEOPLE_DIRECTORY_SUFFIX</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1046352278%2FProperties%2F1769164051" anchor-label="PEOPLE_FILE_NAME" id="-1046352278%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-e-o-p-l-e_-f-i-l-e_-n-a-m-e.html"><span>PEOPLE_</span><wbr><span>FILE_</span><wbr><span>NAME</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1046352278%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-e-o-p-l-e_-f-i-l-e_-n-a-m-e.html">PEOPLE_FILE_NAME</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-2126586430%2FFunctions%2F1769164051" anchor-label="addressBookUriForContact" id="-2126586430%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="address-book-uri-for-contact.html"><span>address</span><wbr><span>Book</span><wbr><span>Uri</span><wbr><span>For</span><wbr><span><span>Contact</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2126586430%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="address-book-uri-for-contact.html"><span class="token function">addressBookUriForContact</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">contactUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-612620764%2FFunctions%2F1769164051" anchor-label="buildUpon" id="-612620764%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="build-upon.html"><span>build</span><wbr><span><span>Upon</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-612620764%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="-contact-data/index.html">ContactData</a><span class="token punctuation">.</span><a href="build-upon.html"><span class="token function">buildUpon</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><a href="-contact-data-builder/index.html">ContactDataBuilder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-contact-data/index.html">ContactData</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1630747383%2FFunctions%2F1769164051" anchor-label="contactData" id="-1630747383%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="contact-data.html"><span>contact</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1630747383%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="contact-data.html"><span class="token function">contactData</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><a href="-contact-data-builder/index.html">ContactDataBuilder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-contact-data/index.html">ContactData</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

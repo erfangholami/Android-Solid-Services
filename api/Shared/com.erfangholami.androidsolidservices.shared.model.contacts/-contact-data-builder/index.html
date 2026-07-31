@@ -1,0 +1,460 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ContactDataBuilder</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":Shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":Shared/release" data-filter=":Shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Shared::com.erfangholami.androidsolidservices.shared.model.contacts/ContactDataBuilder///PointingToDeclaration//1769164051">
+  <div class="breadcrumbs"><a href="../../index.html">Shared</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.shared.model.contacts</a><span class="delimiter">/</span><span class="current">ContactDataBuilder</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Contact</span><wbr><span>Data</span><wbr><span><span>Builder</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ContactDataBuilder</a></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="2005853521%2FProperties%2F1769164051" anchor-label="anniversary" id="2005853521%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="anniversary.html"><span><span>anniversary</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2005853521%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="anniversary.html">anniversary</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-945226948%2FProperties%2F1769164051" anchor-label="birthday" id="-945226948%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="birthday.html"><span><span>birthday</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-945226948%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="birthday.html">birthday</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="615701151%2FProperties%2F1769164051" anchor-label="fullName" id="615701151%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="full-name.html"><span>full</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="615701151%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="full-name.html">fullName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="892708472%2FProperties%2F1769164051" anchor-label="gender" id="892708472%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="gender.html"><span><span>gender</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="892708472%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="gender.html">gender</a><span class="token operator">: </span><a href="../-gender/index.html">Gender</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="508466795%2FProperties%2F1769164051" anchor-label="nickname" id="508466795%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="nickname.html"><span><span>nickname</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="508466795%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="nickname.html">nickname</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-602515097%2FProperties%2F1769164051" anchor-label="note" id="-602515097%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="note.html"><span><span>note</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-602515097%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="note.html">note</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-835901829%2FProperties%2F1769164051" anchor-label="organizationName" id="-835901829%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="organization-name.html"><span>organization</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-835901829%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="organization-name.html">organizationName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1618043298%2FProperties%2F1769164051" anchor-label="organizationUnit" id="1618043298%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="organization-unit.html"><span>organization</span><wbr><span><span>Unit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1618043298%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="organization-unit.html">organizationUnit</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1228053149%2FProperties%2F1769164051" anchor-label="role" id="-1228053149%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="role.html"><span><span>role</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1228053149%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="role.html">role</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2020503927%2FProperties%2F1769164051" anchor-label="title" id="-2020503927%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="title.html"><span><span>title</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2020503927%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="title.html">title</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="346279057%2FProperties%2F1769164051" anchor-label="uid" id="346279057%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="uid.html"><span><span>uid</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="346279057%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">var </span><a href="uid.html">uid</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="212280246%2FFunctions%2F1769164051" anchor-label="address" id="212280246%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="address.html"><span><span>address</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="212280246%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="address.html"><span class="token function">address</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">type<span class="token operator">: </span><a href="../-address-type/index.html">AddressType</a><span class="token operator"> = </span>AddressType.OTHER<span class="token punctuation">, </span></span><span class="parameter ">block<span class="token operator">: </span><a href="../-address-builder/index.html">AddressBuilder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="274173747%2FFunctions%2F1769164051" anchor-label="build" id="274173747%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="build.html"><span><span>build</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="274173747%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="build.html"><span class="token function">build</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-contact-data/index.html">ContactData</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1391679223%2FFunctions%2F1769164051" anchor-label="category" id="-1391679223%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="category.html"><span><span>category</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1391679223%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="category.html"><span class="token function">category</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-941030555%2FFunctions%2F1769164051" anchor-label="email" id="-941030555%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="email.html"><span><span>email</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-941030555%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="email.html"><span class="token function">email</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">address<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="../-email-type/index.html">EmailType</a><span class="token operator"> = </span>EmailType.OTHER</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1535935916%2FFunctions%2F1769164051" anchor-label="geo" id="-1535935916%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="geo.html"><span><span>geo</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1535935916%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="geo.html"><span class="token function">geo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Adds a vCard 4.0 <code class="lang-kotlin">GEO</code> position (<code class="lang-kotlin">vcard:hasGeo</code>). <a href="geo.html">value</a> is kept verbatim — a <code class="lang-kotlin">geo:</code> URI (<code class="lang-kotlin">geo:37.386013,-122.082932</code>) or a bare <code class="lang-kotlin">lat,lng</code> pair, which the RDF codec prefixes with the <code class="lang-kotlin">geo:</code> scheme on write.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-328851271%2FFunctions%2F1769164051" anchor-label="impp" id="-328851271%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="impp.html"><span><span>impp</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-328851271%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="impp.html"><span class="token function">impp</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">handle<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="../-im-type/index.html">ImType</a><span class="token operator"> = </span>ImType.OTHER</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1348277277%2FFunctions%2F1769164051" anchor-label="language" id="-1348277277%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="language.html"><span><span>language</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1348277277%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="language.html"><span class="token function">language</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tag<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Adds a vCard 4.0 <code class="lang-kotlin">LANG</code> contact language (<code class="lang-kotlin">vcard:hasLanguage</code>), a BCP-47 tag such as <code class="lang-kotlin">en</code> or <code class="lang-kotlin">fa-IR</code>. List order carries the vCard preference order. De-duplicated case-insensitively.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1054688324%2FFunctions%2F1769164051" anchor-label="name" id="1054688324%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="name.html"><span><span>name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1054688324%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="name.html"><span class="token function">name</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">block<span class="token operator">: </span><a href="../-name-builder/index.html">NameBuilder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1466756389%2FFunctions%2F1769164051" anchor-label="phone" id="1466756389%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="phone.html"><span><span>phone</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1466756389%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="phone.html"><span class="token function">phone</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">number<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="../-phone-type/index.html">PhoneType</a><span class="token operator"> = </span>PhoneType.OTHER</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1062761147%2FFunctions%2F1769164051" anchor-label="url" id="-1062761147%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="url.html"><span><span>url</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1062761147%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="url.html"><span class="token function">url</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="../-u-r-l-type/index.html">URLType</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2054834926%2FFunctions%2F1769164051" anchor-label="webId" id="-2054834926%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="web-id.html"><span>web</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2054834926%2FFunctions%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="web-id.html"><span class="token function">webId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

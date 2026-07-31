@@ -1,0 +1,336 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ExceptionsErrorCode</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":Shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":Shared/release" data-filter=":Shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Shared::com.erfangholami.androidsolidservices.shared.error/ExceptionsErrorCode///PointingToDeclaration//1769164051">
+  <div class="breadcrumbs"><a href="../../index.html">Shared</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.shared.error</a><span class="delimiter">/</span><span class="current">ExceptionsErrorCode</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Exceptions</span><wbr><span>Error</span><wbr><span><span>Code</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">ExceptionsErrorCode</a></div><p class="paragraph">Integer error codes used to classify exceptions transported over the AIDL IPC boundary.</p><p class="paragraph">The <code class="lang-kotlin">client</code> SDK maps these codes back to typed <code class="lang-kotlin">SolidException</code> subtypes so callers receive a structured exception rather than a bare error code.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1213645527%2FProperties%2F1769164051" anchor-label="ACCESS_DENIED" id="-1213645527%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-d-e-n-i-e-d.html"><span>ACCESS_</span><wbr><span>DENIED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1213645527%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-d-e-n-i-e-d.html">ACCESS_DENIED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">200</span></div><div class="brief "><p class="paragraph">The target resource or inbox denied access (HTTP 403).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1859920089%2FProperties%2F1769164051" anchor-label="DRAW_OVERLAY_NOT_PERMITTED" id="1859920089%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-r-a-w_-o-v-e-r-l-a-y_-n-o-t_-p-e-r-m-i-t-t-e-d.html"><span>DRAW_</span><wbr><span>OVERLAY_</span><wbr><span>NOT_</span><wbr><span>PERMITTED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1859920089%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-r-a-w_-o-v-e-r-l-a-y_-n-o-t_-p-e-r-m-i-t-t-e-d.html">DRAW_OVERLAY_NOT_PERMITTED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div><div class="brief "><p class="paragraph">The deprecated <code class="lang-kotlin">requestLogin</code> flow was called. It drew its picker over the calling app and so needed the Android <code class="lang-kotlin">SYSTEM_ALERT_WINDOW</code> permission, which the app no longer requests; callers launch the <code class="lang-kotlin">AuthorizeWithSolid</code> contract instead. The code is kept because installed apps still map it.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-885063754%2FProperties%2F1769164051" anchor-label="IMPERSONATION_DETECTED" id="-885063754%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-m-p-e-r-s-o-n-a-t-i-o-n_-d-e-t-e-c-t-e-d.html"><span>IMPERSONATION_</span><wbr><span>DETECTED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-885063754%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-m-p-e-r-s-o-n-a-t-i-o-n_-d-e-t-e-c-t-e-d.html">IMPERSONATION_DETECTED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">205</span></div><div class="brief "><p class="paragraph">A WebID mismatch was detected — the DPoP token subject does not match the claimed identity.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1715916417%2FProperties%2F1769164051" anchor-label="INBOX_FORBIDDEN" id="-1715916417%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-b-o-x_-f-o-r-b-i-d-d-e-n.html"><span>INBOX_</span><wbr><span>FORBIDDEN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1715916417%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-n-b-o-x_-f-o-r-b-i-d-d-e-n.html">INBOX_FORBIDDEN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">203</span></div><div class="brief "><p class="paragraph">The recipient's inbox rejected the request with 403 Forbidden.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-39828498%2FProperties%2F1769164051" anchor-label="INBOX_UNAUTHORIZED" id="-39828498%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-b-o-x_-u-n-a-u-t-h-o-r-i-z-e-d.html"><span>INBOX_</span><wbr><span><span>UNAUTHORIZED</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-39828498%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-n-b-o-x_-u-n-a-u-t-h-o-r-i-z-e-d.html">INBOX_UNAUTHORIZED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">202</span></div><div class="brief "><p class="paragraph">The recipient's inbox requires authentication that could not be satisfied (HTTP 401).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1832383891%2FProperties%2F1769164051" anchor-label="NO_INBOX" id="1832383891%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-o_-i-n-b-o-x.html"><span>NO_</span><wbr><span>INBOX</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1832383891%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-n-o_-i-n-b-o-x.html">NO_INBOX</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">201</span></div><div class="brief "><p class="paragraph">The recipient's WebID profile does not advertise an LDN inbox.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1061498368%2FProperties%2F1769164051" anchor-label="NOT_PERMISSION" id="1061498368%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-o-t_-p-e-r-m-i-s-s-i-o-n.html"><span>NOT_</span><wbr><span>PERMISSION</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1061498368%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-n-o-t_-p-e-r-m-i-s-s-i-o-n.html">NOT_PERMISSION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">101</span></div><div class="brief "><p class="paragraph">The caller does not have permission to perform the requested operation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1008694972%2FProperties%2F1769164051" anchor-label="NOT_SUPPORTED_CLASS" id="-1008694972%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-o-t_-s-u-p-p-o-r-t-e-d_-c-l-a-s-s.html"><span>NOT_</span><wbr><span>SUPPORTED_</span><wbr><span>CLASS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1008694972%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-n-o-t_-s-u-p-p-o-r-t-e-d_-c-l-a-s-s.html">NOT_SUPPORTED_CLASS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">100</span></div><div class="brief "><p class="paragraph">The requested resource class is not supported by this operation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2140281113%2FProperties%2F1769164051" anchor-label="NOTIFICATION_DELIVERY_FAILED" id="-2140281113%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-o-t-i-f-i-c-a-t-i-o-n_-d-e-l-i-v-e-r-y_-f-a-i-l-e-d.html"><span>NOTIFICATION_</span><wbr><span>DELIVERY_</span><wbr><span>FAILED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2140281113%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-n-o-t-i-f-i-c-a-t-i-o-n_-d-e-l-i-v-e-r-y_-f-a-i-l-e-d.html">NOTIFICATION_DELIVERY_FAILED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">204</span></div><div class="brief "><p class="paragraph">The notification could not be delivered to the recipient's inbox.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1088886588%2FProperties%2F1769164051" anchor-label="NULL_WEBID" id="-1088886588%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-u-l-l_-w-e-b-i-d.html"><span>NULL_</span><wbr><span>WEBID</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1088886588%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-n-u-l-l_-w-e-b-i-d.html">NULL_WEBID</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">102</span></div><div class="brief "><p class="paragraph">A non-null WebID is required but was not provided.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-169374659%2FProperties%2F1769164051" anchor-label="SOLID_NOT_LOGGED_IN" id="-169374659%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-o-l-i-d_-n-o-t_-l-o-g-g-e-d_-i-n.html"><span>SOLID_</span><wbr><span>NOT_</span><wbr><span>LOGGED_</span><wbr><span>IN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-169374659%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-o-l-i-d_-n-o-t_-l-o-g-g-e-d_-i-n.html">SOLID_NOT_LOGGED_IN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2</span></div><div class="brief "><p class="paragraph">No Solid account is signed in for the requested WebID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="131377691%2FProperties%2F1769164051" anchor-label="STALE_ACL" id="131377691%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-a-l-e_-a-c-l.html"><span>STALE_</span><wbr><span>ACL</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="131377691%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-a-l-e_-a-c-l.html">STALE_ACL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">206</span></div><div class="brief "><p class="paragraph">The ACL resource is out of date and must be re-read before writing.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1906745387%2FProperties%2F1769164051" anchor-label="UNKNOWN" id="-1906745387%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-n-k-n-o-w-n.html"><span><span>UNKNOWN</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1906745387%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-u-n-k-n-o-w-n.html">UNKNOWN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">103</span></div><div class="brief "><p class="paragraph">An unexpected error occurred that does not map to a more specific code.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1783132180%2FProperties%2F1769164051" anchor-label="UNSUPPORTED_AUTH_BACKEND" id="1783132180%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-n-s-u-p-p-o-r-t-e-d_-a-u-t-h_-b-a-c-k-e-n-d.html"><span>UNSUPPORTED_</span><wbr><span>AUTH_</span><wbr><span>BACKEND</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1783132180%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-u-n-s-u-p-p-o-r-t-e-d_-a-u-t-h_-b-a-c-k-e-n-d.html">UNSUPPORTED_AUTH_BACKEND</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">207</span></div><div class="brief "><p class="paragraph">The pod's access-control system (WAC or ACP) is not supported for this operation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

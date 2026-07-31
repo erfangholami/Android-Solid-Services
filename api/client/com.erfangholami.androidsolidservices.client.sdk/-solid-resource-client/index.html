@@ -1,0 +1,520 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SolidResourceClient</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":client/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":client/release" data-filter=":client/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="client::com.erfangholami.androidsolidservices.client.sdk/SolidResourceClient///PointingToDeclaration//1285123853">
+  <div class="breadcrumbs"><a href="../../index.html">client</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.client.sdk</a><span class="delimiter">/</span><span class="current">SolidResourceClient</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Solid</span><wbr><span>Resource</span><wbr><span><span>Client</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">SolidResourceClient</a></div><p class="paragraph">Reads, creates, updates and deletes resources on the authenticated user's Solid pod by communicating with the Android Solid Services app over IPC.</p><p class="paragraph">Obtain an instance via <a href="../-solid/-companion/get-resource-client.html">Solid.getResourceClient</a>.</p><p class="paragraph">All public methods are <code class="lang-kotlin">suspend</code> functions and must be called from a coroutine. Each returns its result or throws a <a href="../-solid-exception/index.html">SolidException</a> subtype on failure — including precondition failures (<a href="../-solid-exception/-solid-app-not-found-exception/index.html">SolidException.SolidAppNotFoundException</a>, <a href="../-solid-exception/-solid-service-connection-exception/index.html">SolidException.SolidServiceConnectionException</a>).</p><h4 class="tableheader">See also</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-solid/-companion/get-resource-client.html"><span>Solid.</span><wbr><span>get</span><wbr><span>Resource</span><wbr><span><span>Client</span></span></a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="613958587%2FClasslikes%2F1285123853" anchor-label="Companion" id="613958587%2FClasslikes%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="613958587%2FClasslikes%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="449208925%2FFunctions%2F1285123853" anchor-label="copy" id="449208925%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="copy.html"><span><span>copy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="449208925%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="copy.html"><span class="token function">copy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">sourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destinationUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Copies a resource, or a whole container tree, to <a href="copy.html">destinationUri</a>. Not transactional.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-456904258%2FFunctions%2F1285123853" anchor-label="create" id="-456904258%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create.html"><span><span>create</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-456904258%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="create.html">T</a><span class="token operator"> : </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-resource/index.html">SolidResource</a><span class="token operator">&gt; </span><a href="create.html"><span class="token function">create</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resource<span class="token operator">: </span><a href="create.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="create.html">T</a></div><div class="brief "><p class="paragraph">Creates a new resource on the pod at the URI specified by <a href="create.html">resource</a> for <a href="create.html">webId</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1435826009%2FFunctions%2F1285123853" anchor-label="createInContainer" id="1435826009%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-in-container.html"><span>create</span><wbr><span>In</span><wbr><span><span>Container</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1435826009%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="create-in-container.html">T</a><span class="token operator"> : </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-resource/index.html">SolidResource</a><span class="token operator">&gt; </span><a href="create-in-container.html"><span class="token function">createInContainer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">containerUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resource<span class="token operator">: </span><a href="create-in-container.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Creates a member inside <a href="create-in-container.html">containerUri</a> by POSTing, letting the <strong>server</strong> allocate the child URI — and therefore needing only <strong>Append</strong>, not Write.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2012006675%2FFunctions%2F1285123853" anchor-label="delete" id="-2012006675%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete.html"><span><span>delete</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2012006675%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="delete.html">T</a><span class="token operator"> : </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-resource/index.html">SolidResource</a><span class="token operator">&gt; </span><a href="delete.html"><span class="token function">delete</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resource<span class="token operator">: </span><a href="delete.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="delete.html">T</a></div><div class="brief "><p class="paragraph">Deletes a resource from the pod for <a href="delete.html">webId</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1904458421%2FFunctions%2F1285123853" anchor-label="deleteContainer" id="-1904458421%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete-container.html"><span>delete</span><wbr><span><span>Container</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1904458421%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="delete-container.html"><span class="token function">deleteContainer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">containerUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Recursively deletes a container and all of its contents.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1159137176%2FFunctions%2F1285123853" anchor-label="ensureContainer" id="1159137176%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="ensure-container.html"><span>ensure</span><wbr><span><span>Container</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1159137176%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="ensure-container.html"><span class="token function">ensureContainer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">containerUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Creates the container and any missing ancestors, bottom-up. Idempotent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-588848865%2FFunctions%2F1285123853" anchor-label="exists" id="-588848865%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="exists.html"><span><span>exists</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-588848865%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="exists.html"><span class="token function">exists</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Reports whether a resource exists: a <code class="lang-kotlin">404</code> is <code class="lang-kotlin">false</code>; anything indeterminate (403, auth, network, 5xx) throws rather than being collapsed to <code class="lang-kotlin">false</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-126392393%2FFunctions%2F1285123853" anchor-label="getWebId" id="-126392393%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-web-id.html"><span>get</span><wbr><span>Web</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-126392393%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-web-id.html"><span class="token function">getWebId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.profile/-web-id/index.html">WebId</a></div><div class="brief "><p class="paragraph">Fetches and parses the WebID document for <a href="get-web-id.html">webId</a> from their pod.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="917750371%2FFunctions%2F1285123853" anchor-label="head" id="917750371%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="head.html"><span><span>head</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="917750371%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="head.html"><span class="token function">head</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUrl<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-metadata/index.html">SolidMetadata</a></div><div class="brief "><p class="paragraph">Fetches only the HTTP headers for the resource at <a href="head.html">resourceUrl</a> via HTTP HEAD.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1199265927%2FFunctions%2F1285123853" anchor-label="headPublic" id="1199265927%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="head-public.html"><span>head</span><wbr><span><span>Public</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1199265927%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="head-public.html"><span class="token function">headPublic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-metadata/index.html">SolidMetadata</a></div><div class="brief "><p class="paragraph">HEADs a <strong>public</strong> resource with no <code class="lang-kotlin">Authorization</code> header.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-922177780%2FFunctions%2F1285123853" anchor-label="listContainer" id="-922177780%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-container.html"><span>list</span><wbr><span><span>Container</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-922177780%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-container.html"><span class="token function">listContainer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">containerUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">enrichWithHead<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-source-reference/index.html">SolidSourceReference</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Lists a container's direct children in a single GET.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-754948167%2FFunctions%2F1285123853" anchor-label="move" id="-754948167%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="move.html"><span><span>move</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-754948167%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="move.html"><span class="token function">move</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">sourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destinationUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A <a href="copy.html">copy</a> followed by a delete of the source. Not transactional.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="563198172%2FFunctions%2F1285123853" anchor-label="patch" id="563198172%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="patch.html"><span><span>patch</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="563198172%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="patch.html"><span class="token function">patch</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">patch<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.rdf.patch/-n3-patch/index.html">N3Patch</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Applies an N3 Patch to an RDF resource on the pod via HTTP PATCH.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="370514792%2FFunctions%2F1285123853" anchor-label="patchRaw" id="370514792%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="patch-raw.html"><span>patch</span><wbr><span><span>Raw</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="370514792%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="patch-raw.html"><span class="token function">patchRaw</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">n3Body<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Applies an already-serialised N3 Patch document to an RDF resource.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1201055940%2FFunctions%2F1285123853" anchor-label="post" id="1201055940%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="post.html"><span><span>post</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1201055940%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="post.html"><span class="token function">post</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">contentType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">body<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">additionalHeaders<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">POSTs an opaque body to a container; returns the <code class="lang-kotlin">Location</code> the server allocated.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2087232279%2FFunctions%2F1285123853" anchor-label="probeAccess" id="-2087232279%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="probe-access.html"><span>probe</span><wbr><span><span>Access</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2087232279%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="probe-access.html"><span class="token function">probeAccess</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-access-probe/index.html">AccessProbe</a></div><div class="brief "><p class="paragraph">Reports the access the user effectively holds on <a href="probe-access.html">uri</a>, from its <code class="lang-kotlin">WAC-Allow</code> header.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1336268474%2FFunctions%2F1285123853" anchor-label="putRaw" id="1336268474%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-raw.html"><span>put</span><wbr><span><span>Raw</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1336268474%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="put-raw.html"><span class="token function">putRaw</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">contentType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">body<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">ifMatch<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">linkHeader<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">PUTs an opaque body to <a href="put-raw.html">uri</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-57326447%2FFunctions%2F1285123853" anchor-label="read" id="-57326447%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read.html"><span><span>read</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-57326447%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="read.html">T</a><span class="token operator"> : </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-resource/index.html">SolidResource</a><span class="token operator">&gt; </span><a href="read.html"><span class="token function">read</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceUrl<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">clazz<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><a href="read.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="read.html">T</a></div><div class="brief "><p class="paragraph">Reads a resource from the pod for <a href="read.html">webId</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-866402432%2FFunctions%2F1285123853" anchor-label="readContainer" id="-866402432%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-container.html"><span>read</span><wbr><span><span>Container</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-866402432%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="read-container.html"><span class="token function">readContainer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">containerUrl<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-container/index.html">SolidContainer</a></div><div class="brief "><p class="paragraph">Reads an LDP container from the pod, with each contained resource enriched by its own HTTP HEAD metadata (carried in each <code class="lang-kotlin">SolidSourceReference.headMetadata</code>).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-40174611%2FFunctions%2F1285123853" anchor-label="readPublic" id="-40174611%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-public.html"><span>read</span><wbr><span><span>Public</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-40174611%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="read-public.html">T</a><span class="token operator"> : </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-resource/index.html">SolidResource</a><span class="token operator">&gt; </span><a href="read-public.html"><span class="token function">readPublic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">clazz<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><a href="read-public.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="read-public.html">T</a></div><div class="brief "><p class="paragraph">Reads a <strong>public</strong> resource with no <code class="lang-kotlin">Authorization</code> header — most usefully a foreign WebID profile document, which a pod may reject when presented a foreign issuer's token.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1702178041%2FFunctions%2F1285123853" anchor-label="readStream" id="1702178041%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-stream.html"><span>read</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1702178041%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="read-stream.html"><span class="token function">readStream</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-solid-stream/index.html">SolidStream</a></div><div class="brief "><p class="paragraph">Opens the resource at <a href="read-stream.html">uri</a> as a live stream.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="936141350%2FFunctions%2F1285123853" anchor-label="rename" id="936141350%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rename.html"><span><span>rename</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="936141350%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="rename.html"><span class="token function">rename</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">sourceUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">newName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Moves a resource to a sibling name in the same container.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1811881894%2FFunctions%2F1285123853" anchor-label="resourceServiceConnectionState" id="-1811881894%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="resource-service-connection-state.html"><span>resource</span><wbr><span>Service</span><wbr><span>Connection</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1811881894%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="resource-service-connection-state.html"><span class="token function">resourceServiceConnectionState</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Hot <span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span> of the IPC service connection state. Emits <code class="lang-kotlin">true</code> once the bound service connects and <code class="lang-kotlin">false</code> if it disconnects.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="167948339%2FFunctions%2F1285123853" anchor-label="update" id="167948339%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update.html"><span><span>update</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="167948339%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="update.html">T</a><span class="token operator"> : </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.resource/-solid-resource/index.html">SolidResource</a><span class="token operator">&gt; </span><a href="update.html"><span class="token function">update</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resource<span class="token operator">: </span><a href="update.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">ifMatch<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="update.html">T</a></div><div class="brief "><p class="paragraph">Replaces an existing resource on the pod via HTTP PUT.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="355523734%2FFunctions%2F1285123853" anchor-label="writeStream" id="355523734%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-stream.html"><span>write</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="355523734%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="write-stream.html"><span class="token function">writeStream</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">uri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">contentType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">source<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/io/InputStream.html">InputStream</a><span class="token punctuation">, </span></span><span class="parameter ">contentLength<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator"> = </span>-1L<span class="token punctuation">, </span></span><span class="parameter ">ifMatch<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Writes the resource at <a href="write-stream.html">uri</a> by streaming <a href="write-stream.html">source</a> across, rather than buffering it.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

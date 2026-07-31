@@ -1,0 +1,265 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SolidTicketsDataModule</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":client/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":client/release" data-filter=":client/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="client::com.erfangholami.androidsolidservices.client.sdk/SolidTicketsDataModule///PointingToDeclaration//1285123853">
+  <div class="breadcrumbs"><a href="../../index.html">client</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.client.sdk</a><span class="delimiter">/</span><span class="current">SolidTicketsDataModule</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Solid</span><wbr><span>Tickets</span><wbr><span>Data</span><wbr><span><span>Module</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">SolidTicketsDataModule</a></div><p class="paragraph">Client SDK for the Solid Tickets data module — the user's wallet: <code class="lang-kotlin">schema:Ticket</code> resources stored on their pod and registered in the Solid type index.</p><p class="paragraph">Calls are delegated over IPC to the Android Solid Services app, which owns the login and the tokens. Obtain an instance via <a href="../-solid/-companion/get-tickets-data-module.html">Solid.getTicketsDataModule</a>. Collect <a href="tickets-data-module-service-connection-state.html">ticketsDataModuleServiceConnectionState</a> and wait for <code class="lang-kotlin">true</code> before issuing calls. All operations are <code class="lang-kotlin">suspend</code> functions, return <code class="lang-kotlin">null</code> when the service yields no result, and throw <a href="../-solid-exception/index.html">SolidException</a> on failure.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-1877931691%2FClasslikes%2F1285123853" anchor-label="Companion" id="-1877931691%2FClasslikes%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1877931691%2FClasslikes%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1785596877%2FFunctions%2F1285123853" anchor-label="createTicket" id="1785596877%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-ticket.html"><span>create</span><wbr><span><span>Ticket</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1785596877%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="create-ticket.html"><span class="token function">createTicket</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">newTicket<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-new-ticket/index.html">NewTicket</a><span class="token punctuation">, </span></span><span class="parameter ">storage<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">artifact<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">artifactContentType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">images<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-new-ticket-images/index.html">NewTicketImages</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">isPrivate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">container<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-ticket/index.html">Ticket</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Creates a ticket on the user's pod, in its own sub-container of the tickets container.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1263508660%2FFunctions%2F1285123853" anchor-label="deleteTicket" id="1263508660%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete-ticket.html"><span>delete</span><wbr><span><span>Ticket</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1263508660%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="delete-ticket.html"><span class="token function">deleteTicket</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">ticketUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-ticket/index.html">Ticket</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Deletes the ticket at <a href="delete-ticket.html">ticketUri</a>: its index row and its whole sub-container (document, artifact, stored images). Returns the removed ticket.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-372344035%2FFunctions%2F1285123853" anchor-label="getTicket" id="-372344035%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-ticket.html"><span>get</span><wbr><span><span>Ticket</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-372344035%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-ticket.html"><span class="token function">getTicket</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">ticketUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-ticket/index.html">Ticket</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Reads the full ticket document at <a href="get-ticket.html">ticketUri</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-991064305%2FFunctions%2F1285123853" anchor-label="getTicketArtifact" id="-991064305%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-ticket-artifact.html"><span>get</span><wbr><span>Ticket</span><wbr><span><span>Artifact</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-991064305%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-ticket-artifact.html"><span class="token function">getTicketArtifact</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">artifactUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-ticket-artifact/index.html">TicketArtifact</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Reads a binary stored with a ticket — the original artifact or a stored pass image. Subject to the ~1 MB Binder transaction limit.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2102705761%2FFunctions%2F1285123853" anchor-label="listTickets" id="-2102705761%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-tickets.html"><span>list</span><wbr><span><span>Tickets</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2102705761%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="list-tickets.html"><span class="token function">listTickets</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-ticket-list/index.html">TicketList</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns the cached tickets index for <a href="list-tickets.html">webId</a> — enough to render a wallet list without fetching each ticket document.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-26137993%2FFunctions%2F1285123853" anchor-label="putTicketArtifact" id="-26137993%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="put-ticket-artifact.html"><span>put</span><wbr><span>Ticket</span><wbr><span><span>Artifact</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-26137993%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="put-ticket-artifact.html"><span class="token function">putTicketArtifact</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">ticketUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">artifact<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">artifactContentType<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">images<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-new-ticket-images/index.html">NewTicketImages</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-ticket/index.html">Ticket</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Replaces the ticket's stored artifact (and any provided pass-image roles) with fresh bytes, refreshing the document links. Travels inline over Binder, so it is subject to the ~1 MB transaction limit.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2102305395%2FFunctions%2F1285123853" anchor-label="ticketsDataModuleServiceConnectionState" id="2102305395%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tickets-data-module-service-connection-state.html"><span>tickets</span><wbr><span>Data</span><wbr><span>Module</span><wbr><span>Service</span><wbr><span>Connection</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2102305395%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="tickets-data-module-service-connection-state.html"><span class="token function">ticketsDataModuleServiceConnectionState</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Hot <span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span> of the IPC service connection state; emits <code class="lang-kotlin">true</code> once connected.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-656977814%2FFunctions%2F1285123853" anchor-label="updateTicket" id="-656977814%2FFunctions%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-ticket.html"><span>update</span><wbr><span><span>Ticket</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-656977814%2FFunctions%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="update-ticket.html"><span class="token function">updateTicket</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">ticketUri<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">updated<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-new-ticket/index.html">NewTicket</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.tickets/-ticket/index.html">Ticket</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Rewrites the ticket at <a href="update-ticket.html">ticketUri</a> from <a href="update-ticket.html">updated</a> with replace semantics: properties absent from <a href="update-ticket.html">updated</a> are removed. The created date and the artifact link are preserved.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
