@@ -21,7 +21,7 @@ class SystemAccountRepositoryImplementation @Inject constructor(
             .toSet()
 
     override fun addAccount(webId: String) {
-        accountManager.addAccountExplicitly(Account(webId, accountType), "password", null)
+        accountManager.addAccountExplicitly(Account(webId, accountType), null, null)
     }
 
     override fun removeAccount(webId: String) {

@@ -9,6 +9,7 @@ import com.erfangholami.androidsolidservices.api.notifications.NotificationsMana
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.sharing.SharingManager
 import com.erfangholami.androidsolidservices.base.Constants
+import com.erfangholami.androidsolidservices.shared.model.auth.SolidAuthorization
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,8 +25,7 @@ object ManagerModule {
     @Provides
     @Singleton
     @Named(Constants.ASS_ACCOUNT_NAME)
-    fun provideASSAccountName(): String =
-        "com.erfangholami.androidsolidservices.account.DEMOACCOUNT"
+    fun provideASSAccountName(): String = SolidAuthorization.ACCOUNT_TYPE
 
     @Provides
     @Singleton

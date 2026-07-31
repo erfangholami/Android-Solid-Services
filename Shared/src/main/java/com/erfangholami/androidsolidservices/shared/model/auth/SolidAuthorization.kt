@@ -16,6 +16,17 @@ package com.erfangholami.androidsolidservices.shared.model.auth
  */
 public object SolidAuthorization {
 
+    /**
+     * The `android.accounts` account type under which Android Solid Services registers every
+     * signed-in Solid profile (account name = WebID). Third-party apps can offer the **system**
+     * account chooser over it — `AccountManager.newChooseAccountIntent` filtered to this type,
+     * or the SDK's `ChooseSolidAccount` contract. Picking an account there makes it visible to
+     * the picking app, mediated by the OS; it does not by itself grant pod access, which is what
+     * the authorize flow is for. Accounts of this type carry no tokens: DPoP tokens are bound to
+     * keys that never leave Android Solid Services.
+     */
+    public const val ACCOUNT_TYPE: String = "com.erfangholami.androidsolidservices"
+
     public const val EXTRA_WEB_ID: String =
         "com.erfangholami.androidsolidservices.extra.WEB_ID"
 
