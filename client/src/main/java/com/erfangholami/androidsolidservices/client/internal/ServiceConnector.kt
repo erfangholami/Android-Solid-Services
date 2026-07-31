@@ -34,7 +34,7 @@ internal class ServiceConnector<S : Any>(
         context: Context,
         serviceClassName: String,
         asInterface: (IBinder) -> S,
-    ) : this(context, serviceClassName, ANDROID_SOLID_SERVICES_PACKAGE_NAME, asInterface)
+    ) : this(context, serviceClassName, SdkTarget.servicePackageName, asInterface)
 
     private val appContext: Context = context.applicationContext
     private val serviceClassName: String = serviceClassName

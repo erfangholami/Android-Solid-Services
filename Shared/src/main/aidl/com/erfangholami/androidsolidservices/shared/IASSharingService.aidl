@@ -32,7 +32,7 @@ interface IASSharingService {
         IASSGivenShareListCallback callback
     );
 
-    /** mode: WAC access mode (e.g. Read=1). receiverKind: who receives access (e.g. specific WebID, public). receiverValue: the WebID or group URI when receiverKind targets a specific identity; null for public. */
+    /** mode: the ShareMode ordinal (Read=0, Append=1, Write=2). receiverKind: ShareReceiver.KIND_* — WebID=0, group=1, public=2. receiverValue: the WebID or group URI when receiverKind targets a specific identity; null for public. Decode both with ShareMode.fromOrdinal / ShareReceiver.fromKindOrNull: these arrive from an exported service and may name values this build does not know. */
     void createShare(
         String webId,
         String resourceUri,

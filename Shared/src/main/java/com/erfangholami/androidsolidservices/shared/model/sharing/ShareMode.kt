@@ -38,6 +38,19 @@ public enum class ShareMode {
     }
 
     public companion object {
+
+        /**
+         * Decodes the ordinal a mode is flattened to for AIDL transport, or `null` when it names no
+         * mode this build knows.
+         *
+         * The IPC boundary carries a bare `int`, and the two sides ship independently: a caller
+         * built against a newer SDK can send an ordinal this build has no entry for, and any app on
+         * the device can send an arbitrary one to the exported services. Indexing `entries`
+         * directly turns both into an exception on a binder thread, so decode through here and
+         * report the bad value instead.
+         */
+        public fun fromOrdinal(ordinal: Int): ShareMode? = entries.getOrNull(ordinal)
+
         public fun fromAclPredicate(predicate: String): ShareMode? = when (predicate) {
             ACL.READ -> READ
             ACL.APPEND -> APPEND

@@ -49,6 +49,18 @@ public class SolidSignInClient private constructor(
                 instance ?: SolidSignInClient(context, applicationInfo, hasInstalledAndroidSolidServices)
                     .also { instance = it }
             }
+
+        /**
+         * Drops the singleton and releases its binding, so the next [getInstance] builds a fresh
+         * client. Exists only so instrumented tests can rebuild the client against a different
+         * service package or install check; nothing in production calls it.
+         */
+        internal fun resetForTests() {
+            synchronized(this) {
+                instance?.connector?.unbind()
+                instance = null
+            }
+        }
     }
 
     private val connector = ServiceConnector(

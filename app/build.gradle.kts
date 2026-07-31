@@ -97,6 +97,11 @@ android {
         compose = true
     }
 
+    testOptions {
+        // Robolectric resolves the merged resources and manifest through this.
+        unitTests.isIncludeAndroidResources = true
+    }
+
     packaging {
         resources {
             excludes.addAll(
@@ -211,6 +216,9 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(libs.jetbrains.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
 
     implementation(project(":api"))
     implementation(project(":client"))

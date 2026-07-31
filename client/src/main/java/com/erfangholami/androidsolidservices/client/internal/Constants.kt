@@ -11,3 +11,17 @@ internal const val ANDROID_SOLID_SERVICES_SHARING_SERVICE: String =
     "com.erfangholami.androidsolidservices.services.ASSSharingService"
 internal const val ANDROID_SOLID_SERVICES_NOTIFICATIONS_SERVICE: String =
     "com.erfangholami.androidsolidservices.services.ASSNotificationsService"
+
+/**
+ * Where the SDK looks for the bound services.
+ *
+ * Always [ANDROID_SOLID_SERVICES_PACKAGE_NAME] in production — nothing outside the instrumentation
+ * runner writes to it. The tests repoint it at the test APK, which hosts fake services in their own
+ * process, so the SDK's own call sites can be driven across a real binder without the ASS app being
+ * installed. Internal, so the published API is unchanged.
+ */
+internal object SdkTarget {
+
+    @Volatile
+    var servicePackageName: String = ANDROID_SOLID_SERVICES_PACKAGE_NAME
+}

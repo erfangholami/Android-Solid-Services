@@ -35,6 +35,17 @@ public class SolidTicketsDataModule private constructor(context: Context) {
             instance ?: synchronized(this) {
                 instance ?: SolidTicketsDataModule(context).also { instance = it }
             }
+
+        /**
+         * Drops the singleton and releases its binding, so the next [getInstance] builds a fresh
+         * module. Exists only for instrumented tests; nothing in production calls it.
+         */
+        internal fun resetForTests() {
+            synchronized(this) {
+                instance?.connector?.unbind()
+                instance = null
+            }
+        }
     }
 
     private val connector = ServiceConnector(

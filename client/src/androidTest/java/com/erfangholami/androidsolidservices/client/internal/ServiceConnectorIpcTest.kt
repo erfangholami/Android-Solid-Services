@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.erfangholami.androidsolidservices.client.sdk.SolidException
+import com.erfangholami.androidsolidservices.services.ASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
 import kotlinx.coroutines.flow.first
@@ -19,7 +20,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Drives [ServiceConnector] against [FakeAuthenticatorService], which the instrumentation manifest
+ * Drives [ServiceConnector] against [ASSAuthenticatorService], which the instrumentation manifest
  * hosts in a separate process. Every call here therefore crosses a real binder boundary and is
  * really marshalled — the behaviour unit tests cannot reach and the ASS app is not needed for.
  */
@@ -34,7 +35,7 @@ class ServiceConnectorIpcTest {
     fun bind() {
         connector = ServiceConnector(
             context,
-            FakeAuthenticatorService::class.java.name,
+            ASSAuthenticatorService::class.java.name,
             context.packageName,
             IASSAuthenticatorService.Stub::asInterface,
         )
@@ -50,7 +51,7 @@ class ServiceConnectorIpcTest {
     }
 
     @Test
-    fun binds_and_reports_connected() = runBlocking {
+    fun binds_and_reports_connected(): Unit = runBlocking {
         awaitConnected()
         assertTrue("connector should report a live service", connector.isConnected())
     }
@@ -68,22 +69,22 @@ class ServiceConnectorIpcTest {
     }
 
     @Test
-    fun synchronous_call_marshals_across_the_boundary() = runBlocking {
+    fun synchronous_call_marshals_across_the_boundary(): Unit = runBlocking {
         awaitConnected()
         val service = connector.require()
 
         assertTrue(service.hasLoggedIn())
-        assertTrue(service.isAppAuthorized(FakeAuthenticatorService.AUTHORIZED_WEB_ID))
-        assertFalse(service.isAppAuthorized(FakeAuthenticatorService.UNKNOWN_WEB_ID))
+        assertTrue(service.isAppAuthorized(ASSAuthenticatorService.AUTHORIZED_WEB_ID))
+        assertFalse(service.isAppAuthorized(ASSAuthenticatorService.UNKNOWN_WEB_ID))
     }
 
     @Test
-    fun callback_result_resumes_the_suspended_caller() = runBlocking {
+    fun callback_result_resumes_the_suspended_caller(): Unit = runBlocking {
         awaitConnected()
         val granted = withTimeout(CALL_TIMEOUT) {
             connector.await<Boolean> { service, bridge ->
                 service.disconnectFromSolid(
-                    FakeAuthenticatorService.AUTHORIZED_WEB_ID,
+                    ASSAuthenticatorService.AUTHORIZED_WEB_ID,
                     logoutCallback(bridge),
                 )
             }
@@ -92,13 +93,13 @@ class ServiceConnectorIpcTest {
     }
 
     @Test
-    fun callback_error_surfaces_as_a_typed_exception() = runBlocking {
+    fun callback_error_surfaces_as_a_typed_exception(): Unit = runBlocking {
         awaitConnected()
         val thrown = runCatching {
             withTimeout(CALL_TIMEOUT) {
                 connector.await<Boolean> { service, bridge ->
                     service.disconnectFromSolid(
-                        FakeAuthenticatorService.UNKNOWN_WEB_ID,
+                        ASSAuthenticatorService.UNKNOWN_WEB_ID,
                         logoutCallback(bridge),
                     )
                 }
@@ -113,12 +114,12 @@ class ServiceConnectorIpcTest {
     }
 
     @Test
-    fun a_service_that_answers_twice_does_not_crash_the_caller() = runBlocking {
+    fun a_service_that_answers_twice_does_not_crash_the_caller(): Unit = runBlocking {
         awaitConnected()
         val granted = withTimeout(CALL_TIMEOUT) {
             connector.await<Boolean> { service, bridge ->
                 service.disconnectFromSolid(
-                    FakeAuthenticatorService.DOUBLE_ANSWER_WEB_ID,
+                    ASSAuthenticatorService.DOUBLE_ANSWER_WEB_ID,
                     logoutCallback(bridge),
                 )
             }
@@ -137,7 +138,7 @@ class ServiceConnectorIpcTest {
     }
 
     @Test
-    fun unbind_clears_the_connection_state() = runBlocking {
+    fun unbind_clears_the_connection_state(): Unit = runBlocking {
         awaitConnected()
         connector.unbind()
         assertFalse(connector.connectionState.value)

@@ -8,13 +8,13 @@ import com.erfangholami.androidsolidservices.api.notifications.NotificationsMana
 import com.erfangholami.androidsolidservices.di.IoDispatcher
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
+import com.erfangholami.androidsolidservices.services.dispatch.requireShareMode
 import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
 import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
 import com.erfangholami.androidsolidservices.shared.IASSStringCallback
 import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareNotificationListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareRequestListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
@@ -63,7 +63,7 @@ class ASSNotificationsService : LifecycleService() {
         ) {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
                 notificationsManager.sendOffer(
-                    ownerWebId, receiverWebId, resourceUri, ShareMode.entries[mode],
+                    ownerWebId, receiverWebId, resourceUri, requireShareMode(mode),
                 )
             }
         }
@@ -90,7 +90,7 @@ class ASSNotificationsService : LifecycleService() {
             lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
                 notificationsManager.sendRequest(
                     requesterWebId, ownerWebId, resourceUri,
-                    ShareMode.entries[requestedMode], summary,
+                    requireShareMode(requestedMode), summary,
                 )
             }
         }
@@ -148,7 +148,7 @@ class ASSNotificationsService : LifecycleService() {
                     ownerWebId,
                     receiverWebId,
                     resourceUri,
-                    ShareMode.entries[mode],
+                    requireShareMode(mode),
                 )
             }
         }
@@ -166,7 +166,7 @@ class ASSNotificationsService : LifecycleService() {
                     ownerWebId,
                     requesterWebId,
                     resourceUri,
-                    ShareMode.entries[mode],
+                    requireShareMode(mode),
                     requestUri,
                 )
             }
@@ -185,7 +185,7 @@ class ASSNotificationsService : LifecycleService() {
                     ownerWebId,
                     requesterWebId,
                     resourceUri,
-                    ShareMode.entries[mode],
+                    requireShareMode(mode),
                     requestUri,
                 )
             }
@@ -204,7 +204,7 @@ class ASSNotificationsService : LifecycleService() {
                     ownerWebId,
                     requesterWebId,
                     resourceUri,
-                    mode.takeIf { it >= 0 }?.let { ShareMode.entries[it] },
+                    mode.takeIf { it >= 0 }?.let { requireShareMode(it) },
                     reason,
                 )
             }

@@ -83,5 +83,20 @@ public sealed class ShareReceiver : Parcelable {
             KIND_PUBLIC -> Public
             else -> error("Unknown receiver kind: $kind")
         }
+
+        /**
+         * The non-throwing [fromKind], returning `null` for a kind this build does not know or a
+         * missing identifier.
+         *
+         * Use this when decoding values that arrived over AIDL. The services are exported and the
+         * two sides ship independently, so `(kind, value)` is untrusted input: [fromKind] would
+         * raise on a binder thread, where an exception costs the process rather than the call.
+         */
+        public fun fromKindOrNull(kind: Int, value: String?): ShareReceiver? = when (kind) {
+            KIND_WEBID -> value?.let(::WebIdReceiver)
+            KIND_GROUP -> value?.let(::GroupReceiver)
+            KIND_PUBLIC -> Public
+            else -> null
+        }
     }
 }

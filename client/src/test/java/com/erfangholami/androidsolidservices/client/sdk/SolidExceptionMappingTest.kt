@@ -82,8 +82,70 @@ class SolidExceptionMappingTest {
     }
 
     @Test
-    fun `an unrecognised code still yields a SolidException rather than crashing`() {
+    fun `an unrecognised code falls back to UnknownException, carrying its message`() {
+        // A newer ASS app talking to an older SDK will raise codes this build has never seen.
         val mapped = handleSolidException(9_999, "from the future")
-        assertTrue("unknown codes must not escape the sealed hierarchy", mapped is SolidException)
+        assertEquals(
+            SolidException.SolidResourceException.UnknownException::class.java,
+            mapped.javaClass,
+        )
+        assertEquals("from the future", mapped.message)
     }
+
+    @Test
+    fun `every declared error code has a mapping`() {
+        // The list above is hand-maintained, so it cannot notice a code added to Shared. This walks
+        // the constants themselves: anything new that still lands on UnknownException is a code the
+        // service can raise and no caller can distinguish.
+        val unmapped = declaredCodes()
+            .filterKeys { it != "UNKNOWN" }
+            .filterValues { map(it) is SolidException.SolidResourceException.UnknownException }
+            .keys
+
+        assertTrue(
+            "ExceptionsErrorCode.${unmapped.joinToString()} has no branch in handleSolidException, " +
+                "so it degrades to UnknownException and callers cannot tell it apart.",
+            unmapped.isEmpty(),
+        )
+    }
+
+    @Test
+    fun `error codes keep their numeric values`() {
+        // These integers are an IPC wire format shared with the ASS app. Renumbering one turns every
+        // installed copy of a third-party app into a mis-reporter — it compiles, it runs, it lies.
+        val pinned = mapOf(
+            "DRAW_OVERLAY_NOT_PERMITTED" to 1,
+            "SOLID_NOT_LOGGED_IN" to 2,
+            "NOT_SUPPORTED_CLASS" to 100,
+            "NOT_PERMISSION" to 101,
+            "NULL_WEBID" to 102,
+            "UNKNOWN" to 103,
+            "ACCESS_DENIED" to 200,
+            "NO_INBOX" to 201,
+            "INBOX_UNAUTHORIZED" to 202,
+            "INBOX_FORBIDDEN" to 203,
+            "NOTIFICATION_DELIVERY_FAILED" to 204,
+            "IMPERSONATION_DETECTED" to 205,
+            "STALE_ACL" to 206,
+            "UNSUPPORTED_AUTH_BACKEND" to 207,
+        )
+        val declared = declaredCodes()
+
+        assertEquals(
+            "a code was added or removed; add it to the pinned wire values and to handleSolidException",
+            pinned.keys,
+            declared.keys,
+        )
+        pinned.forEach { (name, value) ->
+            assertEquals("ExceptionsErrorCode.$name changed value", value, declared[name])
+        }
+    }
+
+    private fun declaredCodes(): Map<String, Int> =
+        ExceptionsErrorCode::class.java.declaredFields
+            .filter { it.type == Int::class.javaPrimitiveType }
+            .associate { field ->
+                field.isAccessible = true
+                field.name to field.getInt(ExceptionsErrorCode)
+            }
 }

@@ -58,6 +58,11 @@ android {
         compose = true
     }
 
+    testOptions {
+        // Robolectric resolves the merged resources and manifest through this.
+        unitTests.isIncludeAndroidResources = true
+    }
+
     packaging {
         resources {
             excludes.addAll(
@@ -89,7 +94,14 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.jetbrains.kotlinx.coroutines.test)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    // Supplies the ComponentActivity createComposeRule() launches into. It has to land in the
+    // instrumentation APK, not the library's debug variant — a library has no app to merge into.
+    androidTestImplementation(libs.androidx.compose.ui.test.manifest)
     testImplementation(libs.junit)
+    // Brings androidx.test:core, so Robolectric tests can reach ApplicationProvider.
+    testImplementation(libs.androidx.test.ext.junit)
     testImplementation(libs.jetbrains.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
 

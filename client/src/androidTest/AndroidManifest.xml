@@ -1,15 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?><!--
     Instrumentation-only manifest.
 
-    android:process puts the fake service in its own process, so binder genuinely marshals every
-    argument and return value. Without it, Android passes object references directly within the
-    process and the Parcelable path — the part most likely to break — would never run.
+    Two things make this suite work, and both live here rather than in code:
+
+    1. android:process puts every fake in its own process, so binder genuinely marshals each
+       argument and return value. Without it, Android passes object references directly within the
+       process and the Parcelable path — the part most likely to break — would never run.
+
+    2. The fakes are registered under the ASS app's own service class names. ServiceConnector
+       builds its Intent from a fixed class name, so only a class answering to that exact FQCN can
+       stand in for the real service.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
+        <!--
+          Host for the Compose tests. turnScreenOn + showWhenLocked keep them from depending on
+          whether the device happens to be awake, which otherwise makes them pass or fail based on
+          when someone last touched it.
+        -->
+        <activity
+            android:name="com.erfangholami.androidsolidservices.client.ui.ComposeHostActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
+
         <service
-            android:name="com.erfangholami.androidsolidservices.client.internal.FakeAuthenticatorService"
+            android:name="com.erfangholami.androidsolidservices.services.ASSAuthenticatorService"
+            android:exported="false"
+            android:process=":fakeass" />
+        <service
+            android:name="com.erfangholami.androidsolidservices.services.ASSResourceService"
+            android:exported="false"
+            android:process=":fakeass" />
+        <service
+            android:name="com.erfangholami.androidsolidservices.services.SolidDataModulesService"
+            android:exported="false"
+            android:process=":fakeass" />
+        <service
+            android:name="com.erfangholami.androidsolidservices.services.ASSSharingService"
+            android:exported="false"
+            android:process=":fakeass" />
+        <service
+            android:name="com.erfangholami.androidsolidservices.services.ASSNotificationsService"
             android:exported="false"
             android:process=":fakeass" />
     </application>

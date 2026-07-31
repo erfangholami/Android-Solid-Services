@@ -8,6 +8,8 @@ import com.erfangholami.androidsolidservices.api.sharing.SharingManager
 import com.erfangholami.androidsolidservices.di.IoDispatcher
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
+import com.erfangholami.androidsolidservices.services.dispatch.requireShareMode
+import com.erfangholami.androidsolidservices.services.dispatch.requireShareReceiver
 import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
 import com.erfangholami.androidsolidservices.shared.IASSharingService
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
@@ -17,9 +19,7 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
-import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineDispatcher
@@ -83,8 +83,8 @@ class ASSSharingService : LifecycleService() {
                 sharingManager.createShare(
                     webId = webId,
                     resourceUri = resourceUri,
-                    mode = ShareMode.entries[mode],
-                    receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
+                    mode = requireShareMode(mode),
+                    receiver = requireShareReceiver(receiverKind, receiverValue),
                     notifyReceiver = notifyReceiver,
                 )
             }
@@ -102,8 +102,8 @@ class ASSSharingService : LifecycleService() {
                 sharingManager.updateShare(
                     webId = webId,
                     resourceUri = resourceUri,
-                    mode = ShareMode.entries[mode],
-                    receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
+                    mode = requireShareMode(mode),
+                    receiver = requireShareReceiver(receiverKind, receiverValue),
                 )
             }
         }
@@ -119,7 +119,7 @@ class ASSSharingService : LifecycleService() {
                 sharingManager.revokeShare(
                     webId = webId,
                     resourceUri = resourceUri,
-                    receiver = ShareReceiver.fromKind(receiverKind, receiverValue),
+                    receiver = requireShareReceiver(receiverKind, receiverValue),
                 )
             }
         }
