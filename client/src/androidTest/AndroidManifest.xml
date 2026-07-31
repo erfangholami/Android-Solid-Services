@@ -45,6 +45,10 @@
             android:name="com.erfangholami.androidsolidservices.services.ASSNotificationsService"
             android:exported="false"
             android:process=":fakeass" />
+        <service
+            android:name="com.erfangholami.androidsolidservices.client.internal.NullBindingService"
+            android:exported="false"
+            android:process=":fakeass" />
     </application>
 
 </manifest>

@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.erfangholami.androidsolidservices.client.internal.fakes.FakeSdk
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
+import com.erfangholami.androidsolidservices.client.sdk.SolidException
 import com.erfangholami.androidsolidservices.client.sdk.SolidResourceClient
 import com.erfangholami.androidsolidservices.client.sdk.SolidSharingClient
 import com.erfangholami.androidsolidservices.services.ASSAuthenticatorService
@@ -17,7 +18,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -76,6 +81,29 @@ class ConnectionResilienceTest {
             assertTrue("the retry after the service death should have answered", granted)
         } finally {
             auth.unbind()
+        }
+    }
+
+    @Test
+    fun a_null_binding_reports_disconnected_rather_than_pretending(): Unit = runBlocking {
+        val connector = ServiceConnector(
+            sdk.context,
+            NullBindingService::class.java.name,
+            sdk.context.packageName,
+            IASSAuthenticatorService.Stub::asInterface,
+        )
+        try {
+            val everConnected = withTimeoutOrNull(NULL_BINDING_WAIT) {
+                connector.connectionState.first { it }
+            }
+
+            assertNull("onBind returned null; the connection flow must never report true", everConnected)
+            assertFalse(connector.isConnected())
+            assertThrows(SolidException.SolidServiceConnectionException::class.java) {
+                connector.require()
+            }
+        } finally {
+            connector.unbind()
         }
     }
 
@@ -144,5 +172,6 @@ class ConnectionResilienceTest {
         const val TIMEOUT = 10_000L
         const val CONNECT_TIMEOUT = 10_000L
         const val RECOVERY_TIMEOUT = 30_000L
+        const val NULL_BINDING_WAIT = 2_000L
     }
 }

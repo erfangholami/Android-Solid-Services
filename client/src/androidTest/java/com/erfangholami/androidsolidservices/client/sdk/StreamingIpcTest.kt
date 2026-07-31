@@ -6,6 +6,11 @@ import com.erfangholami.androidsolidservices.client.internal.fakes.FakeSdk
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
 import com.erfangholami.androidsolidservices.client.internal.fakes.assertArgs
 import com.erfangholami.androidsolidservices.services.ASSResourceService
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
@@ -123,6 +128,29 @@ class StreamingIpcTest {
             "the call must settle either way, never park on a pipe nobody will finish filling — " +
                 "got ${outcome.exceptionOrNull()}",
             outcome.isSuccess || outcome.exceptionOrNull() is Exception,
+        )
+    }
+
+    @Test
+    fun cancelling_a_read_mid_stream_releases_the_pipe(): Unit = runBlocking {
+        val firstByteArrived = CompletableDeferred<Unit>()
+
+        val reader = launch(Dispatchers.IO) {
+            client.readStream(Fixtures.WEB_ID, ASSResourceService.LARGE_STREAM_URI).use { body ->
+                body.stream().read()
+                firstByteArrived.complete(Unit)
+                awaitCancellation()
+            }
+        }
+
+        withTimeout(WRITE_TIMEOUT) { firstByteArrived.await() }
+        withTimeout(WRITE_TIMEOUT) { reader.cancelAndJoin() }
+
+        val fresh = client.readStream(Fixtures.WEB_ID, Fixtures.BINARY)
+            .use { it.stream().readBytes() }
+        assertTrue(
+            "after an abandoned stream, the connector must still serve a fresh one",
+            Fixtures.PNG_BYTES.contentEquals(fresh),
         )
     }
 

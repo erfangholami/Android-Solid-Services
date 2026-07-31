@@ -1,5 +1,6 @@
 package com.erfangholami.androidsolidservices.client.sdk
 
+import android.os.TransactionTooLargeException
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.erfangholami.androidsolidservices.client.internal.fakes.FakeSdk
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
@@ -250,6 +251,20 @@ class ContactsIpcTest {
         sdk.recorded("removeGroupMember").assertArgs(
             "groupUri" to Fixtures.GROUP,
             "contactUri" to Fixtures.CONTACT,
+        )
+    }
+
+    @Test
+    fun a_photo_past_the_binder_limit_fails_loudly(): Unit = runBlocking {
+        val oversized = ByteArray(2 * 1024 * 1024)
+
+        val thrown = runCatching {
+            contacts.contacts.setPhoto(Fixtures.WEB_ID, Fixtures.CONTACT, oversized, "image/png")
+        }.exceptionOrNull()
+
+        assertTrue(
+            "2 MB inline must exceed the binder transaction budget and fail, never truncate — got $thrown",
+            thrown is TransactionTooLargeException,
         )
     }
 
