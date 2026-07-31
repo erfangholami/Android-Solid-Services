@@ -42,20 +42,31 @@ Rules that matter (the spec makes these MUST/normative — see
 | `token_endpoint_auth_method` | `none` — this is a public client; PKCE (plus DPoP when the provider supports it) replaces a client secret. |
 | `application_type` | `native` — signals custom-scheme/loopback redirects are expected. |
 
+Only the terms defined in the
+[Solid-OIDC context](https://www.w3.org/ns/solid/oidc-context.jsonld) survive JSON-LD processing;
+anything else is dropped without an error. `post_logout_redirect_uris` is **not** among them, so a
+logout redirect can't be declared this way — providers that need one still want a dynamic
+registration.
+
 ## 2. Host it
 
 - Serve it at a **stable, public HTTPS URL** — that URL is your `client_id` forever, so don't change it.
 - Serve it with **`Content-Type: application/ld+json`** (a spec MUST). Plain `application/json` or
   `text/plain` will be rejected by strict providers.
-- Any static host works (your site, a CDN, an object store). Note: GitHub Pages serves `.jsonld` as
-  `application/octet-stream`; add a `_headers`/worker rule, or host it where you control the header.
+- Any static host works (your site, a CDN, an object store). GitHub Pages maps the `.jsonld`
+  extension to `application/ld+json` on its own, which is how this project hosts
+  [its own document](https://androidsolidservices.erfangholami.com/client.jsonld) — a live example
+  you can copy from.
 
-Verify with:
+Whatever you host on, verify the header before you ship an app that depends on it:
 
 ```sh
 curl -sI https://example.org/solid/client-id.jsonld | grep -i content-type
 # content-type: application/ld+json
 ```
+
+The document has to be reachable **before** the first login that names it: providers dereference
+`client_id` during the authorization request, so a URL that 404s fails every login.
 
 ## 3. Use it from the SDK
 

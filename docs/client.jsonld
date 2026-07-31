@@ -1,0 +1,14 @@
+{
+  "@context": ["https://www.w3.org/ns/solid/oidc-context.jsonld"],
+  "client_id": "https://androidsolidservices.erfangholami.com/client.jsonld",
+  "client_name": "Android Solid Services",
+  "client_uri": "https://androidsolidservices.erfangholami.com/",
+  "logo_uri": "https://androidsolidservices.erfangholami.com/logo.png",
+  "policy_uri": "https://androidsolidservices.erfangholami.com/privacy/",
+  "redirect_uris": ["com.erfangholami.androidsolidservices:/oauth2redirect"],
+  "scope": "openid webid offline_access",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none",
+  "application_type": "native"
+}

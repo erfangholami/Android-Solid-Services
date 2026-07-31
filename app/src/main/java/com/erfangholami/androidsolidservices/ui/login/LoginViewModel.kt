@@ -50,6 +50,14 @@ class LoginViewModel @Inject constructor(
         private const val APP_NAME = "Android Solid Service"
         private const val AUTH_APP_REDIRECT_URL =
             "com.erfangholami.androidsolidservices:/oauth2redirect"
+
+        // Identify with a hosted Client ID Document rather than registering dynamically with each
+        // provider: a static identity never expires, while a dynamic registration does — Inrupt
+        // discards them after 24 hours, and the refresh token dies with the registration. The
+        // document is served from the documentation site and lives at docs/client.jsonld.
+        private const val CLIENT_ID_DOCUMENT =
+            "https://androidsolidservices.erfangholami.com/client.jsonld"
+
         private const val OIDC_ISSUER_INRUPT_COM = "https://login.inrupt.com"
         private const val OIDC_ISSUER_SOLID_COMMUNITY = "https://solidcommunity.net"
     }
@@ -60,35 +68,24 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun loginWithWebId(webId: String) = launchLogin {
+    fun loginWithWebId(webId: String) = startLogin(webId = webId)
+
+    fun loginWithInruptCom() = startLogin(oidcIssuer = OIDC_ISSUER_INRUPT_COM)
+
+    fun loginWithSolidCommunity() = startLogin(oidcIssuer = OIDC_ISSUER_SOLID_COMMUNITY)
+
+    fun loginWithCustomIssuer(issuerUrl: String) = startLogin(oidcIssuer = issuerUrl)
+
+    private fun startLogin(
+        webId: String? = null,
+        oidcIssuer: String? = null,
+    ) = launchLogin {
         authRepository.createAuthenticationIntent(
             webId = webId,
+            oidcIssuer = oidcIssuer,
             appName = APP_NAME,
             redirectUri = AUTH_APP_REDIRECT_URL,
-        )
-    }
-
-    fun loginWithInruptCom() = launchLogin {
-        authRepository.createAuthenticationIntent(
-            oidcIssuer = OIDC_ISSUER_INRUPT_COM,
-            appName = APP_NAME,
-            redirectUri = AUTH_APP_REDIRECT_URL,
-        )
-    }
-
-    fun loginWithSolidCommunity() = launchLogin {
-        authRepository.createAuthenticationIntent(
-            oidcIssuer = OIDC_ISSUER_SOLID_COMMUNITY,
-            appName = APP_NAME,
-            redirectUri = AUTH_APP_REDIRECT_URL,
-        )
-    }
-
-    fun loginWithCustomIssuer(issuerUrl: String) = launchLogin {
-        authRepository.createAuthenticationIntent(
-            oidcIssuer = issuerUrl,
-            appName = APP_NAME,
-            redirectUri = AUTH_APP_REDIRECT_URL,
+            clientId = CLIENT_ID_DOCUMENT,
         )
     }
 
