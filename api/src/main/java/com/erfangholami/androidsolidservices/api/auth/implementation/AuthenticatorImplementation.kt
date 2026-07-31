@@ -92,7 +92,12 @@ internal class AuthenticatorImplementation internal constructor(
             else -> return Pair(null, "Either webId or oidcIssuer must be provided.")
         }
 
-        val (conf, confError) = registrationService.fetchAuthorizationConfig(issuerUrl)
+        // AppAuth rejects non-https from inside its own AsyncTask, where the throw is uncaught and
+        // takes the process down, so the check has to happen before it sees the URL.
+        val httpsIssuerUrl = asHttpsIssuerUrl(issuerUrl)
+            ?: return Pair(null, "'$issuerUrl' is not a valid provider address. It must be an https URL.")
+
+        val (conf, confError) = registrationService.fetchAuthorizationConfig(httpsIssuerUrl)
         if (conf == null) {
             return Pair(
                 null,
@@ -329,4 +334,16 @@ internal class AuthenticatorImplementation internal constructor(
         val profile = inProgressAuth.get() ?: return
         authHeaders.updateNonce(profile, resourceUri, nonce)
     }
+}
+
+internal fun asHttpsIssuerUrl(raw: String): String? {
+    val trimmed = raw.trim()
+    if (trimmed.isEmpty()) return null
+    // Someone typing a bare domain means https; anything else has to say so and be https.
+    val withScheme = if (trimmed.contains("://")) trimmed else "https://$trimmed"
+    val uri = runCatching { URI(withScheme) }.getOrNull() ?: return null
+    if (!uri.scheme.equals("https", ignoreCase = true)) return null
+    if (uri.host.isNullOrBlank()) return null
+    // AppAuth matches the scheme case-sensitively, so hand it one that is already lowercase.
+    return "https://" + withScheme.substringAfter("://")
 }
