@@ -10,7 +10,61 @@ Library versions are published to Maven Central:
 
 ---
 
-## v0.6.0 — July 2026
+## v0.6.1 — 1st August 2026
+
+Sign-in no longer needs the overlay permission, Solid profiles become real Android accounts, and
+sessions stop expiring after a day. Several release-only defects are fixed.
+
+### New — Sign-in
+
+- **`AuthorizeWithSolid`**, an `ActivityResultContract` your app launches from its own foreground,
+  so Android Solid Services needs no overlay permission. `SolidSignInClient.requestLogin` still
+  works but is deprecated. See [Getting Started](getting-started.md).
+- **Solid accounts in Android Settings.** Each signed-in WebID appears under Settings → Accounts.
+  "Add account" there opens sign-in and returns where it was invoked; removing an account signs
+  that profile out. `ChooseSolidAccount` offers the system account chooser to apps that want it.
+- **Add an account mid-sign-in** — the authorize dialog can hand off to login, and the new account
+  is waiting in the list on return.
+
+### Improvements
+
+- **Static client registration.** The app identifies itself with a hosted
+  [Client ID Document](https://androidsolidservices.erfangholami.com/client.jsonld) instead of
+  registering dynamically with each provider.
+  Dynamic registrations expire — Inrupt discards them after 24 hours and the refresh token dies
+  with them, which is what forced a fresh sign-in roughly once a day. Existing sessions keep the
+  registration they were created with; only new sign-ins use the hosted identity. Your own app can
+  do the same: see [Client ID Document](client-id-document/README.md).
+- **PATCH on SPARQL-only servers** — a `text/n3` patch refused with 415 is restated as SPARQL
+  Update and retried, so patching works on Inrupt ESS over IPC too.
+- **Versions come from the git tag**, so a release is a tag and nothing is edited by hand.
+- **The `client` SDK gained a test suite** — 36 unit and 152 instrumented tests driving every call
+  across a real binder, running on an emulator in CI.
+
+### Bug fixes
+
+- **Metadata calls failed in release builds.** R8 renamed the parcelable models, and their names
+  travel inside the parcel, so `head`, `headPublic`, `readContainer` and enriched `listContainer`
+  raised `BadParcelableException` in every consumer.
+- **A crash in the app hung the caller forever.** Failures now arrive as typed errors, and a call
+  left parked on a dead service is retried after a rebind.
+- **Out-of-range enum values crashed the app** — any app could reach the exported sharing and
+  notification services with an unknown share mode or receiver kind.
+- **Third-party apps could not build** — `Shared` exposed AppAuth, forcing consumers to declare an
+  `appAuthRedirectScheme` placeholder for a flow they never run.
+- **A provider address without `https://` crashed the app** when signing in with a custom provider.
+- **A login finishing after the main screen opened** left no system account until the next cold start.
+- **The authorize dialog flashed a purple status bar** as it opened and closed.
+
+!!! note
+
+    The account type changed from a placeholder to `com.erfangholami.androidsolidservices`. Android
+    purges accounts of the old type on update, and they are re-registered on first launch — sessions
+    and pod data are untouched.
+
+---
+
+## v0.6.0 — 30th July 2026
 
 Tickets, WebID profiles, streaming and live notifications, on a unified result type. Adds crash
 reporting on the Play build and a Firebase-free build for F-Droid. **Source-breaking** for SDK
@@ -71,7 +125,7 @@ consumers (the project is pre-1.0 and unstable).
 
 ---
 
-## v0.5.1 — June 2026
+## v0.5.1 — 16th June 2026
 
 ### Improvements
 
@@ -79,7 +133,7 @@ consumers (the project is pre-1.0 and unstable).
 
 ---
 
-## v0.5.0 — June 2026
+## v0.5.0 — 16th June 2026
 
 Headline release: **resource sharing** and a **Linked Data Notifications inbox**, plus a
 security-focused overhaul of authentication and a clean-architecture refactor of the libraries.
@@ -146,7 +200,7 @@ security-focused overhaul of authentication and a clean-architecture refactor of
 
 ---
 
-## v0.4.1 — May 2026
+## v0.4.1 — 12th May 2026
 
 Namespace migration release. No new features; everything moves under `com.erfangholami.androidsolidservices`.
 
@@ -174,7 +228,7 @@ The local Gradle module folders (`SolidAndroidApi/` → `api/`, `SolidAndroidCli
 
 ---
 
-## v0.4.0 — May 2026
+## v0.4.0 — 3rd May 2026
 
 ### New API — `SolidResourceManager`
 
@@ -243,13 +297,13 @@ Third-party apps must now pass the target WebID on each resource and contacts ca
 
 ---
 
-## v0.3.1 — April 2026
+## v0.3.1 — 14th April 2026
 
 - Fix saving accounts bug.
 
 ---
 
-## v0.3.0 — April 2026
+## v0.3.0 — 13th April 2026
 
 - **Multi-account support** — log in with multiple Solid accounts and switch between them from the Settings page.
 - **Suspend functions** — all resource and contacts data module methods are now Kotlin `suspend` functions instead of callback-based, for cleaner coroutine integration.
@@ -266,14 +320,14 @@ Third-party apps must now pass the target WebID on each resource and contacts ca
 
 ---
 
-## v0.2.1 — December 2024
+## v0.2.1 — 19th December 2024
 
 - Remove SolidCommunity.net from the login provider list (simplify provider options).
 - Add app screenshots to documentation.
 
 ---
 
-## v0.2.0 — December 2024
+## v0.2.0 — 17th December 2024
 
 - **Contacts data module** — full contacts management over IPC: create, read, rename, and delete address books, contacts, and groups stored on the pod.
 - **Suspend functions for contacts** — all contacts data module methods converted from callbacks to `suspend` functions.
@@ -286,7 +340,7 @@ Third-party apps must now pass the target WebID on each resource and contacts ca
 
 ---
 
-## v0.1 — March 2024
+## v0.1 — 20th March 2024
 
 Initial public release.
 

@@ -1,6 +1,6 @@
 # Privacy Policy
 
-_Last updated: 30 July 2026_
+_Last updated: 30th July 2026_
 
 Android Solid Services (ASS) signs you in to [Solid](https://solidproject.org/) pods and lets other
 apps on your device reach them on your behalf. This policy explains what the app does with your

@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [0.6.1] — July 2026
+## [0.6.1] — 1st August 2026
 
 Sign-in no longer needs the overlay permission, Solid profiles become real Android accounts, and
 several release-only defects are fixed.
@@ -22,6 +22,12 @@ several release-only defects are fixed.
 
 ### Improvements
 
+- **Static client registration** — the app now identifies itself with a hosted Solid-OIDC
+  [Client ID Document](https://androidsolidservices.erfangholami.com/client.jsonld) instead of
+  registering dynamically with each provider. A dynamic registration expires — Inrupt discards
+  them after 24 hours, and the refresh token dies with the registration, which is what forced a
+  fresh sign-in roughly once a day. Existing sessions keep the registration they were created
+  with; only new sign-ins use the hosted identity.
 - **Versioning from the git tag** — `versionName`, `versionCode` and the Maven coordinates all
   derive from `vX.Y.Z`; releasing is tagging.
 - **`client` gains a test suite** — 36 unit and 152 instrumented tests driving every SDK call
@@ -41,6 +47,9 @@ several release-only defects are fixed.
   notification services with an unknown mode or receiver kind.
 - **Third-party apps could not build** — `Shared` exposed AppAuth, forcing consumers to declare an
   `appAuthRedirectScheme` placeholder for a flow they never run.
+- **A provider address without `https://` crashed the app.** A bare domain or an `http://` address
+  reached the OIDC library, which rejects both from a background thread the app cannot catch.
+  Addresses are now completed to `https://` and refused with a message when they cannot be.
 - **A login finishing after the main screen opened** left no system account until the next cold
   start.
 - **The authorize dialog flashed a purple status bar** as it opened and closed.
@@ -51,7 +60,7 @@ several release-only defects are fixed.
   purges accounts of the old type on update and they are re-registered on first launch; sessions
   and pod data are untouched.
 
-## [0.6.0] — July 2026
+## [0.6.0] — 30th July 2026
 
 Tickets, WebID profiles, streaming and live notifications, on a unified result type. Adds crash
 reporting on the Play build and a Firebase-free build for F-Droid. **Source-breaking** for SDK
@@ -105,14 +114,14 @@ consumers (pre-1.0).
   discovered rather than assumed.
 - Binary IPC corruption and empty non-RDF metadata; cancellation is no longer treated as retryable.
 
-## [0.5.1] — June 2026
+## [0.5.1] — 16th June 2026
 
 ### Improvements
 
 - Ship consumer ProGuard rules with the libraries, so minified apps need no keep rules of their own.
 - Add the app's own R8 rules.
 
-## [0.5.0] — June 2026
+## [0.5.0] — 16th June 2026
 
 **Resource sharing** and a **Linked Data Notifications inbox**, on top of a
 security-focused overhaul of the authentication layer and a clean-architecture refactor of the
@@ -232,7 +241,7 @@ is pre-1.0 and unstable).
 - 401 retry handling now distinguishes a DPoP-nonce rotation from an expired token, force-refreshes
   at most once per call, and never returns an expired or post-failed-refresh token to callers.
 
-## [0.4.1] — May 2026
+## [0.4.1] — 12th May 2026
 
 Namespace migration. Source code, Maven coordinates, and Gradle module folders move under `com.erfangholami.androidsolidservices`. No source-level API changes.
 
@@ -265,7 +274,7 @@ Add basic classes for sharing resources
 
 ---
 
-## [0.4.0] — May 2026
+## [0.4.0] — 3rd May 2026
 
 ### New API — `SolidResourceManager`
 
@@ -332,13 +341,13 @@ Third-party apps must now pass the target WebID on resource and contacts calls. 
 
 ---
 
-## [0.3.1] — April 2026
+## [0.3.1] — 14th April 2026
 
 - Fix saving accounts bug.
 
 ---
 
-## [0.3.0] — April 2026
+## [0.3.0] — 13th April 2026
 
 - Multi-account support — log in with multiple Solid accounts and switch between them from the Settings page.
 - All resource and contacts data module methods are now Kotlin `suspend` functions.
@@ -353,14 +362,14 @@ Third-party apps must now pass the target WebID on resource and contacts calls. 
 
 ---
 
-## [0.2.1] — December 2024
+## [0.2.1] — 19th December 2024
 
 - Remove SolidCommunity.net from the login provider list.
 - Add app screenshots to documentation.
 
 ---
 
-## [0.2.0] — December 2024
+## [0.2.0] — 17th December 2024
 
 - Full contacts management over IPC: create, read, rename, and delete address books, contacts, and groups stored on the pod.
 - `Flow<Boolean>` connection state for all IPC services.
@@ -372,7 +381,7 @@ Third-party apps must now pass the target WebID on resource and contacts calls. 
 
 ---
 
-## [0.1] — March 2024
+## [0.1] — 20th March 2024
 
 Initial public release.
 
