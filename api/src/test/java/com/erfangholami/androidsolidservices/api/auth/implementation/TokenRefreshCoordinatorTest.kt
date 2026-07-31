@@ -1,7 +1,7 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.net.Uri
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.api.auth.Profile
 import kotlinx.coroutines.runBlocking
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationRequest

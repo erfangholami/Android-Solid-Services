@@ -101,6 +101,11 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.titanium.json.ld.jre8)
 
+    // The OIDC browser flow. `api` is where authentication happens, so this is where AppAuth
+    // belongs — a consumer of `client` alone gets neither the dependency nor its manifest
+    // contributions. `api` (Profile.authState is public) rather than `implementation`.
+    api(libs.openid.appauth)
+
     api(project(":Shared"))
 }
 

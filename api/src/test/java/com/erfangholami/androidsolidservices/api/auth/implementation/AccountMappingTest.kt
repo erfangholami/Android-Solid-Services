@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.api.auth.Profile
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationException
 import net.openid.appauth.TokenResponse

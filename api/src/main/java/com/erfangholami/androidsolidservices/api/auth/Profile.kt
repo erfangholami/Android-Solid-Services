@@ -1,5 +1,7 @@
-package com.erfangholami.androidsolidservices.shared.model.profile
+package com.erfangholami.androidsolidservices.api.auth
 
+import com.erfangholami.androidsolidservices.shared.model.profile.UserInfo
+import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId.Companion.readFromString
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer

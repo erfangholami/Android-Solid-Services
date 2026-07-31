@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
+import com.erfangholami.androidsolidservices.api.auth.Profile
 import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 
 internal fun Profile.toAccount(): SolidAccount = SolidAccount(

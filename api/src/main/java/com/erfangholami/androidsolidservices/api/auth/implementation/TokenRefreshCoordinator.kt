@@ -2,11 +2,11 @@ package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.util.Base64
 import android.util.Log
+import com.erfangholami.androidsolidservices.api.auth.Profile
 import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.REGISTRATION_REQUEST_GRANT_TYPE_REFRESH_TOKEN
 import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.TOKEN_ENDPOINT_AUTH_METHOD_CLIENT_SECRET_BASIC
 import com.erfangholami.androidsolidservices.api.auth.preferredTokenEndpointAuthMethod
 import com.erfangholami.androidsolidservices.api.auth.supportsDPop
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
 import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
 import kotlinx.coroutines.NonCancellable

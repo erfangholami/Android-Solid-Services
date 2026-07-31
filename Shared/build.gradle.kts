@@ -74,7 +74,11 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
 
-    api(libs.openid.appauth)
+    // Deliberately no AppAuth here. Shared once exposed it via `Profile.authState`, which put
+    // AppAuth on every `client` consumer's classpath *and* merged its RedirectUriReceiverActivity
+    // into their manifest — so a third-party app could not build until it declared an
+    // `appAuthRedirectScheme` placeholder for a browser flow it never runs. Profile now lives in
+    // `api`, next to the only code that authenticates. Keep authentication types out of Shared.
 
     // Internal RDF (JSON-LD) codec only — NOT exposed on the public API (resource models use
     // String content-type + SolidHeaders), so these stay off consumers' compile classpath.

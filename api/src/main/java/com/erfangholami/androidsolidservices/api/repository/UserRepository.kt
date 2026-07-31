@@ -1,9 +1,9 @@
 package com.erfangholami.androidsolidservices.api.repository
 
 import android.content.Context
+import com.erfangholami.androidsolidservices.api.auth.Profile
+import com.erfangholami.androidsolidservices.api.auth.ProfileList
 import com.erfangholami.androidsolidservices.api.repository.implementation.UserRepositoryImplementation
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
-import com.erfangholami.androidsolidservices.shared.model.profile.ProfileList
 import kotlinx.coroutines.flow.Flow
 
 internal interface UserRepository {

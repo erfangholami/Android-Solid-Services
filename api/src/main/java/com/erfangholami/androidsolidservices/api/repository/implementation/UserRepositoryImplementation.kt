@@ -10,10 +10,10 @@ import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.erfangholami.androidsolidservices.api.auth.Profile
+import com.erfangholami.androidsolidservices.api.auth.ProfileList
+import com.erfangholami.androidsolidservices.api.auth.contains
 import com.erfangholami.androidsolidservices.api.repository.UserRepository
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
-import com.erfangholami.androidsolidservices.shared.model.profile.ProfileList
-import com.erfangholami.androidsolidservices.shared.model.profile.contains
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

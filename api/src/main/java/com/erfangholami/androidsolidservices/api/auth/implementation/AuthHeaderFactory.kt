@@ -1,8 +1,8 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
+import com.erfangholami.androidsolidservices.api.auth.Profile
 import com.erfangholami.androidsolidservices.api.auth.supportsDPop
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
-import com.erfangholami.androidsolidservices.shared.model.profile.Profile
 
 internal class AuthHeaderFactory {
 
