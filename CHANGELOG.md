@@ -2,6 +2,55 @@
 
 All notable changes to this project are documented here.
 
+## [0.6.1] — July 2026
+
+Sign-in no longer needs the overlay permission, Solid profiles become real Android accounts, and
+several release-only defects are fixed.
+
+### Features
+
+- **Overlay-free sign-in** — `AuthorizeWithSolid`, an `ActivityResultContract` your app launches
+  from its own foreground, so Android Solid Services needs no overlay permission.
+  `SolidSignInClient.requestLogin` is deprecated but keeps working.
+- **Android Accounts** — each signed-in WebID appears in Settings → Accounts. "Add account" there
+  opens the app's sign-in and returns where it was invoked; removing an account signs the profile
+  out. `ChooseSolidAccount` offers the system account chooser to apps that want it.
+- **Add an account mid-sign-in** — the authorize dialog can hand off to login, and the new account
+  appears in it on return.
+- **PATCH on SPARQL-only servers** — a `text/n3` patch refused with 415 is restated as SPARQL
+  Update and retried, so patching works on Inrupt ESS through the IPC surface.
+
+### Improvements
+
+- **Versioning from the git tag** — `versionName`, `versionCode` and the Maven coordinates all
+  derive from `vX.Y.Z`; releasing is tagging.
+- **`client` gains a test suite** — 36 unit and 152 instrumented tests driving every SDK call
+  across a real binder, with the instrumented suite running on an emulator in CI.
+- **Workflows** — CI on pull requests and pushes to `dev`; a release-tagged push runs the release
+  alone, whose gate already runs CI on the tag.
+
+### Bug fixes
+
+- **Metadata calls failed in release builds.** R8 renamed the parcelable models, and their names
+  travel inside the parcel, so `head`, `headPublic`, `readContainer` and enriched `listContainer`
+  raised `BadParcelableException` in every consumer.
+- **A crash in the app hung the caller forever.** Throwables escaping the AIDL dispatchers killed
+  the process, and a call parked on a callback was never resumed. Failures now arrive as typed
+  errors, and a dead service is retried after a rebind.
+- **Out-of-range enum values crashed the app** — any app could reach the exported sharing and
+  notification services with an unknown mode or receiver kind.
+- **Third-party apps could not build** — `Shared` exposed AppAuth, forcing consumers to declare an
+  `appAuthRedirectScheme` placeholder for a flow they never run.
+- **A login finishing after the main screen opened** left no system account until the next cold
+  start.
+- **The authorize dialog flashed a purple status bar** as it opened and closed.
+
+### Notes
+
+- The account type changed from a placeholder to `com.erfangholami.androidsolidservices`. Android
+  purges accounts of the old type on update and they are re-registered on first launch; sessions
+  and pod data are untouched.
+
 ## [0.6.0] — July 2026
 
 Tickets, WebID profiles, streaming and live notifications, on a unified result type. Adds crash
