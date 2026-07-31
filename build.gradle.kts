@@ -37,6 +37,10 @@ plugins {
 val describedVersion: String = runCatching {
     providers.gradleProperty("assVersion").orElse(
         providers.exec {
+            // Pinned to this repo: in a composite build (the client sample includes this one)
+            // the process working directory is the including build's, and describing the wrong
+            // repository yields the wrong — or no — version.
+            workingDir = rootDir
             commandLine("git", "describe", "--tags", "--match", "v[0-9]*", "--dirty")
             isIgnoreExitValue = true
         }.standardOutput.asText.map(String::trim),
@@ -45,15 +49,18 @@ val describedVersion: String = runCatching {
 
 val assVersionName: String = describedVersion.removePrefix("v").ifEmpty { "0.0.0-unknown" }
 
-val assVersionCode: Int = Regex("""^(\d+)\.(\d+)\.(\d+)""").find(assVersionName)
-    ?.destructured
-    ?.let { (major, minor, patch) ->
-        require(minor.toInt() < 100 && patch.toInt() < 100) {
-            "versionCode packs minor and patch into two digits each; $assVersionName does not fit"
+// Never below 1: AGP rejects versionCode 0, which is what the fallback name would produce.
+val assVersionCode: Int = (
+    Regex("""^(\d+)\.(\d+)\.(\d+)""").find(assVersionName)
+        ?.destructured
+        ?.let { (major, minor, patch) ->
+            require(minor.toInt() < 100 && patch.toInt() < 100) {
+                "versionCode packs minor and patch into two digits each; $assVersionName does not fit"
+            }
+            major.toInt() * 10_000 + minor.toInt() * 100 + patch.toInt()
         }
-        major.toInt() * 10_000 + minor.toInt() * 100 + patch.toInt()
-    }
-    ?: 1
+        ?: 1
+    ).coerceAtLeast(1)
 
 extra["assVersionName"] = assVersionName
 extra["assVersionCode"] = assVersionCode
