@@ -67,9 +67,9 @@ fun authServiceConnectionState(): Flow<Boolean>
 // Throws SolidException if ASS is not installed, not connected, or no user is logged in.
 fun getAccount(): SolidSignInAccount?
 
-// Prompts the user (inside ASS) to grant or deny this app access.
-// callBack: (true, null) = granted | (false, null) = denied | (null, error) = error
-fun requestLogin(callBack: (Boolean?, SolidException?) -> Unit)
+// Deprecated and no longer functional — always fails. Launch the AuthorizeWithSolid
+// contract from your Activity instead (see "Full auth example" below).
+fun requestLogin(callBack: (String?, SolidException?) -> Unit)
 
 // Revokes this app's access grant.
 fun disconnectFromSolid(callBack: (Boolean) -> Unit)
@@ -77,22 +77,27 @@ fun disconnectFromSolid(callBack: (Boolean) -> Unit)
 
 ### Full auth example
 
-```kotlin
-val signInClient = Solid.getSignInClient(context)
+Sign-in is an activity result: your app launches the picker, so no permission is involved.
 
-signInClient.authServiceConnectionState().collect { connected ->
-    if (connected) {
-        val account = signInClient.getAccount()
-        if (account == null) {
-            signInClient.requestLogin { granted, error ->
-                when {
-                    error != null  -> showError(error)
-                    granted == true -> proceedToApp()
-                    else           -> showDeniedMessage()
-                }
-            }
-        } else {
-            proceedToApp()
+```kotlin
+class MainActivity : ComponentActivity() {
+
+    private val signInClient = Solid.getSignInClient(this)
+
+    // Register the contract while the activity is being created, not later.
+    private val authorize = registerForActivityResult(AuthorizeWithSolid()) { result ->
+        when (result) {
+            is SolidSignInResult.Authorized -> proceedToApp(result.webId)
+            SolidSignInResult.Dismissed     -> showDeniedMessage()
+            is SolidSignInResult.Failed     -> showError(result.exception)
+        }
+    }
+
+    private suspend fun signIn() {
+        signInClient.authServiceConnectionState().collect { connected ->
+            if (!connected) return@collect
+            val account = signInClient.getAccount()
+            if (account == null) authorize.launch(Unit) else proceedToApp(account.webId)
         }
     }
 }
@@ -418,7 +423,7 @@ SolidException
 ├── SolidAppNotFoundException           — ASS app is not installed
 ├── SolidServiceConnectionException     — IPC connection to ASS failed
 ├── SolidNotLoggedInException           — No user is logged in inside ASS
-├── SolidServicesDrawPermissionDeniedException — ASS lacks overlay draw permission
+├── SolidServicesDrawPermissionDeniedException — the deprecated requestLogin was called
 └── SolidResourceException
     ├── NotSupportedClassException      — resource class doesn't extend RDFSource/NonRDFSource
     ├── NotPermissionException          — app not authorized to access this resource

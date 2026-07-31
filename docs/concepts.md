@@ -42,8 +42,8 @@ sequenceDiagram
     participant IDP as OpenID Provider
     participant Pod as Solid Pod
 
-    App->>ASS: requestLogin(callback)
-    ASS->>User: Show permission dialog
+    App->>ASS: launch AuthorizeWithSolid
+    ASS->>User: Show account picker
     User->>ASS: Approve
     ASS->>IDP: Fetch OIDC discovery doc<br/>(from WebID → issuer)
     ASS->>Browser: Open authorization URL
@@ -54,7 +54,7 @@ sequenceDiagram
     IDP-->>ASS: Tokens (DPoP-bound when supported, else Bearer)
     ASS->>Pod: First pod request (HEAD /profile)
     Pod-->>ASS: 200 OK
-    ASS-->>App: callback(granted=true)
+    ASS-->>App: Authorized(webId)
 ```
 
 After login, ASS stores the tokens (access + refresh) in an **encrypted-at-rest** DataStore — AES-256-GCM under an Android Keystore key — so the persisted session is unreadable off-device. When DPoP is in use, each account also has **its own DPoP key pair** held by ASS, so a stolen token is useless without the private key.
@@ -179,15 +179,15 @@ sequenceDiagram
     participant ASS
     actor User
 
-    App->>ASS: requestLogin(callback)
+    App->>ASS: launch AuthorizeWithSolid
     ASS->>User: "App X wants access to your Solid pod"
     alt User approves
-        User->>ASS: Tap "Allow"
+        User->>ASS: Pick an account
         ASS->>ASS: Persist grant in DataStore
-        ASS-->>App: callback(granted=true, null)
-    else User denies
-        User->>ASS: Tap "Deny"
-        ASS-->>App: callback(granted=false, null)
+        ASS-->>App: Authorized(webId)
+    else User dismisses
+        User->>ASS: Tap outside / back
+        ASS-->>App: Dismissed
     end
 ```
 

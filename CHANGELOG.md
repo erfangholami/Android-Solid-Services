@@ -10,8 +10,8 @@ several release-only defects are fixed.
 ### Features
 
 - **Overlay-free sign-in** — `AuthorizeWithSolid`, an `ActivityResultContract` your app launches
-  from its own foreground, so Android Solid Services needs no overlay permission.
-  `SolidSignInClient.requestLogin` is deprecated but keeps working.
+  from its own foreground. The app no longer requests `SYSTEM_ALERT_WINDOW` at all, and the
+  dialog that used to demand it on first launch is gone.
 - **Android Accounts** — each signed-in WebID appears in Settings → Accounts. "Add account" there
   opens the app's sign-in and returns where it was invoked; removing an account signs the profile
   out. `ChooseSolidAccount` offers the system account chooser to apps that want it.
@@ -22,6 +22,12 @@ several release-only defects are fixed.
 
 ### Improvements
 
+- **No dangerous permissions.** `SYSTEM_ALERT_WINDOW` went with the overlay dialog, and the three
+  account permissions were dropped: `GET_ACCOUNTS` belongs to Android's **Contacts** group, so the
+  app looked like it wanted the user's contacts, while `AUTHENTICATE_ACCOUNTS` and
+  `MANAGE_ACCOUNTS` have been deprecated since API 23 and 22. Accounts are read by type instead of
+  from the device-wide list, which needs no permission for accounts the app authenticates. Only
+  normal-level permissions remain.
 - **Static client registration** — the app now identifies itself with a hosted Solid-OIDC
   [Client ID Document](https://androidsolidservices.erfangholami.com/client.jsonld) instead of
   registering dynamically with each provider. A dynamic registration expires — Inrupt discards
@@ -56,6 +62,11 @@ several release-only defects are fixed.
 
 ### Notes
 
+- **`SolidSignInClient.requestLogin` no longer works.** It drew its picker over the calling app
+  from a background service, which Android allows only with the overlay permission the app has now
+  dropped. It fails immediately with `SolidServicesDrawPermissionDeniedException` rather than
+  leaving the caller waiting on a callback that cannot arrive. The method stays on the AIDL
+  interface so installed apps keep their transaction numbering. Migrate to `AuthorizeWithSolid`.
 - The account type changed from a placeholder to `com.erfangholami.androidsolidservices`. Android
   purges accounts of the old type on update and they are re-registered on first launch; sessions
   and pod data are untouched.

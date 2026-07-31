@@ -14,7 +14,7 @@ Common errors and how to fix them. If your issue isn't listed here, [open an iss
 
 ```kotlin
 try {
-    signInClient.requestLogin { granted, error -> ... }
+    signInClient.getAccount()
 } catch (e: SolidAppNotFoundException) {
     // redirect user to the ASS install page
 }
@@ -42,10 +42,9 @@ Do not call methods immediately after obtaining the client object — binding is
 
 ### `SolidServicesDrawPermissionDeniedException`
 
-**Cause:** ASS needs the `SYSTEM_ALERT_WINDOW` (overlay draw) permission to show its permission dialog over your app. On Android 6+, this is a runtime permission that must be granted manually.
+**Cause:** You called the deprecated `SolidSignInClient.requestLogin`. It drew the account picker over your app from a background service, which Android permits only with the `SYSTEM_ALERT_WINDOW` (overlay draw) permission. ASS no longer requests that permission, so the call now always fails with this exception instead of leaving you waiting for a callback that cannot arrive.
 
-**Fix:** ASS will automatically show a dialog prompting the user to grant this permission when it's missing. If the user dismissed it, direct them to:
-**Settings → Apps → Android Solid Services → Display over other apps → Allow**.
+**Fix:** Launch the `AuthorizeWithSolid` contract from your Activity — the picker opens in your own foreground, the chosen WebID comes back as an activity result, and no permission is involved. See [Getting Started](getting-started.md).
 
 ---
 
@@ -73,7 +72,7 @@ The value must exactly match your application ID (e.g. `com.example.myapp`).
 
 **Cause:** No user is logged in to ASS, or the stored session has been fully invalidated (refresh token expired or revoked by the pod server).
 
-**Fix:** In your app, check `signInClient.getAccount()` — if it returns `null`, call `requestLogin()` again to start a new auth flow.
+**Fix:** In your app, check `signInClient.getAccount()` — if it returns `null`, launch the `AuthorizeWithSolid` contract again to start a new auth flow.
 
 ---
 

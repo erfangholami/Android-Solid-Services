@@ -17,9 +17,9 @@ sessions stop expiring after a day. Several release-only defects are fixed.
 
 ### New — Sign-in
 
-- **`AuthorizeWithSolid`**, an `ActivityResultContract` your app launches from its own foreground,
-  so Android Solid Services needs no overlay permission. `SolidSignInClient.requestLogin` still
-  works but is deprecated. See [Getting Started](getting-started.md).
+- **`AuthorizeWithSolid`**, an `ActivityResultContract` your app launches from its own foreground.
+  The app no longer requests `SYSTEM_ALERT_WINDOW` at all, and the dialog that used to demand it
+  on first launch is gone. See [Getting Started](getting-started.md).
 - **Solid accounts in Android Settings.** Each signed-in WebID appears under Settings → Accounts.
   "Add account" there opens sign-in and returns where it was invoked; removing an account signs
   that profile out. `ChooseSolidAccount` offers the system account chooser to apps that want it.
@@ -28,6 +28,10 @@ sessions stop expiring after a day. Several release-only defects are fixed.
 
 ### Improvements
 
+- **No dangerous permissions.** `SYSTEM_ALERT_WINDOW` went with the overlay dialog, and the three
+  account permissions were dropped — `GET_ACCOUNTS` belongs to Android's **Contacts** group, so the
+  app looked like it wanted your contacts, while `AUTHENTICATE_ACCOUNTS` and `MANAGE_ACCOUNTS` have
+  been deprecated since API 23 and 22. Only normal-level permissions remain.
 - **Static client registration.** The app identifies itself with a hosted
   [Client ID Document](https://androidsolidservices.erfangholami.com/client.jsonld) instead of
   registering dynamically with each provider.
@@ -55,6 +59,13 @@ sessions stop expiring after a day. Several release-only defects are fixed.
 - **A provider address without `https://` crashed the app** when signing in with a custom provider.
 - **A login finishing after the main screen opened** left no system account until the next cold start.
 - **The authorize dialog flashed a purple status bar** as it opened and closed.
+
+!!! warning "`requestLogin` no longer works"
+
+    The deprecated `SolidSignInClient.requestLogin` drew its picker over the calling app from a
+    background service, which Android allows only with the overlay permission the app has now
+    dropped. It fails immediately with `SolidServicesDrawPermissionDeniedException` instead of
+    leaving you waiting on a callback that cannot arrive. Migrate to `AuthorizeWithSolid`.
 
 !!! note
 
