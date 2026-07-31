@@ -31,10 +31,11 @@ import com.erfangholami.androidsolidservices.client.R
 /**
  * A ready-made "Sign in with Solid" button styled after Solid's branding.
  *
- * Wire [onClick] to start the sign-in flow, typically via
- * [SolidSignInClient.requestLogin]:
+ * Wire [onClick] to launch the sign-in flow via the
+ * [com.erfangholami.androidsolidservices.client.sdk.AuthorizeWithSolid] contract:
  * ```kotlin
- * SignInButton(onClick = { Solid.getSignInClient(context).requestLogin { webId, _ -> ... } })
+ * val authorize = registerForActivityResult(AuthorizeWithSolid()) { result -> ... }
+ * SignInButton(onClick = { authorize.launch(Unit) })
  * ```
  *
  * @param onClick Invoked when the button is tapped.

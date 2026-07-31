@@ -105,6 +105,10 @@ dependencies {
     testImplementation(libs.jetbrains.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
 
+    // ActivityResultContract appears in the public API (AuthorizeWithSolid), so consumers must
+    // see the class on their compile classpath — api, not implementation.
+    api(libs.androidx.activity)
+
     implementation(libs.androidx.appcompat)
     implementation(libs.google.android.material)
     implementation(libs.jetbrains.kotlinx.coroutins.android)

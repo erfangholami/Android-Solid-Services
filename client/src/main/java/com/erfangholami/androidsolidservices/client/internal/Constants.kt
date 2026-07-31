@@ -11,6 +11,8 @@ internal const val ANDROID_SOLID_SERVICES_SHARING_SERVICE: String =
     "com.erfangholami.androidsolidservices.services.ASSSharingService"
 internal const val ANDROID_SOLID_SERVICES_NOTIFICATIONS_SERVICE: String =
     "com.erfangholami.androidsolidservices.services.ASSNotificationsService"
+internal const val ANDROID_SOLID_SERVICES_AUTHORIZE_ACTIVITY: String =
+    "com.erfangholami.androidsolidservices.ui.AuthorizeActivity"
 
 /**
  * Where the SDK looks for the bound services.

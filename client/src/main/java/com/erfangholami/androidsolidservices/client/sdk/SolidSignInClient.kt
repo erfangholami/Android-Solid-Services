@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.Flow
  * Typical flow:
  * 1. Check [authServiceConnectionState] to confirm the IPC service is connected.
  * 2. Call [getAccount] — if it returns `null`, the app is not yet authorized.
- * 3. Call [requestLogin] to prompt the user to grant access.
+ * 3. Launch [AuthorizeWithSolid] from your Activity to let the user grant access.
  * 4. Use [disconnectFromSolid] to revoke access when the user signs out.
  */
 public class SolidSignInClient private constructor(
@@ -106,6 +106,11 @@ public class SolidSignInClient private constructor(
      *
      * @throws SolidException if the ASS app is not installed, not connected, or no user is logged in.
      */
+    @Deprecated(
+        "Launch AuthorizeWithSolid from your Activity instead: the picker is then started from " +
+            "your own foreground, so Android Solid Services needs no overlay permission and " +
+            "SolidServicesDrawPermissionDeniedException cannot happen.",
+    )
     @Throws(SolidException::class)
     public fun requestLogin(callBack: (String?, SolidException?) -> Unit) {
         requireLoggedInService().requestLogin(object : IASSLoginCallback.Stub() {

@@ -55,6 +55,17 @@
             android:taskAffinity=""
             android:excludeFromRecents="true" />
 
+        <!--
+          Launched for-result by third-party apps through the client SDK's AuthorizeWithSolid
+          contract. Exported by design: it only ever shows the consent picker, and a grant is
+          recorded solely on the user's tap — the same trust model as any system account chooser.
+        -->
+        <activity
+            android:name=".ui.AuthorizeActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AndroidSolidServices.Dialog"
+            android:excludeFromRecents="true" />
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true">
