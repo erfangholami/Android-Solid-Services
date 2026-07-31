@@ -1,22 +1,14 @@
 name: Deploy Docs
 
+# Every push to main redeploys the site — main is where releases and documentation land, and
+# both should be reflected at once. The deploy is a few minutes and idempotent, so no paths
+# filter is worth its maintenance. Tag pushes redeploy too, covering a tag pushed on its own.
 on:
   push:
     tags:
       - 'v*'
     branches:
       - main
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - 'docs-requirements.txt'
-      # The API reference is generated from the published libraries' sources, so a change
-      # to any of them makes the deployed docs stale.
-      - 'Shared/src/main/**'
-      - 'api/src/main/**'
-      - 'client/src/main/**'
-      - '**/build.gradle.kts'
-      - 'gradle/libs.versions.toml'
   workflow_dispatch:
 
 permissions:

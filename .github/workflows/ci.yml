@@ -32,8 +32,33 @@ env:
     -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
 
 jobs:
+  # A push to main that carries a release tag is handled by the Release workflow, which runs
+  # this same CI on the tag ref — running it here too would just do everything twice. GitHub
+  # delivers branch and tag pushes as separate events, so "does this commit have a tag" is
+  # answered by asking the remote. Push main and the tag together (git push origin main vX.Y.Z)
+  # and the guard is reliable; a tag pushed later merely lets one redundant run through.
+  release-push:
+    name: Release-push guard
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - name: Check for a release tag on the pushed commit
+        id: check
+        run: |
+          PROCEED=true
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            if git ls-remote "https://github.com/${{ github.repository }}" 'refs/tags/v*' | grep -q "^${{ github.sha }}"; then
+              echo "Release tag present — the Release workflow runs CI on the tag ref."
+              PROCEED=false
+            fi
+          fi
+          echo "proceed=$PROCEED" >> "$GITHUB_OUTPUT"
+
   style:
     name: Code style
+    needs: release-push
+    if: needs.release-push.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -91,6 +116,8 @@ jobs:
 
   test:
     name: Unit tests
+    needs: release-push
+    if: needs.release-push.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -129,6 +156,8 @@ jobs:
 
   lint:
     name: Android Lint
+    needs: release-push
+    if: needs.release-push.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -186,6 +215,8 @@ jobs:
 
   build:
     name: Assemble debug
+    needs: release-push
+    if: needs.release-push.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -231,6 +262,8 @@ jobs:
   # recovery. ~30 s of test time once the emulator is up.
   instrumented:
     name: Instrumented tests (client IPC)
+    needs: release-push
+    if: needs.release-push.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:

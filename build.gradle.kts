@@ -26,6 +26,38 @@ plugins {
     alias(libs.plugins.jetbrains.dokka)
 }
 
+// The version is derived from git, so releasing is tagging — nothing is edited by hand.
+// On the exact tag `v0.6.1` this yields versionName 0.6.1 and versionCode 601
+// (MAJOR·10000 + MINOR·100 + PATCH — monotonic as long as versions ascend, which the release
+// workflow enforces); between tags the name carries the distance and commit
+// (`0.6.1-3-g1a2b3c4`, `-dirty` when the tree is), while the code stays at the base tag's.
+// The Maven coordinates in Shared/api/client read the same values, so all five version sites
+// that used to be hand-written now agree by construction. `-PassVersion=X.Y.Z` overrides the
+// derivation for builders without a git checkout.
+val describedVersion: String = runCatching {
+    providers.gradleProperty("assVersion").orElse(
+        providers.exec {
+            commandLine("git", "describe", "--tags", "--match", "v[0-9]*", "--dirty")
+            isIgnoreExitValue = true
+        }.standardOutput.asText.map(String::trim),
+    ).getOrElse("")
+}.getOrDefault("")
+
+val assVersionName: String = describedVersion.removePrefix("v").ifEmpty { "0.0.0-unknown" }
+
+val assVersionCode: Int = Regex("""^(\d+)\.(\d+)\.(\d+)""").find(assVersionName)
+    ?.destructured
+    ?.let { (major, minor, patch) ->
+        require(minor.toInt() < 100 && patch.toInt() < 100) {
+            "versionCode packs minor and patch into two digits each; $assVersionName does not fit"
+        }
+        major.toInt() * 10_000 + minor.toInt() * 100 + patch.toInt()
+    }
+    ?: 1
+
+extra["assVersionName"] = assVersionName
+extra["assVersionCode"] = assVersionCode
+
 // API reference for the three published libraries, aggregated into one site.
 // `app` is excluded: it ships no public API.
 //   ./gradlew dokkaGeneratePublicationHtml   -> build/dokka/html

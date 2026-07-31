@@ -25,8 +25,8 @@ android {
         applicationId = "com.erfangholami.androidsolidservices"
         minSdk = 26
         targetSdk = 36
-        versionCode = 10
-        versionName = "0.6.0"
+        versionCode = rootProject.extra["assVersionCode"] as Int
+        versionName = rootProject.extra["assVersionName"] as String
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
