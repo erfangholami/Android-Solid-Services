@@ -93,23 +93,21 @@ public class SolidSignInClient private constructor(
     }
 
     /**
-     * Prompts the user to choose a Solid account and grant access.
+     * No longer shows a picker. [callBack] always receives
+     * `(null, SolidServicesDrawPermissionDeniedException)`.
      *
-     * A profile-picker dialog is shown inside the ASS app. The result is delivered
-     * asynchronously to [callBack]:
-     * - `(selectedWebId, null)` — user granted access; [selectedWebId] is the chosen account
-     * - `(null, null)` — user dismissed without granting
-     * - `(null, error)` — an error occurred (e.g. overlay permission missing)
-     *
-     * Use the returned `selectedWebId` for all subsequent [SolidResourceClient] and
-     * [SolidContactsDataModule] calls.
+     * The picker used to be drawn over your app from a background service, which Android allows
+     * only with the overlay permission. Android Solid Services no longer requests that permission,
+     * so there is no way for this call to present anything. Launch the [AuthorizeWithSolid]
+     * contract from your Activity instead: the same picker opens in your own foreground and the
+     * chosen WebID comes back as an activity result.
      *
      * @throws SolidException if the ASS app is not installed, not connected, or no user is logged in.
      */
     @Deprecated(
-        "Launch AuthorizeWithSolid from your Activity instead: the picker is then started from " +
-            "your own foreground, so Android Solid Services needs no overlay permission and " +
-            "SolidServicesDrawPermissionDeniedException cannot happen.",
+        "No longer functional — it always fails. Launch AuthorizeWithSolid from your Activity " +
+            "instead: the picker opens in your own foreground and returns the chosen WebID as an " +
+            "activity result.",
     )
     @Throws(SolidException::class)
     public fun requestLogin(callBack: (String?, SolidException?) -> Unit) {

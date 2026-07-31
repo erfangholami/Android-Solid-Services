@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.services
 
 import android.content.Intent
 import android.os.IBinder
-import android.provider.Settings
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.savedstate.SavedStateRegistry
@@ -13,14 +12,11 @@ import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.RevokeAppAccessUseCase
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.SOLID_NOT_LOGGED_IN
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.UNKNOWN
 import com.erfangholami.androidsolidservices.shared.model.auth.IASSLoginCallback
 import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
-import com.erfangholami.androidsolidservices.ui.ProfileSelectionActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -37,9 +33,6 @@ class ASSAuthenticatorService : LifecycleService(), SavedStateRegistryOwner {
 
     @Inject
     lateinit var revokeAppAccess: RevokeAppAccessUseCase
-
-    @Inject
-    lateinit var pendingLoginRequests: PendingLoginRequests
 
     override fun onCreate() {
         super.onCreate()
@@ -62,47 +55,21 @@ class ASSAuthenticatorService : LifecycleService(), SavedStateRegistryOwner {
             return accessGrantRepository.hasAccessGrant(packageName, webId)
         }
 
+        /**
+         * Answers with an error and never shows a picker.
+         *
+         * Showing one meant starting an activity from this service, which Android permits only
+         * with the overlay permission the app no longer requests. The method stays on the AIDL
+         * interface so installed apps keep their transaction numbering, and reports the failure
+         * immediately rather than leaving the caller waiting on a callback that cannot arrive.
+         */
         override fun requestLogin(callback: IASSLoginCallback) {
-            if (!Settings.canDrawOverlays(this@ASSAuthenticatorService)) {
-                callback.onError(
-                    DRAW_OVERLAY_NOT_PERMITTED,
-                    "Android Solid Services doesn't have permission to draw overlay. Please ask the user to enable it in app settings."
-                )
-                return
-            }
-            if (!hasLoggedIn()) {
-                callback.onError(SOLID_NOT_LOGGED_IN, "User has not logged in.")
-                return
-            }
-
-            val callingUid = getCallingUid()
-            val packageName = packageManager.getNameForUid(callingUid)
-            if (packageName == null) {
-                callback.onError(
-                    UNKNOWN,
-                    "Unable to resolve calling package for uid=$callingUid.",
-                )
-                return
-            }
-            val appName = packageManager.getApplicationLabel(
-                packageManager.getApplicationInfo(packageName, 0)
-            ).toString()
-
-            val requestId = UUID.randomUUID().toString()
-            pendingLoginRequests.put(
-                requestId,
-                PendingLoginRequest(
-                    callerPackage = packageName,
-                    callerName = appName,
-                    callback = callback,
-                )
+            callback.onError(
+                DRAW_OVERLAY_NOT_PERMITTED,
+                "requestLogin is no longer supported. Launch the AuthorizeWithSolid contract " +
+                    "from your own Activity instead — it starts the account picker in your " +
+                    "foreground and returns the chosen WebID as an activity result.",
             )
-
-            val intent = Intent(this@ASSAuthenticatorService, ProfileSelectionActivity::class.java).apply {
-                putExtra(ProfileSelectionActivity.EXTRA_REQUEST_ID, requestId)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
         }
 
         override fun disconnectFromSolid(webId: String, callback: IASSLogoutCallback) {

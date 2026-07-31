@@ -8,7 +8,12 @@ package com.erfangholami.androidsolidservices.shared.error
  */
 public object ExceptionsErrorCode {
 
-    /** The Android `SYSTEM_ALERT_WINDOW` permission has not been granted. */
+    /**
+     * The deprecated `requestLogin` flow was called. It drew its picker over the calling app and
+     * so needed the Android `SYSTEM_ALERT_WINDOW` permission, which the app no longer requests;
+     * callers launch the `AuthorizeWithSolid` contract instead. The code is kept because installed
+     * apps still map it.
+     */
     public const val DRAW_OVERLAY_NOT_PERMITTED: Int = 1
 
     /** No Solid account is signed in for the requested WebID. */

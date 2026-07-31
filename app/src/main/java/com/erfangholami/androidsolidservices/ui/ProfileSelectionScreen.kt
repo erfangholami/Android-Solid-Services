@@ -42,8 +42,8 @@ import com.erfangholami.androidsolidservices.R
 import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 
 /**
- * The account picker and consent surface, shared by both entry paths: the legacy overlay flow
- * ([ProfileSelectionActivity]) and the launched-for-result flow ([AuthorizeActivity]).
+ * The account picker and consent surface, shown by [AuthorizeActivity] when a third-party app
+ * launches it for a result.
  *
  * @param onAddAccount When non-null, an "Add account" button hands off to Android Solid
  *   Services' login. The profile list is live, so the new account appears here on return — which

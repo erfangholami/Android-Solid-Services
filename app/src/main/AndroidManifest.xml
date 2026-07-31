@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:name=".ASSApplication"
@@ -47,13 +46,6 @@
         <service
             android:name=".services.ASSNotificationsService"
             android:exported="true" />
-
-        <activity
-            android:name=".ui.ProfileSelectionActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AndroidSolidServices.Dialog"
-            android:taskAffinity=""
-            android:excludeFromRecents="true" />
 
         <!--
           Launched for-result by third-party apps through the client SDK's AuthorizeWithSolid

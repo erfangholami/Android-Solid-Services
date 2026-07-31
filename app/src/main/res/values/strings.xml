@@ -33,9 +33,6 @@
     <string name="revoke_permission">Revoke Permission</string>
     <string name="revoke_permission_description">Do you want to revoke Solid access from %1$s for account %1$s?</string>
     <string name="no_app_granted">No app granted</string>
-    <string name="overlay_permission_required">Overlay Permission Required</string>
-    <string name="overlay_permission_required_description">Android Solid Services needs permission to draw over other apps in order to show access grant dialogs. Please enable it in Settings.</string>
-    <string name="open_settings">Open Settings</string>
     <string name="wants_to_access_your_solid_pod">wants to access your Solid Pod</string>
     <string name="choose_an_account">Choose an account</string>
     <string name="no_accounts_logged_in">No accounts logged in.</string>
