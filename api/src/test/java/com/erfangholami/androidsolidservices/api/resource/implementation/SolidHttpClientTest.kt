@@ -318,4 +318,55 @@ class SolidHttpClientTest {
             (result as SolidResult.Success).value,
         )
     }
+
+    private val n3PatchBody = """
+        @prefix solid: <http://www.w3.org/ns/solid/terms#> .
+        _:p a solid:InsertDeletePatch ;
+          solid:inserts { <https://a.example/x> <http://schema.org/name> "hello" . } .
+    """.trimIndent()
+
+    @Test
+    fun `patchRaw retries as SPARQL Update when the server refuses N3`() {
+        server.enqueue(MockResponse().setResponseCode(415))
+        server.enqueue(MockResponse().setResponseCode(205))
+
+        val result = runBlocking { client.patchRaw(webId, url("/r"), n3PatchBody) }
+
+        assertTrue(result is SolidResult.Success)
+        assertEquals(2, server.requestCount)
+
+        val first = server.takeRequest()
+        assertTrue(first.getHeader("Content-Type").orEmpty().startsWith("text/n3"))
+
+        val second = server.takeRequest()
+        assertTrue(
+            "the retry must restate the patch as SPARQL Update",
+            second.getHeader("Content-Type").orEmpty().startsWith("application/sparql-update"),
+        )
+        val body = second.body.readUtf8()
+        assertTrue(body.contains("INSERT DATA {"))
+        assertTrue(body.contains("\"hello\""))
+    }
+
+    @Test
+    fun `patchRaw keeps the 415 when the body cannot be translated`() {
+        server.enqueue(MockResponse().setResponseCode(415))
+
+        val result = runBlocking { client.patchRaw(webId, url("/r"), "not an N3 patch document") }
+
+        assertTrue(result is SolidResult.Failure)
+        assertEquals(415, (result as SolidResult.Failure).error.httpStatus)
+        assertEquals("nothing to retry with — one request only", 1, server.requestCount)
+    }
+
+    @Test
+    fun `patchRaw does not reinterpret other failures as format problems`() {
+        server.enqueue(MockResponse().setResponseCode(403))
+
+        val result = runBlocking { client.patchRaw(webId, url("/r"), n3PatchBody) }
+
+        assertTrue(result is SolidResult.Failure)
+        assertEquals(403, (result as SolidResult.Failure).error.httpStatus)
+        assertEquals("a denial is not a media-type negotiation", 1, server.requestCount)
+    }
 }

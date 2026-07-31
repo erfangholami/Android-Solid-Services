@@ -231,7 +231,7 @@ internal class SolidHttpClient(
         ifMatch: String? = null,
     ): SolidResult<Unit> {
         return try {
-            val response = executeAuthenticated(
+            var response = executeAuthenticated(
                 method = "PATCH",
                 webId = webId,
                 uri = uri,
@@ -239,6 +239,19 @@ internal class SolidHttpClient(
                 body = n3Body.toByteArray(Charsets.UTF_8),
                 ifMatch = ifMatch,
             )
+            if (response.statusCode == HTTP_UNSUPPORTED_MEDIA_TYPE) {
+                val sparql = N3PatchConverter.toSparqlUpdate(n3Body)
+                if (sparql != null) {
+                    response = executeAuthenticated(
+                        method = "PATCH",
+                        webId = webId,
+                        uri = uri,
+                        contentType = HTTPAcceptType.SPARQL_UPDATE,
+                        body = sparql.toByteArray(Charsets.UTF_8),
+                        ifMatch = ifMatch,
+                    )
+                }
+            }
             if (response.isSuccessful()) {
                 invalidate(uri)
                 SolidResult.Success(Unit)
