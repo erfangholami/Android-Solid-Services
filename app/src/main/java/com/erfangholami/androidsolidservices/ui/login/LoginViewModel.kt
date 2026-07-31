@@ -27,7 +27,8 @@ data class LoginUiState(
 sealed interface LoginEvent {
     data class LaunchBrowser(val intent: Intent) : LoginEvent
     data object NavigateToMain : LoginEvent
-    data object NavigateBack : LoginEvent
+    /** [webId] is the account just added, for the system add-account flow to report back. */
+    data class NavigateBack(val webId: String? = null) : LoginEvent
 }
 
 @HiltViewModel
@@ -97,7 +98,13 @@ class LoginViewModel @Inject constructor(
             _uiState.update { it.copy(loading = false) }
             if (authorized) {
                 _uiState.update { it.copy(errorMessage = null) }
-                events.send(if (isAddingAccount) LoginEvent.NavigateBack else LoginEvent.NavigateToMain)
+                events.send(
+                    if (isAddingAccount) {
+                        LoginEvent.NavigateBack(authRepository.activeWebIdFlow.value)
+                    } else {
+                        LoginEvent.NavigateToMain
+                    },
+                )
             } else {
                 _uiState.update { it.copy(errorMessage = "A problem during login occurred!") }
             }

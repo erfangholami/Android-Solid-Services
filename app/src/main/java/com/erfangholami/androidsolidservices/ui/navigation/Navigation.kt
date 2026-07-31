@@ -18,18 +18,24 @@ import com.erfangholami.androidsolidservices.ui.login.Login as LoginScreen
 @Composable
 fun ASSAppNavHost(
     modifier: Modifier = Modifier,
-    navController: NavHostController
+    navController: NavHostController,
+    startAtLogin: Boolean = false,
+    onAddAccountComplete: ((webId: String?) -> Unit)? = null,
 ) {
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Startup
+        startDestination = if (startAtLogin) Login(isAddingAccount = true) else Startup
     ) {
         composable<Startup> {
             Startup(navController, hiltViewModel<StartupViewModel>())
         }
         composable<Login> {
-            LoginScreen(navController, hiltViewModel<LoginViewModel>())
+            LoginScreen(
+                navController = navController,
+                viewModel = hiltViewModel<LoginViewModel>(),
+                onAddAccountComplete = onAddAccountComplete.takeIf { startAtLogin },
+            )
         }
         composable<MainPage> {
             MainPage(navController)

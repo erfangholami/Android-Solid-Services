@@ -43,6 +43,11 @@ import com.erfangholami.androidsolidservices.ui.navigation.MainPage
 fun Login(
     navController: NavHostController,
     viewModel: LoginViewModel,
+    /**
+     * Set when the screen was opened by the system's "Add account": completion is the
+     * authenticator's to report, not a navigation — the user goes back to Settings.
+     */
+    onAddAccountComplete: ((webId: String?) -> Unit)? = null,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -68,7 +73,8 @@ fun Login(
                     popUpTo(navController.graph.id) { inclusive = true }
                 }
 
-                LoginEvent.NavigateBack -> navController.popBackStack()
+                is LoginEvent.NavigateBack ->
+                    onAddAccountComplete?.invoke(event.webId) ?: navController.popBackStack()
             }
         }
     }
