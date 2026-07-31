@@ -58,8 +58,6 @@ class ServiceConnectorIpcTest {
 
     @Test
     fun the_fake_really_runs_in_another_process() {
-        // Guards the premise of this whole suite. If the service were hosted in the test process,
-        // binder would hand over object references and nothing would be marshalled.
         val activityManager = context.getSystemService(ActivityManager::class.java)
         val processes = activityManager.runningAppProcesses.orEmpty().map { it.processName }
         assertTrue(

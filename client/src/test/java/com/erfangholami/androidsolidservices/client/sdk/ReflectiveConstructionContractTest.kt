@@ -30,9 +30,6 @@ class ReflectiveConstructionContractTest {
         SolidHeaders::class.java,
     )
 
-    // Mirrors SolidNonRDFResource's declared order: entity precedes headers. The RDF and non-RDF
-    // orders differ, which is exactly how reconstructNonRdf came to look up a constructor that
-    // does not exist on any type.
     private val nonRdfSignature = arrayOf(
         String::class.java,
         String::class.java,
@@ -67,8 +64,6 @@ class ReflectiveConstructionContractTest {
 
     @Test
     fun `the identifier parameter is String, not URI`() {
-        // The exact drift that broke release builds: the API moved to String IRIs while the keep
-        // rule still named java.net.URI, so R8 matched nothing and stripped the constructors.
         val first = SolidRDFResource::class.java.getConstructor(*rdfSignature).parameterTypes.first()
         assertTrue(
             "identifier parameter is ${first.name}, but the keep rule and call site expect String",

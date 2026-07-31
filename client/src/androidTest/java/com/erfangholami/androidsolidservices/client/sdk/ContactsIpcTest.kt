@@ -28,8 +28,6 @@ class ContactsIpcTest {
     private val contacts: SolidContactsDataModule
         get() = SolidContactsDataModule.getInstance(sdk.context)
 
-    // region address books
-
     @Test
     fun list_returns_both_index_halves(): Unit = runBlocking {
         assertEquals(Fixtures.ADDRESS_BOOK_LIST, contacts.books.list(Fixtures.WEB_ID))
@@ -102,15 +100,10 @@ class ContactsIpcTest {
         )
     }
 
-    // endregion
-
-    // region contacts
-
     @Test
     fun get_returns_the_contact_with_every_vcard_field_intact(): Unit = runBlocking {
         val contact = contacts.contacts.get(Fixtures.WEB_ID, Fixtures.CONTACT)
 
-        // Equality on the data class compares all twenty-odd fields, so this is the round trip.
         assertEquals(Fixtures.SOLID_CONTACT, contact)
         assertEquals(Fixtures.CONTACT_DATA, contact?.data)
     }
@@ -145,7 +138,6 @@ class ContactsIpcTest {
 
     @Test
     fun update_sends_book_then_contact_then_data(): Unit = runBlocking {
-        // Three same-typed String parameters in a row: the order is unverifiable from the result.
         contacts.contacts.update(
             webId = Fixtures.WEB_ID,
             addressBookUri = Fixtures.ADDRESS_BOOK,
@@ -203,8 +195,6 @@ class ContactsIpcTest {
 
     @Test
     fun findByWebId_sends_the_target_as_a_separate_argument(): Unit = runBlocking {
-        // Two WebIDs in a row — the account and the person being looked up. Swapping them would
-        // search the wrong pod for the wrong person and still return a plausible answer.
         val match = contacts.contacts.findByWebId(Fixtures.WEB_ID, Fixtures.PEER_WEB_ID)
 
         assertEquals(Fixtures.CONTACT_MATCH, match)
@@ -213,10 +203,6 @@ class ContactsIpcTest {
             "targetWebId" to Fixtures.PEER_WEB_ID,
         )
     }
-
-    // endregion
-
-    // region groups
 
     @Test
     fun create_sends_the_title_and_seed_members(): Unit = runBlocking {
@@ -266,8 +252,6 @@ class ContactsIpcTest {
             "contactUri" to Fixtures.CONTACT,
         )
     }
-
-    // endregion
 
     @Test
     fun a_service_error_arrives_as_the_mapped_exception_type(): Unit = runBlocking {

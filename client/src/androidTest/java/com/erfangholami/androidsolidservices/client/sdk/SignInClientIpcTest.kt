@@ -52,8 +52,6 @@ class SignInClientIpcTest {
 
     @Test
     fun a_call_before_the_binding_is_up_fails_fast_rather_than_waiting() {
-        // Pins the asymmetry above. A fresh client has not bound yet, and this client reports that
-        // rather than blocking — callers must gate on the connection flow.
         SolidSignInClient.resetForTests()
         val fresh = SolidSignInClient.getInstance(sdk.context, sdk.context.applicationInfo) { true }
 
@@ -78,7 +76,6 @@ class SignInClientIpcTest {
 
     @Test
     fun getAccount_returns_null_when_the_app_is_not_authorized() {
-        // Null is the "not granted yet" signal callers branch on; it must not be an exception.
         assertNull(client.getAccount(ASSAuthenticatorService.UNKNOWN_WEB_ID))
     }
 
@@ -117,7 +114,6 @@ class SignInClientIpcTest {
 
     @Test
     fun disconnectFromSolid_reports_false_rather_than_throwing_on_a_service_error() {
-        // The callback has no error channel, so a failure has to arrive as `false`.
         val latch = CountDownLatch(1)
         var granted = true
 

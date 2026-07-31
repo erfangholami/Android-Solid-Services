@@ -152,7 +152,6 @@ internal object Fixtures {
             contentType = "text/turtle",
             headMetadata = METADATA,
         ),
-        // A bare entry: the un-enriched shape a plain listContainer returns.
         SolidSourceReference(
             identifier = BINARY,
             types = listOf("http://www.w3.org/ns/ldp#NonRDFSource"),

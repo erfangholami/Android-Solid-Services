@@ -343,8 +343,6 @@ class ASSResourceService : Service() {
             }
             val payload = streamPayload(uri)
             val pipe = ParcelFileDescriptor.createPipe()
-            // The bytes must not be written before the descriptor is handed over: a pipe buffer is
-            // only ~64 KB, so a large payload would block this binder thread forever.
             Thread {
                 runCatching {
                     ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]).use { it.write(payload) }
@@ -363,8 +361,6 @@ class ASSResourceService : Service() {
             ifMatch: String?,
             callback: IASSUnitCallback?,
         ) {
-            // Drain the pipe fully, then record what actually came through it. This is the only
-            // method whose payload never touches a Parcel, so its digest is the proof.
             val received = source?.let {
                 ParcelFileDescriptor.AutoCloseInputStream(it).use { stream -> stream.readBytes() }
             } ?: ByteArray(0)
@@ -383,8 +379,6 @@ class ASSResourceService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder = binder
-
-    // region answering helpers
 
     private fun record(method: String, vararg args: Pair<String, Any?>) =
         CallLog.record(applicationContext, method, *args)
@@ -427,8 +421,6 @@ class ASSResourceService : Service() {
     private fun SolidNonRDFResource?.describe(): String =
         this?.let { "${it.getIdentifier()}|${it.getContentType()}|bytes=${it.getEntity().readBytes().size}" }
             ?: CallLog.NULL
-
-    // endregion
 
     companion object {
         const val ERROR_CODE: Int = ExceptionsErrorCode.NOT_PERMISSION

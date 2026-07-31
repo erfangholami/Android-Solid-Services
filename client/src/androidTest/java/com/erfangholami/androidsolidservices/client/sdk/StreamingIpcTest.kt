@@ -7,6 +7,7 @@ import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
 import com.erfangholami.androidsolidservices.client.internal.fakes.assertArgs
 import com.erfangholami.androidsolidservices.services.ASSResourceService
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -97,8 +98,6 @@ class StreamingIpcTest {
 
     @Test
     fun writeStream_closes_the_source_it_was_given(): Unit = runBlocking {
-        // The contract says the stream is read once and closed by the call; leaving it open leaks a
-        // descriptor per upload.
         val source = ClosingStream("hello".toByteArray())
 
         client.writeStream(Fixtures.WEB_ID, Fixtures.BINARY, "text/plain", source)
@@ -108,21 +107,22 @@ class StreamingIpcTest {
 
     @Test
     fun a_source_that_fails_mid_copy_surfaces_as_an_error_rather_than_hanging(): Unit = runBlocking {
-        val thrown = runCatching {
-            client.writeStream(
-                Fixtures.WEB_ID,
-                Fixtures.BINARY,
-                "text/plain",
-                ExplodingStream(),
-                contentLength = 1_024L,
-            )
-        }.exceptionOrNull()
+        val outcome = withTimeout(WRITE_TIMEOUT) {
+            runCatching {
+                client.writeStream(
+                    Fixtures.WEB_ID,
+                    Fixtures.BINARY,
+                    "text/plain",
+                    ExplodingStream(),
+                    contentLength = 1_024L,
+                )
+            }
+        }
 
-        // Either the write reports a failure or it completes with a truncated body; what it must
-        // never do is block the caller forever on a pipe nobody will finish filling.
         assertTrue(
-            "expected either a failure or a completed call, not a hang — got $thrown",
-            thrown == null || thrown is Exception,
+            "the call must settle either way, never park on a pipe nobody will finish filling — " +
+                "got ${outcome.exceptionOrNull()}",
+            outcome.isSuccess || outcome.exceptionOrNull() is Exception,
         )
     }
 
@@ -144,6 +144,10 @@ class StreamingIpcTest {
         body.close()
 
         assertThrows(IOException::class.java) { stream.read() }
+    }
+
+    private companion object {
+        const val WRITE_TIMEOUT = 30_000L
     }
 
     private class ClosingStream(bytes: ByteArray) : InputStream() {

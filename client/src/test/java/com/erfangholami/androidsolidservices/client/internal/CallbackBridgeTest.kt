@@ -53,17 +53,12 @@ class CallbackBridgeTest {
         val boom = IllegalStateException("transport died")
         val thrown = runCatching { bridged<String> { it.onFailure(boom) } }.exceptionOrNull()
 
-        // Identity is deliberately not asserted: kotlinx.coroutines' stack-trace recovery resumes
-        // with a copy carrying an augmented trace, so the caller sees an equal-but-not-same
-        // instance. Type and message are what callers actually branch on.
         assertTrue("expected IllegalStateException, got $thrown", thrown is IllegalStateException)
         assertEquals("transport died", thrown?.message)
     }
 
     @Test
     fun `a second answer from the service is ignored rather than crashing`() = runTest {
-        // A misbehaving or retrying service can invoke the callback twice; the second resume would
-        // otherwise throw IllegalStateException on an already-completed continuation.
         val value = bridged<String> { bridge ->
             bridge.onResult("first")
             bridge.onResult("second")
@@ -81,7 +76,6 @@ class CallbackBridgeTest {
         job.cancel()
         yield()
 
-        // Must not throw despite the continuation being cancelled.
         captured?.onResult("too late")
         captured?.onError(ExceptionsErrorCode.UNKNOWN, "too late")
         captured?.onFailure(IllegalStateException("too late"))

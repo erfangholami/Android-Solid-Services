@@ -39,8 +39,6 @@ class SignInButtonTest {
 
     @Test
     fun a_disabled_button_swallows_the_tap() {
-        // The button dims when disabled; if the click still fired, an app would start a second
-        // authorization flow while the first is on screen.
         var clicks = 0
         compose.setContent { SignInButton(onClick = { clicks++ }, enabled = false) }
 

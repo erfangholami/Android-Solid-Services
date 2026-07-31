@@ -32,8 +32,6 @@ class SharingIpcTest {
 
     private val peer = ShareReceiver.WebIdReceiver(Fixtures.PEER_WEB_ID)
 
-    // region given shares
-
     @Test
     fun getStoredGivenShares_returns_the_index(): Unit = runBlocking {
         assertEquals(listOf(Fixtures.GIVEN_SHARE), sharing.getStoredGivenShares(Fixtures.WEB_ID))
@@ -127,10 +125,6 @@ class SharingIpcTest {
         sdk.recorded("rebuildGivenIndex").assertArgs("webId" to Fixtures.WEB_ID)
     }
 
-    // endregion
-
-    // region received shares
-
     @Test
     fun getStoredReceivedShares_returns_the_index(): Unit = runBlocking {
         assertEquals(
@@ -155,7 +149,6 @@ class SharingIpcTest {
 
     @Test
     fun removeReceivedShare_sends_resource_then_owner(): Unit = runBlocking {
-        // Two IRIs and a WebID in a row; only the record tells them apart.
         sharing.removeReceivedShare(Fixtures.WEB_ID, Fixtures.RESOURCE, Fixtures.PEER_WEB_ID)
 
         sdk.recorded("removeReceivedShare").assertArgs(
@@ -173,10 +166,6 @@ class SharingIpcTest {
             "notifications" to listOf(Fixtures.SHARE_NOTIFICATION),
         )
     }
-
-    // endregion
-
-    // region requests, catalog and repairs
 
     @Test
     fun getAccessGrants_returns_the_unified_list(): Unit = runBlocking {
@@ -217,7 +206,6 @@ class SharingIpcTest {
 
     @Test
     fun getOwnerCatalog_sends_viewer_then_owner(): Unit = runBlocking {
-        // Both parameters are WebIDs, and reversing them reads someone else's catalog as yourself.
         val entries = sharing.getOwnerCatalog(Fixtures.WEB_ID, Fixtures.PEER_WEB_ID)
 
         assertEquals(listOf(Fixtures.CATALOG_ENTRY), entries)
@@ -235,8 +223,6 @@ class SharingIpcTest {
         sharing.repairOwnerControl(Fixtures.WEB_ID, Fixtures.RESOURCE)
         sdk.recorded("repairOwnerControl").assertArgs("resourceUri" to Fixtures.RESOURCE)
     }
-
-    // endregion
 
     @Test
     fun a_service_error_arrives_as_the_mapped_sharing_exception(): Unit = runBlocking {

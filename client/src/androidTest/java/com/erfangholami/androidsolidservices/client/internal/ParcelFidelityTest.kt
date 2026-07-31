@@ -36,7 +36,6 @@ class ParcelFidelityTest {
 
     @Test
     fun SolidMetadata_with_everything_absent_survives() {
-        // EMPTY exercises the null and empty-collection branches of the same hand-written code.
         assertEquals(SolidMetadata.EMPTY, SolidMetadata.EMPTY.roundTrip(SolidMetadata.CREATOR))
     }
 
@@ -48,9 +47,6 @@ class ParcelFidelityTest {
 
     @Test
     fun both_AccessProbe_variants_come_back_as_themselves() {
-        // The sealed hierarchy shares one CREATOR, so the discriminator is the only thing keeping
-        // Denied from being rebuilt as an empty Accessible — which reads as "no access" either way
-        // and would hide the bug.
         assertEquals(Fixtures.ACCESS_PROBE, Fixtures.ACCESS_PROBE.roundTrip(AccessProbe.CREATOR))
         assertEquals(AccessProbe.Denied, AccessProbe.Denied.roundTrip(AccessProbe.CREATOR))
     }
@@ -128,9 +124,6 @@ class ParcelFidelityTest {
 
     @Test
     fun rdf_quads_keep_their_datatype_language_and_graph() {
-        // RdfQuad is not itself Parcelable — it travels inside the resource. A literal that loses
-        // its datatype silently becomes a plain string, and a dropped language tag collapses two
-        // translations into one; both read as valid RDF afterwards.
         val copy = Fixtures.rdfResource().roundTrip(SolidRDFResource.CREATOR)
 
         assertEquals(Fixtures.QUADS, copy.getAllQuads())
@@ -163,8 +156,6 @@ class ParcelFidelityTest {
         return try {
             parcel.writeParcelable(this, 0)
             parcel.setDataPosition(0)
-            // Read past the class-name header writeParcelable adds, then use the CREATOR directly,
-            // so the test exercises the type's own code rather than the framework's lookup.
             parcel.readString()
             creator.createFromParcel(parcel)
         } finally {

@@ -35,8 +35,6 @@ class InstallCheckTest {
 
     @Test
     fun `a similarly named package does not count as installed`() {
-        // Guards against a prefix or suffix match creeping in: a third-party package that merely
-        // starts with the ASS package name must not satisfy the check.
         shadowOf(context.packageManager).installPackage(
             PackageInfo().apply { packageName = "$ANDROID_SOLID_SERVICES_PACKAGE_NAME.clone" },
         )
@@ -45,7 +43,6 @@ class InstallCheckTest {
 
     @Test
     fun `the production target is the ASS application id`() {
-        // SdkTarget is mutable so instrumented tests can redirect it; nothing else may.
         assertTrue(
             "SdkTarget was left pointing at ${SdkTarget.servicePackageName}",
             SdkTarget.servicePackageName == ANDROID_SOLID_SERVICES_PACKAGE_NAME,

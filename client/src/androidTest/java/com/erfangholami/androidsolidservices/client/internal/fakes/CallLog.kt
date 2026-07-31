@@ -42,8 +42,6 @@ internal object CallLog {
             .toString()
 
         synchronized(this) {
-            // "rws" flushes content and metadata on every write, so the record is durable before
-            // the fake answers the callback and the test wakes up.
             RandomAccessFile(file(context), "rws").use { raf ->
                 raf.seek(raf.length())
                 raf.write((line + "\n").toByteArray())

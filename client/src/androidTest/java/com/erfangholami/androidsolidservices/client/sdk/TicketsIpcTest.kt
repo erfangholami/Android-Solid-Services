@@ -65,7 +65,6 @@ class TicketsIpcTest {
             "isPrivate" to false,
             "container" to Fixtures.CONTAINER,
         )
-        // NewTicketImages is not a data class, so the fake spells its slots out.
         assertEquals(
             "{logo=${CallLog.describe(Fixtures.PNG_BYTES)}, icon=${CallLog.describe(Fixtures.PNG_BYTES)}, " +
                 "strip=${CallLog.NULL}, thumbnail=${CallLog.NULL}, footer=${CallLog.NULL}, " +

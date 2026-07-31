@@ -63,7 +63,6 @@ class WireContractTest {
 
     @Test
     fun `Public carries no value over the wire`() {
-        // createShare declares receiverValue @nullable precisely for this case.
         assertNull(ShareReceiver.Public.value())
     }
 
@@ -76,21 +75,17 @@ class WireContractTest {
 
     @Test
     fun `a WebID kind with no value is rejected`() {
-        // Losing the value in transit must fail loudly; a receiver of "null" would be granted
-        // access under a nonsense identity.
         assertThrows(IllegalStateException::class.java) {
             ShareReceiver.fromKind(ShareReceiver.KIND_WEBID, null)
         }
     }
 
     @Test
-    fun `minus one is not a valid mode ordinal`() {
-        // recordDecisionRejected sends -1 for "no mode applies". It has to stay outside the range,
-        // or a rejection would be recorded as a grant of whatever mode sits at that index.
-        assertEquals(
-            "-1 must not index into ShareMode",
-            true,
-            ShareMode.entries.indices.none { it == -1 },
+    fun `the no-mode sentinel decodes to nothing`() {
+        assertNull(
+            "recordDecisionRejected sends -1 for 'no mode applies'; decoding it as a mode " +
+                "would record a rejection as a grant",
+            ShareMode.fromOrdinal(-1),
         )
     }
 }

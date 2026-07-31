@@ -53,8 +53,6 @@ class SingletonIdentityTest {
 
     @Test
     fun `an application context does not produce a different instance than an activity context`() {
-        // The clients call applicationContext internally, so the caller's context flavour must not
-        // matter — a per-Activity instance would leak the Activity for the process lifetime.
         val fromApp = Solid.getSharingClient(context.applicationContext)
         val fromOther = Solid.getSharingClient(context)
         assertSame(fromApp, fromOther)

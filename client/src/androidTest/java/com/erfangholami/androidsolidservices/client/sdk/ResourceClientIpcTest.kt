@@ -39,14 +39,10 @@ class ResourceClientIpcTest {
     private val client: SolidResourceClient
         get() = SolidResourceClient.getInstance(sdk.context) { true }
 
-    // region reads
-
     @Test
     fun getWebId_returns_a_reconstructed_WebId(): Unit = runBlocking {
         val webId = client.getWebId(Fixtures.WEB_ID)
 
-        // The service answers with a plain SolidRDFResource, so arriving as a WebId proves the
-        // reflective reconstruction ran — the path R8 stripped in the 0.5.x release break.
         assertEquals(Fixtures.WEB_ID, webId.getIdentifier())
         assertEquals(Fixtures.QUADS.size, webId.getAllQuads().size)
         sdk.recorded("getWebId").assertArgs("webId" to Fixtures.WEB_ID)
@@ -87,8 +83,6 @@ class ResourceClientIpcTest {
 
     @Test
     fun read_rebuilds_an_RDF_subclass_the_service_never_saw(): Unit = runBlocking {
-        // SolidContainer is not what the fake sends back, so this only passes if reconstructRdf
-        // found the (String, String, List, SolidHeaders) constructor.
         val container = client.read(Fixtures.WEB_ID, Fixtures.CONTAINER, SolidContainer::class.java)
 
         assertTrue(container is SolidContainer)
@@ -97,9 +91,6 @@ class ResourceClientIpcTest {
 
     @Test
     fun read_rebuilds_a_binary_subclass_the_service_never_saw(): Unit = runBlocking {
-        // The mirror of the above for the non-RDF branch, which is where the constructor lookup was
-        // wrong: it asked for (String, String, SolidHeaders, InputStream) while the declared order
-        // puts the entity before the headers. Nothing but a consumer subclass reaches that code.
         val binary = client.read(Fixtures.WEB_ID, Fixtures.BINARY, SampleBinary::class.java)
 
         assertTrue(binary is SampleBinary)
@@ -159,10 +150,6 @@ class ResourceClientIpcTest {
         assertTrue("the Accessible variant must survive as itself", probe is AccessProbe.Accessible)
     }
 
-    // endregion
-
-    // region writes
-
     @Test
     fun create_dispatches_RDF_and_binary_to_their_own_methods(): Unit = runBlocking {
         client.create(Fixtures.WEB_ID, Fixtures.rdfResource())
@@ -193,7 +180,6 @@ class ResourceClientIpcTest {
 
     @Test
     fun an_omitted_if_match_arrives_as_null_not_an_empty_string(): Unit = runBlocking {
-        // An empty string would read as a real precondition on the far side and fail every write.
         client.update(Fixtures.WEB_ID, Fixtures.rdfResource())
         sdk.recorded("updateRdf").assertArgs("ifMatch" to null)
     }
@@ -313,10 +299,6 @@ class ResourceClientIpcTest {
         sdk.recorded("createInContainer").assertArgs("resource" to nonRdfArg(Fixtures.BINARY))
     }
 
-    // endregion
-
-    // region moves and public reads
-
     @Test
     fun copy_sends_source_then_destination(): Unit = runBlocking {
         val result = client.copy(Fixtures.WEB_ID, Fixtures.RESOURCE, Fixtures.DESTINATION)
@@ -364,10 +346,6 @@ class ResourceClientIpcTest {
         sdk.recorded("headPublic").assertArgs("uri" to Fixtures.BINARY)
     }
 
-    // endregion
-
-    // region failure paths
-
     @Test
     fun a_service_error_arrives_as_the_mapped_exception_type(): Unit = runBlocking {
         val thrown = runCatching { client.head(Fixtures.FAILING_WEB_ID, Fixtures.RESOURCE) }
@@ -393,8 +371,6 @@ class ResourceClientIpcTest {
             thrown is SolidException.SolidAppNotFoundException,
         )
     }
-
-    // endregion
 
     /** A consumer-defined binary type — the only way to reach `reconstructNonRdf`. */
     class SampleBinary(

@@ -83,7 +83,6 @@ class SolidExceptionMappingTest {
 
     @Test
     fun `an unrecognised code falls back to UnknownException, carrying its message`() {
-        // A newer ASS app talking to an older SDK will raise codes this build has never seen.
         val mapped = handleSolidException(9_999, "from the future")
         assertEquals(
             SolidException.SolidResourceException.UnknownException::class.java,
@@ -94,9 +93,6 @@ class SolidExceptionMappingTest {
 
     @Test
     fun `every declared error code has a mapping`() {
-        // The list above is hand-maintained, so it cannot notice a code added to Shared. This walks
-        // the constants themselves: anything new that still lands on UnknownException is a code the
-        // service can raise and no caller can distinguish.
         val unmapped = declaredCodes()
             .filterKeys { it != "UNKNOWN" }
             .filterValues { map(it) is SolidException.SolidResourceException.UnknownException }
@@ -111,8 +107,6 @@ class SolidExceptionMappingTest {
 
     @Test
     fun `error codes keep their numeric values`() {
-        // These integers are an IPC wire format shared with the ASS app. Renumbering one turns every
-        // installed copy of a third-party app into a mis-reporter — it compiles, it runs, it lies.
         val pinned = mapOf(
             "DRAW_OVERLAY_NOT_PERMITTED" to 1,
             "SOLID_NOT_LOGGED_IN" to 2,
@@ -144,8 +138,5 @@ class SolidExceptionMappingTest {
     private fun declaredCodes(): Map<String, Int> =
         ExceptionsErrorCode::class.java.declaredFields
             .filter { it.type == Int::class.javaPrimitiveType }
-            .associate { field ->
-                field.isAccessible = true
-                field.name to field.getInt(ExceptionsErrorCode)
-            }
+            .associate { field -> field.name to field.getInt(ExceptionsErrorCode) }
 }

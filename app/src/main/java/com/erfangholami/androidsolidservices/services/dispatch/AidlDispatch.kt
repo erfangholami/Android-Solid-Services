@@ -41,14 +41,6 @@ private fun beginAttributedCall(): String {
     return caller
 }
 
-/**
- * Turns anything the block throws into an `onError` on the caller's callback.
- *
- * Two things go wrong without this. The coroutine has no exception handler, so an escaping
- * throwable reaches the thread's default handler and takes the whole app down — and because the
- * AIDL call already returned, the caller's continuation is never resumed, leaving it parked
- * indefinitely. The services are exported, so the trigger need not even be a well-behaved client.
- */
 private fun CoroutineScope.dispatchGuarded(
     dispatcher: CoroutineDispatcher,
     caller: String,

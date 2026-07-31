@@ -50,7 +50,6 @@ class AidlEnumDecodingTest {
 
     @Test
     fun `an identified receiver with no value decodes to null`() {
-        // Silently building a receiver named "null" would grant access under a nonsense identity.
         assertNull(ShareReceiver.fromKindOrNull(ShareReceiver.KIND_WEBID, null))
         assertNull(ShareReceiver.fromKindOrNull(ShareReceiver.KIND_GROUP, null))
     }

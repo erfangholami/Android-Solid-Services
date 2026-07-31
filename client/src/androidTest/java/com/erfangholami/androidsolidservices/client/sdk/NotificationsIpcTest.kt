@@ -182,8 +182,6 @@ class NotificationsIpcTest {
 
     @Test
     fun recordDecisionRejected_sends_minus_one_when_no_mode_applies(): Unit = runBlocking {
-        // A rejection has no mode, but the AIDL parameter is a plain int. -1 is the agreed
-        // sentinel; sending 0 instead would record the rejection as a grant of Read.
         notifications.recordDecisionRejected(
             ownerWebId = Fixtures.WEB_ID,
             requesterWebId = Fixtures.PEER_WEB_ID,
