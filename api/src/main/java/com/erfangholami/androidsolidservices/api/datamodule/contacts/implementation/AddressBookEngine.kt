@@ -122,10 +122,12 @@ internal class AddressBookEngine(
         val addressBookRdf = pod.addressBook(ownerWebId, addressBookUri)
         val peopleIndexUri = addressBookRdf.getNameEmailIndex()
         val groupsIndexUri = addressBookRdf.getGroupsIndex()
-        val peopleIndexRdf = pod.peopleIndexOrNull(ownerWebId, peopleIndexUri)
-            ?: NameEmailIndexRDF(peopleIndexUri)
-        val groupsIndexRdf = pod.groupsIndexOrNull(ownerWebId, groupsIndexUri)
-            ?: GroupsIndexRDF(groupsIndexUri)
+        val peopleIndexRdf = peopleIndexUri
+            ?.let { pod.peopleIndexOrNull(ownerWebId, it) }
+            ?: NameEmailIndexRDF(peopleIndexUri ?: addressBookUri)
+        val groupsIndexRdf = groupsIndexUri
+            ?.let { pod.groupsIndexOrNull(ownerWebId, it) }
+            ?: GroupsIndexRDF(groupsIndexUri ?: addressBookUri)
         return AddressBook.createFromRdf(addressBookRdf, peopleIndexRdf, groupsIndexRdf)
     }
 

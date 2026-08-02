@@ -115,11 +115,9 @@ internal class ContactEngine(
             removed = it.removeContact(contactUri)
             removed
         }
-        if (removed) {
-            val groupsIndexRdf = pod.groupsIndex(
-                ownerWebId,
-                pod.addressBook(ownerWebId, addressBookUri).getGroupsIndex(),
-            )
+        val groupsIndexUri = pod.addressBook(ownerWebId, addressBookUri).getGroupsIndex()
+        if (removed && groupsIndexUri != null) {
+            val groupsIndexRdf = pod.groupsIndex(ownerWebId, groupsIndexUri)
             groupsIndexRdf.getGroups(addressBookUri).forEach { groupSummary ->
                 groupEngine.removeMemberInternal(ownerWebId, groupSummary.uri, contactUri)
             }
@@ -217,9 +215,9 @@ internal class ContactEngine(
     ): List<SolidContact> {
         val addressBookRdf =
             pod.addressBookOrNull(ownerWebId, addressBookUri) ?: return emptyList()
-        val peopleIndexRdf =
-            pod.peopleIndexOrNull(ownerWebId, addressBookRdf.getNameEmailIndex())
-                ?: return emptyList()
+        val peopleIndexRdf = addressBookRdf.getNameEmailIndex()
+            ?.let { pod.peopleIndexOrNull(ownerWebId, it) }
+            ?: return emptyList()
         val entries = peopleIndexRdf.getContacts(addressBookUri)
         return coroutineScope {
             entries.map { entry ->

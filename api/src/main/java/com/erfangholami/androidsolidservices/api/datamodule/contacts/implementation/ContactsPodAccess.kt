@@ -71,10 +71,8 @@ internal class ContactsPodAccess(
         updatePeopleIndex(ownerWebId, addressBookUri) {
             it.updateContactName(contactUri, newName)
         }
-        val groupsIndexRDF = groupsIndex(
-            ownerWebId,
-            addressBook(ownerWebId, addressBookUri).getGroupsIndex(),
-        )
+        val groupsIndexUri = addressBook(ownerWebId, addressBookUri).getGroupsIndex() ?: return
+        val groupsIndexRDF = groupsIndex(ownerWebId, groupsIndexUri)
         groupsIndexRDF.getGroups(addressBookUri).forEach { groupSummary ->
             val groupUri = groupSummary.uri
             solidResourceManager.casUpdate(
@@ -90,7 +88,7 @@ internal class ContactsPodAccess(
         addressBookUri: String,
         mutate: (NameEmailIndexRDF) -> Boolean,
     ) {
-        val peopleUri = addressBook(ownerWebId, addressBookUri).getNameEmailIndex()
+        val peopleUri = addressBook(ownerWebId, addressBookUri).getNameEmailIndex() ?: return
         solidResourceManager.casUpdate(
             ownerWebId,
             read = { solidResourceManager.read(ownerWebId, peopleUri, NameEmailIndexRDF::class.java) },
@@ -103,7 +101,7 @@ internal class ContactsPodAccess(
         addressBookUri: String,
         mutate: (GroupsIndexRDF) -> Boolean,
     ) {
-        val groupsUri = addressBook(ownerWebId, addressBookUri).getGroupsIndex()
+        val groupsUri = addressBook(ownerWebId, addressBookUri).getGroupsIndex() ?: return
         solidResourceManager.casUpdate(
             ownerWebId,
             read = { solidResourceManager.read(ownerWebId, groupsUri, GroupsIndexRDF::class.java) },

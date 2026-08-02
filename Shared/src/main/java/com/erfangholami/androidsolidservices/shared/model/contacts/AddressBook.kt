@@ -21,7 +21,7 @@ public data class AddressBook(
         ): AddressBook {
             return AddressBook(
                 uri = addressBookRdf.getIdentifier(),
-                title = addressBookRdf.getTitle(),
+                title = addressBookRdf.getTitle().orEmpty(),
                 contacts = nameEmailIndexRdf.getContacts(
                     addressBookRdf.getIdentifier()
                 ),

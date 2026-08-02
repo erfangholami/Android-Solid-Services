@@ -32,36 +32,42 @@ public class AddressBookRDF : SolidRDFResource {
         ensureType(getIdentifier(), VCARD.ADDRESS_BOOK)
     }
 
-    /** Returns the WebID of the address-book owner (`acl:owner`). */
-    public fun getOwner(): String =
-        quads.find { it.predicate == ACL.OWNER }!!.`object`
+    /**
+     * Returns the WebID of the address-book owner (`acl:owner`), or `null` when the document
+     * does not state one — a book written by another client, or a partial read.
+     */
+    public fun getOwner(): String? = findProperty(ACL.OWNER)
 
     /** Sets the address-book owner to [owner] (a WebID IRI). */
     public fun setOwner(owner: String) {
         addQuad(getIdentifier(), ACL.OWNER, owner)
     }
 
-    /** Returns the display title of this address book (`dc:title`). */
-    public fun getTitle(): String =
-        quads.find { it.predicate == DC.TITLE || it.predicate == DC.TITLE_LEGACY }!!.`object`
+    /** Returns the display title of this address book (`dc:title`), or `null` when untitled. */
+    public fun getTitle(): String? =
+        findProperty(DC.TITLE) ?: findProperty(DC.TITLE_LEGACY)
 
     /** Sets the display title of this address book. */
     public fun setTitle(title: String) {
         addQuadLiteral(getIdentifier(), DC.TITLE, title, XSD.STRING)
     }
 
-    /** Returns the URI of the people (name-email) index document (`vcard:nameEmailIndex`). */
-    public fun getNameEmailIndex(): String =
-        quads.find { it.predicate == VCARD.NAME_EMAIL_INDEX }!!.`object`
+    /**
+     * Returns the URI of the people (name-email) index document (`vcard:nameEmailIndex`), or
+     * `null` when the book declares none — read that as "this book lists no contacts".
+     */
+    public fun getNameEmailIndex(): String? = findProperty(VCARD.NAME_EMAIL_INDEX)
 
     /** Sets the URI of the people (name-email) index document. */
     public fun setNameEmailIndex(peopleIndex: String) {
         addQuad(getIdentifier(), VCARD.NAME_EMAIL_INDEX, peopleIndex)
     }
 
-    /** Returns the URI of the groups index document (`vcard:groupIndex`). */
-    public fun getGroupsIndex(): String =
-        quads.find { it.predicate == VCARD.GROUP_INDEX }!!.`object`
+    /**
+     * Returns the URI of the groups index document (`vcard:groupIndex`), or `null` when the book
+     * declares none — read that as "this book has no groups".
+     */
+    public fun getGroupsIndex(): String? = findProperty(VCARD.GROUP_INDEX)
 
     /** Sets the URI of the groups index document. */
     public fun setGroupsIndex(groupsIndex: String) {
