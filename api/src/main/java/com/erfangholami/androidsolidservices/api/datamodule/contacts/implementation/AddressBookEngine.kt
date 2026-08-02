@@ -14,6 +14,7 @@ import com.erfangholami.androidsolidservices.shared.rdf.contacts.AddressBookRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.result.solidCatching
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import java.util.UUID
 
@@ -21,7 +22,7 @@ internal class AddressBookEngine(
     private val pod: ContactsPodAccess,
 ) : AddressBookStore {
 
-    override suspend fun list(ownerWebId: String): SolidResult<AddressBookList> = runResult {
+    override suspend fun list(ownerWebId: String): SolidResult<AddressBookList> = solidCatching {
         readBookList(ownerWebId)
     }
 
@@ -29,7 +30,7 @@ internal class AddressBookEngine(
         ownerWebId: String,
         storage: String?,
         container: String?,
-    ): SolidResult<AddressBookList> = runResult {
+    ): SolidResult<AddressBookList> = solidCatching {
         val targetContainer =
             container ?: "${requireStorage(ownerWebId, storage)}${CONTACTS_DIRECTORY_SUFFIX}"
         pod.ensureContainer(ownerWebId, targetContainer)
@@ -38,17 +39,17 @@ internal class AddressBookEngine(
 
     private suspend fun readBookList(ownerWebId: String): AddressBookList = AddressBookList(
         publicAddressBookUris = runCatching {
-            pod.publicTypeIndex(ownerWebId).getAddressBooks()
+            pod.publicTypeIndex(ownerWebId).getInstances(VCARD.ADDRESS_BOOK)
         }.getOrDefault(emptyList()),
         privateAddressBookUris = runCatching {
-            pod.privateTypeIndex(ownerWebId).getAddressBooks()
+            pod.privateTypeIndex(ownerWebId).getInstances(VCARD.ADDRESS_BOOK)
         }.getOrDefault(emptyList()),
     )
 
     override suspend fun get(
         ownerWebId: String,
         addressBookUri: String,
-    ): SolidResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = solidCatching {
         readBook(ownerWebId, addressBookUri)
     }
 
@@ -58,7 +59,7 @@ internal class AddressBookEngine(
         isPrivate: Boolean,
         storage: String?,
         container: String?,
-    ): SolidResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = solidCatching {
         val bookUri = createBook(ownerWebId, title, isPrivate, storage, container)
         readBook(ownerWebId, bookUri)
     }
@@ -67,7 +68,7 @@ internal class AddressBookEngine(
         ownerWebId: String,
         addressBookUri: String,
         newName: String,
-    ): SolidResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = solidCatching {
         pod.solidResourceManager.casUpdate(
             ownerWebId,
             read = { pod.solidResourceManager.read(ownerWebId, addressBookUri, AddressBookRDF::class.java) },
@@ -86,7 +87,7 @@ internal class AddressBookEngine(
     override suspend fun delete(
         ownerWebId: String,
         addressBookUri: String,
-    ): SolidResult<AddressBook> = runResult {
+    ): SolidResult<AddressBook> = solidCatching {
         val book = runCatching { readBook(ownerWebId, addressBookUri) }.getOrNull()
 
         val bookContainer = addressBookUri.substring(0, addressBookUri.lastIndexOf("/") + 1)
@@ -101,8 +102,8 @@ internal class AddressBookEngine(
         ownerWebId: String,
         storage: String?,
         title: String,
-    ): SolidResult<AddressBook> = runResult {
-        val firstPrivate = pod.privateTypeIndex(ownerWebId).getAddressBooks().firstOrNull()
+    ): SolidResult<AddressBook> = solidCatching {
+        val firstPrivate = pod.privateTypeIndex(ownerWebId).getInstances(VCARD.ADDRESS_BOOK).firstOrNull()
         val bookUri = firstPrivate ?: createBook(
             ownerWebId = ownerWebId,
             title = title,

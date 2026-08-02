@@ -6,6 +6,7 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.GROUP_DIRECTO
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.result.solidCatching
 import java.util.UUID
 
 internal class GroupEngine(
@@ -17,7 +18,7 @@ internal class GroupEngine(
         addressBookUri: String,
         title: String,
         contactUris: List<String>,
-    ): SolidResult<FullGroup> = runResult {
+    ): SolidResult<FullGroup> = solidCatching {
         val bookContainer =
             addressBookUri.substring(0, addressBookUri.lastIndexOf("/") + 1)
         pod.ensureContainer(ownerWebId, "${bookContainer}${GROUP_DIRECTORY_SUFFIX}")
@@ -53,7 +54,7 @@ internal class GroupEngine(
     override suspend fun get(
         ownerWebId: String,
         groupUri: String,
-    ): SolidResult<FullGroup> = runResult {
+    ): SolidResult<FullGroup> = solidCatching {
         FullGroup.createFromRdf(pod.group(ownerWebId, groupUri))
     }
 
@@ -61,7 +62,7 @@ internal class GroupEngine(
         ownerWebId: String,
         addressBookUri: String,
         groupUri: String,
-    ): SolidResult<FullGroup> = runResult {
+    ): SolidResult<FullGroup> = solidCatching {
         val groupRdf = pod.group(ownerWebId, groupUri)
         var removed = false
         pod.updateGroupsIndex(ownerWebId, addressBookUri) {
@@ -78,7 +79,7 @@ internal class GroupEngine(
         ownerWebId: String,
         groupUri: String,
         contactUri: String,
-    ): SolidResult<FullGroup> = runResult {
+    ): SolidResult<FullGroup> = solidCatching {
         val contactRdf = pod.contact(ownerWebId, contactUri)
         addMemberInternal(ownerWebId, groupUri, contactRdf)
         FullGroup.createFromRdf(pod.group(ownerWebId, groupUri))
@@ -88,7 +89,7 @@ internal class GroupEngine(
         ownerWebId: String,
         groupUri: String,
         contactUri: String,
-    ): SolidResult<FullGroup> = runResult {
+    ): SolidResult<FullGroup> = solidCatching {
         removeMemberInternal(ownerWebId, groupUri, contactUri)
         FullGroup.createFromRdf(pod.group(ownerWebId, groupUri))
     }

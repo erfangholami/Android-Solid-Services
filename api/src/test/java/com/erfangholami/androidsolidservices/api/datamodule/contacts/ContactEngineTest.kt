@@ -16,6 +16,7 @@ import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
+import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -60,7 +61,7 @@ class ContactEngineTest {
         )
         fake.put(
             PrivateTypeIndex(privateIndexUri, "application/ld+json", null, null)
-                .apply { addAddressBook(bookUri) },
+                .apply { addInstance(VCARD.ADDRESS_BOOK, bookUri) },
         )
         fake.put(
             PublicTypeIndex(publicIndexUri, "application/ld+json", null, null),
@@ -193,19 +194,19 @@ class ContactEngineTest {
             val book = bookEngine.ensureDefault(webId, storage).getOrThrow()
             assertEquals(bookUri, book.uri)
             val typeIndex = fake.store[privateIndexUri] as PrivateTypeIndex
-            assertEquals(listOf(bookUri), typeIndex.getAddressBooks())
+            assertEquals(listOf(bookUri), typeIndex.getInstances(VCARD.ADDRESS_BOOK))
         }
 
     @Test
     fun `ensureDefault creates a private book when none exists`() = runBlocking {
         val typeIndex = fake.store[privateIndexUri] as PrivateTypeIndex
-        typeIndex.removeAddressBook(bookUri)
+        typeIndex.removeResource(bookUri)
 
         val book = bookEngine.ensureDefault(webId, storage, title = "Contacts").getOrThrow()
         assertEquals("Contacts", book.title)
         assertTrue(book.uri.startsWith("${storage}contacts/"))
         val refreshedIndex = fake.store[privateIndexUri] as PrivateTypeIndex
-        assertEquals(listOf(book.uri), refreshedIndex.getAddressBooks())
+        assertEquals(listOf(book.uri), refreshedIndex.getInstances(VCARD.ADDRESS_BOOK))
     }
 
     @Test
@@ -261,7 +262,7 @@ class ContactEngineTest {
         bookEngine.delete(webId, bookUri).getOrThrow()
         assertTrue(fake.store.keys.none { it.startsWith(bookContainer) })
         val typeIndex = fake.store[privateIndexUri] as PrivateTypeIndex
-        assertFalse(typeIndex.getAddressBooks().contains(bookUri))
+        assertFalse(typeIndex.getInstances(VCARD.ADDRESS_BOOK).contains(bookUri))
     }
 
     @Test
@@ -274,12 +275,12 @@ class ContactEngineTest {
 
             assertTrue(result is SolidResult.Failure)
             val typeIndex = fake.store[privateIndexUri] as PrivateTypeIndex
-            assertTrue(typeIndex.getAddressBooks().contains(bookUri))
+            assertTrue(typeIndex.getInstances(VCARD.ADDRESS_BOOK).contains(bookUri))
         }
 
     @Test
     fun `create book provisions the book container`() = runBlocking {
-        (fake.store[privateIndexUri] as PrivateTypeIndex).removeAddressBook(bookUri)
+        (fake.store[privateIndexUri] as PrivateTypeIndex).removeResource(bookUri)
         val book = bookEngine.ensureDefault(webId, storage, title = "Contacts").getOrThrow()
         val newBookContainer = book.uri.substring(0, book.uri.lastIndexOf('/') + 1)
         assertTrue(fake.store.containsKey(newBookContainer))

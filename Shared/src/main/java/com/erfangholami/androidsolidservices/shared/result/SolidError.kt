@@ -324,6 +324,8 @@ public sealed class SolidError {
         public fun fromThrowable(throwable: Throwable): SolidError {
             val name = throwable.javaClass.name
             return when {
+                throwable is SolidResultException -> throwable.error
+
                 name == "kotlinx.coroutines.CancellationException" ||
                     throwable is java.util.concurrent.CancellationException -> Cancelled
 

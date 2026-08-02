@@ -10,19 +10,8 @@ import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
-import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
-import kotlinx.coroutines.CancellationException
-
-internal suspend fun <T> runResult(block: suspend () -> T): SolidResult<T> =
-    try {
-        SolidResult.Success(block())
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        SolidResult.Failure(SolidError.fromThrowable(e))
-    }
 
 internal class ContactsPodAccess(
     val solidResourceManager: SolidResourceManager,

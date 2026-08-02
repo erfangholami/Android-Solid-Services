@@ -1,6 +1,5 @@
 package com.erfangholami.androidsolidservices.api.datamodule.tickets.implementation
 
-import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation.runResult
 import com.erfangholami.androidsolidservices.api.datamodule.tickets.TicketStore
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
@@ -8,17 +7,18 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketArtifact
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketList
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.result.solidCatching
 import java.net.URI
 
 internal class TicketEngine(
     private val helper: SolidTicketsDataModuleHelper,
 ) : TicketStore {
 
-    override suspend fun list(ownerWebId: String): SolidResult<TicketList> = runResult {
+    override suspend fun list(ownerWebId: String): SolidResult<TicketList> = solidCatching {
         TicketList(helper.getTicketSummaries(ownerWebId))
     }
 
-    override suspend fun get(ownerWebId: String, ticketUri: String): SolidResult<Ticket> = runResult {
+    override suspend fun get(ownerWebId: String, ticketUri: String): SolidResult<Ticket> = solidCatching {
         Ticket.createFromRdf(helper.getTicket(ownerWebId, URI.create(ticketUri)))
     }
 
@@ -31,7 +31,7 @@ internal class TicketEngine(
         images: NewTicketImages?,
         isPrivate: Boolean,
         container: String?,
-    ): SolidResult<Ticket> = runResult {
+    ): SolidResult<Ticket> = solidCatching {
         val ticketRdf = helper.createTicket(
             ownerWebId,
             storage,
@@ -49,7 +49,7 @@ internal class TicketEngine(
         ownerWebId: String,
         ticketUri: String,
         updated: NewTicket,
-    ): SolidResult<Ticket> = runResult {
+    ): SolidResult<Ticket> = solidCatching {
         Ticket.createFromRdf(helper.updateTicket(ownerWebId, URI.create(ticketUri), updated))
     }
 
@@ -59,7 +59,7 @@ internal class TicketEngine(
         artifact: ByteArray,
         artifactContentType: String,
         images: NewTicketImages?,
-    ): SolidResult<Ticket> = runResult {
+    ): SolidResult<Ticket> = solidCatching {
         Ticket.createFromRdf(
             helper.putTicketArtifact(
                 ownerWebId,
@@ -71,14 +71,14 @@ internal class TicketEngine(
         )
     }
 
-    override suspend fun delete(ownerWebId: String, ticketUri: String): SolidResult<Ticket> = runResult {
+    override suspend fun delete(ownerWebId: String, ticketUri: String): SolidResult<Ticket> = solidCatching {
         Ticket.createFromRdf(helper.deleteTicket(ownerWebId, URI.create(ticketUri)))
     }
 
     override suspend fun getArtifact(
         ownerWebId: String,
         artifactUri: String,
-    ): SolidResult<TicketArtifact> = runResult {
+    ): SolidResult<TicketArtifact> = solidCatching {
         helper.getTicketArtifact(ownerWebId, URI.create(artifactUri))
     }
 }

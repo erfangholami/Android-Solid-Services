@@ -4,7 +4,6 @@ import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
-import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import java.util.UUID
 
 /**
@@ -27,7 +26,6 @@ public abstract class SettingTypeIndex : SolidRDFResource {
     protected val typeIndex: String = Solid.TYPE_INDEX
     protected val unlistedDocument: String = Solid.UNLISTED_DOCUMENT
     protected val listedDocument: String = Solid.LISTED_DOCUMENT
-    protected val addressBook: String = VCARD.ADDRESS_BOOK
 
     public constructor(
         identifier: String,
@@ -98,16 +96,4 @@ public abstract class SettingTypeIndex : SolidRDFResource {
         val anchor = quads.find { it.`object` == resourceUri } ?: return
         quads.removeAll { it.subject == anchor.subject || it.`object` == anchor.subject }
     }
-
-    /** Returns all `solid:instance` URIs registered for `vcard:AddressBook`. */
-    public fun getAddressBooks(): List<String> = getInstances(VCARD.ADDRESS_BOOK)
-
-    /** Registers [addressBook] as a `solid:instance` for `vcard:AddressBook`. */
-    public fun addAddressBook(addressBook: String): Unit = addInstance(VCARD.ADDRESS_BOOK, addressBook)
-
-    /** Returns `true` if [addressBookUri] is registered in this type index. */
-    public fun containsAddressBook(addressBookUri: String): Boolean = containsResource(addressBookUri)
-
-    /** Removes the registration entry for [addressBookUri] from this type index. */
-    public fun removeAddressBook(addressBookUri: String): Unit = removeResource(addressBookUri)
 }

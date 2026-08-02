@@ -13,7 +13,9 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFRe
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.result.solidCatching
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
+import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -27,14 +29,14 @@ internal class ContactEngine(
     override suspend fun get(
         ownerWebId: String,
         contactUri: String,
-    ): SolidResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = solidCatching {
         SolidContact.createFromRdf(pod.contact(ownerWebId, contactUri))
     }
 
     override suspend fun list(
         ownerWebId: String,
         addressBookUri: String,
-    ): SolidResult<SolidContactList> = runResult {
+    ): SolidResult<SolidContactList> = solidCatching {
         SolidContactList(fetchAll(ownerWebId, addressBookUri))
     }
 
@@ -43,7 +45,7 @@ internal class ContactEngine(
         addressBookUri: String,
         data: ContactData,
         groupUris: List<String>,
-    ): SolidResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = solidCatching {
         require(data.effectiveFullName().isNotBlank()) {
             "A contact needs at least a name, phone number, or email address"
         }
@@ -76,7 +78,7 @@ internal class ContactEngine(
         addressBookUri: String,
         contactUri: String,
         data: ContactData,
-    ): SolidResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = solidCatching {
         require(data.effectiveFullName().isNotBlank()) {
             "A contact needs at least a name, phone number, or email address"
         }
@@ -102,7 +104,7 @@ internal class ContactEngine(
         ownerWebId: String,
         addressBookUri: String,
         contactUri: String,
-    ): SolidResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = solidCatching {
         val contact = runCatching {
             SolidContact.createFromRdf(pod.contact(ownerWebId, contactUri))
         }.getOrNull()
@@ -130,7 +132,7 @@ internal class ContactEngine(
         contactUri: String,
         photo: ByteArray,
         contentType: String,
-    ): SolidResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = solidCatching {
         val contactContainer = contactUri.substringBefore(INDEX_FILE_NAME)
         val photoUri = "${contactContainer}photo${extensionFor(contentType)}"
         pod.solidResourceManager.putRaw(
@@ -161,7 +163,7 @@ internal class ContactEngine(
     override suspend fun removePhoto(
         ownerWebId: String,
         contactUri: String,
-    ): SolidResult<SolidContact> = runResult {
+    ): SolidResult<SolidContact> = solidCatching {
         var removedPhoto: String? = null
         val updated = pod.solidResourceManager.casUpdate(
             ownerWebId,
@@ -184,7 +186,7 @@ internal class ContactEngine(
     override suspend fun getPhoto(
         ownerWebId: String,
         photoUri: String,
-    ): SolidResult<ContactPhoto> = runResult {
+    ): SolidResult<ContactPhoto> = solidCatching {
         val resource = pod.solidResourceManager
             .read(ownerWebId, photoUri, SolidNonRDFResource::class.java)
             .getOrThrow()
@@ -195,16 +197,16 @@ internal class ContactEngine(
     override suspend fun findByWebId(
         ownerWebId: String,
         webId: String,
-    ): SolidResult<ContactMatch> = runResult {
+    ): SolidResult<ContactMatch> = solidCatching {
         val target = webId.trim()
-        val bookUris = pod.privateTypeIndex(ownerWebId).getAddressBooks() +
-                pod.publicTypeIndex(ownerWebId).getAddressBooks()
+        val bookUris = pod.privateTypeIndex(ownerWebId).getInstances(VCARD.ADDRESS_BOOK) +
+                pod.publicTypeIndex(ownerWebId).getInstances(VCARD.ADDRESS_BOOK)
         for (bookUri in bookUris.distinct()) {
             val contacts = runCatching {
                 fetchAll(ownerWebId, bookUri)
             }.getOrDefault(emptyList())
             val match = contacts.firstOrNull { it.data.webId()?.trim() == target }
-            if (match != null) return@runResult ContactMatch(match, bookUri)
+            if (match != null) return@solidCatching ContactMatch(match, bookUri)
         }
         ContactMatch()
     }
