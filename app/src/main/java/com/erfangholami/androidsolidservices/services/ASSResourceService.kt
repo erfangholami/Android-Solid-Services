@@ -11,6 +11,9 @@ import com.erfangholami.androidsolidservices.di.IoDispatcher
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.AccessCheck
 import com.erfangholami.androidsolidservices.domain.usecase.CheckResourceAccessUseCase
+import com.erfangholami.androidsolidservices.services.dispatch.deliverError
+import com.erfangholami.androidsolidservices.services.dispatch.deliverResult
+import com.erfangholami.androidsolidservices.services.dispatch.deliverSafely
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchAcknowledged
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchAnswering
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchBoolean
@@ -67,7 +70,7 @@ class ASSResourceService : LifecycleService() {
             when (val check = checkResourceAccess(callerPackage, webId)) {
                 AccessCheck.Allowed -> onAllowed()
                 is AccessCheck.Denied ->
-                    onError(check.code, check.message)
+                    deliverSafely("onError") { onError(check.code, check.message) }
             }
         }
 
@@ -75,9 +78,9 @@ class ASSResourceService : LifecycleService() {
             guard(webId, callback::onError) {
                 val profileWebId = authRepository.getProfile(webId).webId
                 if (profileWebId != null) {
-                    callback.onResult(IpcEnvelope.of(profileWebId))
+                    callback.deliverResult(IpcEnvelope.of(profileWebId))
                 } else {
-                    callback.onError(NULL_WEBID, "WebID is null.")
+                    callback.deliverError(NULL_WEBID, "WebID is null.")
                 }
             }
         }
@@ -382,7 +385,7 @@ class ASSResourceService : LifecycleService() {
                             val writeEnd = pipe[1]
 
                             readEnd.use {
-                                callback.onResult(
+                                callback.deliverResult(
                                     IpcEnvelope.ofStream(it, body.contentType, body.contentLength),
                                 )
                             }
@@ -426,10 +429,10 @@ class ASSResourceService : LifecycleService() {
                             contentLength = length,
                             ifMatch = ifMatch,
                             openSource = { spool.inputStream() },
-                        ).handle({ callback.onResult(IpcEnvelope.empty()) }, callback::onError)
+                        ).handle({ callback.deliverResult(IpcEnvelope.empty()) }, callback::deliverError)
                     } catch (t: Throwable) {
                         if (t is CancellationException) throw t
-                        callback.onError(
+                        callback.deliverError(
                             ExceptionsErrorCode.UNKNOWN,
                             t.message ?: t.toString(),
                         )

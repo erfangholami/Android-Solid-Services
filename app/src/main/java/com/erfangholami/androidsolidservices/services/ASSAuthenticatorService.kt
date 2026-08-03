@@ -10,6 +10,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.erfangholami.androidsolidservices.domain.repository.AccessGrantRepository
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.RevokeAppAccessUseCase
+import com.erfangholami.androidsolidservices.services.dispatch.deliverError
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchBoolean
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
@@ -65,7 +66,7 @@ class ASSAuthenticatorService : LifecycleService(), SavedStateRegistryOwner {
          * immediately rather than leaving the caller waiting on a callback that cannot arrive.
          */
         override fun requestLogin(callback: IASSParcelableCallback) {
-            callback.onError(
+            callback.deliverError(
                 DRAW_OVERLAY_NOT_PERMITTED,
                 "requestLogin is no longer supported. Launch the AuthorizeWithSolid contract " +
                     "from your own Activity instead — it starts the account picker in your " +
@@ -77,7 +78,7 @@ class ASSAuthenticatorService : LifecycleService(), SavedStateRegistryOwner {
             val callingUid = getCallingUid()
             val packageName = packageManager.getNameForUid(callingUid)
             if (packageName == null) {
-                callback.onError(
+                callback.deliverError(
                     UNKNOWN,
                     "Unable to resolve calling package for uid=$callingUid.",
                 )

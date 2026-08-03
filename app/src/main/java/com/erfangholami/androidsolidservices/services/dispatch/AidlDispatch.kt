@@ -1,5 +1,6 @@
 package com.erfangholami.androidsolidservices.services.dispatch
 
+import android.os.Bundle
 import android.os.Parcelable
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
@@ -38,6 +39,41 @@ fun <T> SolidResult<T>.handle(
     }
 }
 
+/**
+ * Runs one callback delivery, absorbing anything the remote binder throws.
+ *
+ * The callback belongs to the calling app, so its failures are not this process's to die from: it
+ * may have gone away (`DeadObjectException`), or be an older build whose stub rejects this
+ * interface (`SecurityException: Binder invocation to an incorrect interface`). Both are reported
+ * and dropped — a client's state can never crash the provider.
+ */
+internal inline fun deliverSafely(method: String, action: () -> Unit) {
+    try {
+        action()
+    } catch (c: CancellationException) {
+        throw c
+    } catch (t: Throwable) {
+        Telemetry.recordException(
+            t,
+            TelemetryAttribute.OPERATION to "aidl.callback",
+            TelemetryAttribute.ERROR_TYPE to t.javaClass.simpleName,
+            "callback_method" to method,
+        )
+    }
+}
+
+fun IASSParcelableCallback.deliverResult(result: Bundle?): Unit =
+    deliverSafely("onResult") { onResult(result) }
+
+fun IASSParcelableCallback.deliverError(code: Int, message: String): Unit =
+    deliverSafely("onError") { onError(code, message) }
+
+fun IASSParcelableListCallback.deliverResult(result: Bundle?): Unit =
+    deliverSafely("onResult") { onResult(result) }
+
+fun IASSParcelableListCallback.deliverError(code: Int, message: String): Unit =
+    deliverSafely("onError") { onError(code, message) }
+
 private fun beginAttributedCall(): String {
     val caller = CallerAttribution.currentCaller()
     Telemetry.setKey(TelemetryAttribute.CALLING_APP, caller)
@@ -72,7 +108,13 @@ fun <T> CoroutineScope.dispatchNetwork(
     block: suspend () -> SolidResult<T>,
 ): Job {
     val caller = beginAttributedCall()
-    return dispatchGuarded(dispatcher, caller, onError) { block().handle(onSuccess, onError) }
+    val safeError: (Int, String) -> Unit = { code, message ->
+        deliverSafely("onError") { onError(code, message) }
+    }
+    val safeSuccess: (T) -> Unit = { value ->
+        deliverSafely("onResult") { onSuccess(value) }
+    }
+    return dispatchGuarded(dispatcher, caller, safeError) { block().handle(safeSuccess, safeError) }
 }
 
 fun <T : Parcelable?> CoroutineScope.dispatchParcelable(
@@ -125,9 +167,15 @@ fun <T : Parcelable> CoroutineScope.dispatchDataModule(
     block: suspend () -> SolidResult<T>,
 ): Job {
     val caller = beginAttributedCall()
+    val safeError: (Int, String) -> Unit = { code, message ->
+        deliverSafely("onError") { onError(code, message) }
+    }
+    val safeSuccess: (T?) -> Unit = { value ->
+        deliverSafely("onResult") { onSuccess(value) }
+    }
     return launch(dispatcher) {
         try {
-            block().handle(onSuccess, onError)
+            block().handle(safeSuccess, safeError)
         } catch (c: CancellationException) {
             throw c
         } catch (t: Throwable) {
@@ -137,7 +185,7 @@ fun <T : Parcelable> CoroutineScope.dispatchDataModule(
                 TelemetryAttribute.ERROR_TYPE to t.javaClass.simpleName,
                 TelemetryAttribute.CALLING_APP to caller,
             )
-            onError(ExceptionsErrorCode.UNKNOWN, t.message ?: t.toString())
+            safeError(ExceptionsErrorCode.UNKNOWN, t.message ?: t.toString())
         }
     }
 }
