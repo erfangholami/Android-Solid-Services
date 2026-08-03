@@ -19,6 +19,7 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
     val deletedUris: MutableList<String> = mutableListOf()
     val rawPuts: MutableMap<String, ByteArray> = mutableMapOf()
     val patches: MutableList<Pair<String, String>> = mutableListOf()
+    val headCalls: MutableList<String> = mutableListOf()
     val failDeletesFor: MutableSet<String> = mutableSetOf()
     var conflictOnExistingCreate: Boolean = false
 
@@ -98,12 +99,14 @@ internal class InMemoryPodResourceManager : SolidResourceManager {
         return SolidResult.Success(Unit)
     }
 
-    override suspend fun head(webId: String, uri: String): SolidResult<SolidMetadata> =
-        if (store.containsKey(uri) || rawPuts.containsKey(uri)) {
+    override suspend fun head(webId: String, uri: String): SolidResult<SolidMetadata> {
+        headCalls += uri
+        return if (store.containsKey(uri) || rawPuts.containsKey(uri)) {
             SolidResult.Success(SolidMetadata.EMPTY)
         } else {
             SolidResult.Failure(SolidError.fromHttp(404, "not found: $uri"))
         }
+    }
 
     override suspend fun headPublic(uri: String): SolidResult<SolidMetadata> =
         SolidResult.Success(SolidMetadata.EMPTY)

@@ -2,6 +2,8 @@ package com.erfangholami.androidsolidservices.api.resource
 
 import com.erfangholami.androidsolidservices.api.testing.InMemoryPodResourceManager
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidSourceReference
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -35,6 +37,33 @@ class SolidResourceManagerCapabilitiesTest {
         assertTrue(runBlocking { pod.exists(webId, "https://alice.pod/a/").getOrThrow() })
         assertTrue(runBlocking { pod.exists(webId, "https://alice.pod/a/b/").getOrThrow() })
         assertTrue(runBlocking { pod.exists(webId, target).getOrThrow() })
+    }
+
+    @Test
+    fun `listContainer only heads the children the listing did not already describe`() {
+        val pod = InMemoryPodResourceManager()
+        val container = "https://alice.pod/c/"
+        val described = "${container}described"
+        val bare = "${container}bare"
+        pod.put(
+            SolidContainer(container).apply {
+                enrichContained(
+                    listOf(
+                        SolidSourceReference(described, types = emptyList(), headMetadata = SolidMetadata.EMPTY),
+                        SolidSourceReference(bare, types = emptyList()),
+                    ),
+                )
+            },
+        )
+        pod.put(SolidContainer(bare))
+
+        val listed = runBlocking {
+            pod.listContainer(webId, container, enrichWithHead = true).getOrThrow()
+        }
+
+        assertEquals(listOf(described, bare), listed.map { it.identifier })
+        assertEquals("a child the listing described is never re-headed", listOf(bare), pod.headCalls)
+        assertTrue(listed.all { it.headMetadata != null })
     }
 
     @Test

@@ -165,9 +165,9 @@ public interface SolidResourceManager {
      * This is a **single** GET: each [SolidSourceReference] is built from the container's
      * own representation (which Solid servers SHOULD enrich with `stat:size` /
      * `dcterms:modified` / `rdf:type`), so it avoids the 1-GET-plus-N-HEAD fan-out of
-     * heading every child. Pass [enrichWithHead] to additionally HEAD each child — bounded
-     * to a few concurrent requests — filling [SolidSourceReference.headMetadata] for servers
-     * that don't enrich the listing; leave it off (default) for the cheap single call.
+     * heading every child. Pass [enrichWithHead] to fill [SolidSourceReference.headMetadata]
+     * for servers that don't describe their children in the listing; children that already
+     * carry metadata are never re-headed, so this costs nothing on servers that do.
      *
      * @param webId The WebID of the authenticated user making the request.
      * @param containerUri The container to list (trailing `/`).
@@ -183,17 +183,20 @@ public interface SolidResourceManager {
             is SolidResult.Failure -> return SolidResult.Failure(r.error)
         }
         if (!enrichWithHead || children.isEmpty()) return SolidResult.Success(children)
-        val enriched = coroutineScope {
-            children.chunked(CONTAINER_FANOUT_LIMIT).flatMap { batch ->
+        val missing = children.filter { it.headMetadata == null }
+        if (missing.isEmpty()) return SolidResult.Success(children)
+        val fetched = coroutineScope {
+            missing.chunked(CONTAINER_FANOUT_LIMIT).flatMap { batch ->
                 batch.map { ref ->
-                    async {
-                        head(webId, ref.identifier).getOrNull()
-                            ?.let { ref.copy(headMetadata = it) } ?: ref
-                    }
+                    async { ref.identifier to head(webId, ref.identifier).getOrNull() }
                 }.awaitAll()
             }
-        }
-        return SolidResult.Success(enriched)
+        }.toMap()
+        return SolidResult.Success(
+            children.map { ref ->
+                fetched[ref.identifier]?.let { ref.copy(headMetadata = it) } ?: ref
+            },
+        )
     }
 
     /**
