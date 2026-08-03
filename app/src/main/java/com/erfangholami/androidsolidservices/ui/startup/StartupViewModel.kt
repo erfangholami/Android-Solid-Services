@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 sealed interface StartupEvent {
@@ -24,9 +26,9 @@ class StartupViewModel @Inject constructor(
 
     fun decideStartDestination() {
         viewModelScope.launch {
+            val authorized = withContext(Dispatchers.Default) { authRepository.isUserAuthorized() }
             events.send(
-                if (authRepository.isUserAuthorized()) StartupEvent.NavigateToMain
-                else StartupEvent.NavigateToLogin
+                if (authorized) StartupEvent.NavigateToMain else StartupEvent.NavigateToLogin
             )
         }
     }

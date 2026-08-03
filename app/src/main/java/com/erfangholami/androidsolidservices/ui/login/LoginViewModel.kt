@@ -9,6 +9,7 @@ import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.SubmitAuthorizationUseCase
 import com.erfangholami.androidsolidservices.ui.navigation.Login
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class LoginUiState(
@@ -63,8 +65,10 @@ class LoginViewModel @Inject constructor(
     }
 
     fun onStart() {
-        if (!isAddingAccount && authRepository.isUserAuthorized()) {
-            viewModelScope.launch { events.send(LoginEvent.NavigateToMain) }
+        if (isAddingAccount) return
+        viewModelScope.launch {
+            val authorized = withContext(Dispatchers.Default) { authRepository.isUserAuthorized() }
+            if (authorized) events.send(LoginEvent.NavigateToMain)
         }
     }
 
