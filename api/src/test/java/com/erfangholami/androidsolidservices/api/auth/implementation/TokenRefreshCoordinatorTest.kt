@@ -2,6 +2,9 @@ package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.net.Uri
 import com.erfangholami.androidsolidservices.api.auth.Profile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationRequest
@@ -62,14 +65,31 @@ class TokenRefreshCoordinatorTest {
         }
     }
 
-    private fun coordinatorFor(profile: Profile): TokenRefreshCoordinator {
+    private fun coordinatorFor(
+        profile: Profile,
+        sessionScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    ): TokenRefreshCoordinator {
         val profileManager = mock(ProfileManager::class.java)
         `when`(profileManager.getProfileOrNull(webId)).thenReturn(profile)
         return TokenRefreshCoordinator(
             authService = mock(AuthorizationService::class.java),
             profileManager = profileManager,
             now = { fixedNow },
+            sessionScope = sessionScope,
         )
+    }
+
+    @Test
+    fun `a refresh that completes without suspending still clears its in-flight entry`() {
+        val profile = Profile(authState = authStateWithAccessToken(expiresAt = fixedNow + 600_000))
+        val coordinator = coordinatorFor(profile, sessionScope = CoroutineScope(Dispatchers.Unconfined))
+
+        val result = runBlocking {
+            coordinator.checkTokenAndRefresh(webId, profile, forceRefresh = true)
+        }
+
+        assertSame(profile, result)
+        assertNull("a finished refresh must not stay in the in-flight map", coordinator.inFlightOrNull(webId))
     }
 
     @Test

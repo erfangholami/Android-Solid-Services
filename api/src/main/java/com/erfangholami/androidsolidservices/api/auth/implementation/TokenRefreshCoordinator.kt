@@ -92,12 +92,11 @@ internal class TokenRefreshCoordinator(
         if (policy.shouldSkip(webId, profile, forceRefresh)) return profile
         policy.coalescedResult(webId)?.let { return it }
         val flight = inFlight.computeIfAbsent(webId) { key ->
-            val deferred = sessionScope.async {
+            sessionScope.async {
                 mutexFor(key).withLock { refreshLocked(key, profile, forceRefresh) }
             }
-            deferred.invokeOnCompletion { inFlight.remove(key, deferred) }
-            deferred
         }
+        flight.invokeOnCompletion { inFlight.remove(webId, flight) }
         return flight.await()
     }
 
