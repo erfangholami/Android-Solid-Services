@@ -12,9 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
  * Each user is identified by their WebID. Multiple users can be signed in simultaneously;
  * the "active" user is the one whose session is currently selected.
  *
- * Obtain an instance via [Authenticator.getInstance].
+ * Obtain an instance via [Authenticator.getInstance]. Every instance is also the
+ * [SolidSession] the transport layer authenticates with.
  */
-public interface Authenticator {
+public interface Authenticator : SolidSession {
 
     public companion object {
         /**

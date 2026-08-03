@@ -4,23 +4,24 @@ import android.util.Log
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
+import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
 import net.openid.appauth.AuthorizationServiceDiscovery
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.json.JSONObject
 import java.net.URI
 import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 
 private const val AUTH_LOG_TAG = "Authenticator"
 
-private fun tracedTokenHttpClient(): OkHttpClient = OkHttpClient.Builder()
-    .addNetworkInterceptor { chain ->
-        Log.i(AUTH_LOG_TAG, "AuthTrace: wire → ${chain.request().method} ${chain.request().url}")
-        chain.proceed(chain.request())
-    }
+private fun tokenHttpClient(): OkHttpClient = OkHttpClient.Builder()
+    .retryOnConnectionFailure(false)
+    .connectionPool(ConnectionPool(0, 1, TimeUnit.NANOSECONDS))
     .build()
 
 internal class DPoPTokenRequester(
-    private val http: SolidHttpClient = SolidHttpClient(httpClient = tracedTokenHttpClient()),
+    private val http: SolidHttpClient = SolidHttpClient(httpClient = tokenHttpClient()),
 ) {
 
     suspend fun request(
@@ -53,9 +54,12 @@ internal class DPoPTokenRequester(
             } catch (e: Exception) {
                 Log.w(
                     AUTH_LOG_TAG,
-                    "AuthTrace: tokenEndpoint transport failure on attempt=${attempt + 1}: " +
-                        "${e.javaClass.simpleName}: ${e.message} — NOTE: the request may still have " +
-                        "reached the server (and spent the refresh token) even though no response arrived",
+                    "Token endpoint transport failure on attempt=${attempt + 1}: " +
+                        "${e.javaClass.simpleName}: ${e.message} — the request may still have " +
+                        "reached the server even though no response arrived",
+                )
+                Telemetry.log(
+                    "solid.auth token endpoint transport failure (${e.javaClass.simpleName})",
                 )
                 return DPoPTokenResult.Failure(statusCode = 0, error = null, errorDescription = e.message)
             }
@@ -63,7 +67,6 @@ internal class DPoPTokenRequester(
             response.headers[HTTPHeaderName.DPOP_NONCE]?.let { dpop.updateNonce(tokenEndpoint.toString(), it) }
 
             if (response.statusCode in 200..299) {
-                Log.i(AUTH_LOG_TAG, "AuthTrace: tokenEndpoint attempt=${attempt + 1} status=${response.statusCode}")
                 return runCatching { DPoPTokenResult.Success(JSONObject(response.body)) }
                     .getOrElse {
                         DPoPTokenResult.Failure(response.statusCode, null, "Malformed token response")
@@ -71,12 +74,15 @@ internal class DPoPTokenRequester(
             }
 
             val (error, description) = parseOAuthError(response.body)
-            Log.w(
-                AUTH_LOG_TAG,
-                "AuthTrace: tokenEndpoint attempt=${attempt + 1} status=${response.statusCode} " +
-                    "error=$error desc=$description nonceHeader=${response.headers[HTTPHeaderName.DPOP_NONCE] != null}",
+            Telemetry.log(
+                "solid.auth token endpoint status=${response.statusCode} error=$error attempt=${attempt + 1}",
             )
-            val failure = DPoPTokenResult.Failure(response.statusCode, error, description)
+            val failure = DPoPTokenResult.Failure(
+                statusCode = response.statusCode,
+                error = error,
+                errorDescription = description,
+                retryAfterSeconds = response.headers["Retry-After"]?.trim()?.toLongOrNull(),
+            )
             lastFailure = failure
 
             val canRetryWithNonce = attempt == 0 &&
@@ -113,5 +119,6 @@ internal sealed interface DPoPTokenResult {
         val statusCode: Int,
         val error: String?,
         val errorDescription: String?,
+        val retryAfterSeconds: Long? = null,
     ) : DPoPTokenResult
 }

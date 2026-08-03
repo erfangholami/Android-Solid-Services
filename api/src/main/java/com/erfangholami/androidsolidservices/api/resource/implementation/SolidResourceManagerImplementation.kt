@@ -2,9 +2,9 @@ package com.erfangholami.androidsolidservices.api.resource.implementation
 
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
-import com.erfangholami.androidsolidservices.api.auth.implementation.asSession
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.StreamingResource
+import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata
@@ -52,7 +52,7 @@ internal class SolidResourceManagerImplementation : SolidResourceManager {
     private val solidHttpClient: SolidHttpClient
 
     private constructor(authenticator: Authenticator) {
-        solidHttpClient = SolidHttpClient(authenticator.asSession())
+        solidHttpClient = SolidHttpClient(authenticator)
     }
 
     override suspend fun head(

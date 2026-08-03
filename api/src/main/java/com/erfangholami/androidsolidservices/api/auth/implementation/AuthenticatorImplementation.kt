@@ -12,6 +12,10 @@ import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstan
 import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.AUTHORIZATION_REQUEST_SCOPE_OPENID
 import com.erfangholami.androidsolidservices.api.auth.implementation.OidcConstants.AUTHORIZATION_REQUEST_SCOPE_WEBID
 import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
+import com.erfangholami.androidsolidservices.shared.model.profile.WebId
+import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
+import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
+import com.erfangholami.androidsolidservices.shared.telemetry.TelemetrySpan
 import kotlinx.coroutines.flow.StateFlow
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationException
@@ -29,7 +33,7 @@ private const val AUTH_LOG_TAG = "Authenticator"
 internal class AuthenticatorImplementation internal constructor(
     context: Context,
     now: () -> Long = { System.currentTimeMillis() },
-) : Authenticator, AuthSession {
+) : Authenticator {
 
     companion object {
 
@@ -92,8 +96,6 @@ internal class AuthenticatorImplementation internal constructor(
             else -> return Pair(null, "Either webId or oidcIssuer must be provided.")
         }
 
-        // AppAuth rejects non-https from inside its own AsyncTask, where the throw is uncaught and
-        // takes the process down, so the check has to happen before it sees the URL.
         val httpsIssuerUrl = asHttpsIssuerUrl(issuerUrl)
             ?: return Pair(null, "'$issuerUrl' is not a valid provider address. It must be an https URL.")
 
@@ -139,37 +141,73 @@ internal class AuthenticatorImplementation internal constructor(
 
     override suspend fun submitAuthorizationResponse(responseData: Intent?): String? {
         profileManager.awaitInit()
+        if (!recordAuthorizationOutcome(responseData)) return null
+        val loginSpan = Telemetry.startSpan("solid_auth_login")
+        val idToken = exchangeCodeForTokens(loginSpan) ?: return ""
+        val identity = resolveVerifiedIdentity(idToken, loginSpan) ?: return ""
+        val (webIdProfile, tokenIssuer) = identity
+        return persistLogin(idToken, webIdProfile, tokenIssuer, loginSpan)
+    }
 
+    private fun recordAuthorizationOutcome(responseData: Intent?): Boolean {
         val authResponse = responseData?.let { AuthorizationResponse.fromIntent(it) }
         val authException = responseData?.let { AuthorizationException.fromIntent(it) }
 
-        val current = inProgressAuth.get() ?: return null
-        if (authResponse == null && authException == null) return null
+        val current = inProgressAuth.get() ?: return false
+        if (authResponse == null && authException == null) return false
 
         val updatedAuthState = deepCopyAuthState(current.authState)
         updatedAuthState.update(authResponse, authException)
         inProgressAuth.set(current.copy(authState = updatedAuthState))
 
-        if (authException != null || authResponse == null) return null
+        if (authException != null || authResponse == null) {
+            Telemetry.log("solid.auth login authorization response error=${authException?.error ?: "missing_response"}")
+            return false
+        }
+        return true
+    }
 
+    private fun failLogin(span: TelemetrySpan, stage: String, error: String? = null): String {
+        span.putAttribute(TelemetryAttribute.OUTCOME, TelemetryAttribute.OUTCOME_ERROR)
+        span.putAttribute("stage", stage)
+        error?.let { span.putAttribute("auth_error", it) }
+        span.stop()
+        return ""
+    }
+
+    private suspend fun exchangeCodeForTokens(span: TelemetrySpan): String? {
         val (tokenResponse, tokenException) = tokenCoordinator.requestToken(
             inProgressAuth.get()!!,
-            isRefresh = false
+            isRefresh = false,
         )
-        if (tokenException != null || tokenResponse == null) return ""
+        if (tokenException != null || tokenResponse == null) {
+            failLogin(span, "token_exchange", tokenException?.error)
+            return null
+        }
 
         val updatedAfterToken = deepCopyAuthState(inProgressAuth.get()!!.authState)
         updatedAfterToken.update(tokenResponse, tokenException)
         inProgressAuth.set(inProgressAuth.get()!!.copy(authState = updatedAfterToken))
 
-        val idToken = inProgressAuth.get()!!.authState.idToken ?: return ""
+        val idToken = inProgressAuth.get()!!.authState.idToken
+        if (idToken == null) {
+            failLogin(span, "no_id_token")
+            return null
+        }
         val jwksUri = inProgressAuth.get()!!.authState.authorizationServiceConfiguration
             ?.discoveryDoc?.jwksUri
         if (jwksUri == null || !IdTokenVerifier.verify(idToken, URI.create(jwksUri.toString()))) {
             inProgressAuth.clear()
-            return ""
+            failLogin(span, "id_token_validation")
+            return null
         }
+        return idToken
+    }
 
+    private suspend fun resolveVerifiedIdentity(
+        idToken: String,
+        span: TelemetrySpan,
+    ): Pair<WebId, String>? {
         val userInfo = IdTokenClaims.userInfo(idToken)
 
         val webIdProfile = webIdResolver.resolve(
@@ -188,9 +226,19 @@ internal class AuthenticatorImplementation internal constructor(
                     "solid:oidcIssuer in the WebID profile (declared: $declaredIssuers).",
             )
             inProgressAuth.clear()
-            return ""
+            failLogin(span, "issuer_mismatch")
+            return null
         }
+        return webIdProfile to tokenIss
+    }
 
+    private suspend fun persistLogin(
+        idToken: String,
+        webIdProfile: WebId,
+        tokenIssuer: String,
+        span: TelemetrySpan,
+    ): String {
+        val userInfo = IdTokenClaims.userInfo(idToken)
         val finalProfile = inProgressAuth.get()!!.copy(
             userInfo = userInfo,
             webId = webIdProfile,
@@ -206,17 +254,19 @@ internal class AuthenticatorImplementation internal constructor(
             )
         }
         val previousKeyId = profileManager.getProfileOrNull(realWebId)?.dpopKeyId
-        Log.i(
-            AUTH_LOG_TAG,
-            "AuthTrace: login persisted for $realWebId " +
-                "rt=${tokenFp(finalProfile.authState.refreshToken)} keyId=${finalProfile.dpopKeyId}",
-        )
         profileManager.writeProfile(realWebId, finalProfile)
         profileManager.setActiveWebId(realWebId)
         inProgressAuth.clear()
         if (previousKeyId != null && previousKeyId != finalProfile.dpopKeyId) {
             DPoPGenerator.deleteKeys(previousKeyId)
         }
+        span.putAttribute(TelemetryAttribute.OUTCOME, TelemetryAttribute.OUTCOME_SUCCESS)
+        span.putAttribute("issuer", runCatching { URI.create(tokenIssuer).host }.getOrNull() ?: "unknown")
+        span.putAttribute(
+            "refresh_token",
+            if (finalProfile.authState.refreshToken == null) "absent" else "present",
+        )
+        span.stop()
         return realWebId
     }
 
@@ -235,17 +285,21 @@ internal class AuthenticatorImplementation internal constructor(
         }
 
         val token = getLastTokenResponse(webId)
+            ?: return Pair(null, "The session for this account has already expired; sign in again instead.")
         val endSessionReq =
             EndSessionRequest.Builder(profile.authState.authorizationServiceConfiguration!!)
-                .setIdTokenHint(token!!.idToken)
+                .setIdTokenHint(token.idToken)
                 .setPostLogoutRedirectUri(logoutRedirectUrl.toUri())
                 .build()
         return Pair(authService.getEndSessionRequestIntent(endSessionReq), null)
     }
 
-    override suspend fun getLastTokenResponse(
+    override suspend fun hasValidToken(webId: String, forceRefresh: Boolean): Boolean =
+        getLastTokenResponse(webId, forceRefresh) != null
+
+    internal suspend fun getLastTokenResponse(
         webId: String,
-        forceRefresh: Boolean,
+        forceRefresh: Boolean = false,
     ): TokenResponse? {
         profileManager.awaitInit()
         val profile = profileManager.getProfileOrNull(webId) ?: return null
@@ -255,7 +309,7 @@ internal class AuthenticatorImplementation internal constructor(
         return updated.authState.lastTokenResponse
     }
 
-    override suspend fun getAuthHeaders(
+    override suspend fun authHeaders(
         webId: String,
         httpMethod: String,
         uri: String,
@@ -279,21 +333,19 @@ internal class AuthenticatorImplementation internal constructor(
 
     override suspend fun reloadProfile(webId: String): SolidAccount {
         profileManager.awaitInit()
-        val profile = profileManager.getProfile(webId)
+        profileManager.getProfile(webId)
         getLastTokenResponse(webId)
         val refreshedWebId = webIdResolver.resolve(
             webIdUri = webId,
             tokenProvider = { profileManager.getProfileOrNull(webId)?.authState?.lastTokenResponse },
-            authHeadersProvider = { method, uri -> getAuthHeaders(webId, method, uri) },
+            authHeadersProvider = { method, uri -> authHeaders(webId, method, uri) },
             nonceSink = { forUri, nonce -> updateDPoPNonce(webId, forUri, nonce) },
         )
-        val updated = profileManager.getProfile(webId).copy(webId = refreshedWebId)
-        Log.i(
-            AUTH_LOG_TAG,
-            "AuthTrace: reloadProfile persisting $webId rt=${tokenFp(updated.authState.refreshToken)} — " +
-                "if this fingerprint is OLDER than the last 'refresh ok' line, a rotated token was just clobbered",
-        )
-        profileManager.writeProfile(webId, updated)
+        val updated = tokenCoordinator.withSessionLock(webId) {
+            val current = profileManager.getProfile(webId).copy(webId = refreshedWebId)
+            profileManager.writeProfile(webId, current)
+            current
+        }
         return updated.toAccount()
     }
 
@@ -339,11 +391,9 @@ internal class AuthenticatorImplementation internal constructor(
 internal fun asHttpsIssuerUrl(raw: String): String? {
     val trimmed = raw.trim()
     if (trimmed.isEmpty()) return null
-    // Someone typing a bare domain means https; anything else has to say so and be https.
     val withScheme = if (trimmed.contains("://")) trimmed else "https://$trimmed"
     val uri = runCatching { URI(withScheme) }.getOrNull() ?: return null
     if (!uri.scheme.equals("https", ignoreCase = true)) return null
     if (uri.host.isNullOrBlank()) return null
-    // AppAuth matches the scheme case-sensitively, so hand it one that is already lowercase.
     return "https://" + withScheme.substringAfter("://")
 }

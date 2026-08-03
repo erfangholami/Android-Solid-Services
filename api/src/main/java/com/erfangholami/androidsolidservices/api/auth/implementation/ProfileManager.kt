@@ -6,22 +6,52 @@ import com.erfangholami.androidsolidservices.api.auth.Profile
 import com.erfangholami.androidsolidservices.api.auth.ProfileList
 import com.erfangholami.androidsolidservices.api.repository.UserRepository
 import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
+import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
+import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
+private const val STORE_READ_RETRIES = 6L
+
+private fun <T> Flow<T>.retryStoreRead(label: String): Flow<T> = retryWhen { cause, attempt ->
+    if (attempt >= STORE_READ_RETRIES) return@retryWhen false
+    Log.w(
+        "Authenticator",
+        "Profile store read failed for $label (attempt ${attempt + 1}/$STORE_READ_RETRIES, " +
+            "${cause.javaClass.simpleName}); retrying",
+    )
+    delay(minOf(500L shl attempt.toInt().coerceAtMost(5), 15_000L))
+    true
+}
+
+/**
+ * The single reader and single writer of the durable account store.
+ *
+ * Every mutation persists first and publishes second, inside one write lock, so the state the
+ * synchronous getters and every flow project from is exactly what the store holds — there is no
+ * cached flow to lag behind a write and nothing for a read-your-writes overlay to paper over.
+ * Which accounts count as signed-in or expired is decided by [SessionState], nowhere else.
+ */
 internal class ProfileManager private constructor(
     context: Context,
-) {
+) : ProfileStore {
     companion object {
         @Volatile
         private var instance: ProfileManager? = null
@@ -36,38 +66,32 @@ internal class ProfileManager private constructor(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val userRepository: UserRepository = UserRepository.getInstance(context)
     private val initDeferred = CompletableDeferred<Unit>()
+    private val writeMutex = Mutex()
 
-    val allProfilesFlow: StateFlow<ProfileList> = userRepository.readAllProfiles()
-        .stateIn(scope, SharingStarted.Eagerly, ProfileList())
+    private val profilesState = MutableStateFlow(ProfileList())
+    private val activeState = MutableStateFlow<String?>(null)
 
-    val activeWebIdFlow: StateFlow<String?> = userRepository.activeWebIdFlow()
-        .stateIn(scope, SharingStarted.Eagerly, null)
+    val allProfilesFlow: StateFlow<ProfileList> = profilesState.asStateFlow()
 
-    val loggedInProfilesFlow: StateFlow<List<Profile>> = allProfilesFlow
+    val activeWebIdFlow: StateFlow<String?> = activeState.asStateFlow()
+
+    val loggedInProfilesFlow: StateFlow<List<Profile>> = profilesState
         .map { profileList ->
-            profileList.profiles.values.filter {
-                it.authState.isAuthorized && it.userInfo != null && it.webId != null
-            }
+            profileList.profiles.values.filter { SessionState.of(it).isSignedIn && it.isComplete }
         }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    val expiredProfilesFlow: StateFlow<List<Profile>> = allProfilesFlow
+    val expiredProfilesFlow: StateFlow<List<Profile>> = profilesState
         .map { profileList ->
-            profileList.profiles.values.filter {
-                !it.authState.isAuthorized && it.userInfo != null && it.webId != null
-            }
+            profileList.profiles.values.filter { SessionState.of(it).isExpired && it.isComplete }
         }
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     val activeProfileFlow: StateFlow<Profile?> = combine(
-        allProfilesFlow,
-        activeWebIdFlow,
+        profilesState,
+        activeState,
     ) { profiles, activeId ->
-        if (activeId != null) {
-            profiles.profiles[activeId]
-        } else {
-            null
-        }
+        activeId?.let { profiles.profiles[it] }
     }.stateIn(scope, SharingStarted.Eagerly, null)
 
     val isAuthorizedFlow: StateFlow<Boolean> = loggedInProfilesFlow
@@ -88,13 +112,28 @@ internal class ProfileManager private constructor(
 
     init {
         scope.launch {
-            userRepository.readAllProfiles().first()
-            userRepository.activeWebIdFlow().first()
+            runCatching {
+                profilesState.value =
+                    userRepository.readAllProfiles().retryStoreRead("profiles").first()
+                activeState.value =
+                    userRepository.activeWebIdFlow().retryStoreRead("active-webid").first()
+            }.onFailure { failure ->
+                Log.e(
+                    "Authenticator",
+                    "Profile store unreadable at init after retries; starting empty (file kept)",
+                    failure,
+                )
+                Telemetry.recordException(
+                    failure,
+                    TelemetryAttribute.OPERATION to "solid.auth.profile_store",
+                    "auth_error" to "store_init_failed",
+                )
+            }
             initDeferred.complete(Unit)
         }
         scope.launch {
             initDeferred.await()
-            combine(allProfilesFlow, activeWebIdFlow) { profiles, activeId ->
+            combine(profilesState, activeState) { profiles, activeId ->
                 profiles to activeId
             }.collect { (profileList, activeId) ->
                 reconcileActiveWebId(profileList, activeId)
@@ -103,33 +142,27 @@ internal class ProfileManager private constructor(
     }
 
     private suspend fun reconcileActiveWebId(profileList: ProfileList, activeId: String?) {
-        val activeProfile = activeId?.let { profileList.profiles[it] }
-        val activeIsUsable = activeProfile != null &&
-            activeProfile.authState.isAuthorized && activeProfile.userInfo != null
-        if (activeIsUsable) return
+        if (isActiveUsable(profileList, activeId)) return
 
         val fallback = profileList.profiles.entries.firstOrNull { (_, profile) ->
-            profile.authState.isAuthorized && profile.userInfo != null
+            SessionState.of(profile).isSignedIn && profile.isComplete
         }?.key
 
         when {
             fallback != null -> {
-                Log.w(
-                    "Authenticator",
-                    "AuthTrace: reconciler moving active WebID $activeId -> $fallback " +
-                        "(profiles=${profileList.profiles.size}, activeUsable=false)",
-                )
-                userRepository.setActiveWebId(fallback)
+                Telemetry.log("solid.auth reconciler moved active (profiles=${profileList.profiles.size})")
+                persistActiveWebId(fallback)
             }
-            activeId != null && activeProfile == null -> {
-                Log.w(
-                    "Authenticator",
-                    "AuthTrace: reconciler CLEARING active WebID $activeId " +
-                        "(no matching profile; profiles=${profileList.profiles.size})",
-                )
-                userRepository.setActiveWebId(null)
+            activeId != null && profileList.profiles[activeId] == null -> {
+                Telemetry.log("solid.auth reconciler cleared active (profiles=${profileList.profiles.size})")
+                persistActiveWebId(null)
             }
         }
+    }
+
+    private fun isActiveUsable(profileList: ProfileList, activeId: String?): Boolean {
+        val profile = activeId?.let { profileList.profiles[it] } ?: return false
+        return SessionState.of(profile).isSignedIn && profile.isComplete
     }
 
     suspend fun awaitInit() = initDeferred.await()
@@ -152,26 +185,26 @@ internal class ProfileManager private constructor(
 
     fun getActiveWebId(): String? {
         ensureInitialized()
-        return activeWebIdFlow.value
+        return activeState.value
     }
 
-    fun getProfileOrNull(webId: String): Profile? {
+    override fun getProfileOrNull(webId: String): Profile? {
         ensureInitialized()
-        return allProfilesFlow.value.profiles[webId]
+        return profilesState.value.profiles[webId]
     }
 
     fun getProfile(webId: String): Profile {
         ensureInitialized()
-        return allProfilesFlow.value.profiles[webId]
+        return getProfileOrNull(webId)
             ?: throw NoSuchElementException("No profile found for WebID: $webId")
     }
 
     fun getActiveProfile(): Profile {
         ensureInitialized()
-        val activeId = activeWebIdFlow.value
+        val activeId = activeState.value
         if (activeId != null) {
-            val profile = allProfilesFlow.value.profiles[activeId]
-            if (profile != null && profile.authState.isAuthorized && profile.userInfo != null) {
+            val profile = profilesState.value.profiles[activeId]
+            if (profile != null && SessionState.of(profile).isSignedIn && profile.isComplete) {
                 return profile
             }
         }
@@ -179,32 +212,54 @@ internal class ProfileManager private constructor(
             ?: throw NoSuchElementException("No authorized profiles exist.")
     }
 
-    suspend fun writeProfile(webId: String, profile: Profile) {
-        userRepository.writeProfile(webId, profile)
+    override suspend fun writeProfile(webId: String, profile: Profile) {
+        writeMutex.withLock {
+            userRepository.writeProfile(webId, profile)
+            profilesState.value = profilesState.value.copy(
+                profiles = profilesState.value.profiles + (webId to profile),
+            )
+        }
     }
 
     suspend fun removeProfile(webId: String) {
-        userRepository.removeProfile(webId)
-        if (activeWebIdFlow.value == webId) {
-            val remaining = allProfilesFlow.value.profiles
-                .filter { (key, p) -> key != webId && p.authState.isAuthorized && p.userInfo != null }
-            val newActiveId = remaining.keys.firstOrNull()
-            userRepository.setActiveWebId(newActiveId)
+        writeMutex.withLock {
+            userRepository.removeProfile(webId)
+            profilesState.value = profilesState.value.copy(
+                profiles = profilesState.value.profiles - webId,
+            )
+            if (activeState.value == webId) {
+                val fallback = profilesState.value.profiles.entries.firstOrNull { (_, profile) ->
+                    SessionState.of(profile).isSignedIn && profile.isComplete
+                }?.key
+                persistActiveWebIdLocked(fallback)
+            }
         }
     }
 
     suspend fun removeAllProfiles() {
-        userRepository.removeAllProfiles()
-        userRepository.setActiveWebId(null)
+        writeMutex.withLock {
+            userRepository.removeAllProfiles()
+            profilesState.value = ProfileList()
+            persistActiveWebIdLocked(null)
+        }
     }
 
     suspend fun setActiveWebId(webId: String?) {
         if (webId != null) {
-            val profile = allProfilesFlow.value.profiles[webId]
-            require(profile != null && profile.authState.isAuthorized && profile.userInfo != null) {
+            val profile = getProfileOrNull(webId)
+            require(profile != null && SessionState.of(profile).isSignedIn && profile.isComplete) {
                 "Cannot set active account: profile for $webId is not authorized or incomplete."
             }
         }
+        persistActiveWebId(webId)
+    }
+
+    private suspend fun persistActiveWebId(webId: String?) {
+        writeMutex.withLock { persistActiveWebIdLocked(webId) }
+    }
+
+    private suspend fun persistActiveWebIdLocked(webId: String?) {
         userRepository.setActiveWebId(webId)
+        activeState.value = webId
     }
 }

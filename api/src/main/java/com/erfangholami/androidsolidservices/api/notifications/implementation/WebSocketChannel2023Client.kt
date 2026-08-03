@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.api.notifications.implementation
 
-import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
+import com.erfangholami.androidsolidservices.api.auth.SolidSession
 import com.erfangholami.androidsolidservices.api.notifications.RawNotification
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
@@ -27,7 +27,7 @@ import okhttp3.WebSocketListener
 import java.net.URI
 
 internal class WebSocketChannel2023Client(
-    private val auth: AuthSession,
+    private val auth: SolidSession,
     private val ioDispatcher: CoroutineDispatcher,
     private val httpClient: OkHttpClient = defaultWebSocketClient(),
 ) {
@@ -36,7 +36,7 @@ internal class WebSocketChannel2023Client(
         val requestJson = channelRequestBody(topic)
         var didForceRefresh = false
         repeat(MAX_ATTEMPTS) {
-            val headers = auth.getAuthHeaders(webId, "POST", subscriptionService.toString())
+            val headers = auth.authHeaders(webId, "POST", subscriptionService.toString())
             val request = Request.Builder()
                 .url(encodeUri(subscriptionService).toString())
                 .apply { headers.forEach { (k, v) -> addHeader(k, v) } }
@@ -57,7 +57,7 @@ internal class WebSocketChannel2023Client(
 
                 code == 401 && !didForceRefresh &&
                     !wwwAuth.contains("use_dpop_nonce", true) -> {
-                    auth.getLastTokenResponse(webId, forceRefresh = true)
+                    auth.hasValidToken(webId, forceRefresh = true)
                     didForceRefresh = true
                 }
 
@@ -70,7 +70,7 @@ internal class WebSocketChannel2023Client(
     }
 
     fun connect(webId: String, receiveFrom: URI): Flow<RawNotification> = callbackFlow {
-        val headers = runCatching { auth.getAuthHeaders(webId, "GET", receiveFrom.toString()) }
+        val headers = runCatching { auth.authHeaders(webId, "GET", receiveFrom.toString()) }
             .getOrDefault(emptyMap())
         val request = Request.Builder()
             .url(receiveFrom.toString())

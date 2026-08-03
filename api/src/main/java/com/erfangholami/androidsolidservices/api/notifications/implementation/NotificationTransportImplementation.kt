@@ -1,8 +1,7 @@
 package com.erfangholami.androidsolidservices.api.notifications.implementation
 
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
-import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
-import com.erfangholami.androidsolidservices.api.auth.implementation.asSession
+import com.erfangholami.androidsolidservices.api.auth.SolidSession
 import com.erfangholami.androidsolidservices.api.notifications.NotificationTransport
 import com.erfangholami.androidsolidservices.api.notifications.RawNotification
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
@@ -22,7 +21,7 @@ internal class NotificationTransportImplementation private constructor(
     private val rm: SolidResourceManager,
     private val discovery: InboxDiscovery,
     private val ioDispatcher: CoroutineDispatcher,
-    auth: AuthSession?,
+    auth: SolidSession?,
 ) : NotificationTransport {
 
     private val wsClient: WebSocketChannel2023Client? =
@@ -41,7 +40,7 @@ internal class NotificationTransportImplementation private constructor(
             return synchronized(this) {
                 instance?.takeIf { it.hasAuth } ?: create(
                     SolidResourceManager.getInstance(authenticator),
-                    auth = authenticator.asSession(),
+                    auth = authenticator,
                 ).also { instance = it }
             }
         }
@@ -59,7 +58,7 @@ internal class NotificationTransportImplementation private constructor(
             resourceManager: SolidResourceManager,
             discovery: InboxDiscovery = InboxDiscovery(resourceManager),
             ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-            auth: AuthSession? = null,
+            auth: SolidSession? = null,
         ): NotificationTransportImplementation =
             NotificationTransportImplementation(resourceManager, discovery, ioDispatcher, auth)
     }

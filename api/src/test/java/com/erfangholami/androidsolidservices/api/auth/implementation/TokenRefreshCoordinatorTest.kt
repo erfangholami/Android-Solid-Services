@@ -121,6 +121,95 @@ class TokenRefreshCoordinatorTest {
     }
 
     @Test
+    fun `repeated forced refreshes on a healthy token are suppressed after the first`() {
+        val config = AuthorizationServiceConfiguration(
+            Uri.parse("https://op.example/auth"),
+            Uri.parse("https://op.example/token"),
+        )
+        val authRequest = AuthorizationRequest.Builder(
+            config,
+            "client-id",
+            ResponseTypeValues.CODE,
+            Uri.parse("https://app.example/redirect"),
+        ).setScope("openid").build()
+        val authResponse = AuthorizationResponse.Builder(authRequest)
+            .setAuthorizationCode("code-1")
+            .setState(authRequest.state)
+            .build()
+        val tokenRequest = TokenRequest.Builder(config, "client-id")
+            .setGrantType(GrantTypeValues.AUTHORIZATION_CODE)
+            .setAuthorizationCode("code-1")
+            .setRedirectUri(Uri.parse("https://app.example/redirect"))
+            .build()
+        val tokenResponse = TokenResponse.Builder(tokenRequest)
+            .setTokenType("Bearer")
+            .setAccessToken("access-1")
+            .setRefreshToken("rt-1")
+            .setAccessTokenExpirationTime(fixedNow + 3_600_000)
+            .build()
+        val profile = Profile(
+            authState = AuthState().apply {
+                update(authResponse, null)
+                update(tokenResponse, null)
+            },
+        )
+        val coordinator = coordinatorFor(profile)
+
+        runCatching {
+            runBlocking { coordinator.checkTokenAndRefresh(webId, profile, forceRefresh = true) }
+        }
+        val second = runBlocking { coordinator.checkTokenAndRefresh(webId, profile, forceRefresh = true) }
+
+        assertSame(
+            "a 401 on a foreign resource must not force refresh after refresh while the token is alive",
+            profile,
+            second,
+        )
+    }
+
+    @Test
+    fun `a revoked session keeping its refresh token is never re-sent to the token endpoint`() {
+        val config = AuthorizationServiceConfiguration(
+            Uri.parse("https://op.example/auth"),
+            Uri.parse("https://op.example/token"),
+        )
+        val authRequest = AuthorizationRequest.Builder(
+            config,
+            "client-id",
+            ResponseTypeValues.CODE,
+            Uri.parse("https://app.example/redirect"),
+        ).setScope("openid").build()
+        val authResponse = AuthorizationResponse.Builder(authRequest)
+            .setAuthorizationCode("code-1")
+            .setState(authRequest.state)
+            .build()
+        val tokenRequest = TokenRequest.Builder(config, "client-id")
+            .setGrantType(GrantTypeValues.AUTHORIZATION_CODE)
+            .setAuthorizationCode("code-1")
+            .setRedirectUri(Uri.parse("https://app.example/redirect"))
+            .build()
+        val tokenResponse = TokenResponse.Builder(tokenRequest)
+            .setTokenType("Bearer")
+            .setAccessToken("access-1")
+            .setRefreshToken("rt-1")
+            .setAccessTokenExpirationTime(fixedNow - 1)
+            .build()
+        val authState = AuthState().apply {
+            update(authResponse, null)
+            update(tokenResponse, null)
+            update(null as TokenResponse?, net.openid.appauth.AuthorizationException.TokenRequestErrors.INVALID_GRANT)
+        }
+        val profile = Profile(authState = authState)
+        assertEquals("rt-1", profile.authState.refreshToken)
+
+        val result = runBlocking {
+            coordinatorFor(profile).checkTokenAndRefresh(webId, profile, forceRefresh = true)
+        }
+
+        assertSame("a revoked session must not hammer the IdP with its dead refresh token", profile, result)
+    }
+
+    @Test
     fun `requestToken refuses a refresh without a refresh token instead of synthesizing invalid_grant`() {
         val profile = Profile(authState = authStateWithAccessToken(expiresAt = fixedNow - 1))
 

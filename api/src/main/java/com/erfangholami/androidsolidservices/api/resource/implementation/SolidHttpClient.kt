@@ -1,11 +1,14 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
 import android.util.Log
-import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
+import com.erfangholami.androidsolidservices.api.auth.SolidSession
 import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
 import com.erfangholami.androidsolidservices.api.http.telemetryOrigin
 import com.erfangholami.androidsolidservices.api.resource.StreamingResource
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient.Companion.debugTrace
+import com.erfangholami.androidsolidservices.api.transport.AuthChallenge
+import com.erfangholami.androidsolidservices.api.transport.isOwnOrigin
+import com.erfangholami.androidsolidservices.api.transport.warrantsTokenRefresh
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
@@ -39,7 +42,7 @@ import java.net.URI
 private fun defaultHttpClient(): OkHttpClient = OkHttpClient.Builder().build()
 
 internal class SolidHttpClient(
-    private val auth: AuthSession? = null,
+    private val auth: SolidSession? = null,
     httpClient: OkHttpClient = defaultHttpClient(),
 ) {
     private val httpClient: OkHttpClient =
@@ -552,7 +555,7 @@ internal class SolidHttpClient(
                             if (didForceRefresh) {
                                 return@withContext SolidResult.Failure(SolidError.fromHttp(401))
                             }
-                            requireAuth().getLastTokenResponse(webId, forceRefresh = true)
+                            requireAuth().hasValidToken(webId, forceRefresh = true)
                             didForceRefresh = true
                         }
                     }
@@ -622,7 +625,7 @@ internal class SolidHttpClient(
                             if (didForceRefresh) {
                                 return@withContext SolidResult.Failure(SolidError.fromHttp(401, detail))
                             }
-                            requireAuth().getLastTokenResponse(webId, forceRefresh = true)
+                            requireAuth().hasValidToken(webId, forceRefresh = true)
                             didForceRefresh = true
                         }
                     }
@@ -749,21 +752,26 @@ internal class SolidHttpClient(
             if (response.statusCode != 401 || !attachAuth) return response
 
             val wwwAuth = response.headers[HTTPHeaderName.WWW_AUTHENTICATE] ?: ""
-            val isPureNonceChallenge = wwwAuth.contains("use_dpop_nonce", ignoreCase = true) &&
-                !wwwAuth.contains("invalid_token", ignoreCase = true) &&
-                !wwwAuth.contains("expired_token", ignoreCase = true)
+            val challenge = AuthChallenge.parse(wwwAuth)
 
-            if (isPureNonceChallenge) {
+            if (challenge == AuthChallenge.NonceStale) {
                 return@repeat
             }
             if (didForceRefresh) {
                 return response
             }
-            Log.i(
-                TAG,
-                "AuthTrace: 401 at $uri (WWW-Authenticate: ${wwwAuth.take(120)}) — forcing token refresh for $webId",
+            if (!challenge.warrantsTokenRefresh(isOwnOrigin(webId, uri))) {
+                Telemetry.log(
+                    "solid.auth 401 kept as authorization outcome " +
+                        "(origin=${uri.scheme}://${uri.authority}, wwwAuth=${wwwAuth.take(60)})",
+                )
+                return response
+            }
+            Telemetry.log(
+                "solid.auth 401 -> forced refresh (origin=${uri.scheme}://${uri.authority}, " +
+                    "wwwAuth=${wwwAuth.take(60)})",
             )
-            requireAuth().getLastTokenResponse(webId, forceRefresh = true)
+            requireAuth().hasValidToken(webId, forceRefresh = true)
             didForceRefresh = true
         }
         return lastResponse!!
@@ -815,15 +823,16 @@ internal class SolidHttpClient(
         method: String,
         uri: String,
     ): Map<String, String> {
-        val authenticator = requireAuth()
-        authenticator.getLastTokenResponse(webId)
-            ?: throw IllegalArgumentException("Not authenticated. Complete login before accessing Solid resources.")
-        return authenticator.getAuthHeaders(webId, method, uri)
+        val session = requireAuth()
+        require(session.hasValidToken(webId)) {
+            "Not authenticated. Complete login before accessing Solid resources."
+        }
+        return session.authHeaders(webId, method, uri)
     }
 
-    private fun requireAuth(): AuthSession = auth ?: throw IllegalStateException(
+    private fun requireAuth(): SolidSession = auth ?: throw IllegalStateException(
         "An authenticated session is required for CRUD operations. " +
-            "Construct SolidHttpClient with an AuthSession instance.",
+            "Construct SolidHttpClient with a SolidSession instance.",
     )
 }
 

@@ -1,11 +1,10 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
-import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
+import com.erfangholami.androidsolidservices.api.auth.SolidSession
 import com.erfangholami.androidsolidservices.shared.model.resource.NonRDFResource
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.runBlocking
-import net.openid.appauth.TokenResponse
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -15,26 +14,25 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.mock
 import java.net.URI
 
 class SolidHttpClientTest {
 
-    private class FakeAuthSession : AuthSession {
+    private class FakeAuthSession : SolidSession {
         val recordedNonces = mutableListOf<String>()
         var forceRefreshCount = 0
         var noRefreshCount = 0
         private var dpop = "proof-initial"
 
-        override suspend fun getLastTokenResponse(
+        override suspend fun hasValidToken(
             webId: String,
             forceRefresh: Boolean,
-        ): TokenResponse? {
+        ): Boolean {
             if (forceRefresh) forceRefreshCount++ else noRefreshCount++
-            return mock(TokenResponse::class.java)
+            return true
         }
 
-        override suspend fun getAuthHeaders(
+        override suspend fun authHeaders(
             webId: String,
             httpMethod: String,
             uri: String,

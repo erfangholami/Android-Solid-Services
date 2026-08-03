@@ -9,11 +9,15 @@ import com.erfangholami.androidsolidservices.api.auth.preferredTokenEndpointAuth
 import com.erfangholami.androidsolidservices.api.auth.supportsDPop
 import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
 import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
-import kotlinx.coroutines.NonCancellable
+import com.erfangholami.androidsolidservices.shared.telemetry.TelemetrySpan
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationException
 import net.openid.appauth.AuthorizationService
@@ -28,33 +32,193 @@ import kotlin.coroutines.resume
 
 private const val AUTH_LOG_TAG = "Authenticator"
 
-private const val REFRESH_COALESCE_MS = 5_000L
+private const val HTTP_TOO_MANY_REQUESTS = 429
 
-private const val REFRESH_LEAD_MS = 60_000L
-
-private const val ERROR_NO_REFRESH_TOKEN = "no_refresh_token"
-
-private const val ERROR_SESSION_EXPIRED = "session_expired"
+internal fun interface RefreshTokenEndpoint {
+    suspend fun refresh(profile: Profile): Pair<TokenResponse?, AuthorizationException?>
+}
 
 internal class TokenRefreshCoordinator(
     private val authService: AuthorizationService,
-    private val profileManager: ProfileManager,
+    private val profileManager: ProfileStore,
     private val now: () -> Long,
+    endpoint: RefreshTokenEndpoint? = null,
+    private val sessionScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) {
     private val dpopTokenRequester = DPoPTokenRequester()
 
+    private val policy = RefreshPolicy(now)
+
+    private val refreshEndpoint = endpoint ?: RefreshTokenEndpoint { requestToken(it, isRefresh = true) }
+
     private val refreshMutexes = ConcurrentHashMap<String, Mutex>()
+
+    private val inFlight = ConcurrentHashMap<String, Deferred<Profile>>()
 
     private fun mutexFor(webId: String) = refreshMutexes.getOrPut(webId) { Mutex() }
 
-    private val recentRefresh = ConcurrentHashMap<String, Pair<Long, Profile>>()
-
     fun forget(webId: String) {
-        recentRefresh.remove(webId)
+        policy.forget(webId)
+        inFlight.remove(webId)?.cancel()
     }
 
     fun forgetAll() {
-        recentRefresh.clear()
+        policy.forgetAll()
+        inFlight.values.forEach { it.cancel() }
+        inFlight.clear()
+    }
+
+    fun isAccessTokenHardExpired(profile: Profile): Boolean = policy.isAccessTokenHardExpired(profile)
+
+    suspend fun <T> withSessionLock(
+        webId: String,
+        block: suspend () -> T,
+    ): T = mutexFor(webId).withLock { block() }
+
+    /**
+     * Returns [webId]'s profile with a usable token when one can be had, refreshing at most once
+     * across all concurrent callers.
+     *
+     * A rotation runs on the coordinator's own scope, never the caller's: a UI flow tearing down
+     * mid-refresh cancels its *await*, not the rotation, so a rotated refresh token can no longer
+     * be lost to a caller's lifecycle — the failure that used to let a spent token be re-sent and
+     * cost the whole grant family.
+     */
+    suspend fun checkTokenAndRefresh(
+        webId: String,
+        profile: Profile,
+        forceRefresh: Boolean = false,
+    ): Profile {
+        if (policy.shouldSkip(webId, profile, forceRefresh)) return profile
+        policy.coalescedResult(webId)?.let { return it }
+        val flight = inFlight.computeIfAbsent(webId) { key ->
+            val deferred = sessionScope.async {
+                mutexFor(key).withLock { refreshLocked(key, profile, forceRefresh) }
+            }
+            deferred.invokeOnCompletion { inFlight.remove(key, deferred) }
+            deferred
+        }
+        return flight.await()
+    }
+
+    internal fun inFlightOrNull(webId: String): Deferred<Profile>? = inFlight[webId]
+
+    private suspend fun refreshLocked(
+        webId: String,
+        fallback: Profile,
+        forceRefresh: Boolean,
+    ): Profile {
+        policy.coalescedResult(webId)?.let { return it }
+        val current = profileManager.getProfileOrNull(webId) ?: return fallback
+        if (policy.shouldSkip(webId, current, forceRefresh)) return current
+        if (current.authState.refreshToken == null) {
+            return expireOnlyIfAccessTokenSpent(webId, current)
+        }
+        if (forceRefresh) policy.noteForced(webId)
+
+        val span = Telemetry.startSpan("solid_auth_refresh")
+        span.putAttribute("issuer", issuerHost(current))
+        span.putAttribute("forced", forceRefresh.toString())
+        return try {
+            val (tokenResponse, exception) = refreshEndpoint.refresh(current)
+            when {
+                tokenResponse != null -> applyRotatedToken(webId, current, tokenResponse, span)
+                policy.isTerminalRefreshError(exception) -> markSessionDead(webId, current, exception, span)
+                else -> keepForRetry(current, exception, span)
+            }
+        } finally {
+            span.stop()
+        }
+    }
+
+    private suspend fun applyRotatedToken(
+        webId: String,
+        current: Profile,
+        tokenResponse: TokenResponse,
+        span: TelemetrySpan,
+    ): Profile {
+        val updatedAuthState = deepCopyAuthState(current.authState)
+        updatedAuthState.update(tokenResponse, null)
+        val updated = current.copy(authState = updatedAuthState)
+        policy.noteSuccess(webId, updated)
+        profileManager.writeProfile(webId, updated)
+        span.putAttribute(TelemetryAttribute.OUTCOME, TelemetryAttribute.OUTCOME_SUCCESS)
+        span.putAttribute(
+            "rt_rotation",
+            when (tokenResponse.refreshToken) {
+                null -> "unrotated"
+                current.authState.refreshToken -> "reissued_same"
+                else -> "rotated"
+            },
+        )
+        return updated
+    }
+
+    private suspend fun markSessionDead(
+        webId: String,
+        current: Profile,
+        exception: AuthorizationException?,
+        span: TelemetrySpan,
+    ): Profile {
+        Log.w(AUTH_LOG_TAG, "Token refresh failed terminally for $webId: error=${exception?.error}", exception)
+        span.putAttribute(TelemetryAttribute.OUTCOME, "terminal")
+        exception?.let {
+            Telemetry.recordException(
+                it,
+                TelemetryAttribute.OPERATION to "solid.auth.refresh",
+                "auth_error" to (it.error ?: "unknown"),
+                "issuer" to issuerHost(current),
+            )
+        }
+        val updatedAuthState = deepCopyAuthState(current.authState)
+        updatedAuthState.update(null as TokenResponse?, exception)
+        val updated = current.copy(authState = updatedAuthState)
+        profileManager.writeProfile(webId, updated)
+        return updated
+    }
+
+    private fun keepForRetry(
+        current: Profile,
+        exception: AuthorizationException?,
+        span: TelemetrySpan,
+    ): Profile {
+        Log.w(
+            AUTH_LOG_TAG,
+            "Token refresh failed transiently: error=${exception?.error}, desc=${exception?.errorDescription}",
+            exception,
+        )
+        span.putAttribute(TelemetryAttribute.OUTCOME, "transient")
+        Telemetry.log("solid.auth.refresh transient failure: error=${exception?.error}")
+        return current
+    }
+
+    private suspend fun expireOnlyIfAccessTokenSpent(
+        webId: String,
+        profile: Profile,
+    ): Profile {
+        if (!policy.isAccessTokenHardExpired(profile)) return profile
+        if (!profile.authState.isAuthorized) return profile
+        Log.w(
+            AUTH_LOG_TAG,
+            "Session for $webId has an expired access token and no refresh token to renew it; " +
+                "marking the session expired.",
+        )
+        val expiry = tokenError(
+            SessionErrors.SESSION_EXPIRED,
+            "The access token expired and the provider issued no refresh token.",
+        )
+        Telemetry.recordException(
+            expiry,
+            TelemetryAttribute.OPERATION to "solid.auth.expiry",
+            "auth_error" to SessionErrors.SESSION_EXPIRED,
+            "reason" to "no_refresh_token",
+            "issuer" to issuerHost(profile),
+        )
+        val updatedAuthState = deepCopyAuthState(profile.authState)
+        updatedAuthState.update(null as TokenResponse?, expiry)
+        val updated = profile.copy(authState = updatedAuthState)
+        profileManager.writeProfile(webId, updated)
+        return updated
     }
 
     suspend fun requestToken(
@@ -65,7 +229,10 @@ internal class TokenRefreshCoordinator(
             return Pair(null, profile.authState.authorizationException)
         }
         if (isRefresh && profile.authState.refreshToken == null) {
-            return Pair(null, tokenError(ERROR_NO_REFRESH_TOKEN, "No refresh token held for this session."))
+            return Pair(
+                null,
+                tokenError(SessionErrors.NO_REFRESH_TOKEN, "No refresh token held for this session."),
+            )
         }
 
         val discoveryDoc = profile.authState.authorizationServiceConfiguration!!.discoveryDoc!!
@@ -105,7 +272,10 @@ internal class TokenRefreshCoordinator(
         val authState = profile.authState
         val config = authState.authorizationServiceConfiguration!!
         val refreshToken = authState.refreshToken
-            ?: return Pair(null, tokenError(ERROR_NO_REFRESH_TOKEN, "No refresh token held for this session."))
+            ?: return Pair(
+                null,
+                tokenError(SessionErrors.NO_REFRESH_TOKEN, "No refresh token held for this session."),
+            )
         val clientId = authState.lastRegistrationResponse?.clientId
             ?: authState.lastAuthorizationResponse?.request?.clientId
             ?: return Pair(null, AuthorizationException.TokenRequestErrors.INVALID_CLIENT)
@@ -136,28 +306,22 @@ internal class TokenRefreshCoordinator(
                 }.getOrNull()
                 val refreshedIdToken = token?.idToken
                 when {
-                    token == null -> {
-                        Log.w(
-                            AUTH_LOG_TAG,
-                            "AuthTrace: 2xx token response could not be parsed for ${profile.userInfo?.webId} — " +
-                                "if the provider rotated the refresh token, the new token is being DISCARDED here",
-                        )
+                    token == null ->
                         Pair(null, tokenError("invalid_token_response", null))
-                    }
                     refreshedIdToken != null &&
-                        !isRefreshedIdTokenValid(refreshedIdToken, profile, discoveryDoc) -> {
-                        Log.w(
-                            AUTH_LOG_TAG,
-                            "AuthTrace: 2xx refresh REJECTED by ID-token validation for ${profile.userInfo?.webId} — " +
-                                "rotated refresh token rtNew=${tokenFp(token.refreshToken)} is being DISCARDED " +
-                                "while rtSent=${tokenFp(authState.refreshToken)} was already spent server-side",
-                        )
+                        !isRefreshedIdTokenValid(refreshedIdToken, profile, discoveryDoc) ->
                         Pair(null, tokenError("invalid_id_token", "Refreshed ID token failed validation"))
-                    }
                     else -> Pair(token, null)
                 }
             }
             is DPoPTokenResult.Failure -> {
+                if (result.statusCode == HTTP_TOO_MANY_REQUESTS) {
+                    profile.userInfo?.webId?.let { policy.recordRateLimit(it, result.retryAfterSeconds) }
+                    return Pair(
+                        null,
+                        tokenError(SessionErrors.RATE_LIMITED, "The token endpoint returned 429 Too Many Requests."),
+                    )
+                }
                 val base = result.error?.let { AuthorizationException.TokenRequestErrors.byString(it) }
                     ?: AuthorizationException.TokenRequestErrors.OTHER
                 Pair(
@@ -187,113 +351,10 @@ internal class TokenRefreshCoordinator(
             val signatureOk = IdTokenVerifier.verify(idToken, URI.create(discoveryDoc.jwksUri.toString()))
             val issuerOk = IdTokenClaims.issuer(idToken)?.trimEnd('/') == discoveryDoc.issuer.trimEnd('/')
             val identityOk = profile.userInfo?.webId?.let { IdTokenClaims.webId(idToken) == it } ?: true
-            if (!signatureOk || !issuerOk || !identityOk) {
-                Log.w(
-                    AUTH_LOG_TAG,
-                    "AuthTrace: refreshed ID token checks for ${profile.userInfo?.webId}: " +
-                        "signature/JWKS=$signatureOk issuer=$issuerOk identity=$identityOk",
-                )
-            }
             signatureOk && issuerOk && identityOk
         } catch (e: Exception) {
             Log.w(AUTH_LOG_TAG, "Refreshed ID token validation failed for ${profile.userInfo?.webId}", e)
             false
-        }
-    }
-
-    suspend fun checkTokenAndRefresh(
-        webId: String,
-        profile: Profile,
-        forceRefresh: Boolean = false,
-    ): Profile {
-        if (!forceRefresh && !needsTokenRefresh(profile)) return profile
-        return mutexFor(webId).withLock {
-            recentRefresh[webId]?.let { (at, refreshed) ->
-                if (now() - at < REFRESH_COALESCE_MS) {
-                    Log.i(
-                        AUTH_LOG_TAG,
-                        "AuthTrace: refresh coalesced for $webId — reusing result from ${now() - at}ms ago " +
-                            "(rt=${tokenFp(refreshed.authState.refreshToken)})",
-                    )
-                    return@withLock refreshed
-                }
-            }
-
-            val currentProfile = profileManager.getProfileOrNull(webId) ?: return@withLock profile
-            if (!forceRefresh && !needsTokenRefresh(currentProfile)) return@withLock currentProfile
-            if (currentProfile.authState.refreshToken == null) {
-                return@withLock expireOnlyIfAccessTokenSpent(webId, currentProfile)
-            }
-
-            Log.i(
-                AUTH_LOG_TAG,
-                "AuthTrace: refresh start for $webId force=$forceRefresh " +
-                    "rtSent=${tokenFp(currentProfile.authState.refreshToken)} " +
-                    "accessExpiresInMs=${currentProfile.authState.lastTokenResponse?.accessTokenExpirationTime?.minus(now())} " +
-                    "isAuthorized=${currentProfile.authState.isAuthorized}",
-            )
-            val refreshSpan = Telemetry.startSpan("solid_auth_refresh")
-            withContext(NonCancellable) {
-                try {
-                    val (tokenResponse, exception) = requestToken(currentProfile, isRefresh = true)
-                    when {
-                        tokenResponse != null -> {
-                            val updatedAuthState = deepCopyAuthState(currentProfile.authState)
-                            updatedAuthState.update(tokenResponse, null)
-                            val updated = currentProfile.copy(authState = updatedAuthState)
-                            recentRefresh[webId] = now() to updated
-                            Log.i(
-                                AUTH_LOG_TAG,
-                                "AuthTrace: refresh ok for $webId rt " +
-                                    "${tokenFp(currentProfile.authState.refreshToken)} -> ${tokenFp(updatedAuthState.refreshToken)}" +
-                                    (if (tokenResponse.refreshToken == null) " (response carried no new refresh token)" else " (rotated)"),
-                            )
-                            profileManager.writeProfile(webId, updated)
-                            refreshSpan.putAttribute(TelemetryAttribute.OUTCOME, TelemetryAttribute.OUTCOME_SUCCESS)
-                            updated
-                        }
-
-                        isTerminalRefreshError(exception) -> {
-                            Log.w(
-                                AUTH_LOG_TAG,
-                                "Token refresh failed terminally for $webId: error=${exception?.error} " +
-                                    "(AuthTrace: rtSent=${tokenFp(currentProfile.authState.refreshToken)})",
-                                exception,
-                            )
-                            refreshSpan.putAttribute(TelemetryAttribute.OUTCOME, "terminal")
-                            exception?.let {
-                                Telemetry.recordException(
-                                    it,
-                                    TelemetryAttribute.OPERATION to "solid.auth.refresh",
-                                    "auth_error" to (it.error ?: "unknown"),
-                                    "issuer" to issuerHost(currentProfile),
-                                )
-                            }
-                            val updatedAuthState = deepCopyAuthState(currentProfile.authState)
-                            updatedAuthState.update(null as TokenResponse?, exception)
-                            val updated = currentProfile.copy(authState = updatedAuthState)
-                            profileManager.writeProfile(webId, updated)
-                            updated
-                        }
-
-                        else -> {
-                            Log.w(
-                                AUTH_LOG_TAG,
-                                "Token refresh failed transiently for $webId: " +
-                                    "error=${exception?.error}, desc=${exception?.errorDescription} " +
-                                    "(AuthTrace: rtSent=${tokenFp(currentProfile.authState.refreshToken)} — " +
-                                    "this token will be RE-SENT on the next attempt)",
-                                exception,
-                            )
-                            refreshSpan.putAttribute(TelemetryAttribute.OUTCOME, "transient")
-                            Telemetry.log("solid.auth.refresh transient failure: error=${exception?.error}")
-                            currentProfile
-                        }
-                    }
-                } finally {
-                    refreshSpan.stop()
-                }
-            }
         }
     }
 
@@ -305,44 +366,6 @@ internal class TokenRefreshCoordinator(
                 .toString(),
         ).host
     }.getOrNull() ?: "unknown"
-
-    private suspend fun expireOnlyIfAccessTokenSpent(
-        webId: String,
-        profile: Profile,
-    ): Profile {
-        if (!isAccessTokenHardExpired(profile)) return profile
-        if (!profile.authState.isAuthorized) return profile
-        Log.w(
-            AUTH_LOG_TAG,
-            "Session for $webId has an expired access token and no refresh token to renew it; " +
-                "marking the session expired.",
-        )
-        val updatedAuthState = deepCopyAuthState(profile.authState)
-        updatedAuthState.update(
-            null as TokenResponse?,
-            tokenError(ERROR_SESSION_EXPIRED, "The access token expired and the provider issued no refresh token."),
-        )
-        val updated = profile.copy(authState = updatedAuthState)
-        profileManager.writeProfile(webId, updated)
-        return updated
-    }
-
-    private fun isTerminalRefreshError(exception: AuthorizationException?): Boolean {
-        val error = exception?.error ?: return false
-        return error == "invalid_grant" || error == "invalid_client"
-    }
-
-    private fun needsTokenRefresh(profile: Profile): Boolean {
-        val expirationTime =
-            profile.authState.lastTokenResponse?.accessTokenExpirationTime ?: return true
-        return (now() + REFRESH_LEAD_MS) > expirationTime
-    }
-
-    fun isAccessTokenHardExpired(profile: Profile): Boolean {
-        val expirationTime =
-            profile.authState.lastTokenResponse?.accessTokenExpirationTime ?: return true
-        return now() >= expirationTime
-    }
 }
 
 private fun AuthState.createTokenRequest(isRefresh: Boolean): TokenRequest {

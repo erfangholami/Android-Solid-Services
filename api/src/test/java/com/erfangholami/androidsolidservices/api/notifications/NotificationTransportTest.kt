@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.api.notifications
 
-import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
+import com.erfangholami.androidsolidservices.api.auth.SolidSession
 import com.erfangholami.androidsolidservices.api.notifications.implementation.InboxDiscovery
 import com.erfangholami.androidsolidservices.api.notifications.implementation.NotificationTransportImplementation
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
@@ -12,19 +12,16 @@ import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.vocab.Notify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import net.openid.appauth.TokenResponse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.Mockito.mock
 
 class NotificationTransportTest {
 
-    private val fakeAuth = object : AuthSession {
-        override suspend fun getLastTokenResponse(webId: String, forceRefresh: Boolean): TokenResponse? =
-            mock(TokenResponse::class.java)
+    private val fakeAuth = object : SolidSession {
+        override suspend fun hasValidToken(webId: String, forceRefresh: Boolean): Boolean = true
 
-        override suspend fun getAuthHeaders(webId: String, httpMethod: String, uri: String): Map<String, String> =
+        override suspend fun authHeaders(webId: String, httpMethod: String, uri: String): Map<String, String> =
             emptyMap()
 
         override fun updateDPoPNonce(webId: String, resourceUri: String, nonce: String) = Unit

@@ -1,13 +1,12 @@
 package com.erfangholami.androidsolidservices.api.notifications
 
-import com.erfangholami.androidsolidservices.api.auth.implementation.AuthSession
+import com.erfangholami.androidsolidservices.api.auth.SolidSession
 import com.erfangholami.androidsolidservices.api.notifications.implementation.WebSocketChannel2023Client
 import com.erfangholami.androidsolidservices.shared.vocab.AS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import net.openid.appauth.TokenResponse
 import okhttp3.OkHttpClient
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -18,18 +17,16 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.mock
 import java.net.URI
 
 class WebSocketChannel2023ClientTest {
 
     private val webId = "https://alice.pod/profile/card#me"
 
-    private class FakeAuthSession : AuthSession {
-        override suspend fun getLastTokenResponse(webId: String, forceRefresh: Boolean): TokenResponse? =
-            mock(TokenResponse::class.java)
+    private class FakeAuthSession : SolidSession {
+        override suspend fun hasValidToken(webId: String, forceRefresh: Boolean): Boolean = true
 
-        override suspend fun getAuthHeaders(webId: String, httpMethod: String, uri: String): Map<String, String> =
+        override suspend fun authHeaders(webId: String, httpMethod: String, uri: String): Map<String, String> =
             mapOf("Authorization" to "DPoP token", "DPoP" to "proof")
 
         override fun updateDPoPNonce(webId: String, resourceUri: String, nonce: String) = Unit
