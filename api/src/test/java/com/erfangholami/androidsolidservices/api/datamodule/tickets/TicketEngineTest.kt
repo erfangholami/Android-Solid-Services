@@ -4,17 +4,25 @@ import com.erfangholami.androidsolidservices.api.datamodule.tickets.implementati
 import com.erfangholami.androidsolidservices.api.datamodule.tickets.implementation.TicketEngine
 import com.erfangholami.androidsolidservices.api.testing.InMemoryPodResourceManager
 import com.erfangholami.androidsolidservices.api.testing.inMemoryPod
+import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
+import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketCategory
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketImages
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.tickets.TicketsIndexRDF
+import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
+import com.erfangholami.androidsolidservices.shared.vocab.LDP
+import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -109,6 +117,96 @@ class TicketEngineTest {
         engine.update(webId, created.uri, NewTicket(title = "Concert (moved)")).getOrThrow()
         val index = fake.store[indexUri] as TicketsIndexRDF
         assertEquals("Concert (moved)", index.getTickets().single().title)
+    }
+
+    @Test
+    fun `copiedFrom provenance survives the create round trip`() = runBlocking {
+        val original = "https://bob.pod/tickets/u9/ticket#this"
+        val created = create(NewTicket(title = "Copied concert", copiedFrom = original))
+        assertEquals(original, created.copiedFrom)
+    }
+
+    @Test
+    fun `findInContainer resolves the ticket through the conventional document member`() =
+        runBlocking {
+            val created = create()
+            val ticketDir = created.uri.removeSuffix("ticket#this")
+            fake.put(
+                SolidContainer(
+                    ticketDir,
+                    "application/ld+json",
+                    listOf(
+                        RdfQuad(ticketDir, LDP.CONTAINS, "${ticketDir}ticket"),
+                        RdfQuad(ticketDir, LDP.CONTAINS, "${ticketDir}artifact.pkpass"),
+                    ),
+                ),
+            )
+
+            val found = engine.findInContainer(webId, ticketDir).getOrThrow()
+
+            assertEquals(created.uri, found.uri)
+            assertEquals("Concert", found.title)
+        }
+
+    @Test
+    fun `findInContainer falls back to member type scanning for unconventional names`() =
+        runBlocking {
+            val dir = "${ticketsContainer}odd/"
+            val doc = "${dir}pass"
+            fake.put(
+                SolidContainer(
+                    dir, "application/ld+json",
+                    listOf(RdfQuad(dir, LDP.CONTAINS, doc)),
+                ),
+            )
+            fake.store[doc] = SolidRDFResource(
+                doc,
+                "application/ld+json",
+                listOf(
+                    RdfQuad("$doc#this", RDF.TYPE, Schema.TICKET),
+                    RdfQuad("$doc#this", Schema.NAME, "Oddly named"),
+                ),
+                null,
+            )
+
+            val found = engine.findInContainer(webId, dir).getOrThrow()
+
+            assertEquals("$doc#this", found.uri)
+            assertEquals("Oddly named", found.title)
+        }
+
+    @Test
+    fun `findInContainer fails with NOT_FOUND when the container holds no ticket`() = runBlocking {
+        val dir = "${ticketsContainer}empty/"
+        fake.put(
+            SolidContainer(
+                dir, "application/ld+json",
+                listOf(RdfQuad(dir, LDP.CONTAINS, "${dir}note.txt")),
+            ),
+        )
+
+        val result = engine.findInContainer(webId, dir)
+
+        assertEquals(SolidErrorCode.NOT_FOUND, result.errorOrNull()?.code)
+    }
+
+    @Test
+    fun `the shareable-entity contract maps targets, names and the public artifact`() {
+        assertEquals(Schema.TICKET, engine.entityTypeIri)
+        assertEquals(
+            "${ticketsContainer}u1/",
+            engine.shareTarget("${ticketsContainer}u1/ticket#this"),
+        )
+
+        val ticket = Ticket(
+            uri = "${ticketsContainer}u1/ticket#this",
+            title = "Concert",
+            artifactUri = "${ticketsContainer}u1/artifact.pkpass",
+        )
+        assertEquals(ticket.artifactUri, engine.publicShareTarget(ticket))
+        assertNull(engine.publicShareTarget(ticket.copy(sharingProhibited = true)))
+        assertNull(engine.publicShareTarget(ticket.copy(artifactUri = null)))
+        assertEquals("Concert", engine.displayName(ticket))
     }
 
     @Test

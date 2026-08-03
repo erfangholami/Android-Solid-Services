@@ -137,12 +137,20 @@ public interface NotificationsManager {
      * `SharingManager.createShare(notifyReceiver = true)`. Returns
      * `Success(Unit)` on 2xx, an error variant otherwise. Best-effort:
      * `SharingManager` ignores the result and the share succeeds regardless.
+     *
+     * [resourceType] / [resourceName] announce a typed (entity) share: when
+     * given, the notification body additionally describes its `as:object` with
+     * `rdf:type` [resourceType] and `schema:name` [resourceName], so the
+     * receiver can render "shared a ticket" instead of a bare resource. Both
+     * `null` for plain resource shares.
      */
     public suspend fun sendOffer(
         ownerWebId: String,
         receiverWebId: String,
         resourceUri: String,
         mode: ShareMode,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): SolidResult<Unit>
 
     /**
@@ -165,12 +173,16 @@ public interface NotificationsManager {
      * updated" rather than a fresh share. Surfaces on the receiver side as
      * [com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificationType.UPDATED]
      * and is treated like an `as:Offer` for received-share syncing. Best-effort.
+     *
+     * [resourceType] / [resourceName] behave as on [sendOffer].
      */
     public suspend fun sendUpdate(
         ownerWebId: String,
         receiverWebId: String,
         resourceUri: String,
         mode: ShareMode,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): SolidResult<Unit>
 
     /**

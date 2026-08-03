@@ -14,6 +14,7 @@ import com.erfangholami.androidsolidservices.shared.rdf.sharing.ShareNotificatio
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.ShareRequestRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.result.SolidResultException
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.AS
@@ -34,13 +35,7 @@ internal class InboxReader(
         val profileCache = HashMap<String, WebId?>()
         return items.mapNotNull { itemUri ->
             runCatching { parseAsNotification(webId, itemUri, profileCache) }
-                .onFailure { t ->
-                    Log.w(
-                        INBOX_LOG_TAG,
-                        "listNotifications: parse failed for $itemUri; skipping.",
-                        t,
-                    )
-                }
+                .onFailure { t -> reportSkippedItem("listNotifications", itemUri, t) }
                 .getOrNull()
         }
     }
@@ -50,13 +45,7 @@ internal class InboxReader(
         val profileCache = HashMap<String, WebId?>()
         return items.mapNotNull { itemUri ->
             runCatching { parseAsRequest(webId, itemUri, profileCache) }
-                .onFailure { t ->
-                    Log.w(
-                        INBOX_LOG_TAG,
-                        "listRequests: parse failed for $itemUri; skipping.",
-                        t,
-                    )
-                }
+                .onFailure { t -> reportSkippedItem("listRequests", itemUri, t) }
                 .getOrNull()
         }
     }
@@ -115,6 +104,22 @@ internal class InboxReader(
         }
     }
 
+    private fun reportSkippedItem(
+        operation: String,
+        itemUri: URI,
+        failure: Throwable,
+    ) {
+        if (failure is kotlinx.coroutines.CancellationException) throw failure
+        if (failure is SolidResultException) {
+            Log.i(
+                INBOX_LOG_TAG,
+                "$operation: $itemUri is not a readable notification (${failure.message}); skipping.",
+            )
+            return
+        }
+        Log.w(INBOX_LOG_TAG, "$operation: parse failed for $itemUri; skipping.", failure)
+    }
+
     private suspend fun parseAsNotification(
         webId: String,
         itemUri: URI,
@@ -163,6 +168,8 @@ internal class InboxReader(
             summary = rdf.summary(),
             publishedAt = rdf.published(),
             targetWebId = rdf.target(),
+            resourceType = rdf.objectType(),
+            resourceName = rdf.objectName(),
         )
     }
 

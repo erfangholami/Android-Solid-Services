@@ -213,6 +213,7 @@ public class TicketRDF : SolidRDFResource {
         putBool(self, SolidShare.SHARING_PROHIBITED, data.sharingProhibited)
         putDate(self, SolidShare.RELEVANT_START_DATE, data.relevantStartDate)
         putDate(self, SolidShare.RELEVANT_END_DATE, data.relevantEndDate)
+        putIri(self, DC.SOURCE, data.copiedFrom)
 
         writeBarcodes(data.barcodes)
         writeSeats(data.seats)
@@ -569,6 +570,7 @@ public class TicketRDF : SolidRDFResource {
             relevantStartDate = str(self, SolidShare.RELEVANT_START_DATE),
             relevantEndDate = str(self, SolidShare.RELEVANT_END_DATE),
             beacons = readBeacons(),
+            copiedFrom = str(self, DC.SOURCE),
         )
     }
 

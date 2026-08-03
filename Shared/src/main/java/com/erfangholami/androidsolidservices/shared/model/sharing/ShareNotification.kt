@@ -47,4 +47,18 @@ public data class ShareNotification(
      * Null for the other types, which carry no meaningful target for callers.
      */
     val targetWebId: String? = null,
+
+    /**
+     * RDF class IRI asserted on the `as:object` in the notification body
+     * (`<resourceUri> rdf:type <iri>`), announcing that the share carries a
+     * data-module entity (e.g. `https://schema.org/Ticket`). Null when the
+     * notification describes a plain resource.
+     */
+    val resourceType: String? = null,
+
+    /**
+     * Human title asserted on the `as:object` (`schema:name`), when the sender
+     * announced one alongside [resourceType]. Null otherwise.
+     */
+    val resourceName: String? = null,
 ) : Parcelable

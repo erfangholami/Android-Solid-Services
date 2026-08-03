@@ -148,6 +148,15 @@ public interface SharingManager {
      * When [notifyReceiver] is true and [receiver] is a WebID, a best-effort
      * `as:Offer` is posted to the receiver's LDN inbox after the share is
      * persisted. Failure to deliver does not fail the share.
+     *
+     * [resourceType] and [resourceName] mark a **typed (entity) share**: the RDF
+     * class IRI of the data-module entity the share carries (e.g.
+     * `https://schema.org/Ticket` for a ticket container) and its human title.
+     * Both are written onto the index record (`solidshare:resourceType`,
+     * `dcterms:title`) and announced on the notification's `as:object`, so the
+     * receiver can render the share as an entity instead of a file. Leave both
+     * `null` for plain file/folder shares; passing `null` never strips typing an
+     * existing record already carries.
      */
     public suspend fun createShare(
         webId: String,
@@ -155,6 +164,8 @@ public interface SharingManager {
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean = true,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): SolidResult<GivenShare>
 
     /**
@@ -164,9 +175,13 @@ public interface SharingManager {
      * `dcterms:created` time. Equivalent to [createShare] with the new mode.
      *
      * When [notifyReceiver] is true and [receiver] is a WebID, a best-effort
-     * `as:Offer` carrying the new mode is posted to the receiver's inbox (as on
-     * [createShare]); this also lets the receiver's "shared with me" view sync
-     * to the changed level. Defaults to false so a silent re-grant stays silent.
+     * `as:Update` carrying the new mode is posted to the receiver's inbox; this
+     * also lets the receiver's "shared with me" view sync to the changed level.
+     * Defaults to false so a silent re-grant stays silent.
+     *
+     * [resourceType] / [resourceName] behave as on [createShare]: they refresh
+     * the typed-share marks on the index record and ride on the notification;
+     * `null` leaves whatever the record already carries untouched.
      */
     public suspend fun updateShare(
         webId: String,
@@ -174,6 +189,8 @@ public interface SharingManager {
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean = false,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): SolidResult<GivenShare>
 
     /**
@@ -219,11 +236,18 @@ public interface SharingManager {
      * [ownerHint] is the sender WebID carried by the share link (see
      * [parseShareDeepLink]); when it is a valid IRI it is trusted ahead of the
      * weaker owner-resolution signals so the stored row names the real sender.
+     *
+     * [resourceType] / [resourceName] mark the stored row as a typed (entity)
+     * share — the entity's RDF class IRI and title, typically resolved by the
+     * caller after probing the shared resource (the link itself only hints the
+     * type). `null` records an untyped row.
      */
     public suspend fun addReceivedShare(
         webId: String,
         resourceUri: String,
         ownerHint: String? = null,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): SolidResult<ReceivedShare?>
 
     /**
@@ -356,8 +380,17 @@ public interface SharingManager {
      * Pass [ownerWebId] to embed the sender's WebID in the link so the
      * receiver can identify who shared the resource even when adding it via
      * QR / link (the notification path already carries the owner).
+     *
+     * Pass [resourceType] (an RDF class IRI, e.g. `https://schema.org/Ticket`)
+     * to hint that the link points at a typed entity share, so the receiver's
+     * confirmation UI can render the kind before probing. Links never carry the
+     * entity's title.
      */
-    public fun getShareDeepLink(resourceUri: String, ownerWebId: String? = null): String
+    public fun getShareDeepLink(
+        resourceUri: String,
+        ownerWebId: String? = null,
+        resourceType: String? = null,
+    ): String
 
     /**
      * Extracts the resource URI — and, when present, the embedded owner WebID

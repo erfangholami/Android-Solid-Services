@@ -6,7 +6,8 @@ package com.erfangholami.androidsolidservices.shared.model.sharing
  * Read+Append for "Add", Read+Write for "Edit") — into a single row per
  * pair carrying the strongest [ShareMode]. Each receiver therefore appears once
  * per resource at its effective access level. The earliest known
- * [GivenShare.createdAt] is preserved.
+ * [GivenShare.createdAt] is preserved, as are the first known
+ * [GivenShare.resourceType] / [GivenShare.resourceName].
  */
 public fun List<GivenShare>.collapseByReceiver(): List<GivenShare> =
     groupBy { it.receiver.toRdfSubject() to it.resourceUri }
@@ -16,13 +17,16 @@ public fun List<GivenShare>.collapseByReceiver(): List<GivenShare> =
                 mode = ShareMode.strongest(rows.map { it.mode }) ?: rows.first().mode,
                 resourceUri = rows.first().resourceUri,
                 createdAt = rows.firstNotNullOfOrNull { it.createdAt },
+                resourceType = rows.firstNotNullOfOrNull { it.resourceType },
+                resourceName = rows.firstNotNullOfOrNull { it.resourceName },
             )
         }
 
 /**
  * The received-share counterpart of [collapseByReceiver]: one [ReceivedShare]
  * per `(ownerWebId, resourceUri)` at the strongest [ShareMode], preserving the
- * earliest known [ReceivedShare.addedAt].
+ * earliest known [ReceivedShare.addedAt] and the first known
+ * [ReceivedShare.resourceType] / [ReceivedShare.resourceName].
  */
 public fun List<ReceivedShare>.collapseByOwner(): List<ReceivedShare> =
     groupBy { it.ownerWebId to it.resourceUri }
@@ -32,5 +36,7 @@ public fun List<ReceivedShare>.collapseByOwner(): List<ReceivedShare> =
                 mode = ShareMode.strongest(rows.map { it.mode }) ?: rows.first().mode,
                 resourceUri = rows.first().resourceUri,
                 addedAt = rows.firstNotNullOfOrNull { it.addedAt },
+                resourceType = rows.firstNotNullOfOrNull { it.resourceType },
+                resourceName = rows.firstNotNullOfOrNull { it.resourceName },
             )
         }

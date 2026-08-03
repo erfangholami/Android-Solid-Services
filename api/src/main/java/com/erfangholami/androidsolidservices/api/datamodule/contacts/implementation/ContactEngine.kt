@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementa
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.ContactStore
 import com.erfangholami.androidsolidservices.api.datamodule.core.containerOf
 import com.erfangholami.androidsolidservices.api.datamodule.core.deleteTolerant
+import com.erfangholami.androidsolidservices.api.datamodule.core.findEntityInContainer
 import com.erfangholami.androidsolidservices.api.datamodule.core.putAttachment
 import com.erfangholami.androidsolidservices.api.datamodule.core.readAttachment
 import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
@@ -32,6 +33,27 @@ internal class ContactEngine(
         contactUri: String,
     ): SolidResult<SolidContact> = solidCatching {
         SolidContact.createFromRdf(pod.contact(ownerWebId, contactUri))
+    }
+
+    override suspend fun findInContainer(
+        ownerWebId: String,
+        containerUri: String,
+    ): SolidResult<SolidContact> = solidCatching {
+        val found = findEntityInContainer(
+            resourceManager = pod.solidResourceManager,
+            ownerWebId = ownerWebId,
+            containerUri = containerUri,
+            entityTypeIri = VCARD.INDIVIDUAL,
+            conventionalDocumentName = INDEX_FILE_NAME.substringBefore('#'),
+            subjectFragment = "#" + INDEX_FILE_NAME.substringAfter('#'),
+        )
+        val raw = found.raw
+            ?: return@solidCatching SolidContact.createFromRdf(
+                pod.contact(ownerWebId, found.subjectUri),
+            )
+        SolidContact.createFromRdf(
+            ContactRDF(found.subjectUri, raw.getContentType(), raw.getAllQuads(), raw.getHeaders()),
+        )
     }
 
     override suspend fun list(

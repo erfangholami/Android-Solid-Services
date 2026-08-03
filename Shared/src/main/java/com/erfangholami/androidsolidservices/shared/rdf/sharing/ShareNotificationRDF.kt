@@ -6,6 +6,7 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResou
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.AS
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
+import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import com.erfangholami.androidsolidservices.shared.vocab.ShareNotificationVocabulary
 import com.erfangholami.androidsolidservices.shared.vocab.SolidShareNotificationVocabulary
 
@@ -86,6 +87,28 @@ public class ShareNotificationRDF : SolidRDFResource {
 
     public fun summary(): String? = forActivity(AS.SUMMARY)
     public fun published(): String? = forActivity(AS.PUBLISHED)
+
+    /**
+     * RDF class IRI the sender asserted on the `as:object` node
+     * (`<resourceUri> rdf:type <iri>`) — a typed entity share's kind. Null when
+     * the notification carries no object description.
+     */
+    public fun objectType(): String? {
+        val objectUri = activityObject() ?: return null
+        return getAllQuads()
+            .firstOrNull {
+                it.subject == objectUri && it.predicate == RDF.TYPE && !it.isLiteralObject
+            }
+            ?.`object`
+    }
+
+    /** `schema:name` asserted on the `as:object` node, if any. */
+    public fun objectName(): String? {
+        val objectUri = activityObject() ?: return null
+        return getAllQuads()
+            .firstOrNull { it.subject == objectUri && it.predicate == Schema.NAME }
+            ?.`object`
+    }
 
     private fun forActivity(predicate: String): String? {
         val subject = activitySubject() ?: return null

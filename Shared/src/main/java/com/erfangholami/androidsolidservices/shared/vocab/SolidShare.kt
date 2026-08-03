@@ -45,6 +45,14 @@ public object SolidShare {
     public const val OWNER: String = "${NAMESPACE}owner"
 
     /**
+     * The RDF class IRI of the entity a [SHARE] record carries (e.g. `schema:Ticket`,
+     * `vcard:Individual`), when the share was created for a data-module entity rather than a
+     * plain file. Absent on untyped (file/folder) shares; the vocabulary is open — readers
+     * render unknown types generically.
+     */
+    public const val RESOURCE_TYPE: String = "${NAMESPACE}resourceType"
+
+    /**
      * Links a `schema:Ticket` to its `schema:Reservation` envelope. schema.org only provides the
      * inverse (`schema:reservedTicket`), so this exists to spare readers a reverse scan.
      */

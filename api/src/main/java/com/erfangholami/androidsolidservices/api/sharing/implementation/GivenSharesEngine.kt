@@ -12,6 +12,7 @@ import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.util.getETag
+import com.erfangholami.androidsolidservices.shared.util.nowIsoDateTime
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 
@@ -63,8 +64,8 @@ internal class GivenSharesEngine(
         val storedPairToReceiver = stored.associate {
             (it.receiver.toRdfSubject() to it.resourceUri) to it.receiver
         }
-        val storedPairToCreated = stored
-            .groupBy { it.receiver.toRdfSubject() to it.resourceUri }
+        val storedByPair = stored.groupBy { it.receiver.toRdfSubject() to it.resourceUri }
+        val storedPairToCreated = storedByPair
             .mapValues { (_, list) -> list.firstNotNullOfOrNull { it.createdAt } }
 
         verifiedByPair.forEach { (pair, modes) ->
@@ -78,6 +79,8 @@ internal class GivenSharesEngine(
                 receiver = receiver,
                 modes = modes,
                 createdAt = storedPairToCreated[pair],
+                resourceType = storedByPair[pair]?.firstNotNullOfOrNull { it.resourceType },
+                resourceName = storedByPair[pair]?.firstNotNullOfOrNull { it.resourceName },
             )
         }
 
@@ -115,8 +118,8 @@ internal class GivenSharesEngine(
         }
 
         val previous = helper.readGivenShares(webId, podRoot)
-        val previousPairToCreated = previous
-            .groupBy { it.receiver.toRdfSubject() to it.resourceUri }
+        val previousByPair = previous.groupBy { it.receiver.toRdfSubject() to it.resourceUri }
+        val previousPairToCreated = previousByPair
             .mapValues { (_, list) -> list.firstNotNullOfOrNull { it.createdAt } }
         previous.map { it.receiver.toRdfSubject() to it.resourceUri }.distinct().forEach { pair ->
             val resourceUri = pair.second
@@ -135,6 +138,8 @@ internal class GivenSharesEngine(
                     receiver = list.first().receiver,
                     modes = list.map { it.mode }.toSet(),
                     createdAt = previousPairToCreated[pair],
+                    resourceType = previousByPair[pair]?.firstNotNullOfOrNull { it.resourceType },
+                    resourceName = previousByPair[pair]?.firstNotNullOfOrNull { it.resourceName },
                 )
             }
         helper.readGivenShares(webId, podRoot)
@@ -146,6 +151,8 @@ internal class GivenSharesEngine(
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): SolidResult<GivenShare> = wrapSharing {
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
@@ -158,7 +165,14 @@ internal class GivenSharesEngine(
         }.getOrDefault(false)
         helper.grantAccess(webId, canonicalUri, mode, canonicalReceiver)
         writeOwnerProvenance(webId, canonicalUri)
-        val share = GivenShare(canonicalReceiver, mode, canonicalUri, createdAt = nowIsoDateTime())
+        val share = GivenShare(
+            receiver = canonicalReceiver,
+            mode = mode,
+            resourceUri = canonicalUri,
+            createdAt = nowIsoDateTime(),
+            resourceType = resourceType,
+            resourceName = resourceName,
+        )
         runCatching {
             helper.replaceGivenShare(webId, podRoot, share)
         }.onFailure { t ->
@@ -186,7 +200,10 @@ internal class GivenSharesEngine(
         }
         if (notifyReceiver && canonicalReceiver is ShareReceiver.WebIdReceiver) {
             runCatching {
-                notifications.sendOffer(webId, canonicalReceiver.webId, canonicalUri, mode)
+                notifications.sendOffer(
+                    webId, canonicalReceiver.webId, canonicalUri, mode,
+                    resourceType = resourceType, resourceName = resourceName,
+                )
             }.onFailure { t ->
                 Log.w(
                     TAG,
@@ -205,8 +222,15 @@ internal class GivenSharesEngine(
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): SolidResult<GivenShare> {
-        val result = createShare(webId, resourceUri, mode, receiver, notifyReceiver = false)
+        val result = createShare(
+            webId, resourceUri, mode, receiver,
+            notifyReceiver = false,
+            resourceType = resourceType,
+            resourceName = resourceName,
+        )
         if (notifyReceiver && result is SolidResult.Success) {
             val updated = result.value
             val updatedReceiver = updated.receiver
@@ -214,6 +238,7 @@ internal class GivenSharesEngine(
                 runCatching {
                     notifications.sendUpdate(
                         webId, updatedReceiver.webId, updated.resourceUri, mode,
+                        resourceType = updated.resourceType, resourceName = updated.resourceName,
                     ).getOrThrow()
                 }.onFailure { t ->
                     Log.w(

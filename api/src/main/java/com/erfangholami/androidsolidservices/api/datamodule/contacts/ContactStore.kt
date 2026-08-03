@@ -1,11 +1,14 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts
 
+import com.erfangholami.androidsolidservices.api.datamodule.ShareableEntityStore
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactMatch
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactPhoto
+import com.erfangholami.androidsolidservices.shared.model.contacts.INDEX_FILE_NAME
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContact
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContactList
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 
 /**
  * Reads and writes the contacts of a pod user.
@@ -13,8 +16,29 @@ import com.erfangholami.androidsolidservices.shared.result.SolidResult
  * Contacts are `vcard:Individual` documents inside an address book's container;
  * their writable state is the [ContactData] snapshot (build it with the
  * `contactData {}` DSL or derive it from an existing contact with `buildUpon {}`).
+ *
+ * Contacts are shareable data identities ([ShareableEntityStore]): a person-to-person share
+ * grants on the contact's `Person/{uuid}/` container ([shareTarget]), which covers the vCard
+ * document and its photo in one authorization; contacts have no anyone-with-the-link form
+ * ([publicShareTarget] is always `null`), and a receiver resolves the contact inside a shared
+ * container via [findInContainer].
  */
-public interface ContactStore {
+public interface ContactStore : ShareableEntityStore<SolidContact> {
+
+    override val entityTypeIri: String
+        get() = VCARD.INDIVIDUAL
+
+    override fun shareTarget(entityUri: String): String =
+        if (entityUri.endsWith("/$INDEX_FILE_NAME")) {
+            entityUri.removeSuffix(INDEX_FILE_NAME)
+        } else {
+            entityUri.substringBefore('#')
+        }
+
+    override fun publicShareTarget(entity: SolidContact): String? = null
+
+    override fun displayName(entity: SolidContact): String? =
+        entity.fullName.takeIf { it.isNotBlank() }
 
     /** Reads the contact at [contactUri] with its complete vCard detail. */
     public suspend fun get(

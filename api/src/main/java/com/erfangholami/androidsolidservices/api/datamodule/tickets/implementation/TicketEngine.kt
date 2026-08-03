@@ -22,6 +22,13 @@ internal class TicketEngine(
         Ticket.createFromRdf(helper.getTicket(ownerWebId, URI.create(ticketUri)))
     }
 
+    override suspend fun findInContainer(
+        ownerWebId: String,
+        containerUri: String,
+    ): SolidResult<Ticket> = solidCatching {
+        Ticket.createFromRdf(helper.findTicketInContainer(ownerWebId, containerUri))
+    }
+
     override suspend fun create(
         ownerWebId: String,
         newTicket: NewTicket,

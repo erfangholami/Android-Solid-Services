@@ -54,6 +54,8 @@ public class GivenSharesIndexRDF : SolidRDFResource {
      * One reified `solidshare:Share` record. [subject] is the node IRI (the
      * writer targets patch deletes at it); [modes] are every `acl:mode` asserted
      * on it; [createdAt] is the record's `dcterms:created`, or `null` if absent.
+     * [resourceType] / [resourceName] are the record's `solidshare:resourceType`
+     * IRI and `dcterms:title`, both `null` on untyped (file/folder) records.
      */
     public data class Node(
         val subject: String,
@@ -61,6 +63,8 @@ public class GivenSharesIndexRDF : SolidRDFResource {
         val resourceUri: String,
         val modes: Set<ShareMode>,
         val createdAt: String?,
+        val resourceType: String? = null,
+        val resourceName: String? = null,
     )
 
     /** The reified share records (node form only — excludes any legacy flat rows). */
@@ -93,6 +97,10 @@ public class GivenSharesIndexRDF : SolidRDFResource {
                     resourceUri = resourceUri,
                     modes = modes,
                     createdAt = nodeQuads.firstOrNull { it.predicate == DC.CREATED }?.`object`,
+                    resourceType = nodeQuads.firstOrNull {
+                        it.predicate == vocab.resourceType && !it.isLiteralObject
+                    }?.`object`,
+                    resourceName = nodeQuads.firstOrNull { it.predicate == DC.TITLE }?.`object`,
                 )
             }
             .toList()
@@ -127,7 +135,14 @@ public class GivenSharesIndexRDF : SolidRDFResource {
     public fun getShares(vocab: ShareVocabulary = SolidShareVocabulary): List<GivenShare> {
         val nodeShares = getShareNodes(vocab).flatMap { node ->
             node.modes.map { mode ->
-                GivenShare(node.receiver, mode, node.resourceUri, node.createdAt)
+                GivenShare(
+                    receiver = node.receiver,
+                    mode = mode,
+                    resourceUri = node.resourceUri,
+                    createdAt = node.createdAt,
+                    resourceType = node.resourceType,
+                    resourceName = node.resourceName,
+                )
             }
         }
         val coveredPairs = nodeShares

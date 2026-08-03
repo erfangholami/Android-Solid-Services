@@ -218,9 +218,12 @@ internal class NotificationsManagerImplementation private constructor(
         receiverWebId: String,
         resourceUri: String,
         mode: ShareMode,
+        resourceType: String?,
+        resourceName: String?,
     ): SolidResult<Unit> = wrap {
         inboxNotifier.postOffer(
             ownerWebId, receiverWebId, encodeUriString(resourceUri), mode,
+            resourceType = resourceType, resourceName = resourceName,
         ).requireSuccess(receiverWebId)
     }
 
@@ -239,9 +242,12 @@ internal class NotificationsManagerImplementation private constructor(
         receiverWebId: String,
         resourceUri: String,
         mode: ShareMode,
+        resourceType: String?,
+        resourceName: String?,
     ): SolidResult<Unit> = wrap {
         inboxNotifier.postUpdate(
             ownerWebId, receiverWebId, encodeUriString(resourceUri), mode,
+            resourceType = resourceType, resourceName = resourceName,
         ).requireSuccess(receiverWebId)
     }
 

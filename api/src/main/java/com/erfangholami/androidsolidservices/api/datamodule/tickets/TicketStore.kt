@@ -1,11 +1,13 @@
 package com.erfangholami.androidsolidservices.api.datamodule.tickets
 
+import com.erfangholami.androidsolidservices.api.datamodule.ShareableEntityStore
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
 import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketArtifact
 import com.erfangholami.androidsolidservices.shared.model.tickets.TicketList
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.vocab.Schema
 
 /**
  * Manages the wallet tickets (`schema:Ticket` resources) of a pod user.
@@ -36,8 +38,27 @@ import com.erfangholami.androidsolidservices.shared.result.SolidResult
  *
  * Reached via [SolidTicketsDataModule.tickets], mirroring the contacts module's stores — so
  * the verbs match: [list] / [get] / [create] / [update] / [delete].
+ *
+ * Tickets are shareable data identities ([ShareableEntityStore]): a person-to-person share
+ * grants on the ticket's `{uuid}/` container ([shareTarget]), a public share exposes only the
+ * original artifact ([publicShareTarget] —
+ * `null` without one or when the pass carries `solidshare:sharingProhibited`), and a receiver
+ * resolves the ticket inside a shared container via [findInContainer].
  */
-public interface TicketStore {
+public interface TicketStore : ShareableEntityStore<Ticket> {
+
+    override val entityTypeIri: String
+        get() = Schema.TICKET
+
+    override fun shareTarget(entityUri: String): String {
+        val document = entityUri.substringBefore('#')
+        return document.substring(0, document.lastIndexOf('/') + 1)
+    }
+
+    override fun publicShareTarget(entity: Ticket): String? =
+        entity.artifactUri?.takeIf { entity.sharingProhibited != true }
+
+    override fun displayName(entity: Ticket): String? = entity.title
 
     /**
      * Lists ticket summaries from every tickets container registered in [ownerWebId]'s private

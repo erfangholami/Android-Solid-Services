@@ -121,8 +121,12 @@ internal class SharingManagerImplementation : SharingManager {
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean,
+        resourceType: String?,
+        resourceName: String?,
     ): SolidResult<GivenShare> =
-        givenEngine.createShare(webId, resourceUri, mode, receiver, notifyReceiver)
+        givenEngine.createShare(
+            webId, resourceUri, mode, receiver, notifyReceiver, resourceType, resourceName,
+        )
 
     override suspend fun updateShare(
         webId: String,
@@ -130,8 +134,12 @@ internal class SharingManagerImplementation : SharingManager {
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean,
+        resourceType: String?,
+        resourceName: String?,
     ): SolidResult<GivenShare> =
-        givenEngine.updateShare(webId, resourceUri, mode, receiver, notifyReceiver)
+        givenEngine.updateShare(
+            webId, resourceUri, mode, receiver, notifyReceiver, resourceType, resourceName,
+        )
 
     override suspend fun revokeShare(
         webId: String,
@@ -149,7 +157,10 @@ internal class SharingManagerImplementation : SharingManager {
         webId: String,
         resourceUri: String,
         ownerHint: String?,
-    ): SolidResult<ReceivedShare?> = receivedEngine.addReceivedShare(webId, resourceUri, ownerHint)
+        resourceType: String?,
+        resourceName: String?,
+    ): SolidResult<ReceivedShare?> =
+        receivedEngine.addReceivedShare(webId, resourceUri, ownerHint, resourceType, resourceName)
 
     override suspend fun removeReceivedShare(
         webId: String,
@@ -381,8 +392,11 @@ internal class SharingManagerImplementation : SharingManager {
         catalog.getEntries(profile.vocabulary)
     }
 
-    override fun getShareDeepLink(resourceUri: String, ownerWebId: String?): String =
-        profile.linkCodec.deepLink(resourceUri, ownerWebId)
+    override fun getShareDeepLink(
+        resourceUri: String,
+        ownerWebId: String?,
+        resourceType: String?,
+    ): String = profile.linkCodec.deepLink(resourceUri, ownerWebId, resourceType)
 
     override fun parseShareDeepLink(deepLink: String): ParsedShareLink? =
         profile.linkCodec.parse(deepLink)

@@ -11,6 +11,7 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotificat
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.util.IriUtils
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
+import com.erfangholami.androidsolidservices.shared.util.nowIsoDateTime
 import com.erfangholami.androidsolidservices.shared.vocab.DC
 import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import kotlinx.coroutines.sync.Mutex
@@ -62,6 +63,8 @@ internal class ReceivedSharesEngine(
                         mode = access.mode,
                         resourceUri = share.resourceUri,
                         addedAt = share.addedAt,
+                        resourceType = share.resourceType,
+                        resourceName = share.resourceName,
                     )
                     verified += refreshed
                     helper.replaceReceivedShare(webId, podRoot, refreshed)
@@ -84,6 +87,8 @@ internal class ReceivedSharesEngine(
         webId: String,
         resourceUri: String,
         ownerHint: String?,
+        resourceType: String?,
+        resourceName: String?,
     ): SolidResult<ReceivedShare?> = wrapSharing {
         receivedIndexLock(webId).withLock {
         val podRoot = helper.getPodRoot(webId)
@@ -98,6 +103,8 @@ internal class ReceivedSharesEngine(
                     mode = access.mode,
                     resourceUri = canonicalUri,
                     addedAt = nowIsoDateTime(),
+                    resourceType = resourceType,
+                    resourceName = resourceName,
                 )
                 helper.replaceReceivedShare(webId, podRoot, share)
                 share
@@ -178,6 +185,8 @@ internal class ReceivedSharesEngine(
                         mode = n.mode ?: granted?.mode ?: ShareMode.READ,
                         resourceUri = resourceUri,
                         addedAt = n.publishedAt ?: nowIsoDateTime(),
+                        resourceType = n.resourceType,
+                        resourceName = n.resourceName,
                     ),
                 )
             }.onFailure { t ->

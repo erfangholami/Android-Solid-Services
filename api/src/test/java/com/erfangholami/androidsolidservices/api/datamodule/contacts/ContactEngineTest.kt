@@ -6,19 +6,24 @@ import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementat
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation.GroupEngine
 import com.erfangholami.androidsolidservices.api.testing.InMemoryPodResourceManager
 import com.erfangholami.androidsolidservices.api.testing.inMemoryPod
+import com.erfangholami.androidsolidservices.shared.model.contacts.INDEX_FILE_NAME
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneType
 import com.erfangholami.androidsolidservices.shared.model.contacts.contactData
+import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.AddressBookRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
+import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -272,5 +277,37 @@ class ContactEngineTest {
         val newBookContainer = book.uri.substring(0, book.uri.lastIndexOf('/') + 1)
         assertTrue(fake.store.containsKey(newBookContainer))
         assertTrue(fake.store.containsKey("${storage}datamodule/contacts/"))
+    }
+
+    @Test
+    fun `findInContainer resolves the contact inside its Person container`() = runBlocking {
+        val created = createJane()
+        val personDir = created.uri.removeSuffix(INDEX_FILE_NAME)
+        fake.put(
+            SolidContainer(
+                personDir,
+                "application/ld+json",
+                listOf(
+                    RdfQuad(personDir, LDP.CONTAINS, "${personDir}index.ttl"),
+                    RdfQuad(personDir, LDP.CONTAINS, "${personDir}photo.jpg"),
+                ),
+            ),
+        )
+
+        val found = contactEngine.findInContainer(webId, personDir).getOrThrow()
+
+        assertEquals(created.uri, found.uri)
+        assertEquals("Jane", found.fullName)
+        assertNull(contactEngine.publicShareTarget(found))
+        assertEquals("Jane", contactEngine.displayName(found))
+    }
+
+    @Test
+    fun `the shareable-entity contract maps a contact to its Person container`() {
+        assertEquals(VCARD.INDIVIDUAL, contactEngine.entityTypeIri)
+        assertEquals(
+            "${bookContainer}Person/u1/",
+            contactEngine.shareTarget("${bookContainer}Person/u1/$INDEX_FILE_NAME"),
+        )
     }
 }

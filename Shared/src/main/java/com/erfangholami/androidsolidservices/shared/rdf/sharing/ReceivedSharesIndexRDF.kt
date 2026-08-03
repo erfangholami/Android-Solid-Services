@@ -45,6 +45,8 @@ public class ReceivedSharesIndexRDF : SolidRDFResource {
      * One reified `solidshare:Share` record. [subject] is the node IRI (the
      * writer targets patch deletes at it); [mode] is the strongest `acl:mode`
      * asserted; [addedAt] is the record's `dcterms:created`, or `null`.
+     * [resourceType] / [resourceName] are the record's `solidshare:resourceType`
+     * IRI and `dcterms:title`, both `null` on untyped (file/folder) records.
      */
     public data class Node(
         val subject: String,
@@ -52,6 +54,8 @@ public class ReceivedSharesIndexRDF : SolidRDFResource {
         val resourceUri: String,
         val mode: ShareMode,
         val addedAt: String?,
+        val resourceType: String? = null,
+        val resourceName: String? = null,
     )
 
     /** The reified received-share records (node form only — excludes legacy flat rows). */
@@ -78,6 +82,10 @@ public class ReceivedSharesIndexRDF : SolidRDFResource {
                     resourceUri = resourceUri,
                     mode = mode,
                     addedAt = nodeQuads.firstOrNull { it.predicate == DC.CREATED }?.`object`,
+                    resourceType = nodeQuads.firstOrNull {
+                        it.predicate == vocab.resourceType && !it.isLiteralObject
+                    }?.`object`,
+                    resourceName = nodeQuads.firstOrNull { it.predicate == DC.TITLE }?.`object`,
                 )
             }
             .toList()
@@ -107,7 +115,14 @@ public class ReceivedSharesIndexRDF : SolidRDFResource {
      */
     public fun getShares(vocab: ShareVocabulary = SolidShareVocabulary): List<ReceivedShare> {
         val nodeShares = getShareNodes(vocab).map {
-            ReceivedShare(it.ownerWebId, it.mode, it.resourceUri, it.addedAt)
+            ReceivedShare(
+                ownerWebId = it.ownerWebId,
+                mode = it.mode,
+                resourceUri = it.resourceUri,
+                addedAt = it.addedAt,
+                resourceType = it.resourceType,
+                resourceName = it.resourceName,
+            )
         }
         val covered = nodeShares.map { it.ownerWebId to it.resourceUri }.toSet()
         val legacy = getLegacyFlatShares().filter { (it.ownerWebId to it.resourceUri) !in covered }

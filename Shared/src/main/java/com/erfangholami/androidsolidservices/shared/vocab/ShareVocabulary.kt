@@ -23,6 +23,12 @@ public interface ShareVocabulary {
     /** Predicate linking a received-share record to the owner WebID. */
     public val owner: String
 
+    /**
+     * Predicate linking a share record to the RDF class IRI of the entity it carries
+     * (e.g. `schema:Ticket`). Absent on untyped (file/folder) shares.
+     */
+    public val resourceType: String
+
     /** `rdf:type` of a public catalog entry. */
     public val catalogEntryType: String
 }
@@ -34,5 +40,6 @@ public object SolidShareVocabulary : ShareVocabulary {
     override val resource: String = SolidShare.RESOURCE
     override val receiver: String = SolidShare.RECEIVER
     override val owner: String = SolidShare.OWNER
+    override val resourceType: String = SolidShare.RESOURCE_TYPE
     override val catalogEntryType: String = "${SolidShare.NAMESPACE}CatalogEntry"
 }

@@ -456,6 +456,11 @@ public data class NewTicket(
     val relevantStartDate: String? = null,
     val relevantEndDate: String? = null,
     val beacons: List<TicketBeacon> = emptyList(),
+    /**
+     * `dcterms:source` — the URI of the original entity this ticket was copied from (a shared
+     * ticket added to the user's own wallet). Provenance and the duplicate guard for repeat adds.
+     */
+    val copiedFrom: String? = null,
 ) : Parcelable
 
 /**
@@ -503,6 +508,7 @@ public data class Ticket(
     val relevantStartDate: String? = null,
     val relevantEndDate: String? = null,
     val beacons: List<TicketBeacon> = emptyList(),
+    val copiedFrom: String? = null,
     val artifactUri: String? = null,
     val artifactVerified: Boolean? = null,
     val images: TicketImages? = null,
@@ -557,6 +563,7 @@ public data class Ticket(
                 relevantStartDate = core.relevantStartDate,
                 relevantEndDate = core.relevantEndDate,
                 beacons = core.beacons,
+                copiedFrom = core.copiedFrom,
                 artifactUri = ticketRdf.getArtifactUri(),
                 artifactVerified = ticketRdf.getArtifactVerified(),
                 images = ticketRdf.getImages(),

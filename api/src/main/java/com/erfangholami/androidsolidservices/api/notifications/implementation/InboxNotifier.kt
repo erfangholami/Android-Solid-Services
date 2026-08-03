@@ -10,6 +10,7 @@ import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.AS
 import com.erfangholami.androidsolidservices.shared.vocab.RDF
 import com.erfangholami.androidsolidservices.shared.vocab.SAI
+import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import java.net.URI
 import java.time.Instant
@@ -26,11 +27,14 @@ internal class InboxNotifier(
         receiverWebId: String,
         resourceUri: URI,
         mode: ShareMode,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = ownerWebId,
         receiverWebId = receiverWebId,
         slugPrefix = profile.slugs.offer,
-        body = buildOfferTurtle(ownerWebId, receiverWebId, resourceUri, mode),
+        body = buildOfferTurtle(ownerWebId, receiverWebId, resourceUri, mode) +
+                objectDescriptionTurtle(resourceUri, resourceType, resourceName),
     )
 
     suspend fun postUpdate(
@@ -38,11 +42,14 @@ internal class InboxNotifier(
         receiverWebId: String,
         resourceUri: URI,
         mode: ShareMode,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): InboxPostResult = postFromSenderToReceiver(
         senderWebId = ownerWebId,
         receiverWebId = receiverWebId,
         slugPrefix = profile.slugs.update,
-        body = buildUpdateTurtle(ownerWebId, receiverWebId, resourceUri, mode),
+        body = buildUpdateTurtle(ownerWebId, receiverWebId, resourceUri, mode) +
+                objectDescriptionTurtle(resourceUri, resourceType, resourceName),
     )
 
     suspend fun postUndo(
@@ -282,6 +289,25 @@ internal class InboxNotifier(
             appendLine("    <${AS.SUMMARY}>    ${escapeLiteral(reason)} ;")
         }
         appendLine("    <${AS.PUBLISHED}>  \"${Instant.now()}\"^^xsd:dateTime .")
+    }
+
+    private fun objectDescriptionTurtle(
+        resourceUri: URI,
+        resourceType: String?,
+        resourceName: String?,
+    ): String {
+        if (resourceType == null && resourceName == null) return ""
+        return buildString {
+            appendLine()
+            appendLine("<$resourceUri>")
+            if (resourceType != null) {
+                append("    rdf:type           <$resourceType> ")
+                appendLine(if (resourceName != null) ";" else ".")
+            }
+            if (resourceName != null) {
+                appendLine("    <${Schema.NAME}>  ${escapeLiteral(resourceName)} .")
+            }
+        }
     }
 
     private fun escapeLiteral(value: String): String {

@@ -13,9 +13,15 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ParsedShareLin
 public interface ShareLinkCodec {
     /**
      * Builds a deep link that opens [resourceUri] in the app, optionally
-     * carrying [ownerWebId] so the receiver can identify the sender.
+     * carrying [ownerWebId] so the receiver can identify the sender and
+     * [resourceType] — the RDF class IRI of a typed entity share — as a
+     * rendering hint for the receiver's confirmation UI.
      */
-    public fun deepLink(resourceUri: String, ownerWebId: String?): String
+    public fun deepLink(
+        resourceUri: String,
+        ownerWebId: String?,
+        resourceType: String? = null,
+    ): String
 
     /** Parses a deep link produced by [deepLink], or `null` if it isn't one. */
     public fun parse(deepLink: String): ParsedShareLink?

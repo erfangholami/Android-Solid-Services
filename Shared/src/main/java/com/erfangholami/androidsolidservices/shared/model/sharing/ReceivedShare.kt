@@ -12,6 +12,13 @@ import kotlinx.parcelize.Parcelize
  * the owner's original share time (the offer's `as:published`); when added by
  * scanning or pasting a link it is the moment it was added. `null` for legacy
  * rows written before timestamps existed.
+ *
+ * [resourceType] is the RDF class IRI of the entity the share carries (e.g.
+ * `https://schema.org/Ticket`) and [resourceName] its human title, as announced
+ * by the owner's notification or supplied when the share was added
+ * (`solidshare:resourceType` / `dcterms:title` on the index record). Both are
+ * `null` for plain file/folder shares and legacy rows — readers must render
+ * unknown or absent types generically.
  */
 @Parcelize
 public data class ReceivedShare(
@@ -19,4 +26,6 @@ public data class ReceivedShare(
     val mode: ShareMode,
     val resourceUri: String,
     val addedAt: String? = null,
+    val resourceType: String? = null,
+    val resourceName: String? = null,
 ) : Parcelable

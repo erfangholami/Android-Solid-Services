@@ -18,6 +18,7 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.rdf.patch.N3PatchBuilder
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.GivenSharesIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.sharing.ReceivedSharesIndexRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidError
@@ -33,8 +34,6 @@ import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import kotlinx.coroutines.delay
 import java.security.MessageDigest
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
@@ -276,6 +275,8 @@ internal class SharingManagerHelper {
             receiver = share.receiver,
             modes = setOf(share.mode),
             createdAt = share.createdAt,
+            resourceType = share.resourceType,
+            resourceName = share.resourceName,
         )
     }
 
@@ -286,60 +287,112 @@ internal class SharingManagerHelper {
         receiver: ShareReceiver,
         modes: Set<ShareMode>,
         createdAt: String?,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ) {
         val uri = givenSharesUri(podRoot)
         val receiverIri = receiver.toRdfSubject()
+        val write = GivenShareWrite(modes, createdAt, resourceType, resourceName)
         patchIndexWithRetry(webId, uri) {
             val index = readGivenIndex(webId, podRoot)
-            val nodes = index.getShareNodes(vocabulary)
-            val legacy = index.getLegacyFlatShares()
-            val node = nodes.firstOrNull {
-                it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
-            }
-            val legacyForPair = legacy.filter {
-                it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
-            }
-            val existingModes = node?.modes ?: emptySet()
-            val modesToInsert = modes - existingModes
-            val modesToDelete = existingModes - modes
-            val creatingNode = node == null
-            val createdToInsert = when {
-                creatingNode -> createdAt
-                node.createdAt == null -> createdAt
-                else -> null
-            }
-            val groupReferencedElsewhere = nodes.any {
-                it.receiver.toRdfSubject() == receiverIri && it.resourceUri != resourceUri
-            } || legacy.any {
-                it.receiver.toRdfSubject() == receiverIri && it.resourceUri != resourceUri
-            }
-            val needGroupMarker = receiver is ShareReceiver.GroupReceiver &&
-                    creatingNode && !groupReferencedElsewhere
-            val hasWork = modesToInsert.isNotEmpty() || modesToDelete.isNotEmpty() ||
-                    legacyForPair.isNotEmpty() || creatingNode || needGroupMarker ||
-                    createdToInsert != null
-            val patch = if (!hasWork) {
-                null
-            } else {
-                val subject = node?.subject ?: shareNodeIri(uri, receiverIri, resourceUri)
-                N3Patch.build {
-                    legacyForPair.forEach { delete(receiverIri, it.mode.toAclPredicate(), resourceUri) }
-                    if (creatingNode) {
-                        insert(subject, RDF.TYPE, vocabulary.shareType)
-                        insert(subject, vocabulary.resource, resourceUri)
-                        insert(subject, vocabulary.receiver, receiverIri)
-                    }
-                    modesToInsert.forEach { insert(subject, ACL.MODE, it.toAclPredicate()) }
-                    modesToDelete.forEach { delete(subject, ACL.MODE, it.toAclPredicate()) }
-                    createdToInsert?.let {
-                        insertLiteral(subject, DC.CREATED, it, datatype = XSD.DATE_TIME)
-                    }
-                    if (needGroupMarker) insert(receiverIri, RDF.TYPE, VCARD.GROUP)
-                }
-            }
+            val diff = givenShareDiff(index, uri, resourceUri, receiver, write)
+            val patch = diff?.let { buildGivenSharePatch(it, resourceUri, receiverIri) }
             patch to index.getHeaders().getETag()
         }
     }
+
+    private class GivenShareWrite(
+        val modes: Set<ShareMode>,
+        val createdAt: String?,
+        val resourceType: String?,
+        val resourceName: String?,
+    )
+
+    private class GivenShareDiff(
+        val subject: String,
+        val creatingNode: Boolean,
+        val legacyForPair: List<GivenShare>,
+        val modesToInsert: Set<ShareMode>,
+        val modesToDelete: Set<ShareMode>,
+        val createdToInsert: String?,
+        val typeChange: Pair<String?, String>?,
+        val nameChange: Pair<String?, String>?,
+        val needGroupMarker: Boolean,
+    ) {
+        val hasWork: Boolean
+            get() = modesToInsert.isNotEmpty() || modesToDelete.isNotEmpty() ||
+                legacyForPair.isNotEmpty() || creatingNode || needGroupMarker ||
+                createdToInsert != null || typeChange != null || nameChange != null
+    }
+
+    private fun givenShareDiff(
+        index: GivenSharesIndexRDF,
+        indexUri: String,
+        resourceUri: String,
+        receiver: ShareReceiver,
+        write: GivenShareWrite,
+    ): GivenShareDiff? {
+        val receiverIri = receiver.toRdfSubject()
+        val nodes = index.getShareNodes(vocabulary)
+        val legacy = index.getLegacyFlatShares()
+        val node = nodes.firstOrNull {
+            it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
+        }
+        val legacyForPair = legacy.filter {
+            it.receiver.toRdfSubject() == receiverIri && it.resourceUri == resourceUri
+        }
+        val existingModes = node?.modes ?: emptySet()
+        val creatingNode = node == null
+        val createdToInsert = when {
+            creatingNode -> write.createdAt
+            node.createdAt == null -> write.createdAt
+            else -> null
+        }
+        val groupReferencedElsewhere = nodes.any {
+            it.receiver.toRdfSubject() == receiverIri && it.resourceUri != resourceUri
+        } || legacy.any {
+            it.receiver.toRdfSubject() == receiverIri && it.resourceUri != resourceUri
+        }
+        return GivenShareDiff(
+            subject = node?.subject ?: shareNodeIri(indexUri, receiverIri, resourceUri),
+            creatingNode = creatingNode,
+            legacyForPair = legacyForPair,
+            modesToInsert = write.modes - existingModes,
+            modesToDelete = existingModes - write.modes,
+            createdToInsert = createdToInsert,
+            typeChange = tripleChange(node?.resourceType, write.resourceType),
+            nameChange = tripleChange(node?.resourceName, write.resourceName),
+            needGroupMarker = receiver is ShareReceiver.GroupReceiver &&
+                creatingNode && !groupReferencedElsewhere,
+        ).takeIf { it.hasWork }
+    }
+
+    private fun buildGivenSharePatch(
+        diff: GivenShareDiff,
+        resourceUri: String,
+        receiverIri: String,
+    ): N3Patch = N3Patch.build {
+        diff.legacyForPair.forEach { delete(receiverIri, it.mode.toAclPredicate(), resourceUri) }
+        if (diff.creatingNode) {
+            insert(diff.subject, RDF.TYPE, vocabulary.shareType)
+            insert(diff.subject, vocabulary.resource, resourceUri)
+            insert(diff.subject, vocabulary.receiver, receiverIri)
+        }
+        diff.modesToInsert.forEach { insert(diff.subject, ACL.MODE, it.toAclPredicate()) }
+        diff.modesToDelete.forEach { delete(diff.subject, ACL.MODE, it.toAclPredicate()) }
+        diff.createdToInsert?.let {
+            insertLiteral(diff.subject, DC.CREATED, it, datatype = XSD.DATE_TIME)
+        }
+        replaceIri(diff.subject, vocabulary.resourceType, diff.typeChange)
+        replaceLiteral(diff.subject, DC.TITLE, diff.nameChange)
+        if (diff.needGroupMarker) insert(receiverIri, RDF.TYPE, VCARD.GROUP)
+    }
+
+    private fun tripleChange(existing: String?, requested: String?): Pair<String?, String>? =
+        when {
+            requested == null || requested == existing -> null
+            else -> existing to requested
+        }
 
     suspend fun removeGivenShare(
         webId: String,
@@ -376,6 +429,8 @@ internal class SharingManagerHelper {
                         n.createdAt?.let {
                             deleteLiteral(n.subject, DC.CREATED, it, datatype = XSD.DATE_TIME)
                         }
+                        n.resourceType?.let { delete(n.subject, vocabulary.resourceType, it) }
+                        n.resourceName?.let { deleteLiteral(n.subject, DC.TITLE, it) }
                     }
                     legacyForPair.forEach { delete(receiverIri, it.mode.toAclPredicate(), resourceUri) }
                     if (receiver is ShareReceiver.GroupReceiver && !stillReferencedAfter) {
@@ -389,46 +444,67 @@ internal class SharingManagerHelper {
 
     suspend fun replaceReceivedShare(webId: String, podRoot: String, share: ReceivedShare) {
         val uri = receivedSharesUri(podRoot)
-        val ownerIri = share.ownerWebId
         patchIndexWithRetry(webId, uri) {
             val index = readReceivedIndex(webId, podRoot)
-            val node = index.getShareNodes(vocabulary).firstOrNull {
-                it.ownerWebId == ownerIri && it.resourceUri == share.resourceUri
-            }
-            val legacyForPair = index.getLegacyFlatShares().filter {
-                it.ownerWebId == ownerIri && it.resourceUri == share.resourceUri
-            }
-            val creatingNode = node == null
-            val modeChanged = node != null && node.mode != share.mode
-            val fillingAdded = node != null && node.addedAt == null && share.addedAt != null
-            val hasWork = creatingNode || modeChanged || legacyForPair.isNotEmpty() || fillingAdded
-            val patch = if (!hasWork) {
-                null
-            } else {
-                val subject = node?.subject ?: shareNodeIri(uri, ownerIri, share.resourceUri)
-                N3Patch.build {
-                    legacyForPair.forEach { delete(ownerIri, it.mode.toAclPredicate(), share.resourceUri) }
-                    if (creatingNode) {
-                        insert(subject, RDF.TYPE, vocabulary.shareType)
-                        insert(subject, vocabulary.resource, share.resourceUri)
-                        insert(subject, vocabulary.owner, ownerIri)
-                        insert(subject, ACL.MODE, share.mode.toAclPredicate())
-                        share.addedAt?.let {
-                            insertLiteral(subject, DC.CREATED, it, datatype = XSD.DATE_TIME)
-                        }
-                    } else {
-                        if (modeChanged) {
-                            delete(subject, ACL.MODE, node.mode.toAclPredicate())
-                            insert(subject, ACL.MODE, share.mode.toAclPredicate())
-                        }
-                        if (fillingAdded) {
-                            insertLiteral(subject, DC.CREATED, share.addedAt!!, datatype = XSD.DATE_TIME)
-                        }
-                    }
-                }
-            }
-            patch to index.getHeaders().getETag()
+            receivedSharePatch(index, uri, share) to index.getHeaders().getETag()
         }
+    }
+
+    private fun receivedSharePatch(
+        index: ReceivedSharesIndexRDF,
+        indexUri: String,
+        share: ReceivedShare,
+    ): N3Patch? {
+        val ownerIri = share.ownerWebId
+        val node = index.getShareNodes(vocabulary).firstOrNull {
+            it.ownerWebId == ownerIri && it.resourceUri == share.resourceUri
+        }
+        val legacyForPair = index.getLegacyFlatShares().filter {
+            it.ownerWebId == ownerIri && it.resourceUri == share.resourceUri
+        }
+        if (node == null) {
+            return buildNewReceivedNodePatch(
+                subject = shareNodeIri(indexUri, ownerIri, share.resourceUri),
+                share = share,
+                legacyForPair = legacyForPair,
+            )
+        }
+        val modeChanged = node.mode != share.mode
+        val fillingAdded = node.addedAt == null && share.addedAt != null
+        val typeChange = tripleChange(node.resourceType, share.resourceType)
+        val nameChange = tripleChange(node.resourceName, share.resourceName)
+        val hasWork = modeChanged || legacyForPair.isNotEmpty() ||
+            fillingAdded || typeChange != null || nameChange != null
+        if (!hasWork) return null
+        return N3Patch.build {
+            legacyForPair.forEach { delete(ownerIri, it.mode.toAclPredicate(), share.resourceUri) }
+            if (modeChanged) {
+                delete(node.subject, ACL.MODE, node.mode.toAclPredicate())
+                insert(node.subject, ACL.MODE, share.mode.toAclPredicate())
+            }
+            if (fillingAdded) {
+                insertLiteral(node.subject, DC.CREATED, share.addedAt!!, datatype = XSD.DATE_TIME)
+            }
+            replaceIri(node.subject, vocabulary.resourceType, typeChange)
+            replaceLiteral(node.subject, DC.TITLE, nameChange)
+        }
+    }
+
+    private fun buildNewReceivedNodePatch(
+        subject: String,
+        share: ReceivedShare,
+        legacyForPair: List<ReceivedShare>,
+    ): N3Patch = N3Patch.build {
+        legacyForPair.forEach {
+            delete(share.ownerWebId, it.mode.toAclPredicate(), share.resourceUri)
+        }
+        insert(subject, RDF.TYPE, vocabulary.shareType)
+        insert(subject, vocabulary.resource, share.resourceUri)
+        insert(subject, vocabulary.owner, share.ownerWebId)
+        insert(subject, ACL.MODE, share.mode.toAclPredicate())
+        share.addedAt?.let { insertLiteral(subject, DC.CREATED, it, datatype = XSD.DATE_TIME) }
+        share.resourceType?.let { insert(subject, vocabulary.resourceType, it) }
+        share.resourceName?.let { insertLiteral(subject, DC.TITLE, it) }
     }
 
     suspend fun removeReceivedShare(
@@ -458,6 +534,8 @@ internal class SharingManagerHelper {
                         n.addedAt?.let {
                             deleteLiteral(n.subject, DC.CREATED, it, datatype = XSD.DATE_TIME)
                         }
+                        n.resourceType?.let { delete(n.subject, vocabulary.resourceType, it) }
+                        n.resourceName?.let { deleteLiteral(n.subject, DC.TITLE, it) }
                     }
                     legacyForPair.forEach { delete(ownerWebId, it.mode.toAclPredicate(), resourceUri) }
                 }
@@ -520,5 +598,22 @@ internal sealed interface ReceivedAccess {
 internal fun String.ensureTrailingSlash(): String =
     if (endsWith("/")) this else "$this/"
 
-internal fun nowIsoDateTime(): String =
-    Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()
+private fun N3PatchBuilder.replaceIri(
+    subject: String,
+    predicate: String,
+    change: Pair<String?, String>?,
+) {
+    val (old, new) = change ?: return
+    old?.let { delete(subject, predicate, it) }
+    insert(subject, predicate, new)
+}
+
+private fun N3PatchBuilder.replaceLiteral(
+    subject: String,
+    predicate: String,
+    change: Pair<String?, String>?,
+) {
+    val (old, new) = change ?: return
+    old?.let { deleteLiteral(subject, predicate, it) }
+    insertLiteral(subject, predicate, new)
+}
