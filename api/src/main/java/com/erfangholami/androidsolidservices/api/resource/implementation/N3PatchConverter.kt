@@ -1,5 +1,6 @@
 package com.erfangholami.androidsolidservices.api.resource.implementation
 
+import com.erfangholami.androidsolidservices.api.transport.SolidHttpClient
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 
 /**

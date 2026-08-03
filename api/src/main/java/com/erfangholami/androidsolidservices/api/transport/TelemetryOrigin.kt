@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.api.http
+package com.erfangholami.androidsolidservices.api.transport
 
 import java.net.URI
 

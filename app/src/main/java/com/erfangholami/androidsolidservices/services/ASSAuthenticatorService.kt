@@ -14,8 +14,8 @@ import com.erfangholami.androidsolidservices.services.dispatch.deliverError
 import com.erfangholami.androidsolidservices.services.dispatch.dispatchBoolean
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.UNKNOWN
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode.UNKNOWN
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers

@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.api.http
+package com.erfangholami.androidsolidservices.api.transport
 
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import okhttp3.Headers

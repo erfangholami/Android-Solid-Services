@@ -4,7 +4,7 @@ import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
 import com.erfangholami.androidsolidservices.api.resource.StreamingResource
-import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient
+import com.erfangholami.androidsolidservices.api.transport.SolidHttpClient
 import com.erfangholami.androidsolidservices.shared.model.resource.Resource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidMetadata

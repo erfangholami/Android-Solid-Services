@@ -24,12 +24,12 @@ import com.erfangholami.androidsolidservices.services.dispatch.handle
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.IASSResourceService
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.NULL_WEBID
 import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode.NULL_WEBID
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException

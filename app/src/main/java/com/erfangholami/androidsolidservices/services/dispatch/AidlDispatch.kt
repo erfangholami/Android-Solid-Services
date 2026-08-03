@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.os.Parcelable
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult

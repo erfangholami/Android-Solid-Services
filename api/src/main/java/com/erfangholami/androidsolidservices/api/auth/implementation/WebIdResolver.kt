@@ -1,8 +1,8 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
-import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
-import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient
 import com.erfangholami.androidsolidservices.api.resource.implementation.SolidResourceParser
+import com.erfangholami.androidsolidservices.api.transport.SolidHttpClient
+import com.erfangholami.androidsolidservices.api.transport.SolidRawResponse
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId

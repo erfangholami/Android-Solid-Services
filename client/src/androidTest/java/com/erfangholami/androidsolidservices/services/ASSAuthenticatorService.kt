@@ -6,8 +6,8 @@ import android.os.IBinder
 import com.erfangholami.androidsolidservices.client.internal.fakes.CallLog
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import java.io.File
 
 /**

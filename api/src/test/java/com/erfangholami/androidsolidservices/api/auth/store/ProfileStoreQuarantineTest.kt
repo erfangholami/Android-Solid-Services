@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.api.repository.implementation
+package com.erfangholami.androidsolidservices.api.auth.store
 
 import android.app.Application
 import com.erfangholami.androidsolidservices.api.auth.ProfileList

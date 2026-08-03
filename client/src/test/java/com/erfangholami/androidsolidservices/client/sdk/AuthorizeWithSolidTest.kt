@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_PACKAGE_NAME
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.model.auth.SolidAuthorization
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

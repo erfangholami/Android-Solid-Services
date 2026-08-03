@@ -7,13 +7,13 @@ import com.erfangholami.androidsolidservices.client.internal.fakes.CallLog
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 
 /**
  * Stands in for the ASS app's data-modules service, hosted in `:fakeass`.

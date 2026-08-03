@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.api.resource.implementation
+package com.erfangholami.androidsolidservices.api.transport
 
 import com.erfangholami.androidsolidservices.api.auth.SolidSession
 import com.erfangholami.androidsolidservices.shared.model.resource.NonRDFResource

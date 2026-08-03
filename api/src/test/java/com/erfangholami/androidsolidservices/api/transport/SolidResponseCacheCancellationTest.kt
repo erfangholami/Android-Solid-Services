@@ -1,6 +1,6 @@
-package com.erfangholami.androidsolidservices.api.resource.implementation
+package com.erfangholami.androidsolidservices.api.transport
 
-import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
+import com.erfangholami.androidsolidservices.api.transport.SolidRawResponse
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch

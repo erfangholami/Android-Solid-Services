@@ -1,14 +1,13 @@
-package com.erfangholami.androidsolidservices.api.resource.implementation
+package com.erfangholami.androidsolidservices.api.transport
 
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.SolidSession
-import com.erfangholami.androidsolidservices.api.http.SolidRawResponse
-import com.erfangholami.androidsolidservices.api.http.telemetryOrigin
 import com.erfangholami.androidsolidservices.api.resource.StreamingResource
-import com.erfangholami.androidsolidservices.api.resource.implementation.SolidHttpClient.Companion.debugTrace
-import com.erfangholami.androidsolidservices.api.transport.AuthChallenge
-import com.erfangholami.androidsolidservices.api.transport.isOwnOrigin
-import com.erfangholami.androidsolidservices.api.transport.warrantsTokenRefresh
+import com.erfangholami.androidsolidservices.api.resource.implementation.N3PatchConverter
+import com.erfangholami.androidsolidservices.api.resource.implementation.SolidResourceParser
+import com.erfangholami.androidsolidservices.api.transport.SolidHttpClient.Companion.debugTrace
+import com.erfangholami.androidsolidservices.api.transport.SolidRawResponse
+import com.erfangholami.androidsolidservices.api.transport.telemetryOrigin
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
 import com.erfangholami.androidsolidservices.shared.http.HTTPHeaderName
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders

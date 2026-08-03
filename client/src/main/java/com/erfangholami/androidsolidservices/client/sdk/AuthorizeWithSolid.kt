@@ -6,8 +6,8 @@ import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_AUTHORIZE_ACTIVITY
 import com.erfangholami.androidsolidservices.client.internal.SdkTarget
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.model.auth.SolidAuthorization
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 
 /**
  * The outcome of an [AuthorizeWithSolid] launch.

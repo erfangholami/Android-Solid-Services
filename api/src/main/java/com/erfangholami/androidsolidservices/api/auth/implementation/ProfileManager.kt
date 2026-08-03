@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.erfangholami.androidsolidservices.api.auth.Profile
 import com.erfangholami.androidsolidservices.api.auth.ProfileList
-import com.erfangholami.androidsolidservices.api.repository.UserRepository
+import com.erfangholami.androidsolidservices.api.auth.store.UserRepository
 import com.erfangholami.androidsolidservices.shared.model.profile.SolidAccount
 import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
 import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute

@@ -26,7 +26,7 @@ package com.erfangholami.androidsolidservices.api.exceptions
  * These exceptions are thrown by `SharingManager` / `NotificationsManager`
  * implementations and surfaced as a typed `SolidResult.Failure(SolidError…)` at
  * the public boundary. The bound services map them to
- * [com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode]
+ * [com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode]
  * for IPC transport; the client SDK reconstructs the typed exception.
  */
 public sealed class SharingException(message: String) : Exception(message) {

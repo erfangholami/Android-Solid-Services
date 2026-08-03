@@ -3,7 +3,7 @@ package com.erfangholami.androidsolidservices.domain.usecase
 import com.erfangholami.androidsolidservices.domain.repository.AccessGrantRepository
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.repository.ResourceAccessRepository
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import javax.inject.Inject
 
 sealed interface AccessCheck {

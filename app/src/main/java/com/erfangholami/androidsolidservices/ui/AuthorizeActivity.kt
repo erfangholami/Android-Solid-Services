@@ -10,8 +10,8 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.model.auth.SolidAuthorization
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.ui.theme.ASSAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 

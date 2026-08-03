@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.shared.error
+package com.erfangholami.androidsolidservices.shared.result
 
 /**
  * Integer error codes used to classify exceptions transported over the AIDL IPC boundary.

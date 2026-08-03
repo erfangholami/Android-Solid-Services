@@ -26,18 +26,18 @@ import net.openid.appauth.AuthState
  * a specific account before issuing pod operations.
  */
 @Serializable
-public data class ProfileList(
+internal data class ProfileList(
     @Serializable(with = ProfileMapSerializer::class)
     val profiles: Map<String, Profile> = mapOf()
 )
 
 /** Returns `true` if [webId] has an active profile in this list. */
-public fun ProfileList.contains(webId: String): Boolean {
+internal fun ProfileList.contains(webId: String): Boolean {
     return profiles.containsKey(webId)
 }
 
 /** Returns the [Profile] for [webId], or `null` if not signed in. */
-public fun ProfileList.getProfileOrNull(webId: String): Profile? {
+internal fun ProfileList.getProfileOrNull(webId: String): Profile? {
     return profiles[webId]
 }
 
@@ -51,7 +51,7 @@ public fun ProfileList.getProfileOrNull(webId: String): Profile? {
  *   profiles created before per-account keys existed; those fall back to the shared legacy key.
  */
 @Serializable(with = ProfileSerializer::class)
-public data class Profile(
+internal data class Profile(
     val authState: AuthState = AuthState(),
     val userInfo: UserInfo? = null,
     val webId: WebId? = null,
@@ -66,7 +66,7 @@ public data class Profile(
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Serializer(forClass = Map::class)
-public class ProfileMapSerializer(
+internal class ProfileMapSerializer(
     private val keySerializer: KSerializer<String>,
     private val valueSerializer: KSerializer<Profile>
 ) : KSerializer<Map<String, Profile>> {
@@ -89,7 +89,7 @@ public class ProfileMapSerializer(
  * [Profile.webId] via [WebId.writeToString]. Empty string is used as the absent sentinel
  * for nullable fields so the format remains a flat JSON object with three string fields.
  */
-public class ProfileSerializer : KSerializer<Profile> {
+internal class ProfileSerializer : KSerializer<Profile> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Profile") {
         element<String>("authState")

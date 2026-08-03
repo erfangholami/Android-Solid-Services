@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.client.sdk
 
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

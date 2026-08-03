@@ -1,7 +1,7 @@
 package com.erfangholami.androidsolidservices.client.internal
 
 import com.erfangholami.androidsolidservices.client.sdk.SolidException
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.suspendCancellableCoroutine

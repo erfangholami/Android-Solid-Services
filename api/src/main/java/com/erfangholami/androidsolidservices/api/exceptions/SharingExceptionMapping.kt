@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.api.exceptions
 
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidError
 
 /**

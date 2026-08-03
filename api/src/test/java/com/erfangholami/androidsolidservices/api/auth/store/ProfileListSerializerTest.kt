@@ -1,7 +1,7 @@
-package com.erfangholami.androidsolidservices.api.repository.implementation
+package com.erfangholami.androidsolidservices.api.auth.store
 
 import androidx.datastore.core.CorruptionException
-import com.erfangholami.androidsolidservices.api.repository.implementation.UserRepositoryImplementation.Companion.ProfileListSerializer
+import com.erfangholami.androidsolidservices.api.auth.store.UserRepositoryImplementation.Companion.ProfileListSerializer
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals

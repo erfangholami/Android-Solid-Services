@@ -3,9 +3,9 @@ package com.erfangholami.androidsolidservices.services.dispatch
 import android.os.Bundle
 import android.os.IBinder
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi

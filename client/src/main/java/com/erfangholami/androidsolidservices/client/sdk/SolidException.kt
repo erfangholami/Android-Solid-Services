@@ -4,7 +4,7 @@ import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidNotL
 import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidResourceException
 import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidServicesDrawPermissionDeniedException
 import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidSharingException
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 
 /**
  * Base type for every error surfaced by the client SDK.

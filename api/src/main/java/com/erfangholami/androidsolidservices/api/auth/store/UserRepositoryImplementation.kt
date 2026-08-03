@@ -1,4 +1,4 @@
-package com.erfangholami.androidsolidservices.api.repository.implementation
+package com.erfangholami.androidsolidservices.api.auth.store
 
 import android.content.Context
 import android.util.Log
@@ -13,7 +13,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.erfangholami.androidsolidservices.api.auth.Profile
 import com.erfangholami.androidsolidservices.api.auth.ProfileList
 import com.erfangholami.androidsolidservices.api.auth.contains
-import com.erfangholami.androidsolidservices.api.repository.UserRepository
+import com.erfangholami.androidsolidservices.api.auth.store.UserRepository
 import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
 import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
 import kotlinx.coroutines.Dispatchers

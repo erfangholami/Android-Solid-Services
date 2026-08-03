@@ -8,8 +8,8 @@ import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
 import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
-import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
+import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 
 /**
  * Stands in for the ASS app's notifications service, hosted in `:fakeass`.
