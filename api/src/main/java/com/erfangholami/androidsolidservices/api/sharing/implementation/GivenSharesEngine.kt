@@ -40,20 +40,30 @@ internal class GivenSharesEngine(
 
         val verified = mutableListOf<GivenShare>()
         val observedResourceUris = mutableSetOf<String>()
+        val goneResourceUris = mutableSetOf<String>()
         stored.map { it.resourceUri }.distinct().forEach { resourceUri ->
-            val live = runCatching {
-                helper.getSharesFromAcl(webId, encodeUriString(resourceUri).toString())
-            }.onSuccess {
+            val canonicalUri = encodeUriString(resourceUri).toString()
+            val live = runCatching { helper.getSharesFromAcl(webId, canonicalUri) }
+            if (live.isSuccess) {
                 observedResourceUris += resourceUri
-            }.onFailure { t ->
+                verified += live.getOrDefault(emptyList())
+                return@forEach
+            }
+            if (helper.resourceIsGone(webId, canonicalUri)) {
+                goneResourceUris += resourceUri
+                Log.i(
+                    TAG,
+                    "refreshGivenShares: $resourceUri no longer exists on the pod; " +
+                            "pruning its stale index rows.",
+                )
+            } else {
                 Log.w(
                     TAG,
                     "refreshGivenShares: ACL read failed for $resourceUri; " +
                             "skipping prune for this resource to avoid losing index rows.",
-                    t,
+                    live.exceptionOrNull(),
                 )
-            }.getOrDefault(emptyList())
-            verified += live
+            }
         }
 
         val verifiedByPair: Map<Pair<String, String>, Set<ShareMode>> =
@@ -85,19 +95,69 @@ internal class GivenSharesEngine(
         }
 
         (storedPairs - verifiedByPair.keys).forEach { pair ->
-            if (pair.second !in observedResourceUris) return@forEach
+            if (pair.second !in observedResourceUris && pair.second !in goneResourceUris) {
+                return@forEach
+            }
             val receiver = storedPairToReceiver[pair] ?: return@forEach
             helper.removeGivenShare(webId, podRoot, pair.second, receiver)
         }
 
-        verified.distinct()
+        helper.readGivenShares(webId, podRoot)
     }
 
     suspend fun getGivenSharesForResource(
         webId: String,
         resourceUri: String,
     ): SolidResult<List<GivenShare>> = wrapSharing {
-        helper.getSharesFromAcl(webId, encodeUriString(resourceUri).toString())
+        val canonicalUri = encodeUriString(resourceUri).toString()
+        val live = runCatching { helper.getSharesFromAcl(webId, canonicalUri) }
+        if (live.isSuccess) return@wrapSharing live.getOrDefault(emptyList())
+        if (!helper.resourceIsGone(webId, canonicalUri)) throw live.exceptionOrNull()!!
+        Log.i(
+            TAG,
+            "getGivenSharesForResource: $resourceUri no longer exists; returning the stored " +
+                    "index rows so the caller can still clear them.",
+        )
+        val podRoot = helper.getPodRoot(webId)
+        helper.readGivenShares(webId, podRoot).filter { it.resourceUri == canonicalUri }
+    }
+
+    suspend fun purgeGivenShares(
+        webId: String,
+        resourceUri: String,
+        includeDescendants: Boolean,
+        notifyReceivers: Boolean,
+    ): SolidResult<List<GivenShare>> = wrapSharing {
+        val podRoot = helper.getPodRoot(webId)
+        helper.ensurePrivateSharesContainer(webId, podRoot)
+        val canonicalUri = encodeUriString(resourceUri).toString()
+        val exactUris = setOf(canonicalUri, resourceUri)
+        val prefixes = exactUris.map { it.ensureTrailingSlash() }.toSet()
+        val affected = helper.readGivenShares(webId, podRoot).filter { row ->
+            row.resourceUri in exactUris ||
+                    (includeDescendants && prefixes.any { row.resourceUri.startsWith(it) })
+        }
+        affected.distinctBy { it.receiver.toRdfSubject() to it.resourceUri }.forEach { row ->
+            runCatching {
+                helper.removeGivenShare(webId, podRoot, row.resourceUri, row.receiver)
+            }.onFailure { t ->
+                Log.w(TAG, "purgeGivenShares: could not remove the row for ${row.resourceUri}.", t)
+            }
+            val receiver = row.receiver
+            if (notifyReceivers && receiver is ShareReceiver.WebIdReceiver) {
+                runCatching {
+                    notifications.sendUndo(webId, receiver.webId, row.resourceUri)
+                }.onFailure { t ->
+                    Log.w(
+                        TAG,
+                        "purgeGivenShares: could not tell ${receiver.webId} that " +
+                                "${row.resourceUri} is gone; their list self-heals on refresh.",
+                        t,
+                    )
+                }
+            }
+        }
+        affected
     }
 
     suspend fun rebuildGivenIndex(
@@ -262,7 +322,15 @@ internal class GivenSharesEngine(
         val podRoot = helper.getPodRoot(webId)
         helper.ensurePrivateSharesContainer(webId, podRoot)
         val canonicalUri = encodeUriString(resourceUri).toString()
-        helper.revokeAccess(webId, canonicalUri, receiver)
+        val revoked = runCatching { helper.revokeAccess(webId, canonicalUri, receiver) }
+        if (revoked.isFailure) {
+            if (!helper.resourceIsGone(webId, canonicalUri)) throw revoked.exceptionOrNull()!!
+            Log.i(
+                TAG,
+                "revokeShare: $resourceUri no longer exists, so there is no authorization left " +
+                        "to narrow; removing its stale index row.",
+            )
+        }
         runCatching {
             helper.removeGivenShare(webId, podRoot, canonicalUri, receiver)
         }.onFailure { t ->

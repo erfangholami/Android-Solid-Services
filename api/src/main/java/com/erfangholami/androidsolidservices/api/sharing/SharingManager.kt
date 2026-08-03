@@ -59,7 +59,13 @@ public interface SharingManager {
     /**
      * Re-validates each tracked given share by re-reading the relevant
      * resource ACL. Drops any entries whose ACL no longer grants the receiver
-     * the recorded mode and persists the verified list back to the index.
+     * the recorded mode — and any whose resource the server now answers 404 for
+     * — then persists the verified list back to the index.
+     *
+     * Returns **the index's resulting state**, not the bare ACL reading, so the
+     * result matches [getStoredGivenShares] row for row: an ACL grant carries a
+     * receiver and a mode but knows nothing of the record's `dcterms:created` or
+     * its typed-entity marks, and a refresh must not drop what it cannot see.
      */
     public suspend fun refreshGivenShares(
         webId: String,
@@ -197,12 +203,38 @@ public interface SharingManager {
      * Removes the authorization for [receiver] on [resourceUri] and removes
      * the matching index triple. If [receiver] is a WebID, an `as:Undo` is
      * posted to their inbox (best-effort).
+     *
+     * When [resourceUri] no longer exists (the server answers 404) there is no
+     * authorization left to narrow, so the stale index row is removed on its own —
+     * a deleted resource never strands its bookkeeping.
      */
     public suspend fun revokeShare(
         webId: String,
         resourceUri: String,
         receiver: ShareReceiver,
     ): SolidResult<Unit>
+
+    /**
+     * Drops the given-shares index rows for [resourceUri] — and, when
+     * [includeDescendants] is true, for everything beneath it — **without touching any
+     * access control**. Call it right after deleting a resource: the authorizations died
+     * with the resource, and the index rows would otherwise linger forever, pointing at
+     * something that cannot be read or revoked.
+     *
+     * Deleting a container removes its members too, so the recursive form is the correct
+     * default there: a ticket's `{uuid}/` container, for instance, also carries the rows of
+     * its publicly shared `artifact.pkpass`.
+     *
+     * When [notifyReceivers] is true, each WebID receiver gets a best-effort `as:Undo`, so
+     * their "shared with me" list drops the entry without waiting for its next re-validation.
+     * Returns the rows that were removed.
+     */
+    public suspend fun purgeGivenShares(
+        webId: String,
+        resourceUri: String,
+        includeDescendants: Boolean = true,
+        notifyReceivers: Boolean = true,
+    ): SolidResult<List<GivenShare>>
 
     /**
      * Returns the locally-tracked received shares (fast). Use

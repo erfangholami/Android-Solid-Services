@@ -147,6 +147,14 @@ internal class SharingManagerImplementation : SharingManager {
         receiver: ShareReceiver,
     ): SolidResult<Unit> = givenEngine.revokeShare(webId, resourceUri, receiver)
 
+    override suspend fun purgeGivenShares(
+        webId: String,
+        resourceUri: String,
+        includeDescendants: Boolean,
+        notifyReceivers: Boolean,
+    ): SolidResult<List<GivenShare>> =
+        givenEngine.purgeGivenShares(webId, resourceUri, includeDescendants, notifyReceivers)
+
     override suspend fun getStoredReceivedShares(webId: String): SolidResult<List<ReceivedShare>> =
         receivedEngine.getStoredReceivedShares(webId)
 

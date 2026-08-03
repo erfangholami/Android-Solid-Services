@@ -256,6 +256,13 @@ internal class SharingManagerHelper {
     suspend fun getSharesFromAcl(webId: String, resourceUri: String): List<GivenShare> =
         backendFor(webId, resourceUri).listShares(webId, resourceUri)
 
+    /**
+     * Whether [resourceUri] is definitively gone (the server answered 404). A transport or
+     * authorization failure reads as "still there", so a flaky network never prunes index rows.
+     */
+    suspend fun resourceIsGone(webId: String, resourceUri: String): Boolean =
+        rm.exists(webId, resourceUri).getOrDefault(true).not()
+
     suspend fun readGivenIndex(webId: String, podRoot: String): GivenSharesIndexRDF =
         rm.read(webId, givenSharesUri(podRoot), GivenSharesIndexRDF::class.java).getOrThrow()
 

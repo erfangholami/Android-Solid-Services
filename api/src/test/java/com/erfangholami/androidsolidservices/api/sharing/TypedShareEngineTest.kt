@@ -24,6 +24,7 @@ import com.erfangholami.androidsolidservices.shared.vocab.PIM
 import com.erfangholami.androidsolidservices.shared.vocab.Schema
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -120,6 +121,108 @@ class TypedShareEngineTest {
             "revoke must delete every triple of the share node",
             pod.quadsOf("${podRoot}solidshare/shares/given_shares.ttl")
                 .none { it.subject.contains("#share-") },
+        )
+    }
+
+    @Test
+    fun `refresh returns the typed index rows, not the bare ACL grants`() = runBlocking {
+        manager().createShare(
+            alice, container, ShareMode.READ, bob,
+            notifyReceiver = false, resourceType = Schema.TICKET, resourceName = "Coldplay",
+        ).getOrThrow()
+
+        val refreshed = manager().refreshGivenShares(alice).getOrThrow().single()
+
+        assertEquals(
+            "an ACL grant carries no entity type, so refresh must return the index row",
+            Schema.TICKET,
+            refreshed.resourceType,
+        )
+        assertEquals("Coldplay", refreshed.resourceName)
+        assertNotNull("the record's creation time must survive a refresh too", refreshed.createdAt)
+    }
+
+    @Test
+    fun `purging a deleted container drops its rows and every row beneath it`() = runBlocking {
+        manager().createShare(
+            alice, container, ShareMode.READ, bob,
+            notifyReceiver = false, resourceType = Schema.TICKET, resourceName = "Coldplay",
+        ).getOrThrow()
+        manager().createShare(
+            alice, artifact, ShareMode.READ, ShareReceiver.Public, notifyReceiver = false,
+        ).getOrThrow()
+        val unrelated = "https://alice.pod/notes/n1"
+        manager().createShare(alice, unrelated, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+
+        pod.deleteEverythingUnder(container)
+        val removed = manager().purgeGivenShares(alice, container).getOrThrow()
+
+        assertEquals(
+            setOf(container, artifact),
+            removed.map { it.resourceUri }.toSet(),
+        )
+        assertEquals(
+            listOf(unrelated),
+            manager().getStoredGivenShares(alice).getOrThrow().map { it.resourceUri },
+        )
+    }
+
+    @Test
+    fun `purging a file leaves sibling rows alone`() = runBlocking {
+        val file = "https://alice.pod/notes/n1"
+        val sibling = "https://alice.pod/notes/n2"
+        manager().createShare(alice, file, ShareMode.READ, bob, notifyReceiver = false).getOrThrow()
+        manager().createShare(alice, sibling, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+
+        manager().purgeGivenShares(alice, file).getOrThrow()
+
+        assertEquals(
+            listOf(sibling),
+            manager().getStoredGivenShares(alice).getOrThrow().map { it.resourceUri },
+        )
+    }
+
+    @Test
+    fun `revoking a share whose resource is gone still clears the stale row`() = runBlocking {
+        manager().createShare(alice, container, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+        pod.deleteEverythingUnder(container)
+
+        manager().revokeShare(alice, container, bob).getOrThrow()
+
+        assertTrue(manager().getStoredGivenShares(alice).getOrThrow().isEmpty())
+    }
+
+    @Test
+    fun `refresh prunes the rows of a resource the pod no longer has`() = runBlocking {
+        val surviving = "https://alice.pod/notes/n1"
+        manager().createShare(alice, container, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+        manager().createShare(alice, surviving, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+
+        pod.deleteEverythingUnder(container)
+        manager().refreshGivenShares(alice).getOrThrow()
+
+        assertEquals(
+            listOf(surviving),
+            manager().getStoredGivenShares(alice).getOrThrow().map { it.resourceUri },
+        )
+    }
+
+    @Test
+    fun `a resource that only fails transiently keeps its rows`() = runBlocking {
+        manager().createShare(alice, container, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+
+        pod.failHeadFor += container
+        manager().refreshGivenShares(alice).getOrThrow()
+
+        assertEquals(
+            listOf(container),
+            manager().getStoredGivenShares(alice).getOrThrow().map { it.resourceUri },
         )
     }
 
