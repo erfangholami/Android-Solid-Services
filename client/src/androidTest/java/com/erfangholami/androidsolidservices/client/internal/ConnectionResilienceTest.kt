@@ -7,9 +7,9 @@ import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
 import com.erfangholami.androidsolidservices.client.sdk.SolidException
 import com.erfangholami.androidsolidservices.client.sdk.SolidResourceClient
 import com.erfangholami.androidsolidservices.client.sdk.SolidSharingClient
+import com.erfangholami.androidsolidservices.client.sdk.booleanBridge
 import com.erfangholami.androidsolidservices.services.ASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -67,12 +67,7 @@ class ConnectionResilienceTest {
                 auth.await<Boolean> { service, bridge ->
                     service.disconnectFromSolid(
                         ASSAuthenticatorService.HANG_ONCE_WEB_ID,
-                        object : IASSLogoutCallback.Stub() {
-                            override fun onResult(granted: Boolean) = bridge.onResult(granted)
-
-                            override fun onError(errorCode: Int, errorMessage: String?) =
-                                bridge.onError(errorCode, errorMessage)
-                        },
+                        booleanBridge(bridge),
                     )
                 }
             }

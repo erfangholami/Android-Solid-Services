@@ -1,38 +1,32 @@
 package com.erfangholami.androidsolidservices.shared;
 
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback;
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback;
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback;
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry;
-import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare;
-import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare;
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest;
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification;
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSAccessGrantListCallback;
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSCatalogEntryListCallback;
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareCallback;
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback;
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback;
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback;
 
 /**
  * AIDL IPC contract for Solid resource sharing. Manages the full sharing lifecycle across
  * processes: creating and revoking ACL-based shares, tracking given and received shares,
- * handling incoming share requests, and maintaining the owner's public catalog. Results are
- * delivered via one-way callbacks. Third-party apps normally use the higher-level client SDK
+ * handling incoming share requests, and maintaining the owner's public catalog. Results are delivered on the two generic callbacks, IASSParcelableCallback and
+ * IASSParcelableListCallback, whose Bundle envelope is described by
+ * `shared/ipc/IpcEnvelope.kt`. Third-party apps normally use the higher-level client SDK
  * rather than binding here directly.
  */
 interface IASSharingService {
 
-    void getStoredGivenShares(String webId, IASSGivenShareListCallback callback);
+    void getStoredGivenShares(String webId, IASSParcelableListCallback callback);
 
-    void refreshGivenShares(String webId, IASSGivenShareListCallback callback);
+    void refreshGivenShares(String webId, IASSParcelableListCallback callback);
 
     void getGivenSharesForResource(
         String webId,
         String resourceUri,
-        IASSGivenShareListCallback callback
+        IASSParcelableListCallback callback
     );
 
-    /** mode: the ShareMode ordinal (Read=0, Append=1, Write=2). receiverKind: ShareReceiver.KIND_* — WebID=0, group=1, public=2. receiverValue: the WebID or group URI when receiverKind targets a specific identity; null for public. Decode both with ShareMode.fromOrdinal / ShareReceiver.fromKindOrNull: these arrive from an exported service and may name values this build does not know. */
+    /** mode: the ShareMode ordinal (Read=0, Append=1, Write=2). receiverKind: ShareReceiver.KIND_* — WebID=0, group=1, public=2. receiverValue: the WebID or group URI when receiverKind targets a specific identity; null for public. Decode both with ShareMode.fromOrdinal / ShareReceiver.fromKindOrNull: these arrive from an exported service and may name values this build does not know. resourceType/resourceName mark a typed (entity) share — the entity's RDF class IRI and human title; null for plain resource shares. */
     void createShare(
         String webId,
         String resourceUri,
@@ -40,7 +34,9 @@ interface IASSharingService {
         int receiverKind,
         @nullable String receiverValue,
         boolean notifyReceiver,
-        IASSGivenShareCallback callback
+        @nullable String resourceType,
+        @nullable String resourceName,
+        IASSParcelableCallback callback
     );
 
     void updateShare(
@@ -49,7 +45,9 @@ interface IASSharingService {
         int mode,
         int receiverKind,
         @nullable String receiverValue,
-        IASSGivenShareCallback callback
+        @nullable String resourceType,
+        @nullable String resourceName,
+        IASSParcelableCallback callback
     );
 
     void revokeShare(
@@ -57,70 +55,81 @@ interface IASSharingService {
         String resourceUri,
         int receiverKind,
         @nullable String receiverValue,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
-    void getStoredReceivedShares(String webId, IASSReceivedShareListCallback callback);
+    /** Drops the index rows of a deleted resource (and, with includeDescendants, everything under it) without touching access control. Returns the removed rows. */
+    void purgeGivenShares(
+        String webId,
+        String resourceUri,
+        boolean includeDescendants,
+        boolean notifyReceivers,
+        IASSParcelableListCallback callback
+    );
 
-    void refreshReceivedShares(String webId, IASSReceivedShareListCallback callback);
+    void getStoredReceivedShares(String webId, IASSParcelableListCallback callback);
+
+    void refreshReceivedShares(String webId, IASSParcelableListCallback callback);
 
     void addReceivedShare(
         String webId,
         String resourceUri,
-        IASSReceivedShareCallback callback
+        @nullable String resourceType,
+        @nullable String resourceName,
+        IASSParcelableCallback callback
     );
 
     void removeReceivedShare(
         String webId,
         String resourceUri,
         String ownerWebId,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     void getAccessGrants(
         String webId,
-        IASSAccessGrantListCallback callback
+        IASSParcelableListCallback callback
     );
 
     void acceptShareRequest(
         String webId,
         in ShareRequest request,
-        IASSGivenShareCallback callback
+        IASSParcelableCallback callback
     );
 
     void rejectShareRequest(
         String webId,
         in ShareRequest request,
         @nullable String reason,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Rebuilds the given-shares index by scanning pod ACLs; use when the index may be out of sync. */
-    void rebuildGivenIndex(String webId, IASSGivenShareListCallback callback);
+    void rebuildGivenIndex(String webId, IASSParcelableListCallback callback);
 
     void publishCatalogEntry(
         String webId,
         in CatalogEntry entry,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     void removeCatalogEntry(
         String webId,
         String resourceUri,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     void getOwnerCatalog(
         String viewerWebId,
         String ownerWebId,
-        IASSCatalogEntryListCallback callback
+        IASSParcelableListCallback callback
     );
 
     /** Strips every share from the resource, leaving it owner-only. */
-    void makePrivate(String webId, String resourceUri, IASSUnitCallback callback);
+    void makePrivate(String webId, String resourceUri, IASSParcelableCallback callback);
 
     /** Re-asserts the owner's acl:Control on a resource whose ACL lost it. */
-    void repairOwnerControl(String webId, String resourceUri, IASSUnitCallback callback);
+    void repairOwnerControl(String webId, String resourceUri, IASSParcelableCallback callback);
 
     /**
      * Reconciles the received-shares index against inbox notifications: an Offer/Accept adds
@@ -129,6 +138,6 @@ interface IASSharingService {
     void syncReceivedShares(
         String webId,
         in List<ShareNotification> notifications,
-        IASSReceivedShareListCallback callback
+        IASSParcelableListCallback callback
     );
 }

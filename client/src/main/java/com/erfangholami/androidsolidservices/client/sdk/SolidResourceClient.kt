@@ -3,23 +3,18 @@ package com.erfangholami.androidsolidservices.client.sdk
 import android.content.Context
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
+import android.os.Parcelable
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_CRUD_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.CallbackBridge
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
-import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
 import com.erfangholami.androidsolidservices.shared.IASSResourceService
-import com.erfangholami.androidsolidservices.shared.IASSStringCallback
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
+import com.erfangholami.androidsolidservices.shared.ipc.parcelable
+import com.erfangholami.androidsolidservices.shared.ipc.parcelableList
+import com.erfangholami.androidsolidservices.shared.ipc.streamContentLength
+import com.erfangholami.androidsolidservices.shared.ipc.streamContentType
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSAccessProbeCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSContainerCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidMetadataCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidNonRdfResourceCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidRdfResourceCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSourceReferenceListCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSStreamCallback
 import com.erfangholami.androidsolidservices.shared.model.resource.NonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.RDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
@@ -111,10 +106,7 @@ public class SolidResourceClient private constructor(
      * @throws SolidException on failure.
      */
     public suspend fun head(webId: String, resourceUrl: String): SolidMetadata = call { service, bridge ->
-        service.head(webId, resourceUrl, object : IASSSolidMetadataCallback.Stub() {
-            override fun onResult(result: SolidMetadata) = bridge.onResult(result)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
+        service.head(webId, resourceUrl, requiredBridge(bridge, SolidMetadata::class.java))
     }
 
     /**
@@ -196,10 +188,7 @@ public class SolidResourceClient private constructor(
      * @throws SolidException on failure.
      */
     public suspend fun patch(webId: String, uri: String, patch: N3Patch): Unit = call { service, bridge ->
-        service.patch(webId, uri, patch.toN3String(), object : IASSUnitCallback.Stub() {
-            override fun onResult() = bridge.onResult(Unit)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
+        service.patch(webId, uri, patch.toN3String(), unitBridge(bridge))
     }
 
     /**
@@ -229,10 +218,7 @@ public class SolidResourceClient private constructor(
      */
     public suspend fun readContainer(webId: String, containerUrl: String): SolidContainer =
         call { service, bridge ->
-            service.readContainer(webId, containerUrl, object : IASSContainerCallback.Stub() {
-                override fun onResult(result: SolidContainer) = bridge.onResult(result)
-                override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-            })
+            service.readContainer(webId, containerUrl, requiredBridge(bridge, SolidContainer::class.java))
         }
 
     /**
@@ -241,10 +227,7 @@ public class SolidResourceClient private constructor(
      * @throws SolidException on failure.
      */
     public suspend fun deleteContainer(webId: String, containerUri: String): Unit = call { service, bridge ->
-        service.deleteContainer(webId, containerUri, object : IASSUnitCallback.Stub() {
-            override fun onResult() = bridge.onResult(Unit)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
+        service.deleteContainer(webId, containerUri, unitBridge(bridge))
     }
 
     private suspend fun <T> call(register: (IASSResourceService, CallbackBridge<T>) -> Unit): T {
@@ -264,10 +247,7 @@ public class SolidResourceClient private constructor(
      */
     public suspend fun patchRaw(webId: String, uri: String, n3Body: String): Unit =
         call { service, bridge ->
-            service.patch(webId, uri, n3Body, object : IASSUnitCallback.Stub() {
-                override fun onResult() = bridge.onResult(Unit)
-                override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-            })
+            service.patch(webId, uri, n3Body, unitBridge(bridge))
         }
 
     /**
@@ -275,19 +255,13 @@ public class SolidResourceClient private constructor(
      * auth, network, 5xx) throws rather than being collapsed to `false`.
      */
     public suspend fun exists(webId: String, uri: String): Boolean = call { service, bridge ->
-        service.exists(webId, uri, object : IASSBooleanCallback.Stub() {
-            override fun onResult(value: Boolean) = bridge.onResult(value)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
+        service.exists(webId, uri, booleanBridge(bridge))
     }
 
     /** Creates the container and any missing ancestors, bottom-up. Idempotent. */
     public suspend fun ensureContainer(webId: String, containerUri: String): Unit =
         call { service, bridge ->
-            service.ensureContainer(webId, containerUri, object : IASSUnitCallback.Stub() {
-                override fun onResult() = bridge.onResult(Unit)
-                override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-            })
+            service.ensureContainer(webId, containerUri, unitBridge(bridge))
         }
 
     /**
@@ -298,9 +272,8 @@ public class SolidResourceClient private constructor(
      */
     public suspend fun probeAccess(webId: String, uri: String): AccessProbe =
         call { service, bridge ->
-            service.probeAccess(webId, uri, object : IASSAccessProbeCallback.Stub() {
-                override fun onResult(probe: AccessProbe?) = bridge.onResult(probe ?: AccessProbe.Denied)
-                override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+            service.probeAccess(webId, uri, envelopeBridge(bridge) {
+                it.parcelable(AccessProbe::class.java) ?: AccessProbe.Denied
             })
         }
 
@@ -315,28 +288,30 @@ public class SolidResourceClient private constructor(
         containerUri: String,
         enrichWithHead: Boolean = false,
     ): List<SolidSourceReference> = call { service, bridge ->
-        service.listContainer(webId, containerUri, enrichWithHead, object : IASSSourceReferenceListCallback.Stub() {
-            override fun onResult(entries: MutableList<SolidSourceReference>?) = bridge.onResult(entries.orEmpty())
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
+        service.listContainer(
+            webId,
+            containerUri,
+            enrichWithHead,
+            envelopeListBridge(bridge) { it.parcelableList(SolidSourceReference::class.java) },
+        )
     }
 
     /** Copies a resource, or a whole container tree, to [destinationUri]. Not transactional. */
     public suspend fun copy(webId: String, sourceUri: String, destinationUri: String): String =
         call { service, bridge ->
-            service.copy(webId, sourceUri, destinationUri, stringCallback(bridge))
+            service.copy(webId, sourceUri, destinationUri, stringBridge(bridge))
         }
 
     /** A [copy] followed by a delete of the source. Not transactional. */
     public suspend fun move(webId: String, sourceUri: String, destinationUri: String): String =
         call { service, bridge ->
-            service.move(webId, sourceUri, destinationUri, stringCallback(bridge))
+            service.move(webId, sourceUri, destinationUri, stringBridge(bridge))
         }
 
     /** Moves a resource to a sibling name in the same container. */
     public suspend fun rename(webId: String, sourceUri: String, newName: String): String =
         call { service, bridge ->
-            service.rename(webId, sourceUri, newName, stringCallback(bridge))
+            service.rename(webId, sourceUri, newName, stringBridge(bridge))
         }
 
     /**
@@ -360,10 +335,7 @@ public class SolidResourceClient private constructor(
 
     /** HEADs a **public** resource with no `Authorization` header. */
     public suspend fun headPublic(uri: String): SolidMetadata = call { service, bridge ->
-        service.headPublic(uri, object : IASSSolidMetadataCallback.Stub() {
-            override fun onResult(result: SolidMetadata) = bridge.onResult(result)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
+        service.headPublic(uri, requiredBridge(bridge, SolidMetadata::class.java))
     }
 
     /**
@@ -380,10 +352,7 @@ public class SolidResourceClient private constructor(
         ifMatch: String? = null,
         linkHeader: String? = null,
     ): Unit = call { service, bridge ->
-        service.putRaw(webId, uri, contentType, body, ifMatch, linkHeader, object : IASSUnitCallback.Stub() {
-            override fun onResult() = bridge.onResult(Unit)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
+        service.putRaw(webId, uri, contentType, body, ifMatch, linkHeader, unitBridge(bridge))
     }
 
     /** POSTs an opaque body to a container; returns the `Location` the server allocated. */
@@ -395,7 +364,7 @@ public class SolidResourceClient private constructor(
         additionalHeaders: Map<String, String> = emptyMap(),
     ): String? = call { service, bridge ->
         val bundle = Bundle().apply { additionalHeaders.forEach { (k, v) -> putString(k, v) } }
-        service.post(webId, uri, contentType, body, bundle, nullableStringCallback(bridge))
+        service.post(webId, uri, contentType, body, bundle, nullableStringBridge(bridge))
     }
 
     /**
@@ -414,10 +383,10 @@ public class SolidResourceClient private constructor(
     ): String? = call { service, bridge ->
         when (resource) {
             is SolidRDFResource ->
-                service.createInContainerRdf(webId, containerUri, resource, nullableStringCallback(bridge))
+                service.createInContainerRdf(webId, containerUri, resource, nullableStringBridge(bridge))
 
             is SolidNonRDFResource ->
-                service.createInContainer(webId, containerUri, resource, nullableStringCallback(bridge))
+                service.createInContainer(webId, containerUri, resource, nullableStringBridge(bridge))
 
             else -> bridge.onFailure(
                 IllegalArgumentException("Resource must be a SolidRDFResource or SolidNonRDFResource.")
@@ -432,14 +401,14 @@ public class SolidResourceClient private constructor(
      */
     public suspend fun readStream(webId: String, uri: String): SolidStream =
         call { service, bridge ->
-            service.readStream(webId, uri, object : IASSStreamCallback.Stub() {
-                override fun onResult(
-                    source: ParcelFileDescriptor,
-                    contentType: String,
-                    contentLength: Long,
-                ) = bridge.onResult(SolidStream(contentType, contentLength, source))
-
-                override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+            service.readStream(webId, uri, envelopeBridge(bridge) { envelope ->
+                SolidStream(
+                    envelope.streamContentType(),
+                    envelope.streamContentLength(),
+                    requireNotNull(envelope.parcelable(ParcelFileDescriptor::class.java)) {
+                        "the service opened a stream but sent no file descriptor"
+                    },
+                )
             })
         }
 
@@ -479,48 +448,38 @@ public class SolidResourceClient private constructor(
                 contentLength,
                 fd,
                 ifMatch,
-                object : IASSUnitCallback.Stub() {
-                    override fun onResult() = bridge.onResult(Unit)
-                    override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-                },
+                unitBridge(bridge),
             )
         }
     }
 
-    private fun stringCallback(bridge: CallbackBridge<String>) = object : IASSStringCallback.Stub() {
-        override fun onResult(value: String?) = bridge.onResult(value.orEmpty())
-        override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-    }
-
-    private fun nullableStringCallback(bridge: CallbackBridge<String?>) = object : IASSStringCallback.Stub() {
-        override fun onResult(value: String?) = bridge.onResult(value)
-        override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-    }
+    private fun <T : Parcelable> requiredBridge(bridge: CallbackBridge<T>, expected: Class<T>) =
+        envelopeBridge(bridge) { envelope ->
+            requireNotNull(envelope.parcelable(expected)) {
+                "the service answered with no ${expected.simpleName}"
+            }
+        }
 
     private fun <T : SolidResource> rdfCallback(
         bridge: CallbackBridge<T>,
         reconstruct: (SolidRDFResource) -> T,
-    ) = object : IASSSolidRdfResourceCallback.Stub() {
-        override fun onResult(result: SolidRDFResource) {
-            runCatching { reconstruct(result) }
-                .onSuccess { bridge.onResult(it) }
-                .onFailure { bridge.onFailure(it) }
-        }
-
-        override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+    ) = envelopeBridge(bridge) { envelope ->
+        reconstruct(
+            requireNotNull(envelope.parcelable(SolidRDFResource::class.java)) {
+                "the service answered with no RDF resource"
+            },
+        )
     }
 
     private fun <T : SolidResource> nonRdfCallback(
         bridge: CallbackBridge<T>,
         reconstruct: (SolidNonRDFResource) -> T,
-    ) = object : IASSSolidNonRdfResourceCallback.Stub() {
-        override fun onResult(result: SolidNonRDFResource) {
-            runCatching { reconstruct(result) }
-                .onSuccess { bridge.onResult(it) }
-                .onFailure { bridge.onFailure(it) }
-        }
-
-        override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
+    ) = envelopeBridge(bridge) { envelope ->
+        reconstruct(
+            requireNotNull(envelope.parcelable(SolidNonRDFResource::class.java)) {
+                "the service answered with no binary resource"
+            },
+        )
     }
 
     @Suppress("UNCHECKED_CAST")

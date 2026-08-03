@@ -5,9 +5,9 @@ import android.content.Intent
 import android.os.IBinder
 import com.erfangholami.androidsolidservices.client.internal.fakes.CallLog
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLoginCallback
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
+import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 import java.io.File
 
 /**
@@ -40,26 +40,26 @@ class ASSAuthenticatorService : Service() {
             return webId == AUTHORIZED_WEB_ID
         }
 
-        override fun requestLogin(callback: IASSLoginCallback?) {
+        override fun requestLogin(callback: IASSParcelableCallback?) {
             CallLog.record(applicationContext, "requestLogin")
-            callback?.onResult(true, AUTHORIZED_WEB_ID)
+            callback?.onResult(IpcEnvelope.ofLogin(granted = true, selectedWebId = AUTHORIZED_WEB_ID))
         }
 
         override fun disconnectFromSolid(
             webId: String?,
-            callback: IASSLogoutCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             CallLog.record(applicationContext, "disconnectFromSolid", "webId" to webId)
             when (webId) {
-                AUTHORIZED_WEB_ID -> callback?.onResult(true)
+                AUTHORIZED_WEB_ID -> callback?.onResult(IpcEnvelope.ofBoolean(true))
                 DOUBLE_ANSWER_WEB_ID -> {
-                    callback?.onResult(true)
-                    callback?.onResult(true)
+                    callback?.onResult(IpcEnvelope.ofBoolean(true))
+                    callback?.onResult(IpcEnvelope.ofBoolean(true))
                 }
 
                 HANG_ONCE_WEB_ID -> {
                     val marker = File(filesDir, HANG_MARKER)
-                    if (!marker.createNewFile()) callback?.onResult(true)
+                    if (!marker.createNewFile()) callback?.onResult(IpcEnvelope.ofBoolean(true))
                 }
 
                 else -> callback?.onError(ExceptionsErrorCode.SOLID_NOT_LOGGED_IN, "not signed in")

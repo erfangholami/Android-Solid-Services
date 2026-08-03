@@ -7,8 +7,9 @@ import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidAppNotFoundException
 import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidNotLoggedInException
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLoginCallback
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
+import com.erfangholami.androidsolidservices.shared.ipc.booleanValue
+import com.erfangholami.androidsolidservices.shared.ipc.loginGranted
+import com.erfangholami.androidsolidservices.shared.ipc.stringValue
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -111,15 +112,17 @@ public class SolidSignInClient private constructor(
     )
     @Throws(SolidException::class)
     public fun requestLogin(callBack: (String?, SolidException?) -> Unit) {
-        requireLoggedInService().requestLogin(object : IASSLoginCallback.Stub() {
-            override fun onResult(granted: Boolean, selectedWebId: String) {
-                callBack(if (granted) selectedWebId else null, null)
-            }
-
-            override fun onError(errorCode: Int, errorMessage: String) {
-                callBack(null, handleSolidException(errorCode, errorMessage))
-            }
-        })
+        requireLoggedInService().requestLogin(
+            envelopeCallback(
+                read = { envelope -> envelope.loginGranted() to envelope.stringValue() },
+                onValue = { (granted, selectedWebId) ->
+                    callBack(if (granted) selectedWebId else null, null)
+                },
+                onFailure = { errorCode, errorMessage ->
+                    callBack(null, handleSolidException(errorCode, errorMessage))
+                },
+            ),
+        )
     }
 
     /**
@@ -130,15 +133,14 @@ public class SolidSignInClient private constructor(
      */
     @Throws(SolidException::class)
     public fun disconnectFromSolid(webId: String, callBack: (Boolean) -> Unit) {
-        requireLoggedInService().disconnectFromSolid(webId, object : IASSLogoutCallback.Stub() {
-            override fun onResult(granted: Boolean) {
-                callBack(granted)
-            }
-
-            override fun onError(errorCode: Int, errorMessage: String?) {
-                callBack(false)
-            }
-        })
+        requireLoggedInService().disconnectFromSolid(
+            webId,
+            envelopeCallback(
+                read = { it.booleanValue() },
+                onValue = callBack,
+                onFailure = { _, _ -> callBack(false) },
+            ),
+        )
     }
 
     private fun requireLoggedInService(): IASSAuthenticatorService {

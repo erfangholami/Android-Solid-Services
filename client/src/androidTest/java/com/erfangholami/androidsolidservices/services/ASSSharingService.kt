@@ -5,16 +5,12 @@ import android.content.Intent
 import android.os.IBinder
 import com.erfangholami.androidsolidservices.client.internal.fakes.CallLog
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.IASSharingService
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSAccessGrantListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSCatalogEntryListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 
@@ -33,12 +29,12 @@ class ASSSharingService : Service() {
 
     private val binder = object : IASSharingService.Stub() {
 
-        override fun getStoredGivenShares(webId: String?, callback: IASSGivenShareListCallback?) {
+        override fun getStoredGivenShares(webId: String?, callback: IASSParcelableListCallback?) {
             record("getStoredGivenShares", "webId" to webId)
             callback.givenList(webId)
         }
 
-        override fun refreshGivenShares(webId: String?, callback: IASSGivenShareListCallback?) {
+        override fun refreshGivenShares(webId: String?, callback: IASSParcelableListCallback?) {
             record("refreshGivenShares", "webId" to webId)
             callback.givenList(webId)
         }
@@ -46,7 +42,7 @@ class ASSSharingService : Service() {
         override fun getGivenSharesForResource(
             webId: String?,
             resourceUri: String?,
-            callback: IASSGivenShareListCallback?,
+            callback: IASSParcelableListCallback?,
         ) {
             record("getGivenSharesForResource", "webId" to webId, "resourceUri" to resourceUri)
             callback.givenList(webId)
@@ -59,7 +55,9 @@ class ASSSharingService : Service() {
             receiverKind: Int,
             receiverValue: String?,
             notifyReceiver: Boolean,
-            callback: IASSGivenShareCallback?,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "createShare",
@@ -69,6 +67,8 @@ class ASSSharingService : Service() {
                 "receiverKind" to receiverKind,
                 "receiverValue" to receiverValue,
                 "notifyReceiver" to notifyReceiver,
+                "resourceType" to resourceType,
+                "resourceName" to resourceName,
             )
             callback.given(webId)
         }
@@ -79,7 +79,9 @@ class ASSSharingService : Service() {
             mode: Int,
             receiverKind: Int,
             receiverValue: String?,
-            callback: IASSGivenShareCallback?,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "updateShare",
@@ -88,6 +90,8 @@ class ASSSharingService : Service() {
                 "mode" to mode,
                 "receiverKind" to receiverKind,
                 "receiverValue" to receiverValue,
+                "resourceType" to resourceType,
+                "resourceName" to resourceName,
             )
             callback.given(webId)
         }
@@ -97,7 +101,7 @@ class ASSSharingService : Service() {
             resourceUri: String?,
             receiverKind: Int,
             receiverValue: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "revokeShare",
@@ -109,9 +113,26 @@ class ASSSharingService : Service() {
             callback.unit(webId)
         }
 
+        override fun purgeGivenShares(
+            webId: String?,
+            resourceUri: String?,
+            includeDescendants: Boolean,
+            notifyReceivers: Boolean,
+            callback: IASSParcelableListCallback?,
+        ) {
+            record(
+                "purgeGivenShares",
+                "webId" to webId,
+                "resourceUri" to resourceUri,
+                "includeDescendants" to includeDescendants,
+                "notifyReceivers" to notifyReceivers,
+            )
+            callback.givenList(webId)
+        }
+
         override fun getStoredReceivedShares(
             webId: String?,
-            callback: IASSReceivedShareListCallback?,
+            callback: IASSParcelableListCallback?,
         ) {
             record("getStoredReceivedShares", "webId" to webId)
             callback.receivedList(webId)
@@ -119,7 +140,7 @@ class ASSSharingService : Service() {
 
         override fun refreshReceivedShares(
             webId: String?,
-            callback: IASSReceivedShareListCallback?,
+            callback: IASSParcelableListCallback?,
         ) {
             record("refreshReceivedShares", "webId" to webId)
             callback.receivedList(webId)
@@ -128,18 +149,26 @@ class ASSSharingService : Service() {
         override fun addReceivedShare(
             webId: String?,
             resourceUri: String?,
-            callback: IASSReceivedShareCallback?,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback?,
         ) {
-            record("addReceivedShare", "webId" to webId, "resourceUri" to resourceUri)
+            record(
+                "addReceivedShare",
+                "webId" to webId,
+                "resourceUri" to resourceUri,
+                "resourceType" to resourceType,
+                "resourceName" to resourceName,
+            )
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.RECEIVED_SHARE)
+            else callback?.onResult(IpcEnvelope.of(Fixtures.RECEIVED_SHARE))
         }
 
         override fun removeReceivedShare(
             webId: String?,
             resourceUri: String?,
             ownerWebId: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "removeReceivedShare",
@@ -150,16 +179,16 @@ class ASSSharingService : Service() {
             callback.unit(webId)
         }
 
-        override fun getAccessGrants(webId: String?, callback: IASSAccessGrantListCallback?) {
+        override fun getAccessGrants(webId: String?, callback: IASSParcelableListCallback?) {
             record("getAccessGrants", "webId" to webId)
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(mutableListOf(Fixtures.ACCESS_GRANT))
+            else callback?.onResult(IpcEnvelope.ofList(listOf(Fixtures.ACCESS_GRANT)))
         }
 
         override fun acceptShareRequest(
             webId: String?,
             request: ShareRequest?,
-            callback: IASSGivenShareCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("acceptShareRequest", "webId" to webId, "request" to request)
             callback.given(webId)
@@ -169,7 +198,7 @@ class ASSSharingService : Service() {
             webId: String?,
             request: ShareRequest?,
             reason: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "rejectShareRequest",
@@ -180,7 +209,7 @@ class ASSSharingService : Service() {
             callback.unit(webId)
         }
 
-        override fun rebuildGivenIndex(webId: String?, callback: IASSGivenShareListCallback?) {
+        override fun rebuildGivenIndex(webId: String?, callback: IASSParcelableListCallback?) {
             record("rebuildGivenIndex", "webId" to webId)
             callback.givenList(webId)
         }
@@ -188,7 +217,7 @@ class ASSSharingService : Service() {
         override fun publishCatalogEntry(
             webId: String?,
             entry: CatalogEntry?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("publishCatalogEntry", "webId" to webId, "entry" to entry)
             callback.unit(webId)
@@ -197,7 +226,7 @@ class ASSSharingService : Service() {
         override fun removeCatalogEntry(
             webId: String?,
             resourceUri: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("removeCatalogEntry", "webId" to webId, "resourceUri" to resourceUri)
             callback.unit(webId)
@@ -206,17 +235,17 @@ class ASSSharingService : Service() {
         override fun getOwnerCatalog(
             viewerWebId: String?,
             ownerWebId: String?,
-            callback: IASSCatalogEntryListCallback?,
+            callback: IASSParcelableListCallback?,
         ) {
             record("getOwnerCatalog", "viewerWebId" to viewerWebId, "ownerWebId" to ownerWebId)
             if (failing(viewerWebId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(mutableListOf(Fixtures.CATALOG_ENTRY))
+            else callback?.onResult(IpcEnvelope.ofList(listOf(Fixtures.CATALOG_ENTRY)))
         }
 
         override fun makePrivate(
             webId: String?,
             resourceUri: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("makePrivate", "webId" to webId, "resourceUri" to resourceUri)
             callback.unit(webId)
@@ -225,7 +254,7 @@ class ASSSharingService : Service() {
         override fun repairOwnerControl(
             webId: String?,
             resourceUri: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("repairOwnerControl", "webId" to webId, "resourceUri" to resourceUri)
             callback.unit(webId)
@@ -234,7 +263,7 @@ class ASSSharingService : Service() {
         override fun syncReceivedShares(
             webId: String?,
             notifications: MutableList<ShareNotification>?,
-            callback: IASSReceivedShareListCallback?,
+            callback: IASSParcelableListCallback?,
         ) {
             record("syncReceivedShares", "webId" to webId, "notifications" to notifications)
             callback.receivedList(webId)
@@ -248,23 +277,24 @@ class ASSSharingService : Service() {
 
     private fun failing(webId: String?) = webId == Fixtures.FAILING_WEB_ID
 
-    private fun IASSGivenShareListCallback?.givenList(webId: String?) {
+    private fun IASSParcelableListCallback?.givenList(webId: String?) {
         if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(mutableListOf(Fixtures.GIVEN_SHARE))
+        else this?.onResult(IpcEnvelope.ofList(listOf(Fixtures.GIVEN_SHARE)))
     }
 
-    private fun IASSReceivedShareListCallback?.receivedList(webId: String?) {
+    private fun IASSParcelableListCallback?.receivedList(webId: String?) {
         if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(mutableListOf(Fixtures.RECEIVED_SHARE))
+        else this?.onResult(IpcEnvelope.ofList(listOf(Fixtures.RECEIVED_SHARE)))
     }
 
-    private fun IASSGivenShareCallback?.given(webId: String?) {
+    private fun IASSParcelableCallback?.given(webId: String?) {
         if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(Fixtures.GIVEN_SHARE)
+        else this?.onResult(IpcEnvelope.of(Fixtures.GIVEN_SHARE))
     }
 
-    private fun IASSUnitCallback?.unit(webId: String?) {
-        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE) else this?.onResult()
+    private fun IASSParcelableCallback?.unit(webId: String?) {
+        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
+        else this?.onResult(IpcEnvelope.empty())
     }
 
     companion object {

@@ -10,13 +10,14 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.erfangholami.androidsolidservices.domain.repository.AccessGrantRepository
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.RevokeAppAccessUseCase
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchBoolean
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.UNKNOWN
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLoginCallback
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -63,7 +64,7 @@ class ASSAuthenticatorService : LifecycleService(), SavedStateRegistryOwner {
          * interface so installed apps keep their transaction numbering, and reports the failure
          * immediately rather than leaving the caller waiting on a callback that cannot arrive.
          */
-        override fun requestLogin(callback: IASSLoginCallback) {
+        override fun requestLogin(callback: IASSParcelableCallback) {
             callback.onError(
                 DRAW_OVERLAY_NOT_PERMITTED,
                 "requestLogin is no longer supported. Launch the AuthorizeWithSolid contract " +
@@ -72,7 +73,7 @@ class ASSAuthenticatorService : LifecycleService(), SavedStateRegistryOwner {
             )
         }
 
-        override fun disconnectFromSolid(webId: String, callback: IASSLogoutCallback) {
+        override fun disconnectFromSolid(webId: String, callback: IASSParcelableCallback) {
             val callingUid = getCallingUid()
             val packageName = packageManager.getNameForUid(callingUid)
             if (packageName == null) {
@@ -82,9 +83,9 @@ class ASSAuthenticatorService : LifecycleService(), SavedStateRegistryOwner {
                 )
                 return
             }
-            lifecycleScope.launch {
+            lifecycleScope.dispatchBoolean(Dispatchers.IO, callback) {
                 revokeAppAccess(packageName, webId)
-                callback.onResult(true)
+                SolidResult.Success(true)
             }
         }
     }

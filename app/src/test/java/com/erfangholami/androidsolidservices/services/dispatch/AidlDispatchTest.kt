@@ -1,5 +1,8 @@
 package com.erfangholami.androidsolidservices.services.dispatch
 
+import android.os.Bundle
+import android.os.IBinder
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
@@ -9,6 +12,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -51,19 +55,50 @@ class AidlDispatchTest {
     }
 
     @Test
-    fun `a throwing unit block is reported too`() = runTest {
-        var code: Int? = null
+    fun `a throwing acknowledged block is reported too`() = runTest {
+        val callback = RecordingCallback()
 
-        val job = CoroutineScope(coroutineContext).dispatchUnit(
+        val job = CoroutineScope(coroutineContext).dispatchAcknowledged<Unit>(
             dispatcher = StandardTestDispatcher(testScheduler),
-            onError = { c, _ -> code = c },
-            onResult = { throw AssertionError("the block threw; onResult must not run") },
+            callback = callback,
         ) {
             throw IllegalStateException("boom")
         }
         job.join()
 
-        assertEquals(ExceptionsErrorCode.UNKNOWN, code)
+        assertEquals(ExceptionsErrorCode.UNKNOWN, callback.errorCode)
+        assertNull("the block threw; no result envelope must be sent", callback.envelope)
+    }
+
+    @Test
+    fun `an acknowledged block answers with an empty envelope`() = runTest {
+        val callback = RecordingCallback()
+
+        val job = CoroutineScope(coroutineContext).dispatchAcknowledged(
+            dispatcher = StandardTestDispatcher(testScheduler),
+            callback = callback,
+        ) {
+            SolidResult.Success(Unit)
+        }
+        job.join()
+
+        assertNull("an acknowledgement carries no value", callback.errorCode)
+        assertTrue("the caller must be answered", callback.envelope?.isEmpty == true)
+    }
+
+    private class RecordingCallback : IASSParcelableCallback {
+        var envelope: Bundle? = null
+        var errorCode: Int? = null
+
+        override fun onResult(result: Bundle?) {
+            envelope = result
+        }
+
+        override fun onError(errorCode: Int, errorMessage: String?) {
+            this.errorCode = errorCode
+        }
+
+        override fun asBinder(): IBinder? = null
     }
 
     @Test

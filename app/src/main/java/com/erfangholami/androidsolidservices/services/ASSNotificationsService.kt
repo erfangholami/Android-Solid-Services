@@ -6,15 +6,14 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.erfangholami.androidsolidservices.api.notifications.NotificationsManager
 import com.erfangholami.androidsolidservices.di.IoDispatcher
-import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
-import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchAcknowledged
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchBoolean
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchParcelableList
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchString
 import com.erfangholami.androidsolidservices.services.dispatch.requireShareMode
-import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
 import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
-import com.erfangholami.androidsolidservices.shared.IASSStringCallback
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareNotificationListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareRequestListCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
@@ -38,18 +37,18 @@ class ASSNotificationsService : LifecycleService() {
 
         override fun listNotifications(
             webId: String,
-            callback: IASSShareNotificationListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 notificationsManager.listNotifications(webId)
             }
         }
 
         override fun listRequests(
             webId: String,
-            callback: IASSShareRequestListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 notificationsManager.listRequests(webId)
             }
         }
@@ -59,11 +58,14 @@ class ASSNotificationsService : LifecycleService() {
             receiverWebId: String,
             resourceUri: String,
             mode: Int,
-            callback: IASSUnitCallback,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.sendOffer(
                     ownerWebId, receiverWebId, resourceUri, requireShareMode(mode),
+                    resourceType = resourceType, resourceName = resourceName,
                 )
             }
         }
@@ -72,9 +74,9 @@ class ASSNotificationsService : LifecycleService() {
             ownerWebId: String,
             receiverWebId: String,
             resourceUri: String,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.sendUndo(ownerWebId, receiverWebId, resourceUri)
             }
         }
@@ -85,9 +87,9 @@ class ASSNotificationsService : LifecycleService() {
             resourceUri: String,
             requestedMode: Int,
             summary: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.sendRequest(
                     requesterWebId, ownerWebId, resourceUri,
                     requireShareMode(requestedMode), summary,
@@ -100,9 +102,9 @@ class ASSNotificationsService : LifecycleService() {
             requesterWebId: String,
             resourceUri: String,
             reason: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.sendReject(ownerWebId, requesterWebId, resourceUri, reason)
             }
         }
@@ -110,18 +112,15 @@ class ASSNotificationsService : LifecycleService() {
         override fun compactInbox(
             webId: String,
             olderThanIso: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchNetwork(
-                ioDispatcher,
-                callback::onError,
-                { callback.onResult() }) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.compactInbox(webId, olderThanIso)
             }
         }
 
-        override fun ensureInbox(webId: String, callback: IASSStringCallback) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+        override fun ensureInbox(webId: String, callback: IASSParcelableCallback) {
+            lifecycleScope.dispatchString(ioDispatcher, callback) {
                 notificationsManager.ensureInbox(webId)
             }
         }
@@ -129,9 +128,9 @@ class ASSNotificationsService : LifecycleService() {
         override fun deleteNotification(
             webId: String,
             notificationUri: String,
-            callback: IASSBooleanCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchBoolean(ioDispatcher, callback) {
                 notificationsManager.deleteNotification(webId, notificationUri)
             }
         }
@@ -141,14 +140,18 @@ class ASSNotificationsService : LifecycleService() {
             receiverWebId: String,
             resourceUri: String,
             mode: Int,
-            callback: IASSUnitCallback,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.sendUpdate(
                     ownerWebId,
                     receiverWebId,
                     resourceUri,
                     requireShareMode(mode),
+                    resourceType = resourceType,
+                    resourceName = resourceName,
                 )
             }
         }
@@ -159,9 +162,9 @@ class ASSNotificationsService : LifecycleService() {
             resourceUri: String,
             mode: Int,
             requestUri: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.sendAccept(
                     ownerWebId,
                     requesterWebId,
@@ -178,9 +181,9 @@ class ASSNotificationsService : LifecycleService() {
             resourceUri: String,
             mode: Int,
             requestUri: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.recordDecisionGranted(
                     ownerWebId,
                     requesterWebId,
@@ -197,9 +200,9 @@ class ASSNotificationsService : LifecycleService() {
             resourceUri: String,
             mode: Int,
             reason: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 notificationsManager.recordDecisionRejected(
                     ownerWebId,
                     requesterWebId,

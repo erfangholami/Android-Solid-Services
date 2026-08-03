@@ -1,13 +1,8 @@
 package com.erfangholami.androidsolidservices.shared.model.tickets;
 
-import com.erfangholami.androidsolidservices.shared.model.tickets.Ticket;
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback;
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket;
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages;
-import com.erfangholami.androidsolidservices.shared.model.tickets.TicketList;
-import com.erfangholami.androidsolidservices.shared.model.tickets.TicketArtifact;
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketCallback;
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketListCallback;
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketArtifactCallback;
 
 /**
  * AIDL IPC contract for the Solid Tickets data module — the wallet: `schema:Ticket`
@@ -20,10 +15,10 @@ import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketArti
 interface IASSTicketsModuleInterface {
 
     /** Returns the cached tickets index for [webId] — enough to render a wallet list. */
-    void listTickets(String webId, IASSTicketListCallback callback);
+    void listTickets(String webId, IASSParcelableCallback callback);
 
     /** Reads the full ticket document at [ticketUri]. */
-    void getTicket(String webId, String ticketUri, IASSTicketCallback callback);
+    void getTicket(String webId, String ticketUri, IASSParcelableCallback callback);
 
     /**
      * Creates a ticket in its own sub-container of the tickets container. When [artifact]
@@ -41,7 +36,7 @@ interface IASSTicketsModuleInterface {
         in @nullable NewTicketImages images,
         boolean isPrivate,
         @nullable String container,
-        IASSTicketCallback callback
+        IASSParcelableCallback callback
     );
 
     /**
@@ -52,7 +47,7 @@ interface IASSTicketsModuleInterface {
         String webId,
         String ticketUri,
         in NewTicket updated,
-        IASSTicketCallback callback
+        IASSParcelableCallback callback
     );
 
     /**
@@ -65,18 +60,18 @@ interface IASSTicketsModuleInterface {
         in byte[] artifact,
         String artifactContentType,
         in @nullable NewTicketImages images,
-        IASSTicketCallback callback
+        IASSParcelableCallback callback
     );
 
     /**
      * Deletes the ticket at [ticketUri]: its index row and its whole sub-container (document,
      * artifact, stored images). Returns the removed ticket.
      */
-    void deleteTicket(String webId, String ticketUri, IASSTicketCallback callback);
+    void deleteTicket(String webId, String ticketUri, IASSParcelableCallback callback);
 
     /**
      * Reads a binary stored with a ticket (the artifact or a stored pass image). Subject to
      * the ~1 MB Binder transaction limit.
      */
-    void getTicketArtifact(String webId, String artifactUri, IASSTicketArtifactCallback callback);
+    void getTicketArtifact(String webId, String artifactUri, IASSParcelableCallback callback);
 }

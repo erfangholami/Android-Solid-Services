@@ -6,19 +6,11 @@ import android.os.IBinder
 import com.erfangholami.androidsolidservices.client.internal.fakes.CallLog
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookListCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactMatchCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactPhotoCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullGroupCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactListCallback
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactsModuleInterface
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketArtifactCallback
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketCallback
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketListCallback
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
@@ -40,7 +32,7 @@ class SolidDataModulesService : Service() {
 
         override fun listAddressBooks(
             webId: String?,
-            callback: IASSContactModuleAddressBookListCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("listAddressBooks", "webId" to webId)
             callback.bookList(webId)
@@ -50,7 +42,7 @@ class SolidDataModulesService : Service() {
             webId: String?,
             storage: String?,
             container: String?,
-            callback: IASSContactModuleAddressBookListCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "ensureAddressBookContainer",
@@ -64,7 +56,7 @@ class SolidDataModulesService : Service() {
         override fun getAddressBook(
             webId: String?,
             addressBookUri: String?,
-            callback: IASSContactModuleAddressBookCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("getAddressBook", "webId" to webId, "addressBookUri" to addressBookUri)
             callback.book(webId)
@@ -76,7 +68,7 @@ class SolidDataModulesService : Service() {
             isPrivate: Boolean,
             storage: String?,
             container: String?,
-            callback: IASSContactModuleAddressBookCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "createAddressBook",
@@ -93,7 +85,7 @@ class SolidDataModulesService : Service() {
             webId: String?,
             addressBookUri: String?,
             newName: String?,
-            callback: IASSContactModuleAddressBookCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "renameAddressBook",
@@ -107,7 +99,7 @@ class SolidDataModulesService : Service() {
         override fun deleteAddressBook(
             webId: String?,
             addressBookUri: String?,
-            callback: IASSContactModuleAddressBookCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("deleteAddressBook", "webId" to webId, "addressBookUri" to addressBookUri)
             callback.book(webId)
@@ -117,7 +109,7 @@ class SolidDataModulesService : Service() {
             webId: String?,
             storage: String?,
             title: String?,
-            callback: IASSContactModuleAddressBookCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "ensureDefaultAddressBook",
@@ -131,7 +123,7 @@ class SolidDataModulesService : Service() {
         override fun getContact(
             webId: String?,
             contactUri: String?,
-            callback: IASSContactModuleSolidContactCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("getContact", "webId" to webId, "contactUri" to contactUri)
             callback.contact(webId)
@@ -140,11 +132,11 @@ class SolidDataModulesService : Service() {
         override fun listContacts(
             webId: String?,
             addressBookUri: String?,
-            callback: IASSContactModuleSolidContactListCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("listContacts", "webId" to webId, "addressBookUri" to addressBookUri)
             if (failing(webId)) callback?.onError(CONTACTS_ERROR, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.CONTACT_LIST)
+            else callback?.onResult(IpcEnvelope.of(Fixtures.CONTACT_LIST))
         }
 
         override fun createContact(
@@ -152,7 +144,7 @@ class SolidDataModulesService : Service() {
             addressBookUri: String?,
             data: ContactData?,
             groupUris: MutableList<String>?,
-            callback: IASSContactModuleSolidContactCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "createContact",
@@ -169,7 +161,7 @@ class SolidDataModulesService : Service() {
             addressBookUri: String?,
             contactUri: String?,
             data: ContactData?,
-            callback: IASSContactModuleSolidContactCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "updateContact",
@@ -185,7 +177,7 @@ class SolidDataModulesService : Service() {
             webId: String?,
             addressBookUri: String?,
             contactUri: String?,
-            callback: IASSContactModuleSolidContactCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "deleteContact",
@@ -201,7 +193,7 @@ class SolidDataModulesService : Service() {
             contactUri: String?,
             photo: ByteArray?,
             contentType: String?,
-            callback: IASSContactModuleSolidContactCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "setContactPhoto",
@@ -216,7 +208,7 @@ class SolidDataModulesService : Service() {
         override fun removeContactPhoto(
             webId: String?,
             contactUri: String?,
-            callback: IASSContactModuleSolidContactCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("removeContactPhoto", "webId" to webId, "contactUri" to contactUri)
             callback.contact(webId)
@@ -225,21 +217,21 @@ class SolidDataModulesService : Service() {
         override fun getContactPhoto(
             webId: String?,
             photoUri: String?,
-            callback: IASSContactModuleContactPhotoCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("getContactPhoto", "webId" to webId, "photoUri" to photoUri)
             if (failing(webId)) callback?.onError(CONTACTS_ERROR, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.CONTACT_PHOTO)
+            else callback?.onResult(IpcEnvelope.of(Fixtures.CONTACT_PHOTO))
         }
 
         override fun findContactByWebId(
             webId: String?,
             targetWebId: String?,
-            callback: IASSContactModuleContactMatchCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("findContactByWebId", "webId" to webId, "targetWebId" to targetWebId)
             if (failing(webId)) callback?.onError(CONTACTS_ERROR, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.CONTACT_MATCH)
+            else callback?.onResult(IpcEnvelope.of(Fixtures.CONTACT_MATCH))
         }
 
         override fun createGroup(
@@ -247,7 +239,7 @@ class SolidDataModulesService : Service() {
             addressBookUri: String?,
             title: String?,
             contactUris: MutableList<String>?,
-            callback: IASSContactModuleFullGroupCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "createGroup",
@@ -262,7 +254,7 @@ class SolidDataModulesService : Service() {
         override fun getGroup(
             webId: String?,
             groupUri: String?,
-            callback: IASSContactModuleFullGroupCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("getGroup", "webId" to webId, "groupUri" to groupUri)
             callback.group(webId)
@@ -272,7 +264,7 @@ class SolidDataModulesService : Service() {
             webId: String?,
             addressBookUri: String?,
             groupUri: String?,
-            callback: IASSContactModuleFullGroupCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "deleteGroup",
@@ -287,7 +279,7 @@ class SolidDataModulesService : Service() {
             webId: String?,
             groupUri: String?,
             contactUri: String?,
-            callback: IASSContactModuleFullGroupCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "addGroupMember",
@@ -302,7 +294,7 @@ class SolidDataModulesService : Service() {
             webId: String?,
             groupUri: String?,
             contactUri: String?,
-            callback: IASSContactModuleFullGroupCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "removeGroupMember",
@@ -316,16 +308,16 @@ class SolidDataModulesService : Service() {
 
     private val tickets = object : IASSTicketsModuleInterface.Stub() {
 
-        override fun listTickets(webId: String?, callback: IASSTicketListCallback?) {
+        override fun listTickets(webId: String?, callback: IASSParcelableCallback?) {
             record("listTickets", "webId" to webId)
             if (failing(webId)) callback?.onError(TICKETS_ERROR, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.TICKET_LIST)
+            else callback?.onResult(IpcEnvelope.of(Fixtures.TICKET_LIST))
         }
 
         override fun getTicket(
             webId: String?,
             ticketUri: String?,
-            callback: IASSTicketCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("getTicket", "webId" to webId, "ticketUri" to ticketUri)
             callback.ticket(webId)
@@ -340,7 +332,7 @@ class SolidDataModulesService : Service() {
             images: NewTicketImages?,
             isPrivate: Boolean,
             container: String?,
-            callback: IASSTicketCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "createTicket",
@@ -360,7 +352,7 @@ class SolidDataModulesService : Service() {
             webId: String?,
             ticketUri: String?,
             updated: NewTicket?,
-            callback: IASSTicketCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "updateTicket",
@@ -377,7 +369,7 @@ class SolidDataModulesService : Service() {
             artifact: ByteArray?,
             artifactContentType: String?,
             images: NewTicketImages?,
-            callback: IASSTicketCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "putTicketArtifact",
@@ -393,7 +385,7 @@ class SolidDataModulesService : Service() {
         override fun deleteTicket(
             webId: String?,
             ticketUri: String?,
-            callback: IASSTicketCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("deleteTicket", "webId" to webId, "ticketUri" to ticketUri)
             callback.ticket(webId)
@@ -402,11 +394,11 @@ class SolidDataModulesService : Service() {
         override fun getTicketArtifact(
             webId: String?,
             artifactUri: String?,
-            callback: IASSTicketArtifactCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("getTicketArtifact", "webId" to webId, "artifactUri" to artifactUri)
             if (failing(webId)) callback?.onError(TICKETS_ERROR, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.TICKET_ARTIFACT)
+            else callback?.onResult(IpcEnvelope.of(Fixtures.TICKET_ARTIFACT))
         }
     }
 
@@ -422,29 +414,29 @@ class SolidDataModulesService : Service() {
 
     private fun failing(webId: String?) = webId == Fixtures.FAILING_WEB_ID
 
-    private fun IASSContactModuleAddressBookListCallback?.bookList(webId: String?) {
+    private fun IASSParcelableCallback?.bookList(webId: String?) {
         if (failing(webId)) this?.onError(CONTACTS_ERROR, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(Fixtures.ADDRESS_BOOK_LIST)
+        else this?.onResult(IpcEnvelope.of(Fixtures.ADDRESS_BOOK_LIST))
     }
 
-    private fun IASSContactModuleAddressBookCallback?.book(webId: String?) {
+    private fun IASSParcelableCallback?.book(webId: String?) {
         if (failing(webId)) this?.onError(CONTACTS_ERROR, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(Fixtures.ADDRESS_BOOK_MODEL)
+        else this?.onResult(IpcEnvelope.of(Fixtures.ADDRESS_BOOK_MODEL))
     }
 
-    private fun IASSContactModuleSolidContactCallback?.contact(webId: String?) {
+    private fun IASSParcelableCallback?.contact(webId: String?) {
         if (failing(webId)) this?.onError(CONTACTS_ERROR, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(Fixtures.SOLID_CONTACT)
+        else this?.onResult(IpcEnvelope.of(Fixtures.SOLID_CONTACT))
     }
 
-    private fun IASSContactModuleFullGroupCallback?.group(webId: String?) {
+    private fun IASSParcelableCallback?.group(webId: String?) {
         if (failing(webId)) this?.onError(CONTACTS_ERROR, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(Fixtures.FULL_GROUP)
+        else this?.onResult(IpcEnvelope.of(Fixtures.FULL_GROUP))
     }
 
-    private fun IASSTicketCallback?.ticket(webId: String?) {
+    private fun IASSParcelableCallback?.ticket(webId: String?) {
         if (failing(webId)) this?.onError(TICKETS_ERROR, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(Fixtures.TICKET_MODEL)
+        else this?.onResult(IpcEnvelope.of(Fixtures.TICKET_MODEL))
     }
 
     /** [NewTicketImages] is not a data class, so its slots have to be spelled out to be asserted. */

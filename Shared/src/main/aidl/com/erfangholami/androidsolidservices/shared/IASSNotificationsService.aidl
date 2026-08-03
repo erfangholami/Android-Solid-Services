@@ -1,43 +1,44 @@
 package com.erfangholami.androidsolidservices.shared;
 
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback;
-import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback;
-import com.erfangholami.androidsolidservices.shared.IASSStringCallback;
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareNotificationListCallback;
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareRequestListCallback;
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback;
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback;
 
 /**
  * AIDL IPC contract for Solid Linked Data Notifications. Provides cross-process access to
  * inbox notifications (share offers, undos) and share requests, and allows sending LDN
- * messages (offer, undo, request, reject) to remote Solid inboxes. Results are delivered
- * via one-way callbacks. Third-party apps normally use the higher-level client SDK rather
+ * messages (offer, undo, request, reject) to remote Solid inboxes. Results are delivered on the two generic callbacks, IASSParcelableCallback and
+ * IASSParcelableListCallback, whose Bundle envelope is described by
+ * `shared/ipc/IpcEnvelope.kt`. Third-party apps normally use the higher-level client SDK rather
  * than binding here directly.
  */
 interface IASSNotificationsService {
 
     void listNotifications(
         String webId,
-        IASSShareNotificationListCallback callback
+        IASSParcelableListCallback callback
     );
 
     void listRequests(
         String webId,
-        IASSShareRequestListCallback callback
+        IASSParcelableListCallback callback
     );
 
+    /** resourceType/resourceName describe the object of a typed (entity) share — the entity's RDF class IRI and human title; null for plain resource shares. */
     void sendOffer(
         String ownerWebId,
         String receiverWebId,
         String resourceUri,
         int mode,
-        IASSUnitCallback callback
+        @nullable String resourceType,
+        @nullable String resourceName,
+        IASSParcelableCallback callback
     );
 
     void sendUndo(
         String ownerWebId,
         String receiverWebId,
         String resourceUri,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     void sendRequest(
@@ -46,7 +47,7 @@ interface IASSNotificationsService {
         String resourceUri,
         int requestedMode,
         @nullable String summary,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     void sendReject(
@@ -54,21 +55,21 @@ interface IASSNotificationsService {
         String requesterWebId,
         String resourceUri,
         @nullable String reason,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Deletes inbox messages older than the given ISO-8601 timestamp; pass null to compact all read messages. */
     void compactInbox(
         String webId,
         @nullable String olderThanIso,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Ensures the user has an LDN inbox, creating and advertising it if absent. Returns its URI. */
-    void ensureInbox(String webId, IASSStringCallback callback);
+    void ensureInbox(String webId, IASSParcelableCallback callback);
 
     /** Deletes a single message from the inbox. */
-    void deleteNotification(String webId, String notificationUri, IASSBooleanCallback callback);
+    void deleteNotification(String webId, String notificationUri, IASSParcelableCallback callback);
 
     /** Tells a receiver their access level changed. This is an as:Update, never a re-Offer. */
     void sendUpdate(
@@ -76,7 +77,9 @@ interface IASSNotificationsService {
         String receiverWebId,
         String resourceUri,
         int mode,
-        IASSUnitCallback callback
+        @nullable String resourceType,
+        @nullable String resourceName,
+        IASSParcelableCallback callback
     );
 
     /** Tells a requester that their access request was granted. */
@@ -86,7 +89,7 @@ interface IASSNotificationsService {
         String resourceUri,
         int mode,
         @nullable String requestUri,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     /**
@@ -99,7 +102,7 @@ interface IASSNotificationsService {
         String resourceUri,
         int mode,
         @nullable String requestUri,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 
     /**
@@ -112,6 +115,6 @@ interface IASSNotificationsService {
         String resourceUri,
         int mode,
         @nullable String reason,
-        IASSUnitCallback callback
+        IASSParcelableCallback callback
     );
 }

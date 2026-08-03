@@ -4,9 +4,7 @@ import android.content.Context
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_DATA_MODULES_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketArtifactCallback
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketCallback
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketListCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
@@ -145,29 +143,14 @@ public class SolidTicketsDataModule private constructor(context: Context) {
         ticketArtifact { tickets, cb -> tickets.getTicketArtifact(webId, artifactUri, cb) }
 
     private suspend fun ticket(
-        call: (IASSTicketsModuleInterface, IASSTicketCallback) -> Unit,
-    ): Ticket? = connector.await { tickets, bridge ->
-        call(tickets, object : IASSTicketCallback.Stub() {
-            override fun onResult(ticket: Ticket?) = bridge.onResult(ticket)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSTicketsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): Ticket? = connector.suspendParcelable(Ticket::class.java, call)
 
     private suspend fun ticketList(
-        call: (IASSTicketsModuleInterface, IASSTicketListCallback) -> Unit,
-    ): TicketList? = connector.await { tickets, bridge ->
-        call(tickets, object : IASSTicketListCallback.Stub() {
-            override fun onResult(ticketList: TicketList?) = bridge.onResult(ticketList)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSTicketsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): TicketList? = connector.suspendParcelable(TicketList::class.java, call)
 
     private suspend fun ticketArtifact(
-        call: (IASSTicketsModuleInterface, IASSTicketArtifactCallback) -> Unit,
-    ): TicketArtifact? = connector.await { tickets, bridge ->
-        call(tickets, object : IASSTicketArtifactCallback.Stub() {
-            override fun onResult(artifact: TicketArtifact?) = bridge.onResult(artifact)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSTicketsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): TicketArtifact? = connector.suspendParcelable(TicketArtifact::class.java, call)
 }

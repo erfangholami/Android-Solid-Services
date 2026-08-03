@@ -1,7 +1,10 @@
 package com.erfangholami.androidsolidservices.services.dispatch
 
 import android.os.Parcelable
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
@@ -72,15 +75,48 @@ fun <T> CoroutineScope.dispatchNetwork(
     return dispatchGuarded(dispatcher, caller, onError) { block().handle(onSuccess, onError) }
 }
 
-fun CoroutineScope.dispatchUnit(
+fun <T : Parcelable?> CoroutineScope.dispatchParcelable(
     dispatcher: CoroutineDispatcher,
-    onError: (Int, String) -> Unit,
-    onResult: () -> Unit,
-    block: suspend () -> SolidResult<Unit>,
-): Job {
-    val caller = beginAttributedCall()
-    return dispatchGuarded(dispatcher, caller, onError) { block().handle({ onResult() }, onError) }
-}
+    callback: IASSParcelableCallback,
+    block: suspend () -> SolidResult<T>,
+): Job = dispatchNetwork(dispatcher, callback::onError, { callback.onResult(IpcEnvelope.of(it)) }, block)
+
+fun <T : Parcelable> CoroutineScope.dispatchParcelableList(
+    dispatcher: CoroutineDispatcher,
+    callback: IASSParcelableListCallback,
+    block: suspend () -> SolidResult<List<T>>,
+): Job = dispatchNetwork(dispatcher, callback::onError, { callback.onResult(IpcEnvelope.ofList(it)) }, block)
+
+fun CoroutineScope.dispatchString(
+    dispatcher: CoroutineDispatcher,
+    callback: IASSParcelableCallback,
+    block: suspend () -> SolidResult<String?>,
+): Job = dispatchNetwork(dispatcher, callback::onError, { callback.onResult(IpcEnvelope.ofString(it)) }, block)
+
+fun CoroutineScope.dispatchBoolean(
+    dispatcher: CoroutineDispatcher,
+    callback: IASSParcelableCallback,
+    block: suspend () -> SolidResult<Boolean>,
+): Job = dispatchNetwork(dispatcher, callback::onError, { callback.onResult(IpcEnvelope.ofBoolean(it)) }, block)
+
+fun <T> CoroutineScope.dispatchAcknowledged(
+    dispatcher: CoroutineDispatcher,
+    callback: IASSParcelableCallback,
+    block: suspend () -> SolidResult<T>,
+): Job = dispatchNetwork(dispatcher, callback::onError, { callback.onResult(IpcEnvelope.empty()) }, block)
+
+fun <T> CoroutineScope.dispatchAnswering(
+    dispatcher: CoroutineDispatcher,
+    callback: IASSParcelableCallback,
+    answer: Parcelable?,
+    block: suspend () -> SolidResult<T>,
+): Job = dispatchNetwork(dispatcher, callback::onError, { callback.onResult(IpcEnvelope.of(answer)) }, block)
+
+fun <T : Parcelable> CoroutineScope.dispatchDataModuleParcelable(
+    dispatcher: CoroutineDispatcher,
+    callback: IASSParcelableCallback,
+    block: suspend () -> SolidResult<T>,
+): Job = dispatchDataModule(dispatcher, callback::onError, { callback.onResult(IpcEnvelope.of(it)) }, block)
 
 fun <T : Parcelable> CoroutineScope.dispatchDataModule(
     dispatcher: CoroutineDispatcher,

@@ -11,22 +11,19 @@ import com.erfangholami.androidsolidservices.di.IoDispatcher
 import com.erfangholami.androidsolidservices.domain.repository.AuthRepository
 import com.erfangholami.androidsolidservices.domain.usecase.AccessCheck
 import com.erfangholami.androidsolidservices.domain.usecase.CheckResourceAccessUseCase
-import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
-import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchAcknowledged
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchAnswering
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchBoolean
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchParcelable
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchParcelableList
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchString
 import com.erfangholami.androidsolidservices.services.dispatch.handle
-import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.IASSResourceService
-import com.erfangholami.androidsolidservices.shared.IASSStringCallback
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode.NULL_WEBID
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSAccessProbeCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSContainerCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidMetadataCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidNonRdfResourceCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidRdfResourceCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSourceReferenceListCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSStreamCallback
+import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidContainer
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
@@ -69,40 +66,33 @@ class ASSResourceService : LifecycleService() {
             val callerPackage = packageManager.getNameForUid(getCallingUid())
             when (val check = checkResourceAccess(callerPackage, webId)) {
                 AccessCheck.Allowed -> onAllowed()
-                is AccessCheck.Denied -> onError(check.code, check.message)
+                is AccessCheck.Denied ->
+                    onError(check.code, check.message)
             }
         }
 
-        override fun getWebId(webId: String, callback: IASSSolidRdfResourceCallback) {
+        override fun getWebId(webId: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
                 val profileWebId = authRepository.getProfile(webId).webId
                 if (profileWebId != null) {
-                    callback.onResult(profileWebId)
+                    callback.onResult(IpcEnvelope.of(profileWebId))
                 } else {
                     callback.onError(NULL_WEBID, "WebID is null.")
                 }
             }
         }
 
-        override fun head(webId: String, resourceUrl: String, callback: IASSSolidMetadataCallback) {
+        override fun head(webId: String, resourceUrl: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    callback::onResult
-                ) {
+                lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                     resourceManager.head(webId, resourceUrl)
                 }
             }
         }
 
-        override fun readContainer(webId: String, containerUrl: String, callback: IASSContainerCallback) {
+        override fun readContainer(webId: String, containerUrl: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    callback::onResult
-                ) {
+                lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                     resourceManager.read(
                         webId,
                         containerUrl,
@@ -115,36 +105,26 @@ class ASSResourceService : LifecycleService() {
         override fun create(
             webId: String,
             resource: SolidNonRDFResource,
-            callback: IASSSolidNonRdfResourceCallback
+            callback: IASSParcelableCallback
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    { callback.onResult(resource) }) {
+                lifecycleScope.dispatchAnswering(ioDispatcher, callback, resource) {
                     resourceManager.create(webId, resource)
                 }
             }
         }
 
-        override fun createRdf(webId: String, resource: SolidRDFResource, callback: IASSSolidRdfResourceCallback) {
+        override fun createRdf(webId: String, resource: SolidRDFResource, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    { callback.onResult(resource) }) {
+                lifecycleScope.dispatchAnswering(ioDispatcher, callback, resource) {
                     resourceManager.create(webId, resource)
                 }
             }
         }
 
-        override fun read(webId: String, resourceUrl: String, callback: IASSSolidNonRdfResourceCallback) {
+        override fun read(webId: String, resourceUrl: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    callback::onResult
-                ) {
+                lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                     resourceManager.read(
                         webId,
                         resourceUrl,
@@ -154,13 +134,9 @@ class ASSResourceService : LifecycleService() {
             }
         }
 
-        override fun readRdf(webId: String, resourceUrl: String, callback: IASSSolidRdfResourceCallback) {
+        override fun readRdf(webId: String, resourceUrl: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    callback::onResult
-                ) {
+                lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                     resourceManager.read(
                         webId,
                         resourceUrl,
@@ -174,13 +150,10 @@ class ASSResourceService : LifecycleService() {
             webId: String,
             resource: SolidNonRDFResource,
             ifMatch: String?,
-            callback: IASSSolidNonRdfResourceCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    { callback.onResult(resource) }) {
+                lifecycleScope.dispatchAnswering(ioDispatcher, callback, resource) {
                     resourceManager.update(webId, resource, ifMatch)
                 }
             }
@@ -190,21 +163,18 @@ class ASSResourceService : LifecycleService() {
             webId: String,
             resource: SolidRDFResource,
             ifMatch: String?,
-            callback: IASSSolidRdfResourceCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    { callback.onResult(resource) }) {
+                lifecycleScope.dispatchAnswering(ioDispatcher, callback, resource) {
                     resourceManager.update(webId, resource, ifMatch)
                 }
             }
         }
 
-        override fun patch(webId: String, resourceUrl: String, patchBody: String, callback: IASSUnitCallback) {
+        override fun patch(webId: String, resourceUrl: String, patchBody: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                     resourceManager.patchRaw(webId, resourceUrl, patchBody)
                 }
             }
@@ -213,43 +183,34 @@ class ASSResourceService : LifecycleService() {
         override fun delete(
             webId: String,
             resource: SolidNonRDFResource,
-            callback: IASSSolidNonRdfResourceCallback
+            callback: IASSParcelableCallback
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    { callback.onResult(resource) }) {
+                lifecycleScope.dispatchAnswering(ioDispatcher, callback, resource) {
                     resourceManager.delete(webId, resource)
                 }
             }
         }
 
-        override fun deleteRdf(webId: String, resource: SolidRDFResource, callback: IASSSolidRdfResourceCallback) {
+        override fun deleteRdf(webId: String, resource: SolidRDFResource, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    { callback.onResult(resource) }) {
+                lifecycleScope.dispatchAnswering(ioDispatcher, callback, resource) {
                     resourceManager.delete(webId, resource)
                 }
             }
         }
 
-        override fun deleteContainer(webId: String, containerUrl: String, callback: IASSUnitCallback) {
+        override fun deleteContainer(webId: String, containerUrl: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(
-                    ioDispatcher,
-                    callback::onError,
-                    { callback.onResult() }) {
+                lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                     resourceManager.delete(webId, containerUrl)
                 }
             }
         }
 
-        override fun exists(webId: String, uri: String, callback: IASSBooleanCallback) {
+        override fun exists(webId: String, uri: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchBoolean(ioDispatcher, callback) {
                     resourceManager.exists(webId, uri)
                 }
             }
@@ -258,18 +219,18 @@ class ASSResourceService : LifecycleService() {
         override fun ensureContainer(
             webId: String,
             containerUri: String,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                     resourceManager.ensureContainer(webId, containerUri)
                 }
             }
         }
 
-        override fun probeAccess(webId: String, uri: String, callback: IASSAccessProbeCallback) {
+        override fun probeAccess(webId: String, uri: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                     resourceManager.probeAccess(webId, uri)
                 }
             }
@@ -279,10 +240,10 @@ class ASSResourceService : LifecycleService() {
             webId: String,
             containerUri: String,
             enrichWithHead: Boolean,
-            callback: IASSSourceReferenceListCallback,
+            callback: IASSParcelableListCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                     resourceManager.listContainer(webId, containerUri, enrichWithHead)
                 }
             }
@@ -292,10 +253,10 @@ class ASSResourceService : LifecycleService() {
             webId: String,
             sourceUri: String,
             destinationUri: String,
-            callback: IASSStringCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchString(ioDispatcher, callback) {
                     resourceManager.copy(webId, sourceUri, destinationUri)
                 }
             }
@@ -305,10 +266,10 @@ class ASSResourceService : LifecycleService() {
             webId: String,
             sourceUri: String,
             destinationUri: String,
-            callback: IASSStringCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchString(ioDispatcher, callback) {
                     resourceManager.move(webId, sourceUri, destinationUri)
                 }
             }
@@ -318,29 +279,29 @@ class ASSResourceService : LifecycleService() {
             webId: String,
             sourceUri: String,
             newName: String,
-            callback: IASSStringCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchString(ioDispatcher, callback) {
                     resourceManager.rename(webId, sourceUri, newName)
                 }
             }
         }
 
-        override fun readPublicRdf(uri: String, callback: IASSSolidRdfResourceCallback) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+        override fun readPublicRdf(uri: String, callback: IASSParcelableCallback) {
+            lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                 resourceManager.readPublic(uri, SolidRDFResource::class.java)
             }
         }
 
-        override fun readPublic(uri: String, callback: IASSSolidNonRdfResourceCallback) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+        override fun readPublic(uri: String, callback: IASSParcelableCallback) {
+            lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                 resourceManager.readPublic(uri, SolidNonRDFResource::class.java)
             }
         }
 
-        override fun headPublic(uri: String, callback: IASSSolidMetadataCallback) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+        override fun headPublic(uri: String, callback: IASSParcelableCallback) {
+            lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                 resourceManager.headPublic(uri)
             }
         }
@@ -352,10 +313,10 @@ class ASSResourceService : LifecycleService() {
             body: ByteArray,
             ifMatch: String?,
             linkHeader: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+                lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                     resourceManager.putRaw(webId, uri, contentType, body, ifMatch, linkHeader)
                 }
             }
@@ -367,7 +328,7 @@ class ASSResourceService : LifecycleService() {
             contentType: String,
             body: ByteArray,
             additionalHeaders: Bundle?,
-            callback: IASSStringCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
                 val headers = additionalHeaders
@@ -375,7 +336,7 @@ class ASSResourceService : LifecycleService() {
                         bundle.keySet().associateWith { key -> bundle.getString(key).orEmpty() }
                     }
                     ?: emptyMap()
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchString(ioDispatcher, callback) {
                     resourceManager.post(webId, uri, contentType, body, headers)
                 }
             }
@@ -385,10 +346,10 @@ class ASSResourceService : LifecycleService() {
             webId: String,
             containerUri: String,
             resource: SolidNonRDFResource,
-            callback: IASSStringCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchString(ioDispatcher, callback) {
                     resourceManager.createInContainer(webId, containerUri, resource)
                 }
             }
@@ -398,16 +359,16 @@ class ASSResourceService : LifecycleService() {
             webId: String,
             containerUri: String,
             resource: SolidRDFResource,
-            callback: IASSStringCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
-                lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+                lifecycleScope.dispatchString(ioDispatcher, callback) {
                     resourceManager.createInContainer(webId, containerUri, resource)
                 }
             }
         }
 
-        override fun readStream(webId: String, uri: String, callback: IASSStreamCallback) {
+        override fun readStream(webId: String, uri: String, callback: IASSParcelableCallback) {
             guard(webId, callback::onError) {
                 lifecycleScope.launch(ioDispatcher) {
                     when (val opened = resourceManager.readStream(webId, uri)) {
@@ -420,7 +381,11 @@ class ASSResourceService : LifecycleService() {
                             val readEnd = pipe[0]
                             val writeEnd = pipe[1]
 
-                            readEnd.use { callback.onResult(it, body.contentType, body.contentLength) }
+                            readEnd.use {
+                                callback.onResult(
+                                    IpcEnvelope.ofStream(it, body.contentType, body.contentLength),
+                                )
+                            }
 
                             launch(ioDispatcher) {
                                 runCatching {
@@ -444,7 +409,7 @@ class ASSResourceService : LifecycleService() {
             contentLength: Long,
             source: ParcelFileDescriptor,
             ifMatch: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
             guard(webId, callback::onError) {
                 lifecycleScope.launch(ioDispatcher) {
@@ -461,7 +426,7 @@ class ASSResourceService : LifecycleService() {
                             contentLength = length,
                             ifMatch = ifMatch,
                             openSource = { spool.inputStream() },
-                        ).handle({ callback.onResult() }, callback::onError)
+                        ).handle({ callback.onResult(IpcEnvelope.empty()) }, callback::onError)
                     } catch (t: Throwable) {
                         if (t is CancellationException) throw t
                         callback.onError(

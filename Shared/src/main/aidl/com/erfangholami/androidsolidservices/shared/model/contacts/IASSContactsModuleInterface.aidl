@@ -1,13 +1,7 @@
 package com.erfangholami.androidsolidservices.shared.model.contacts;
 
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback;
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData;
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookCallback;
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookListCallback;
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactCallback;
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactListCallback;
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactPhotoCallback;
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactMatchCallback;
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullGroupCallback;
 
 /**
  * AIDL IPC contract for the Solid Contacts data module.
@@ -23,21 +17,21 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactMo
 interface IASSContactsModuleInterface {
 
     /** Returns every address book that belongs to the user. */
-    void listAddressBooks(String webId, IASSContactModuleAddressBookListCallback callback);
+    void listAddressBooks(String webId, IASSParcelableCallback callback);
 
     /** Bootstraps the address-book container if absent, then returns the books in it. */
     void ensureAddressBookContainer(
         String webId,
         @nullable String storage,
         @nullable String container,
-        IASSContactModuleAddressBookListCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Reads the address book at addressBookUri. */
     void getAddressBook(
         String webId,
         String addressBookUri,
-        IASSContactModuleAddressBookCallback callback
+        IASSParcelableCallback callback
     );
 
     /**
@@ -50,7 +44,7 @@ interface IASSContactsModuleInterface {
         boolean isPrivate,
         @nullable String storage,
         @nullable String container,
-        IASSContactModuleAddressBookCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Renames the address book at addressBookUri. */
@@ -58,14 +52,14 @@ interface IASSContactsModuleInterface {
         String webId,
         String addressBookUri,
         String newName,
-        IASSContactModuleAddressBookCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Deletes the address book at addressBookUri and everything in it. */
     void deleteAddressBook(
         String webId,
         String addressBookUri,
-        IASSContactModuleAddressBookCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Returns the user's default address book, creating it (titled title) if absent. */
@@ -73,21 +67,21 @@ interface IASSContactsModuleInterface {
         String webId,
         @nullable String storage,
         String title,
-        IASSContactModuleAddressBookCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Reads the contact at contactUri. */
     void getContact(
         String webId,
         String contactUri,
-        IASSContactModuleSolidContactCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Lists the contacts in the address book at addressBookUri. */
     void listContacts(
         String webId,
         String addressBookUri,
-        IASSContactModuleSolidContactListCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Creates a contact from data, optionally adding it to groupUris. */
@@ -96,7 +90,7 @@ interface IASSContactsModuleInterface {
         String addressBookUri,
         in ContactData data,
         in List<String> groupUris,
-        IASSContactModuleSolidContactCallback callback
+        IASSParcelableCallback callback
     );
 
     /**
@@ -108,7 +102,7 @@ interface IASSContactsModuleInterface {
         String addressBookUri,
         String contactUri,
         in ContactData data,
-        IASSContactModuleSolidContactCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Deletes the contact at contactUri (and its photo, if any). */
@@ -116,7 +110,7 @@ interface IASSContactsModuleInterface {
         String webId,
         String addressBookUri,
         String contactUri,
-        IASSContactModuleSolidContactCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Sets the contact's photo. Subject to the ~1 MB Binder transaction limit. */
@@ -125,28 +119,28 @@ interface IASSContactsModuleInterface {
         String contactUri,
         in byte[] photo,
         String contentType,
-        IASSContactModuleSolidContactCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Removes the contact's photo. */
     void removeContactPhoto(
         String webId,
         String contactUri,
-        IASSContactModuleSolidContactCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Reads a contact photo's bytes. Subject to the ~1 MB Binder transaction limit. */
     void getContactPhoto(
         String webId,
         String photoUri,
-        IASSContactModuleContactPhotoCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Finds a contact by exact WebID — the duplicate check before adding someone. */
     void findContactByWebId(
         String webId,
         String targetWebId,
-        IASSContactModuleContactMatchCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Creates a group titled title, optionally seeded with contactUris. */
@@ -155,18 +149,18 @@ interface IASSContactsModuleInterface {
         String addressBookUri,
         String title,
         in List<String> contactUris,
-        IASSContactModuleFullGroupCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Reads the group at groupUri. */
-    void getGroup(String webId, String groupUri, IASSContactModuleFullGroupCallback callback);
+    void getGroup(String webId, String groupUri, IASSParcelableCallback callback);
 
     /** Deletes the group at groupUri. */
     void deleteGroup(
         String webId,
         String addressBookUri,
         String groupUri,
-        IASSContactModuleFullGroupCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Adds the contact at contactUri to the group at groupUri. */
@@ -174,7 +168,7 @@ interface IASSContactsModuleInterface {
         String webId,
         String groupUri,
         String contactUri,
-        IASSContactModuleFullGroupCallback callback
+        IASSParcelableCallback callback
     );
 
     /** Removes the contact at contactUri from the group at groupUri. */
@@ -182,6 +176,6 @@ interface IASSContactsModuleInterface {
         String webId,
         String groupUri,
         String contactUri,
-        IASSContactModuleFullGroupCallback callback
+        IASSParcelableCallback callback
     );
 }

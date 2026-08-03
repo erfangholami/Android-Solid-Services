@@ -6,19 +6,15 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.erfangholami.androidsolidservices.api.sharing.SharingManager
 import com.erfangholami.androidsolidservices.di.IoDispatcher
-import com.erfangholami.androidsolidservices.services.dispatch.dispatchNetwork
-import com.erfangholami.androidsolidservices.services.dispatch.dispatchUnit
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchAcknowledged
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchParcelable
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchParcelableList
 import com.erfangholami.androidsolidservices.services.dispatch.requireShareMode
 import com.erfangholami.androidsolidservices.services.dispatch.requireShareReceiver
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.IASSharingService
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSAccessGrantListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSCatalogEntryListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,18 +40,18 @@ class ASSSharingService : LifecycleService() {
 
         override fun getStoredGivenShares(
             webId: String,
-            callback: IASSGivenShareListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.getStoredGivenShares(webId)
             }
         }
 
         override fun refreshGivenShares(
             webId: String,
-            callback: IASSGivenShareListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.refreshGivenShares(webId)
             }
         }
@@ -63,9 +59,9 @@ class ASSSharingService : LifecycleService() {
         override fun getGivenSharesForResource(
             webId: String,
             resourceUri: String,
-            callback: IASSGivenShareListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.getGivenSharesForResource(webId, resourceUri)
             }
         }
@@ -77,15 +73,19 @@ class ASSSharingService : LifecycleService() {
             receiverKind: Int,
             receiverValue: String?,
             notifyReceiver: Boolean,
-            callback: IASSGivenShareCallback,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                 sharingManager.createShare(
                     webId = webId,
                     resourceUri = resourceUri,
                     mode = requireShareMode(mode),
                     receiver = requireShareReceiver(receiverKind, receiverValue),
                     notifyReceiver = notifyReceiver,
+                    resourceType = resourceType,
+                    resourceName = resourceName,
                 )
             }
         }
@@ -96,14 +96,18 @@ class ASSSharingService : LifecycleService() {
             mode: Int,
             receiverKind: Int,
             receiverValue: String?,
-            callback: IASSGivenShareCallback,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                 sharingManager.updateShare(
                     webId = webId,
                     resourceUri = resourceUri,
                     mode = requireShareMode(mode),
                     receiver = requireShareReceiver(receiverKind, receiverValue),
+                    resourceType = resourceType,
+                    resourceName = resourceName,
                 )
             }
         }
@@ -113,9 +117,9 @@ class ASSSharingService : LifecycleService() {
             resourceUri: String,
             receiverKind: Int,
             receiverValue: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 sharingManager.revokeShare(
                     webId = webId,
                     resourceUri = resourceUri,
@@ -124,20 +128,37 @@ class ASSSharingService : LifecycleService() {
             }
         }
 
+        override fun purgeGivenShares(
+            webId: String,
+            resourceUri: String,
+            includeDescendants: Boolean,
+            notifyReceivers: Boolean,
+            callback: IASSParcelableListCallback,
+        ) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
+                sharingManager.purgeGivenShares(
+                    webId = webId,
+                    resourceUri = resourceUri,
+                    includeDescendants = includeDescendants,
+                    notifyReceivers = notifyReceivers,
+                )
+            }
+        }
+
         override fun getStoredReceivedShares(
             webId: String,
-            callback: IASSReceivedShareListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.getStoredReceivedShares(webId)
             }
         }
 
         override fun refreshReceivedShares(
             webId: String,
-            callback: IASSReceivedShareListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.refreshReceivedShares(webId)
             }
         }
@@ -145,10 +166,16 @@ class ASSSharingService : LifecycleService() {
         override fun addReceivedShare(
             webId: String,
             resourceUri: String,
-            callback: IASSReceivedShareCallback,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
-                sharingManager.addReceivedShare(webId, resourceUri)
+            lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
+                sharingManager.addReceivedShare(
+                    webId, resourceUri,
+                    resourceType = resourceType,
+                    resourceName = resourceName,
+                )
             }
         }
 
@@ -156,18 +183,18 @@ class ASSSharingService : LifecycleService() {
             webId: String,
             resourceUri: String,
             ownerWebId: String,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 sharingManager.removeReceivedShare(webId, resourceUri, ownerWebId)
             }
         }
 
         override fun getAccessGrants(
             webId: String,
-            callback: IASSAccessGrantListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.getAccessGrants(webId)
             }
         }
@@ -175,9 +202,9 @@ class ASSSharingService : LifecycleService() {
         override fun acceptShareRequest(
             webId: String,
             request: ShareRequest,
-            callback: IASSGivenShareCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelable(ioDispatcher, callback) {
                 sharingManager.acceptShareRequest(webId, request)
             }
         }
@@ -186,18 +213,18 @@ class ASSSharingService : LifecycleService() {
             webId: String,
             request: ShareRequest,
             reason: String?,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 sharingManager.rejectShareRequest(webId, request, reason)
             }
         }
 
         override fun rebuildGivenIndex(
             webId: String,
-            callback: IASSGivenShareListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.rebuildGivenIndex(webId)
             }
         }
@@ -205,9 +232,9 @@ class ASSSharingService : LifecycleService() {
         override fun publishCatalogEntry(
             webId: String,
             entry: CatalogEntry,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 sharingManager.publishCatalogEntry(webId, entry)
             }
         }
@@ -215,9 +242,9 @@ class ASSSharingService : LifecycleService() {
         override fun removeCatalogEntry(
             webId: String,
             resourceUri: String,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 sharingManager.removeCatalogEntry(webId, resourceUri)
             }
         }
@@ -225,9 +252,9 @@ class ASSSharingService : LifecycleService() {
         override fun getOwnerCatalog(
             viewerWebId: String,
             ownerWebId: String,
-            callback: IASSCatalogEntryListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.getOwnerCatalog(viewerWebId, ownerWebId)
             }
         }
@@ -235,9 +262,9 @@ class ASSSharingService : LifecycleService() {
         override fun makePrivate(
             webId: String,
             resourceUri: String,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 sharingManager.makePrivate(webId, resourceUri)
             }
         }
@@ -245,9 +272,9 @@ class ASSSharingService : LifecycleService() {
         override fun repairOwnerControl(
             webId: String,
             resourceUri: String,
-            callback: IASSUnitCallback,
+            callback: IASSParcelableCallback,
         ) {
-            lifecycleScope.dispatchUnit(ioDispatcher, callback::onError, { callback.onResult() }) {
+            lifecycleScope.dispatchAcknowledged(ioDispatcher, callback) {
                 sharingManager.repairOwnerControl(webId, resourceUri)
             }
         }
@@ -255,9 +282,9 @@ class ASSSharingService : LifecycleService() {
         override fun syncReceivedShares(
             webId: String,
             notifications: MutableList<ShareNotification>?,
-            callback: IASSReceivedShareListCallback,
+            callback: IASSParcelableListCallback,
         ) {
-            lifecycleScope.dispatchNetwork(ioDispatcher, callback::onError, callback::onResult) {
+            lifecycleScope.dispatchParcelableList(ioDispatcher, callback) {
                 sharingManager.syncReceivedShares(webId, notifications.orEmpty())
             }
         }

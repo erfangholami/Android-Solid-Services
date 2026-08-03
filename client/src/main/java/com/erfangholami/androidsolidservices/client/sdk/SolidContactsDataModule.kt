@@ -4,19 +4,13 @@ import android.content.Context
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_DATA_MODULES_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactMatch
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactPhoto
 import com.erfangholami.androidsolidservices.shared.model.contacts.FullGroup
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookListCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactMatchCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactPhotoCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullGroupCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactListCallback
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContact
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContactList
@@ -249,65 +243,30 @@ public class SolidContactsDataModule private constructor(context: Context) {
     }
 
     private suspend fun addressBookList(
-        call: (IASSContactsModuleInterface, IASSContactModuleAddressBookListCallback) -> Unit,
-    ): AddressBookList? = connector.await { contacts, bridge ->
-        call(contacts, object : IASSContactModuleAddressBookListCallback.Stub() {
-            override fun onResult(addressBookList: AddressBookList?) = bridge.onResult(addressBookList)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSContactsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): AddressBookList? = connector.suspendParcelable(AddressBookList::class.java, call)
 
     private suspend fun addressBook(
-        call: (IASSContactsModuleInterface, IASSContactModuleAddressBookCallback) -> Unit,
-    ): AddressBook? = connector.await { contacts, bridge ->
-        call(contacts, object : IASSContactModuleAddressBookCallback.Stub() {
-            override fun onResult(addressBook: AddressBook?) = bridge.onResult(addressBook)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSContactsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): AddressBook? = connector.suspendParcelable(AddressBook::class.java, call)
 
     private suspend fun solidContact(
-        call: (IASSContactsModuleInterface, IASSContactModuleSolidContactCallback) -> Unit,
-    ): SolidContact? = connector.await { contacts, bridge ->
-        call(contacts, object : IASSContactModuleSolidContactCallback.Stub() {
-            override fun onResult(contact: SolidContact?) = bridge.onResult(contact)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSContactsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): SolidContact? = connector.suspendParcelable(SolidContact::class.java, call)
 
     private suspend fun solidContactList(
-        call: (IASSContactsModuleInterface, IASSContactModuleSolidContactListCallback) -> Unit,
-    ): SolidContactList? = connector.await { contacts, bridge ->
-        call(contacts, object : IASSContactModuleSolidContactListCallback.Stub() {
-            override fun onResult(contactList: SolidContactList?) = bridge.onResult(contactList)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSContactsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): SolidContactList? = connector.suspendParcelable(SolidContactList::class.java, call)
 
     private suspend fun contactPhoto(
-        call: (IASSContactsModuleInterface, IASSContactModuleContactPhotoCallback) -> Unit,
-    ): ContactPhoto? = connector.await { contacts, bridge ->
-        call(contacts, object : IASSContactModuleContactPhotoCallback.Stub() {
-            override fun onResult(photo: ContactPhoto?) = bridge.onResult(photo)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSContactsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): ContactPhoto? = connector.suspendParcelable(ContactPhoto::class.java, call)
 
     private suspend fun contactMatch(
-        call: (IASSContactsModuleInterface, IASSContactModuleContactMatchCallback) -> Unit,
-    ): ContactMatch? = connector.await { contacts, bridge ->
-        call(contacts, object : IASSContactModuleContactMatchCallback.Stub() {
-            override fun onResult(match: ContactMatch?) = bridge.onResult(match)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSContactsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): ContactMatch? = connector.suspendParcelable(ContactMatch::class.java, call)
 
     private suspend fun fullGroup(
-        call: (IASSContactsModuleInterface, IASSContactModuleFullGroupCallback) -> Unit,
-    ): FullGroup? = connector.await { contacts, bridge ->
-        call(contacts, object : IASSContactModuleFullGroupCallback.Stub() {
-            override fun onResult(fullGroup: FullGroup?) = bridge.onResult(fullGroup)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSContactsModuleInterface, IASSParcelableCallback) -> Unit,
+    ): FullGroup? = connector.suspendParcelable(FullGroup::class.java, call)
 }

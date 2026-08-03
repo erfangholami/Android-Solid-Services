@@ -7,20 +7,11 @@ import androidx.lifecycle.lifecycleScope
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.SolidContactsDataModule
 import com.erfangholami.androidsolidservices.api.datamodule.tickets.SolidTicketsDataModule
 import com.erfangholami.androidsolidservices.di.IoDispatcher
-import com.erfangholami.androidsolidservices.services.dispatch.dispatchDataModule
+import com.erfangholami.androidsolidservices.services.dispatch.dispatchDataModuleParcelable
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleAddressBookListCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactMatchCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleContactPhotoCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleFullGroupCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactCallback
-import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactModuleSolidContactListCallback
 import com.erfangholami.androidsolidservices.shared.model.contacts.IASSContactsModuleInterface
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketArtifactCallback
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketCallback
-import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketListCallback
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
@@ -67,8 +58,8 @@ class SolidDataModulesService : LifecycleService() {
 
         override fun listAddressBooks(
             webId: String,
-            callback: IASSContactModuleAddressBookListCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.books.list(webId)
         }
 
@@ -76,16 +67,16 @@ class SolidDataModulesService : LifecycleService() {
             webId: String,
             storage: String?,
             container: String?,
-            callback: IASSContactModuleAddressBookListCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.books.ensureContainer(webId, storage, container)
         }
 
         override fun getAddressBook(
             webId: String,
             addressBookUri: String,
-            callback: IASSContactModuleAddressBookCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.books.get(webId, addressBookUri)
         }
 
@@ -95,8 +86,8 @@ class SolidDataModulesService : LifecycleService() {
             isPrivate: Boolean,
             storage: String?,
             container: String?,
-            callback: IASSContactModuleAddressBookCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.books.create(webId, title, isPrivate, storage, container)
         }
 
@@ -104,16 +95,16 @@ class SolidDataModulesService : LifecycleService() {
             webId: String,
             addressBookUri: String,
             newName: String,
-            callback: IASSContactModuleAddressBookCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.books.rename(webId, addressBookUri, newName)
         }
 
         override fun deleteAddressBook(
             webId: String,
             addressBookUri: String,
-            callback: IASSContactModuleAddressBookCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.books.delete(webId, addressBookUri)
         }
 
@@ -121,24 +112,24 @@ class SolidDataModulesService : LifecycleService() {
             webId: String,
             storage: String?,
             title: String,
-            callback: IASSContactModuleAddressBookCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.books.ensureDefault(webId, storage, title)
         }
 
         override fun getContact(
             webId: String,
             contactUri: String,
-            callback: IASSContactModuleSolidContactCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.get(webId, contactUri)
         }
 
         override fun listContacts(
             webId: String,
             addressBookUri: String,
-            callback: IASSContactModuleSolidContactListCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.list(webId, addressBookUri)
         }
 
@@ -147,8 +138,8 @@ class SolidDataModulesService : LifecycleService() {
             addressBookUri: String,
             data: ContactData,
             groupUris: MutableList<String>?,
-            callback: IASSContactModuleSolidContactCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.create(
                 webId,
                 addressBookUri,
@@ -162,8 +153,8 @@ class SolidDataModulesService : LifecycleService() {
             addressBookUri: String,
             contactUri: String,
             data: ContactData,
-            callback: IASSContactModuleSolidContactCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.update(webId, addressBookUri, contactUri, data)
         }
 
@@ -171,8 +162,8 @@ class SolidDataModulesService : LifecycleService() {
             webId: String,
             addressBookUri: String,
             contactUri: String,
-            callback: IASSContactModuleSolidContactCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.delete(webId, addressBookUri, contactUri)
         }
 
@@ -181,32 +172,32 @@ class SolidDataModulesService : LifecycleService() {
             contactUri: String,
             photo: ByteArray,
             contentType: String,
-            callback: IASSContactModuleSolidContactCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.setPhoto(webId, contactUri, photo, contentType)
         }
 
         override fun removeContactPhoto(
             webId: String,
             contactUri: String,
-            callback: IASSContactModuleSolidContactCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.removePhoto(webId, contactUri)
         }
 
         override fun getContactPhoto(
             webId: String,
             photoUri: String,
-            callback: IASSContactModuleContactPhotoCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.getPhoto(webId, photoUri)
         }
 
         override fun findContactByWebId(
             webId: String,
             targetWebId: String,
-            callback: IASSContactModuleContactMatchCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.contacts.findByWebId(webId, targetWebId)
         }
 
@@ -215,8 +206,8 @@ class SolidDataModulesService : LifecycleService() {
             addressBookUri: String,
             title: String,
             contactUris: MutableList<String>?,
-            callback: IASSContactModuleFullGroupCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.groups.create(
                 webId,
                 addressBookUri,
@@ -228,8 +219,8 @@ class SolidDataModulesService : LifecycleService() {
         override fun getGroup(
             webId: String,
             groupUri: String,
-            callback: IASSContactModuleFullGroupCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.groups.get(webId, groupUri)
         }
 
@@ -237,8 +228,8 @@ class SolidDataModulesService : LifecycleService() {
             webId: String,
             addressBookUri: String,
             groupUri: String,
-            callback: IASSContactModuleFullGroupCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.groups.delete(webId, addressBookUri, groupUri)
         }
 
@@ -246,8 +237,8 @@ class SolidDataModulesService : LifecycleService() {
             webId: String,
             groupUri: String,
             contactUri: String,
-            callback: IASSContactModuleFullGroupCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.groups.addMember(webId, groupUri, contactUri)
         }
 
@@ -255,24 +246,24 @@ class SolidDataModulesService : LifecycleService() {
             webId: String,
             groupUri: String,
             contactUri: String,
-            callback: IASSContactModuleFullGroupCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             contactsDataModule.groups.removeMember(webId, groupUri, contactUri)
         }
     }
 
     private val ticketsModuleInterface = object : IASSTicketsModuleInterface.Stub() {
 
-        override fun listTickets(webId: String, callback: IASSTicketListCallback) =
-            dispatch(callback::onError, callback::onResult) {
+        override fun listTickets(webId: String, callback: IASSParcelableCallback) =
+            dispatch(callback) {
                 ticketsDataModule.tickets.list(webId)
             }
 
         override fun getTicket(
             webId: String,
             ticketUri: String,
-            callback: IASSTicketCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             ticketsDataModule.tickets.get(webId, ticketUri)
         }
 
@@ -285,8 +276,8 @@ class SolidDataModulesService : LifecycleService() {
             images: NewTicketImages?,
             isPrivate: Boolean,
             container: String?,
-            callback: IASSTicketCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             ticketsDataModule.tickets.create(
                 ownerWebId = webId,
                 newTicket = newTicket,
@@ -303,8 +294,8 @@ class SolidDataModulesService : LifecycleService() {
             webId: String,
             ticketUri: String,
             updated: NewTicket,
-            callback: IASSTicketCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             ticketsDataModule.tickets.update(webId, ticketUri, updated)
         }
 
@@ -314,8 +305,8 @@ class SolidDataModulesService : LifecycleService() {
             artifact: ByteArray,
             artifactContentType: String,
             images: NewTicketImages?,
-            callback: IASSTicketCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             ticketsDataModule.tickets.putArtifact(
                 webId,
                 ticketUri,
@@ -328,25 +319,24 @@ class SolidDataModulesService : LifecycleService() {
         override fun deleteTicket(
             webId: String,
             ticketUri: String,
-            callback: IASSTicketCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             ticketsDataModule.tickets.delete(webId, ticketUri)
         }
 
         override fun getTicketArtifact(
             webId: String,
             artifactUri: String,
-            callback: IASSTicketArtifactCallback,
-        ) = dispatch(callback::onError, callback::onResult) {
+            callback: IASSParcelableCallback,
+        ) = dispatch(callback) {
             ticketsDataModule.tickets.getArtifact(webId, artifactUri)
         }
     }
 
     private fun <T : android.os.Parcelable> dispatch(
-        onError: (Int, String) -> Unit,
-        onSuccess: (T?) -> Unit,
+        callback: IASSParcelableCallback,
         block: suspend () -> com.erfangholami.androidsolidservices.shared.result.SolidResult<T>,
     ) {
-        lifecycleScope.dispatchDataModule(ioDispatcher, onError, onSuccess, block)
+        lifecycleScope.dispatchDataModuleParcelable(ioDispatcher, callback, block)
     }
 }

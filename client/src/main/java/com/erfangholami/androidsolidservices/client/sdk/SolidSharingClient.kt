@@ -3,17 +3,12 @@ package com.erfangholami.androidsolidservices.client.sdk
 import android.content.Context
 import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_SHARING_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.IASSharingService
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrant
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSAccessGrantListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSCatalogEntryListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSGivenShareListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSReceivedShareListCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.ReceivedShare
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
@@ -86,6 +81,10 @@ public class SolidSharingClient private constructor(context: Context) {
      * given-shares index. For a container, members inherit the access. When
      * [notifyReceiver] is true and [receiver] is a WebID, a best-effort
      * notification is delivered to their inbox. Returns the created share.
+     *
+     * [resourceType] / [resourceName] mark a typed (entity) share — the RDF class
+     * IRI of the data-module entity the share carries and its human title; both
+     * `null` for plain resource shares.
      */
     public suspend fun createShare(
         webId: String,
@@ -93,23 +92,31 @@ public class SolidSharingClient private constructor(context: Context) {
         mode: ShareMode,
         receiver: ShareReceiver,
         notifyReceiver: Boolean = true,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): GivenShare? = given { service, cb ->
         service.createShare(
             webId, resourceUri, mode.ordinal,
             receiver.kind(), receiver.value(),
-            notifyReceiver, cb,
+            notifyReceiver, resourceType, resourceName, cb,
         )
     }
 
-    /** Changes the access mode of an existing share for [receiver] on [resourceUri]. */
+    /**
+     * Changes the access mode of an existing share for [receiver] on [resourceUri].
+     * [resourceType] / [resourceName] refresh the typed-share marks as on [createShare].
+     */
     public suspend fun updateShare(
         webId: String,
         resourceUri: String,
         mode: ShareMode,
         receiver: ShareReceiver,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): GivenShare? = given { service, cb ->
         service.updateShare(
-            webId, resourceUri, mode.ordinal, receiver.kind(), receiver.value(), cb,
+            webId, resourceUri, mode.ordinal, receiver.kind(), receiver.value(),
+            resourceType, resourceName, cb,
         )
     }
 
@@ -125,6 +132,21 @@ public class SolidSharingClient private constructor(context: Context) {
         service.revokeShare(webId, resourceUri, receiver.kind(), receiver.value(), cb)
     }
 
+    /**
+     * Drops the given-shares index rows of a deleted [resourceUri] — and, with
+     * [includeDescendants], of everything beneath it — without touching access control.
+     * Call it after deleting a resource so its bookkeeping does not outlive it. Returns the
+     * removed rows; [notifyReceivers] additionally sends each WebID receiver an `as:Undo`.
+     */
+    public suspend fun purgeGivenShares(
+        webId: String,
+        resourceUri: String,
+        includeDescendants: Boolean = true,
+        notifyReceivers: Boolean = true,
+    ): List<GivenShare> = givenList { service, cb ->
+        service.purgeGivenShares(webId, resourceUri, includeDescendants, notifyReceivers, cb)
+    }
+
     /** Returns the shares this user has received, from the local index (fast). Re-validate with [refreshReceivedShares]. */
     public suspend fun getStoredReceivedShares(webId: String): List<ReceivedShare> =
         receivedList { service, cb -> service.getStoredReceivedShares(webId, cb) }
@@ -137,12 +159,17 @@ public class SolidSharingClient private constructor(context: Context) {
      * Starts tracking access to [resourceUri] that was shared with this user
      * (e.g. after scanning a QR code or opening a share link), verifying access
      * first. Returns the received share, or `null` if access can't be verified.
+     *
+     * [resourceType] / [resourceName] mark the stored row as a typed (entity)
+     * share; both `null` records an untyped row.
      */
     public suspend fun addReceivedShare(
         webId: String,
         resourceUri: String,
+        resourceType: String? = null,
+        resourceName: String? = null,
     ): ReceivedShare? = received { service, cb ->
-        service.addReceivedShare(webId, resourceUri, cb)
+        service.addReceivedShare(webId, resourceUri, resourceType, resourceName, cb)
     }
 
     /** Stops tracking a received share. Does not affect the resource itself. */
@@ -243,65 +270,30 @@ public class SolidSharingClient private constructor(context: Context) {
     }
 
     private suspend fun givenList(
-        call: (IASSharingService, IASSGivenShareListCallback) -> Unit,
-    ): List<GivenShare> = connector.await { service, bridge ->
-        call(service, object : IASSGivenShareListCallback.Stub() {
-            override fun onResult(shares: MutableList<GivenShare>?) = bridge.onResult(shares ?: emptyList())
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSharingService, IASSParcelableListCallback) -> Unit,
+    ): List<GivenShare> = connector.suspendParcelableList(GivenShare::class.java, call)
 
     private suspend fun receivedList(
-        call: (IASSharingService, IASSReceivedShareListCallback) -> Unit,
-    ): List<ReceivedShare> = connector.await { service, bridge ->
-        call(service, object : IASSReceivedShareListCallback.Stub() {
-            override fun onResult(shares: MutableList<ReceivedShare>?) = bridge.onResult(shares ?: emptyList())
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSharingService, IASSParcelableListCallback) -> Unit,
+    ): List<ReceivedShare> = connector.suspendParcelableList(ReceivedShare::class.java, call)
 
     private suspend fun given(
-        call: (IASSharingService, IASSGivenShareCallback) -> Unit,
-    ): GivenShare? = connector.await { service, bridge ->
-        call(service, object : IASSGivenShareCallback.Stub() {
-            override fun onResult(share: GivenShare?) = bridge.onResult(share)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSharingService, IASSParcelableCallback) -> Unit,
+    ): GivenShare? = connector.suspendParcelable(GivenShare::class.java, call)
 
     private suspend fun received(
-        call: (IASSharingService, IASSReceivedShareCallback) -> Unit,
-    ): ReceivedShare? = connector.await { service, bridge ->
-        call(service, object : IASSReceivedShareCallback.Stub() {
-            override fun onResult(share: ReceivedShare?) = bridge.onResult(share)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSharingService, IASSParcelableCallback) -> Unit,
+    ): ReceivedShare? = connector.suspendParcelable(ReceivedShare::class.java, call)
 
     private suspend fun catalogList(
-        call: (IASSharingService, IASSCatalogEntryListCallback) -> Unit,
-    ): List<CatalogEntry> = connector.await { service, bridge ->
-        call(service, object : IASSCatalogEntryListCallback.Stub() {
-            override fun onResult(entries: MutableList<CatalogEntry>?) = bridge.onResult(entries ?: emptyList())
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSharingService, IASSParcelableListCallback) -> Unit,
+    ): List<CatalogEntry> = connector.suspendParcelableList(CatalogEntry::class.java, call)
 
     private suspend fun accessGrantList(
-        call: (IASSharingService, IASSAccessGrantListCallback) -> Unit,
-    ): List<AccessGrant> = connector.await { service, bridge ->
-        call(service, object : IASSAccessGrantListCallback.Stub() {
-            override fun onResult(grants: MutableList<AccessGrant>?) = bridge.onResult(grants ?: emptyList())
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSharingService, IASSParcelableListCallback) -> Unit,
+    ): List<AccessGrant> = connector.suspendParcelableList(AccessGrant::class.java, call)
 
     private suspend fun unit(
-        call: (IASSharingService, IASSUnitCallback) -> Unit,
-    ): Unit = connector.await { service, bridge ->
-        call(service, object : IASSUnitCallback.Stub() {
-            override fun onResult() = bridge.onResult(Unit)
-            override fun onError(errorCode: Int, errorMessage: String) = bridge.onError(errorCode, errorMessage)
-        })
-    }
+        call: (IASSharingService, IASSParcelableCallback) -> Unit,
+    ): Unit = connector.suspendUnit(call)
 }

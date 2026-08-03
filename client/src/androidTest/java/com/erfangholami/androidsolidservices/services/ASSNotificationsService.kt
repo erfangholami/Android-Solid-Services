@@ -5,13 +5,11 @@ import android.content.Intent
 import android.os.IBinder
 import com.erfangholami.androidsolidservices.client.internal.fakes.CallLog
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
-import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
 import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
-import com.erfangholami.androidsolidservices.shared.IASSStringCallback
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareNotificationListCallback
-import com.erfangholami.androidsolidservices.shared.model.sharing.IASSShareRequestListCallback
+import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 
 /**
  * Stands in for the ASS app's notifications service, hosted in `:fakeass`.
@@ -30,17 +28,17 @@ class ASSNotificationsService : Service() {
 
         override fun listNotifications(
             webId: String?,
-            callback: IASSShareNotificationListCallback?,
+            callback: IASSParcelableListCallback?,
         ) {
             record("listNotifications", "webId" to webId)
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(mutableListOf(Fixtures.SHARE_NOTIFICATION))
+            else callback?.onResult(IpcEnvelope.ofList(listOf(Fixtures.SHARE_NOTIFICATION)))
         }
 
-        override fun listRequests(webId: String?, callback: IASSShareRequestListCallback?) {
+        override fun listRequests(webId: String?, callback: IASSParcelableListCallback?) {
             record("listRequests", "webId" to webId)
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(mutableListOf(Fixtures.SHARE_REQUEST))
+            else callback?.onResult(IpcEnvelope.ofList(listOf(Fixtures.SHARE_REQUEST)))
         }
 
         override fun sendOffer(
@@ -48,7 +46,9 @@ class ASSNotificationsService : Service() {
             receiverWebId: String?,
             resourceUri: String?,
             mode: Int,
-            callback: IASSUnitCallback?,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "sendOffer",
@@ -56,6 +56,8 @@ class ASSNotificationsService : Service() {
                 "receiverWebId" to receiverWebId,
                 "resourceUri" to resourceUri,
                 "mode" to mode,
+                "resourceType" to resourceType,
+                "resourceName" to resourceName,
             )
             callback.unit(ownerWebId)
         }
@@ -64,7 +66,7 @@ class ASSNotificationsService : Service() {
             ownerWebId: String?,
             receiverWebId: String?,
             resourceUri: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "sendUndo",
@@ -81,7 +83,7 @@ class ASSNotificationsService : Service() {
             resourceUri: String?,
             requestedMode: Int,
             summary: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "sendRequest",
@@ -99,7 +101,7 @@ class ASSNotificationsService : Service() {
             requesterWebId: String?,
             resourceUri: String?,
             reason: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "sendReject",
@@ -114,26 +116,26 @@ class ASSNotificationsService : Service() {
         override fun compactInbox(
             webId: String?,
             olderThanIso: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("compactInbox", "webId" to webId, "olderThanIso" to olderThanIso)
             callback.unit(webId)
         }
 
-        override fun ensureInbox(webId: String?, callback: IASSStringCallback?) {
+        override fun ensureInbox(webId: String?, callback: IASSParcelableCallback?) {
             record("ensureInbox", "webId" to webId)
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.INBOX)
+            else callback?.onResult(IpcEnvelope.ofString(Fixtures.INBOX))
         }
 
         override fun deleteNotification(
             webId: String?,
             notificationUri: String?,
-            callback: IASSBooleanCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("deleteNotification", "webId" to webId, "notificationUri" to notificationUri)
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(true)
+            else callback?.onResult(IpcEnvelope.ofBoolean(true))
         }
 
         override fun sendUpdate(
@@ -141,7 +143,9 @@ class ASSNotificationsService : Service() {
             receiverWebId: String?,
             resourceUri: String?,
             mode: Int,
-            callback: IASSUnitCallback?,
+            resourceType: String?,
+            resourceName: String?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "sendUpdate",
@@ -149,6 +153,8 @@ class ASSNotificationsService : Service() {
                 "receiverWebId" to receiverWebId,
                 "resourceUri" to resourceUri,
                 "mode" to mode,
+                "resourceType" to resourceType,
+                "resourceName" to resourceName,
             )
             callback.unit(ownerWebId)
         }
@@ -159,7 +165,7 @@ class ASSNotificationsService : Service() {
             resourceUri: String?,
             mode: Int,
             requestUri: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "sendAccept",
@@ -178,7 +184,7 @@ class ASSNotificationsService : Service() {
             resourceUri: String?,
             mode: Int,
             requestUri: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "recordDecisionGranted",
@@ -197,7 +203,7 @@ class ASSNotificationsService : Service() {
             resourceUri: String?,
             mode: Int,
             reason: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "recordDecisionRejected",
@@ -218,8 +224,9 @@ class ASSNotificationsService : Service() {
 
     private fun failing(webId: String?) = webId == Fixtures.FAILING_WEB_ID
 
-    private fun IASSUnitCallback?.unit(webId: String?) {
-        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE) else this?.onResult()
+    private fun IASSParcelableCallback?.unit(webId: String?) {
+        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
+        else this?.onResult(IpcEnvelope.empty())
     }
 
     companion object {

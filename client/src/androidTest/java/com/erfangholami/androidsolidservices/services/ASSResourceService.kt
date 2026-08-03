@@ -7,18 +7,11 @@ import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import com.erfangholami.androidsolidservices.client.internal.fakes.CallLog
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
-import com.erfangholami.androidsolidservices.shared.IASSBooleanCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.IASSResourceService
-import com.erfangholami.androidsolidservices.shared.IASSStringCallback
-import com.erfangholami.androidsolidservices.shared.IASSUnitCallback
 import com.erfangholami.androidsolidservices.shared.error.ExceptionsErrorCode
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSAccessProbeCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSContainerCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidMetadataCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidNonRdfResourceCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSolidRdfResourceCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSSourceReferenceListCallback
-import com.erfangholami.androidsolidservices.shared.model.resource.IASSStreamCallback
+import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 
@@ -37,7 +30,7 @@ class ASSResourceService : Service() {
 
     private val binder = object : IASSResourceService.Stub() {
 
-        override fun getWebId(webId: String?, callback: IASSSolidRdfResourceCallback?) {
+        override fun getWebId(webId: String?, callback: IASSParcelableCallback?) {
             record("getWebId", "webId" to webId)
             callback.rdf(webId) { Fixtures.rdfResource(Fixtures.WEB_ID) }
         }
@@ -45,7 +38,7 @@ class ASSResourceService : Service() {
         override fun head(
             webId: String?,
             resourceUrl: String?,
-            callback: IASSSolidMetadataCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("head", "webId" to webId, "resourceUrl" to resourceUrl)
             callback.metadata(webId)
@@ -54,7 +47,7 @@ class ASSResourceService : Service() {
         override fun create(
             webId: String?,
             resource: SolidNonRDFResource?,
-            callback: IASSSolidNonRdfResourceCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("create", "webId" to webId, "resource" to resource.describe())
             callback.nonRdf(webId)
@@ -63,7 +56,7 @@ class ASSResourceService : Service() {
         override fun createRdf(
             webId: String?,
             resource: SolidRDFResource?,
-            callback: IASSSolidRdfResourceCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("createRdf", "webId" to webId, "resource" to resource.describe())
             callback.rdf(webId)
@@ -72,7 +65,7 @@ class ASSResourceService : Service() {
         override fun read(
             webId: String?,
             resourceUrl: String?,
-            callback: IASSSolidNonRdfResourceCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("read", "webId" to webId, "resourceUrl" to resourceUrl)
             callback.nonRdf(webId, resourceUrl)
@@ -81,7 +74,7 @@ class ASSResourceService : Service() {
         override fun readRdf(
             webId: String?,
             resourceUrl: String?,
-            callback: IASSSolidRdfResourceCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("readRdf", "webId" to webId, "resourceUrl" to resourceUrl)
             callback.rdf(webId) { Fixtures.rdfResource(resourceUrl ?: Fixtures.RESOURCE) }
@@ -90,18 +83,18 @@ class ASSResourceService : Service() {
         override fun readContainer(
             webId: String?,
             containerUrl: String?,
-            callback: IASSContainerCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("readContainer", "webId" to webId, "containerUrl" to containerUrl)
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.container())
+            else callback?.onResult(IpcEnvelope.of(Fixtures.container()))
         }
 
         override fun update(
             webId: String?,
             resource: SolidNonRDFResource?,
             ifMatch: String?,
-            callback: IASSSolidNonRdfResourceCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "update",
@@ -116,7 +109,7 @@ class ASSResourceService : Service() {
             webId: String?,
             resource: SolidRDFResource?,
             ifMatch: String?,
-            callback: IASSSolidRdfResourceCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "updateRdf",
@@ -131,7 +124,7 @@ class ASSResourceService : Service() {
             webId: String?,
             resourceUrl: String?,
             patchBody: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "patch",
@@ -145,7 +138,7 @@ class ASSResourceService : Service() {
         override fun delete(
             webId: String?,
             resource: SolidNonRDFResource?,
-            callback: IASSSolidNonRdfResourceCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("delete", "webId" to webId, "resource" to resource.describe())
             callback.nonRdf(webId)
@@ -154,7 +147,7 @@ class ASSResourceService : Service() {
         override fun deleteRdf(
             webId: String?,
             resource: SolidRDFResource?,
-            callback: IASSSolidRdfResourceCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("deleteRdf", "webId" to webId, "resource" to resource.describe())
             callback.rdf(webId)
@@ -163,22 +156,22 @@ class ASSResourceService : Service() {
         override fun deleteContainer(
             webId: String?,
             containerUrl: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("deleteContainer", "webId" to webId, "containerUrl" to containerUrl)
             callback.unit(webId)
         }
 
-        override fun exists(webId: String?, uri: String?, callback: IASSBooleanCallback?) {
+        override fun exists(webId: String?, uri: String?, callback: IASSParcelableCallback?) {
             record("exists", "webId" to webId, "uri" to uri)
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(true)
+            else callback?.onResult(IpcEnvelope.ofBoolean(true))
         }
 
         override fun ensureContainer(
             webId: String?,
             containerUri: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("ensureContainer", "webId" to webId, "containerUri" to containerUri)
             callback.unit(webId)
@@ -187,18 +180,18 @@ class ASSResourceService : Service() {
         override fun probeAccess(
             webId: String?,
             uri: String?,
-            callback: IASSAccessProbeCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("probeAccess", "webId" to webId, "uri" to uri)
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.ACCESS_PROBE)
+            else callback?.onResult(IpcEnvelope.of(Fixtures.ACCESS_PROBE))
         }
 
         override fun listContainer(
             webId: String?,
             containerUri: String?,
             enrichWithHead: Boolean,
-            callback: IASSSourceReferenceListCallback?,
+            callback: IASSParcelableListCallback?,
         ) {
             record(
                 "listContainer",
@@ -207,14 +200,14 @@ class ASSResourceService : Service() {
                 "enrichWithHead" to enrichWithHead,
             )
             if (failing(webId)) callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-            else callback?.onResult(Fixtures.SOURCE_REFERENCES.toMutableList())
+            else callback?.onResult(IpcEnvelope.ofList(Fixtures.SOURCE_REFERENCES))
         }
 
         override fun copy(
             webId: String?,
             sourceUri: String?,
             destinationUri: String?,
-            callback: IASSStringCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "copy",
@@ -229,7 +222,7 @@ class ASSResourceService : Service() {
             webId: String?,
             sourceUri: String?,
             destinationUri: String?,
-            callback: IASSStringCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "move",
@@ -244,23 +237,23 @@ class ASSResourceService : Service() {
             webId: String?,
             sourceUri: String?,
             newName: String?,
-            callback: IASSStringCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record("rename", "webId" to webId, "sourceUri" to sourceUri, "newName" to newName)
             callback.string(webId, Fixtures.DESTINATION)
         }
 
-        override fun readPublicRdf(uri: String?, callback: IASSSolidRdfResourceCallback?) {
+        override fun readPublicRdf(uri: String?, callback: IASSParcelableCallback?) {
             record("readPublicRdf", "uri" to uri)
             callback.rdf(null) { Fixtures.rdfResource(uri ?: Fixtures.RESOURCE) }
         }
 
-        override fun readPublic(uri: String?, callback: IASSSolidNonRdfResourceCallback?) {
+        override fun readPublic(uri: String?, callback: IASSParcelableCallback?) {
             record("readPublic", "uri" to uri)
             callback.nonRdf(null, uri)
         }
 
-        override fun headPublic(uri: String?, callback: IASSSolidMetadataCallback?) {
+        override fun headPublic(uri: String?, callback: IASSParcelableCallback?) {
             record("headPublic", "uri" to uri)
             callback.metadata(null)
         }
@@ -272,7 +265,7 @@ class ASSResourceService : Service() {
             body: ByteArray?,
             ifMatch: String?,
             linkHeader: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "putRaw",
@@ -292,7 +285,7 @@ class ASSResourceService : Service() {
             contentType: String?,
             body: ByteArray?,
             additionalHeaders: Bundle?,
-            callback: IASSStringCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "post",
@@ -309,7 +302,7 @@ class ASSResourceService : Service() {
             webId: String?,
             containerUri: String?,
             resource: SolidNonRDFResource?,
-            callback: IASSStringCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "createInContainer",
@@ -324,7 +317,7 @@ class ASSResourceService : Service() {
             webId: String?,
             containerUri: String?,
             resource: SolidRDFResource?,
-            callback: IASSStringCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             record(
                 "createInContainerRdf",
@@ -335,7 +328,7 @@ class ASSResourceService : Service() {
             callback.string(webId, Fixtures.RESOURCE)
         }
 
-        override fun readStream(webId: String?, uri: String?, callback: IASSStreamCallback?) {
+        override fun readStream(webId: String?, uri: String?, callback: IASSParcelableCallback?) {
             record("readStream", "webId" to webId, "uri" to uri)
             if (failing(webId)) {
                 callback?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
@@ -349,7 +342,11 @@ class ASSResourceService : Service() {
                 }
             }.apply { isDaemon = true }.start()
 
-            pipe[0].use { callback?.onResult(it, "application/octet-stream", payload.size.toLong()) }
+            pipe[0].use {
+                callback?.onResult(
+                    IpcEnvelope.ofStream(it, "application/octet-stream", payload.size.toLong()),
+                )
+            }
         }
 
         override fun writeStream(
@@ -359,7 +356,7 @@ class ASSResourceService : Service() {
             contentLength: Long,
             source: ParcelFileDescriptor?,
             ifMatch: String?,
-            callback: IASSUnitCallback?,
+            callback: IASSParcelableCallback?,
         ) {
             val received = source?.let {
                 ParcelFileDescriptor.AutoCloseInputStream(it).use { stream -> stream.readBytes() }
@@ -385,29 +382,32 @@ class ASSResourceService : Service() {
 
     private fun failing(webId: String?) = webId == Fixtures.FAILING_WEB_ID
 
-    private fun IASSSolidRdfResourceCallback?.rdf(
+    private fun IASSParcelableCallback?.rdf(
         webId: String?,
         value: () -> SolidRDFResource = { Fixtures.rdfResource() },
     ) {
-        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE) else this?.onResult(value())
-    }
-
-    private fun IASSSolidNonRdfResourceCallback?.nonRdf(webId: String?, identifier: String? = null) {
         if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(Fixtures.nonRdfResource(identifier ?: Fixtures.BINARY))
+        else this?.onResult(IpcEnvelope.of(value()))
     }
 
-    private fun IASSSolidMetadataCallback?.metadata(webId: String?) {
+    private fun IASSParcelableCallback?.nonRdf(webId: String?, identifier: String? = null) {
         if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
-        else this?.onResult(Fixtures.METADATA)
+        else this?.onResult(IpcEnvelope.of(Fixtures.nonRdfResource(identifier ?: Fixtures.BINARY)))
     }
 
-    private fun IASSUnitCallback?.unit(webId: String?) {
-        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE) else this?.onResult()
+    private fun IASSParcelableCallback?.metadata(webId: String?) {
+        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
+        else this?.onResult(IpcEnvelope.of(Fixtures.METADATA))
     }
 
-    private fun IASSStringCallback?.string(webId: String?, value: String?) {
-        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE) else this?.onResult(value)
+    private fun IASSParcelableCallback?.unit(webId: String?) {
+        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
+        else this?.onResult(IpcEnvelope.empty())
+    }
+
+    private fun IASSParcelableCallback?.string(webId: String?, value: String?) {
+        if (failing(webId)) this?.onError(ERROR_CODE, Fixtures.ERROR_MESSAGE)
+        else this?.onResult(IpcEnvelope.ofString(value))
     }
 
     /**

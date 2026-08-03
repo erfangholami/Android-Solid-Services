@@ -5,9 +5,9 @@ import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.erfangholami.androidsolidservices.client.sdk.SolidException
+import com.erfangholami.androidsolidservices.client.sdk.booleanBridge
 import com.erfangholami.androidsolidservices.services.ASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
-import com.erfangholami.androidsolidservices.shared.model.auth.IASSLogoutCallback
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -143,15 +143,7 @@ class ServiceConnectorIpcTest {
         assertFalse(connector.isConnected())
     }
 
-    private fun logoutCallback(bridge: CallbackBridge<Boolean>) =
-        object : IASSLogoutCallback.Stub() {
-            override fun onResult(granted: Boolean) = bridge.onResult(granted)
-
-            override fun onError(
-                errorCode: Int,
-                errorMessage: String?,
-            ) = bridge.onError(errorCode, errorMessage)
-        }
+    private fun logoutCallback(bridge: CallbackBridge<Boolean>) = booleanBridge(bridge)
 
     private companion object {
         const val CONNECT_TIMEOUT = 10_000L
