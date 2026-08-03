@@ -1,7 +1,12 @@
 package com.erfangholami.androidsolidservices.shared.model.tickets
 
+import com.erfangholami.androidsolidservices.shared.model.datamodule.DATA_MODULE_ROOT
+
 /** Path suffix appended to a storage root when allocating the tickets container. */
-public const val TICKETS_DIRECTORY_SUFFIX: String = "tickets/"
+public const val TICKETS_SEGMENT: String = "tickets/"
+
+/** Where a new tickets container is allocated: `{storage}datamodule/tickets/`. */
+public const val TICKETS_DIRECTORY_SUFFIX: String = DATA_MODULE_ROOT + TICKETS_SEGMENT
 
 /**
  * Document name minted for the tickets index inside a tickets container. Extension-less on
@@ -11,12 +16,6 @@ public const val TICKETS_DIRECTORY_SUFFIX: String = "tickets/"
  * bootstrapping; discovery always follows the registered URL, whatever it is named.
  */
 public const val TICKETS_INDEX_NAME: String = "index"
-
-/**
- * Document name of a tickets index bootstrapped by the legacy flat layout, used to locate the
- * index of a container that is still registered as a `solid:instanceContainer`.
- */
-public const val LEGACY_TICKETS_INDEX_FILE_NAME: String = "index.ttl"
 
 /**
  * Document name minted for a ticket inside its per-ticket container

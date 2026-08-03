@@ -1,6 +1,6 @@
 package com.erfangholami.androidsolidservices.api.resource
 
-import com.erfangholami.androidsolidservices.api.datamodule.contacts.InMemoryPodResourceManager
+import com.erfangholami.androidsolidservices.api.testing.InMemoryPodResourceManager
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.runBlocking

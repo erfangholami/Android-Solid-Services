@@ -1,6 +1,10 @@
 package com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation
 
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.ContactStore
+import com.erfangholami.androidsolidservices.api.datamodule.core.containerOf
+import com.erfangholami.androidsolidservices.api.datamodule.core.deleteTolerant
+import com.erfangholami.androidsolidservices.api.datamodule.core.putAttachment
+import com.erfangholami.androidsolidservices.api.datamodule.core.readAttachment
 import com.erfangholami.androidsolidservices.api.resource.implementation.casUpdate
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactMatch
@@ -9,12 +13,9 @@ import com.erfangholami.androidsolidservices.shared.model.contacts.INDEX_FILE_NA
 import com.erfangholami.androidsolidservices.shared.model.contacts.PEOPLE_DIRECTORY_SUFFIX
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContact
 import com.erfangholami.androidsolidservices.shared.model.contacts.SolidContactList
-import com.erfangholami.androidsolidservices.shared.model.resource.SolidNonRDFResource
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.ContactRDF
-import com.erfangholami.androidsolidservices.shared.result.SolidErrorCode
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.result.solidCatching
-import com.erfangholami.androidsolidservices.shared.vocab.LDP
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -50,8 +51,7 @@ internal class ContactEngine(
             "A contact needs at least a name, phone number, or email address"
         }
         val contactId = UUID.randomUUID().toString()
-        val bookContainer =
-            addressBookUri.substring(0, addressBookUri.lastIndexOf("/") + 1)
+        val bookContainer = containerOf(addressBookUri)
         val contactContainer = "${bookContainer}${PEOPLE_DIRECTORY_SUFFIX}${contactId}/"
         val contactUri = "${contactContainer}${INDEX_FILE_NAME}"
         pod.ensureContainer(ownerWebId, contactContainer)
@@ -109,8 +109,7 @@ internal class ContactEngine(
             SolidContact.createFromRdf(pod.contact(ownerWebId, contactUri))
         }.getOrNull()
 
-        val contactContainer = contactUri.substring(0, contactUri.lastIndexOf("/") + 1)
-        deleteTolerant(ownerWebId, contactContainer)
+        deleteTolerant(pod.solidResourceManager, ownerWebId, containerOf(contactUri))
 
         var removed = false
         pod.updatePeopleIndex(ownerWebId, addressBookUri) {
@@ -119,10 +118,9 @@ internal class ContactEngine(
         }
         val groupsIndexUri = pod.addressBook(ownerWebId, addressBookUri).getGroupsIndex()
         if (removed && groupsIndexUri != null) {
-            val groupsIndexRdf = pod.groupsIndex(ownerWebId, groupsIndexUri)
-            groupsIndexRdf.getGroups(addressBookUri).forEach { groupSummary ->
-                groupEngine.removeMemberInternal(ownerWebId, groupSummary.uri, contactUri)
-            }
+            pod.groupsIndex(ownerWebId, groupsIndexUri)
+                .getGroups(addressBookUri)
+                .forEach { groupEngine.removeMemberInternal(ownerWebId, it.uri, contactUri) }
         }
         contact ?: SolidContact(uri = contactUri, data = ContactData())
     }
@@ -133,16 +131,14 @@ internal class ContactEngine(
         photo: ByteArray,
         contentType: String,
     ): SolidResult<SolidContact> = solidCatching {
-        val contactContainer = contactUri.substringBefore(INDEX_FILE_NAME)
-        val photoUri = "${contactContainer}photo${extensionFor(contentType)}"
-        pod.solidResourceManager.putRaw(
-            webId = ownerWebId,
-            uri = photoUri,
+        val photoUri = putAttachment(
+            resourceManager = pod.solidResourceManager,
+            ownerWebId = ownerWebId,
+            container = contactUri.substringBefore(INDEX_FILE_NAME),
+            role = PHOTO_ROLE,
             contentType = contentType,
             body = photo,
-            ifMatch = null,
-            linkHeader = "<${LDP.NON_RDF_SOURCE}>; rel=\"type\"",
-        ).getOrThrow()
+        )
         var previous: String? = null
         val updated = pod.solidResourceManager.casUpdate(
             ownerWebId,
@@ -155,7 +151,7 @@ internal class ContactEngine(
         ).getOrThrow()
         val previousPhotoUri = previous
         if (previousPhotoUri != null && previousPhotoUri != photoUri) {
-            deleteTolerant(ownerWebId, previousPhotoUri)
+            deleteTolerant(pod.solidResourceManager, ownerWebId, previousPhotoUri)
         }
         SolidContact.createFromRdf(updated)
     }
@@ -179,7 +175,7 @@ internal class ContactEngine(
                 }
             },
         ).getOrThrow()
-        removedPhoto?.let { deleteTolerant(ownerWebId, it) }
+        removedPhoto?.let { deleteTolerant(pod.solidResourceManager, ownerWebId, it) }
         SolidContact.createFromRdf(updated)
     }
 
@@ -187,11 +183,8 @@ internal class ContactEngine(
         ownerWebId: String,
         photoUri: String,
     ): SolidResult<ContactPhoto> = solidCatching {
-        val resource = pod.solidResourceManager
-            .read(ownerWebId, photoUri, SolidNonRDFResource::class.java)
-            .getOrThrow()
-        val bytes = resource.getEntity().use { it.readBytes() }
-        ContactPhoto(photoUri, resource.getContentType(), bytes)
+        val attachment = readAttachment(pod.solidResourceManager, ownerWebId, photoUri)
+        ContactPhoto(attachment.uri, attachment.contentType, attachment.bytes)
     }
 
     override suspend fun findByWebId(
@@ -229,19 +222,6 @@ internal class ContactEngine(
             }.awaitAll()
         }
     }
-
-    private fun extensionFor(contentType: String): String = when (contentType.lowercase()) {
-        "image/jpeg", "image/jpg" -> ".jpg"
-        "image/png" -> ".png"
-        "image/webp" -> ".webp"
-        else -> ""
-    }
-
-    private suspend fun deleteTolerant(ownerWebId: String, uri: String) {
-        when (val result = pod.solidResourceManager.delete(ownerWebId, uri)) {
-            is SolidResult.Success -> Unit
-            is SolidResult.Failure ->
-                if (result.error.code == SolidErrorCode.NOT_FOUND) Unit else result.getOrThrow()
-        }
-    }
 }
+
+private const val PHOTO_ROLE = "photo"

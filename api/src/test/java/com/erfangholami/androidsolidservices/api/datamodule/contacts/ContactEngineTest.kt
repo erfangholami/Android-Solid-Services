@@ -4,18 +4,16 @@ import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementat
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation.ContactEngine
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation.ContactsPodAccess
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation.GroupEngine
+import com.erfangholami.androidsolidservices.api.testing.InMemoryPodResourceManager
+import com.erfangholami.androidsolidservices.api.testing.inMemoryPod
 import com.erfangholami.androidsolidservices.shared.model.contacts.PhoneType
 import com.erfangholami.androidsolidservices.shared.model.contacts.contactData
-import com.erfangholami.androidsolidservices.shared.model.profile.WebId
-import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
 import com.erfangholami.androidsolidservices.shared.model.typeindex.PrivateTypeIndex
-import com.erfangholami.androidsolidservices.shared.model.typeindex.PublicTypeIndex
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.AddressBookRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.GroupsIndexRDF
 import com.erfangholami.androidsolidservices.shared.rdf.contacts.NameEmailIndexRDF
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
-import com.erfangholami.androidsolidservices.shared.vocab.Solid
 import com.erfangholami.androidsolidservices.shared.vocab.VCARD
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -29,7 +27,7 @@ class ContactEngineTest {
 
     private val webId = "https://alice.pod/profile/card#me"
     private val storage = "https://alice.pod/"
-    private val bookContainer = "https://alice.pod/contacts/b1/"
+    private val bookContainer = "https://alice.pod/datamodule/contacts/b1/"
     private val bookUri = "${bookContainer}index.ttl#this"
     private val peopleUri = "${bookContainer}people.ttl"
     private val groupsUri = "${bookContainer}groups.ttl"
@@ -44,28 +42,17 @@ class ContactEngineTest {
 
     @Before
     fun setUp() {
-        fake = InMemoryPodResourceManager()
+        fake = inMemoryPod(
+            webId = webId,
+            privateTypeIndexUri = privateIndexUri,
+            publicTypeIndexUri = publicIndexUri,
+            seedPrivateIndex = { addInstance(VCARD.ADDRESS_BOOK, bookUri) },
+        )
         val pod = ContactsPodAccess(fake)
         groupEngine = GroupEngine(pod)
         contactEngine = ContactEngine(pod, groupEngine)
         bookEngine = AddressBookEngine(pod)
 
-        fake.put(
-            WebId(
-                webId,
-                listOf(
-                    RdfQuad(webId, Solid.PRIVATE_TYPE_INDEX, privateIndexUri),
-                    RdfQuad(webId, Solid.PUBLIC_TYPE_INDEX, publicIndexUri),
-                ),
-            ),
-        )
-        fake.put(
-            PrivateTypeIndex(privateIndexUri, "application/ld+json", null, null)
-                .apply { addInstance(VCARD.ADDRESS_BOOK, bookUri) },
-        )
-        fake.put(
-            PublicTypeIndex(publicIndexUri, "application/ld+json", null, null),
-        )
         fake.put(
             AddressBookRDF(
                 identifier = bookUri,
@@ -204,7 +191,7 @@ class ContactEngineTest {
 
         val book = bookEngine.ensureDefault(webId, storage, title = "Contacts").getOrThrow()
         assertEquals("Contacts", book.title)
-        assertTrue(book.uri.startsWith("${storage}contacts/"))
+        assertTrue(book.uri.startsWith("${storage}datamodule/contacts/"))
         val refreshedIndex = fake.store[privateIndexUri] as PrivateTypeIndex
         assertEquals(listOf(book.uri), refreshedIndex.getInstances(VCARD.ADDRESS_BOOK))
     }
@@ -241,9 +228,9 @@ class ContactEngineTest {
 
     @Test
     fun `ensureContainer creates the contacts container and returns the book list`() = runBlocking {
-        assertFalse(fake.store.containsKey("${storage}contacts/"))
+        assertFalse(fake.store.containsKey("${storage}datamodule/contacts/"))
         val list = bookEngine.ensureContainer(webId, storage).getOrThrow()
-        assertTrue(fake.store.containsKey("${storage}contacts/"))
+        assertTrue(fake.store.containsKey("${storage}datamodule/contacts/"))
         assertEquals(listOf(bookUri), list.privateAddressBookUris)
     }
 
@@ -284,6 +271,6 @@ class ContactEngineTest {
         val book = bookEngine.ensureDefault(webId, storage, title = "Contacts").getOrThrow()
         val newBookContainer = book.uri.substring(0, book.uri.lastIndexOf('/') + 1)
         assertTrue(fake.store.containsKey(newBookContainer))
-        assertTrue(fake.store.containsKey("${storage}contacts/"))
+        assertTrue(fake.store.containsKey("${storage}datamodule/contacts/"))
     }
 }
