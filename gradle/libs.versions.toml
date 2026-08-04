@@ -40,7 +40,6 @@ orgJson = "20260719"
 firebaseBom = "34.16.0"
 googleServices = "4.5.0"
 firebaseCrashlyticsPlugin = "3.0.7"
-firebasePerfPlugin = "2.0.2"
 dokka = "2.2.0"
 spotless = "7.0.4"
 ktlint = "1.6.0"
@@ -156,7 +155,6 @@ google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
-firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
 
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
 

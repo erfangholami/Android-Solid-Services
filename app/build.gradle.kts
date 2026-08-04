@@ -9,7 +9,6 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
-    alias(libs.plugins.firebase.perf)
 }
 
 android {
@@ -119,17 +118,22 @@ android {
     }
 }
 
-// The Google plugins register a task per variant and cannot be applied per flavour, so they also
-// run for `foss` — where google-services.json deliberately does not exist and there is no Firebase
-// SDK to read the resources or consume the mapping upload. Disabling their foss tasks keeps the
-// plugins applied for `gms` without leaking a Firebase config into the F-Droid build.
+// The google-services and Crashlytics plugins register a task per variant and cannot be applied
+// per flavour, so they also run for `foss` — where google-services.json deliberately does not exist
+// and there is no Firebase SDK to read the resources or consume the mapping upload. Disabling their
+// foss tasks keeps them working for `gms` without leaking a Firebase config into the F-Droid build.
+//
+// The firebase-perf *plugin* is deliberately not applied. It instruments bytecode through AGP's
+// Instrumentation API rather than a task, so this gate cannot reach it — in SolidShare the same
+// setup rewrote AppAuth's `url.openConnection()` into `FirebasePerfUrlConnection` in the foss build,
+// which then crashed with NoClassDefFoundError during OIDC discovery because foss carries no
+// Firebase. The SDK stays on gms for custom traces; only automatic HTTP/screen instrumentation goes.
 tasks
     .matching { task ->
         task.name.contains("Foss") &&
             (
                 task.name.endsWith("GoogleServices") ||
-                    task.name.contains("Crashlytics") ||
-                    task.name.contains("FirebasePerf")
+                    task.name.contains("Crashlytics")
             )
     }.configureEach { enabled = false }
 
