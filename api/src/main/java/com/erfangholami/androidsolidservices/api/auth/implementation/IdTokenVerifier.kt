@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.api.auth.implementation
 
 import android.util.Log
+import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Jwks
 import kotlinx.coroutines.Dispatchers
@@ -10,18 +11,24 @@ import okhttp3.Request
 import org.json.JSONObject
 import java.net.URI
 import java.security.PublicKey
+import java.util.concurrent.ConcurrentHashMap
 
 internal object IdTokenVerifier {
 
     private const val TAG = "IdTokenVerifier"
 
+    private const val JWKS_CACHE_TTL_MS = 6 * 60 * 60 * 1000L
+
     private val httpClient = OkHttpClient()
+
+    private data class CachedJwks(val json: JSONObject, val fetchedAt: Long)
+
+    private val jwksCache = ConcurrentHashMap<String, CachedJwks>()
 
     suspend fun verify(idToken: String, jwksUri: URI): Boolean {
         return try {
-            val jwksJson = fetchJwks(jwksUri) ?: return false
             val kid = extractKid(idToken)
-            val publicKey = resolveKey(jwksJson, kid)
+            val publicKey = resolveKeyCached(jwksUri, kid)
             if (publicKey == null) {
                 Log.w(TAG, "verify: no matching key found in JWKS (kid=$kid)")
                 return false
@@ -35,6 +42,30 @@ internal object IdTokenVerifier {
             Log.w(TAG, "verify: JWT verification failed", e)
             false
         }
+    }
+
+    private suspend fun resolveKeyCached(jwksUri: URI, kid: String?): PublicKey? {
+        val cacheKey = jwksUri.toString()
+        val cached = jwksCache[cacheKey]
+        val now = System.currentTimeMillis()
+        if (cached != null && now - cached.fetchedAt < JWKS_CACHE_TTL_MS) {
+            resolveKey(cached.json, kid)?.let { return it }
+        }
+        val fetched = fetchJwks(jwksUri)
+        if (fetched != null) {
+            jwksCache[cacheKey] = CachedJwks(fetched, now)
+            return resolveKey(fetched, kid)
+        }
+        if (cached != null) {
+            Log.w(TAG, "resolveKeyCached: JWKS refetch failed; falling back to cached keys")
+            Telemetry.log(
+                "solid.auth jwks refetch failed for ${jwksUri.host}; " +
+                    "using keys cached ${(now - cached.fetchedAt) / 1000}s ago",
+            )
+            return resolveKey(cached.json, kid)
+        }
+        Telemetry.log("solid.auth jwks unavailable for ${jwksUri.host} and nothing cached — validation will fail")
+        return null
     }
 
     private suspend fun fetchJwks(jwksUri: URI): JSONObject? = withContext(Dispatchers.IO) {

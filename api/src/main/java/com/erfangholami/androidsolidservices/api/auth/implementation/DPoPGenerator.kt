@@ -5,6 +5,8 @@ import android.security.keystore.KeyProperties
 import com.erfangholami.androidsolidservices.api.BuildConfig
 import com.erfangholami.androidsolidservices.api.auth.supportedDPopAlgorithms
 import com.erfangholami.androidsolidservices.api.auth.supportsDPop
+import com.erfangholami.androidsolidservices.shared.telemetry.Telemetry
+import com.erfangholami.androidsolidservices.shared.telemetry.TelemetryAttribute
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Jwks
 import io.jsonwebtoken.security.SignatureAlgorithm
@@ -21,6 +23,7 @@ import java.security.spec.ECGenParameterSpec
 import java.util.Date
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Semaphore
 import javax.security.auth.x500.X500Principal
 
 internal class DPoPGenerator private constructor(
@@ -31,6 +34,9 @@ internal class DPoPGenerator private constructor(
         private val instances: MutableMap<String, DPoPGenerator> = mutableMapOf()
         private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
         private const val KEYSTORE_ALIAS_PREFIX = BuildConfig.KEY_GENERATOR_ALIAS
+        private const val SIGN_ATTEMPTS = 3
+        private const val SIGN_RETRY_DELAY_MS = 25L
+        private val signingPermits = Semaphore(4)
 
         fun getInstance(
             authDiscovery: AuthorizationServiceDiscovery,
@@ -90,11 +96,40 @@ internal class DPoPGenerator private constructor(
             )
         }
 
-        return Jwts.builder()
-            .header().add(headers).and()
-            .claims().add(claims).and()
-            .signWith(keyholder.getPrivateKey(), keyholder.getAlgorithm())
-            .compact()
+        var lastFailure: RuntimeException? = null
+        repeat(SIGN_ATTEMPTS) { attempt ->
+            signingPermits.acquire()
+            try {
+                return Jwts.builder()
+                    .header().add(headers).and()
+                    .claims().add(claims).and()
+                    .signWith(keyholder.getPrivateKey(), keyholder.getAlgorithm())
+                    .compact()
+            } catch (e: io.jsonwebtoken.security.SecurityException) {
+                lastFailure = e
+                if (!isPrunedKeystoreOperation(e) || attempt == SIGN_ATTEMPTS - 1) throw e
+                Telemetry.log("solid.auth dpop sign retry ${attempt + 1} after keystore operation prune")
+            } finally {
+                signingPermits.release()
+            }
+            Thread.sleep(SIGN_RETRY_DELAY_MS)
+        }
+        throw lastFailure!!
+    }
+
+    private fun isPrunedKeystoreOperation(failure: Throwable): Boolean {
+        var cause: Throwable? = failure
+        while (cause != null) {
+            val message = cause.message.orEmpty()
+            if (message.contains("Pruned") ||
+                message.contains("INVALID_OPERATION_HANDLE") ||
+                message.contains("Invalid operation handle")
+            ) {
+                return true
+            }
+            cause = cause.cause
+        }
+        return false
     }
 
     private fun selectCategory(): DPopSupportedAlgo {
@@ -154,6 +189,27 @@ private object KeyPairHolderFactory {
         }
 }
 
+private fun loadOrCreateKeyPair(provider: String, alias: String, generate: () -> KeyPair): KeyPair {
+    val keyStore = KeyStore.getInstance(provider)
+    keyStore.load(null)
+    if (keyStore.containsAlias(alias)) {
+        val entry = runCatching { keyStore.getEntry(alias, null) as? KeyStore.PrivateKeyEntry }.getOrNull()
+        if (entry != null) return KeyPair(entry.certificate.publicKey, entry.privateKey)
+        val failure = IllegalStateException(
+            "DPoP key '$alias' exists in the Android Keystore but could not be loaded; " +
+                "refusing to replace it because the provider's tokens are bound to it.",
+        )
+        Telemetry.recordException(
+            failure,
+            TelemetryAttribute.OPERATION to "solid.auth.dpop_key",
+            "auth_error" to "dpop_key_unrecoverable",
+        )
+        throw failure
+    }
+    Telemetry.log("solid.auth dpop key generated (alias=$alias)")
+    return generate()
+}
+
 private abstract class RSKeyHolder(
     override val provider: String,
     override val alias: String,
@@ -163,12 +219,7 @@ private abstract class RSKeyHolder(
     override val keyPair: KeyPair get() = localKeyPair
 
     init {
-        val keyStore = KeyStore.getInstance(provider)
-        keyStore.load(null)
-        if (keyStore.containsAlias(alias)) {
-            val entry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
-            localKeyPair = KeyPair(entry.certificate.publicKey, entry.privateKey)
-        } else {
+        localKeyPair = loadOrCreateKeyPair(provider, alias) {
             val kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, provider)
             kpg.initialize(
                 KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY)
@@ -180,7 +231,7 @@ private abstract class RSKeyHolder(
                     .setKeySize(2048)
                     .build()
             )
-            localKeyPair = kpg.generateKeyPair()
+            kpg.generateKeyPair()
         }
     }
 }
@@ -194,12 +245,7 @@ private abstract class PSKeyHolder(
     override val keyPair: KeyPair get() = localKeyPair
 
     init {
-        val keyStore = KeyStore.getInstance(provider)
-        keyStore.load(null)
-        if (keyStore.containsAlias(alias)) {
-            val entry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
-            localKeyPair = KeyPair(entry.certificate.publicKey, entry.privateKey)
-        } else {
+        localKeyPair = loadOrCreateKeyPair(provider, alias) {
             val kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, provider)
             kpg.initialize(
                 KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY)
@@ -210,7 +256,7 @@ private abstract class PSKeyHolder(
                     .setKeySize(2048)
                     .build()
             )
-            localKeyPair = kpg.generateKeyPair()
+            kpg.generateKeyPair()
         }
     }
 }
@@ -225,12 +271,7 @@ private abstract class ESKeyHolder(
     override val keyPair: KeyPair get() = localKeyPair
 
     init {
-        val keyStore = KeyStore.getInstance(provider)
-        keyStore.load(null)
-        if (keyStore.containsAlias(alias)) {
-            val entry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
-            localKeyPair = KeyPair(entry.certificate.publicKey, entry.privateKey)
-        } else {
+        localKeyPair = loadOrCreateKeyPair(provider, alias) {
             val kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, provider)
             kpg.initialize(
                 KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY)
@@ -238,7 +279,7 @@ private abstract class ESKeyHolder(
                     .setDigests(getDigest())
                     .build()
             )
-            localKeyPair = kpg.generateKeyPair()
+            kpg.generateKeyPair()
         }
     }
 }

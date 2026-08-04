@@ -10,4 +10,5 @@ internal fun Profile.toAccount(): SolidAccount = SolidAccount(
     sessionError = authState.authorizationException?.let { ex ->
         listOfNotNull(ex.error, ex.errorDescription).joinToString(": ").ifEmpty { null }
     },
+    hasRefreshToken = authState.refreshToken != null,
 )

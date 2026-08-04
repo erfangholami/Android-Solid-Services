@@ -17,10 +17,16 @@ package com.erfangholami.androidsolidservices.shared.model.profile
  *   fresh sign-in with the same WebID to be restored.
  * @property sessionError The OAuth error recorded when the session terminally expired (e.g.
  *   `invalid_grant: token expired`), or `null` while the session is healthy.
+ * @property hasRefreshToken Whether the provider issued a refresh token for this session. When
+ *   `false` the session cannot be renewed in the background and ends as soon as the access token
+ *   expires — some providers (notably Community Solid Server) withhold `offline_access` unless the
+ *   user opts to stay signed in on the consent screen. Surface this to the user at login so the
+ *   short session does not read as a bug.
  */
 public data class SolidAccount(
     val userInfo: UserInfo? = null,
     val webId: WebId? = null,
     val isAuthorized: Boolean = true,
     val sessionError: String? = null,
+    val hasRefreshToken: Boolean = true,
 )
