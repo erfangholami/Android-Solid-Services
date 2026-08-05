@@ -87,6 +87,49 @@ tasks.register<Sync>("dokkaToDocs") {
     into(layout.projectDirectory.dir("docs/api"))
 }
 
+// The version the docs quote is the last *released* one, so the describe suffix is dropped:
+// between tags `0.6.1-16-g3f29ffb` still means "0.6.1 is what you can depend on". On a tag the
+// two are already the same.
+val docsVersion: String =
+    Regex("""^\d+\.\d+\.\d+""").find(assVersionName)?.value ?: assVersionName
+
+// Writes the dependency blocks the docs include with `--8<--`, so no version is typed by hand.
+// Three sites drifted apart the last time they were (getting-started said 0.6.0, the README
+// 0.6.1, the artifacts 0.7.0); generating them from the same value the artifacts publish under
+// is what stops that recurring. Committed rather than gitignored, so `mkdocs serve` works on a
+// fresh clone without running Gradle first — CI regenerates them before every deploy.
+tasks.register("docsIncludes") {
+    description = "Generates the version-bearing MkDocs includes into docs/_includes."
+    group = "documentation"
+
+    val includesDir = layout.projectDirectory.dir("docs/_includes")
+    val version = docsVersion
+    val generated = listOf("dependency-client.md", "dependency-api.md", "version.md")
+
+    inputs.property("version", version)
+    // The generated files, not the directory: `abbreviations.md` is hand-written and lives here
+    // too, and declaring the directory would put it in reach of Gradle's stale-output cleanup.
+    generated.forEach { outputs.file(includesDir.file(it)) }
+
+    doLast {
+        val dir = includesDir.asFile
+        dir.mkdirs()
+
+        fun dependencyBlock(artifact: String) =
+            """
+            ```kotlin title="build.gradle.kts"
+            dependencies {
+                implementation("com.erfangholami.androidsolidservices:$artifact:$version")
+            }
+            ```
+            """.trimIndent() + "\n"
+
+        dir.resolve("dependency-client.md").writeText(dependencyBlock("client"))
+        dir.resolve("dependency-api.md").writeText(dependencyBlock("api"))
+        dir.resolve("version.md").writeText(version)
+    }
+}
+
 // No public-API guard is configured. binary-compatibility-validator was removed because it
 // registers no tasks under AGP 9: it hooks on the standalone Kotlin Android plugin, which AGP
 // replaces with KotlinBaseApiPlugin and refuses to let you apply. KGP's own ABI validation is

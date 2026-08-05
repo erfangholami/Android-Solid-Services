@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+<!--
+  The announcement bar. Before 1.0 the SDK is source-breaking between minors and the AIDL wire
+  protocol changes with it, so a reader arriving on a version-switched page needs to know the
+  contract is not frozen yet. `announce.dismiss` remembers a dismissal per visitor.
+-->
+{% block announce %}
+  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
+  versions. Pin a version, and read the
+  <a href="{{ 'project/releases/' | url }}">release notes</a> before upgrading.
+{% endblock %}

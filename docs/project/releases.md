@@ -19,7 +19,7 @@ sessions stop expiring after a day. Several release-only defects are fixed.
 
 - **`AuthorizeWithSolid`**, an `ActivityResultContract` your app launches from its own foreground.
   The app no longer requests `SYSTEM_ALERT_WINDOW` at all, and the dialog that used to demand it
-  on first launch is gone. See [Getting Started](getting-started.md).
+  on first launch is gone. See [Getting Started](../start/quickstart.md).
 - **Solid accounts in Android Settings.** Each signed-in WebID appears under Settings → Accounts.
   "Add account" there opens sign-in and returns where it was invoked; removing an account signs
   that profile out. `ChooseSolidAccount` offers the system account chooser to apps that want it.
@@ -38,7 +38,7 @@ sessions stop expiring after a day. Several release-only defects are fixed.
   Dynamic registrations expire — Inrupt discards them after 24 hours and the refresh token dies
   with them, which is what forced a fresh sign-in roughly once a day. Existing sessions keep the
   registration they were created with; only new sign-ins use the hosted identity. Your own app can
-  do the same: see [Client ID Document](client-id-document/README.md).
+  do the same: see [Client ID Document](../reference/client-id-document.md).
 - **PATCH on SPARQL-only servers** — a `text/n3` patch refused with 415 is restated as SPARQL
   Update and retried, so patching works on Inrupt ESS over IPC too.
 - **Versions come from the git tag**, so a release is a tag and nothing is edited by hand.
@@ -120,7 +120,7 @@ consumers (the project is pre-1.0 and unstable).
 - Narrowed the `api` consumer R8 rules: jjwt's implementation tree keeps only what is reached
   reflectively instead of every member, so apps embedding `api` pin far less.
 - Build and tooling: ktlint and detekt in CI on every PR, a published
-  [API reference](api/index.html), `targetSdk` 36, AGP and SDK 37.
+  [API reference](../api/index.html), `targetSdk` 36, AGP and SDK 37.
 
 ### Bug fixes
 
@@ -174,7 +174,7 @@ security-focused overhaul of authentication and a clean-architecture refactor of
 
 - **Solid-OIDC Client ID Document** — authenticate with a stable, hosted `client_id` instead of
   per-device dynamic registration, removing forced re-logins when a provider drops an old
-  registration. See [Using a Client ID Document](client-id-document/README.md).
+  registration. See [Using a Client ID Document](../reference/client-id-document.md).
 - **Per-account DPoP keys** — each account gets its own DPoP keypair in the Android Keystore.
 
 ### New — Resources & contacts over IPC

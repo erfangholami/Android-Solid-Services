@@ -3,6 +3,10 @@ name: Deploy Docs
 # Every push to main redeploys the site — main is where releases and documentation land, and
 # both should be reflected at once. The deploy is a few minutes and idempotent, so no paths
 # filter is worth its maintenance. Tag pushes redeploy too, covering a tag pushed on its own.
+#
+# main publishes the `dev` version; a `v*` tag publishes `X.Y` and moves the `latest` alias.
+# Readers land on `latest` and can switch — which matters before 1.0, when the IPC wire protocol
+# changes between minors and an app one version behind needs the docs that match it.
 on:
   push:
     tags:
@@ -14,11 +18,18 @@ on:
 permissions:
   contents: write
 
+env:
+  CI: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # mike reads and rewrites the gh-pages branch, and git-revision-date-localized dates
+          # every page from its commit history. Both need more than a shallow clone.
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -37,12 +48,40 @@ jobs:
           -Dorg.gradle.java.installations.auto-detect=false
           -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
 
+      # Writes docs/_includes/dependency-*.md from the same git-derived version the artifacts
+      # are published under, so no dependency line in the docs is maintained by hand.
+      - name: Generate version includes
+        run: >-
+          ./gradlew docsIncludes
+          -Dorg.gradle.java.installations.auto-detect=false
+          -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
+      # The social-card renderer draws through Cairo; without these the plugin fails at import.
+      - name: Install image libraries for social cards
+        run: >-
+          sudo apt-get update && sudo apt-get install -y
+          libcairo2-dev libfreetype6-dev libffi-dev libjpeg-dev libpng-dev libz-dev
+
       - name: Install MkDocs dependencies
         run: pip install -r docs-requirements.txt
 
-      - name: Deploy to GitHub Pages
-        run: mkdocs gh-deploy --force
+      - name: Configure git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # A tag publishes its own minor and becomes what readers land on; main publishes `dev`.
+      - name: Deploy versioned docs
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"          # v0.7.0 -> 0.7.0
+            minor="${version%.*}"                    # 0.7.0  -> 0.7
+            mike deploy --push --update-aliases "$minor" latest
+            mike set-default --push latest
+          else
+            mike deploy --push dev
+          fi

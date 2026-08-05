@@ -148,7 +148,7 @@ value type rather than okhttp / titanium-json-ld types (the JSON-LD codec is an 
 |-------------------|-------------------------------------------------------------------------------------------------------|
 | Resource model    | `Resource` → `RDFResource` / `NonRDFResource` → `SolidRDFResource` / `SolidNonRDFResource` / `SolidContainer` (with `size` / `createdTime` / `lastModified` accessors since 0.5.0) |
 | Result types      | `SolidResult<T>` (sealed: `Success`, `Failure`) with typed `SolidError`, `SolidHeaders`, `HTTPConstants` |
-| Data module types | `AddressBook`, `AddressBookList`, `Contact`, `FullContact`, `NewContact`, `FullGroup`                 |
+| Data module types | `AddressBook`, `AddressBookList`, `Contact`, `SolidContact`, `SolidContactList`, `ContactData`, `FullGroup`, `NewTicket`, `Ticket`, `TicketList` |
 | Sharing types     | `GivenShare`, `ReceivedShare`, `ShareMode`, `ShareReceiver`, `AccessGrant`, `CatalogEntry`, `ShareNotification`, `ShareRequest` (0.5.0) |
 | Patch type        | `N3Patch` — type-safe DSL and diff factory for [Solid N3 Patch](https://solidproject.org/TR/protocol#n3-patch) documents |
 | Vocabulary        | `LDP`, `VCARD`, `ACL`, `ACP`, `OWL`, `DC`, `RDFS`, `Solid` constants                                  |

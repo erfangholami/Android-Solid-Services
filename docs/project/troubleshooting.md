@@ -14,7 +14,7 @@ Common errors and how to fix them. If your issue isn't listed here, [open an iss
 
 ```kotlin
 try {
-    signInClient.getAccount()
+    signInClient.getAccount(webId)
 } catch (e: SolidAppNotFoundException) {
     // redirect user to the ASS install page
 }
@@ -44,7 +44,7 @@ Do not call methods immediately after obtaining the client object — binding is
 
 **Cause:** You called the deprecated `SolidSignInClient.requestLogin`. It drew the account picker over your app from a background service, which Android permits only with the `SYSTEM_ALERT_WINDOW` (overlay draw) permission. ASS no longer requests that permission, so the call now always fails with this exception instead of leaving you waiting for a callback that cannot arrive.
 
-**Fix:** Launch the `AuthorizeWithSolid` contract from your Activity — the picker opens in your own foreground, the chosen WebID comes back as an activity result, and no permission is involved. See [Getting Started](getting-started.md).
+**Fix:** Launch the `AuthorizeWithSolid` contract from your Activity — the picker opens in your own foreground, the chosen WebID comes back as an activity result, and no permission is involved. See [Getting Started](../start/quickstart.md).
 
 ---
 
@@ -72,7 +72,7 @@ The value must exactly match your application ID (e.g. `com.example.myapp`).
 
 **Cause:** No user is logged in to ASS, or the stored session has been fully invalidated (refresh token expired or revoked by the pod server).
 
-**Fix:** In your app, check `signInClient.getAccount()` — if it returns `null`, launch the `AuthorizeWithSolid` contract again to start a new auth flow.
+**Fix:** In your app, check `signInClient.getAccount(webId)` — if it returns `null`, launch the `AuthorizeWithSolid` contract again to start a new auth flow.
 
 ---
 
@@ -103,10 +103,12 @@ You no longer call `updateDPoPNonce` or `getLastTokenResponse` — both were **r
 **Fix:** Re-read the resource to get the latest ETag and version, merge your changes, and retry:
 
 ```kotlin
-val latest = resourceManager.read(webId, uri, MyNote::class.java)
-    .getOrThrow()
+val latest = resourceManager.read(webId, uri, MyNote::class.java).getOrThrow()
 val merged = mergeChanges(latest, myChanges)
-resourceManager.update(webId, merged, ifMatch = latest.etag)
+
+// The ETag lives on the response metadata, not on the resource — HEAD for the current one.
+val etag = resourceManager.head(webId, uri).getOrThrow().etag
+resourceManager.update(webId, merged, ifMatch = etag)
 ```
 
 ---
@@ -127,8 +129,16 @@ resourceManager.update(webId, merged, ifMatch = latest.etag)
 
 ```kotlin
 val meta = resourceManager.head(webId, uri).getOrNull()
-val allowed = meta?.wacAllow  // contains read/write/append/control booleans
+
+// WacAllow carries two sets of mode names — what this user may do, and what anyone may do.
+val mine = meta?.wacAllow?.userModes.orEmpty()      // e.g. ["read", "append"]
+val anyones = meta?.wacAllow?.publicModes.orEmpty()
+
+if ("write" !in mine) showReadOnly()
 ```
+
+`probeAccess` wraps this in a typed result if you would rather not read header sets — see
+[Access control](../build/access-control.md).
 
 If access should be granted, check the ACL/ACP policy on the pod server side.
 

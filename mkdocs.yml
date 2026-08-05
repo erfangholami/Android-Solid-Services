@@ -4,9 +4,18 @@ site_description: Single Solid sign-in for the Android ecosystem — SDK and app
 site_author: Erfan Gholami
 repo_name: Android-Solid-Services
 repo_url: https://github.com/erfangholami/Android-Solid-Services
+edit_uri: edit/dev/docs/
+
+# Snippet fragments, not pages. `pymdownx.snippets` reads them straight off disk, so keeping them
+# out of the build stops each one rendering as its own orphan URL.
+exclude_docs: |
+  _includes/
 
 theme:
   name: material
+  custom_dir: overrides
+  logo: logo.png
+  favicon: logo.png
   palette:
     - scheme: default
       primary: deep purple
@@ -23,39 +32,145 @@ theme:
   icon:
     repo: fontawesome/brands/github
   features:
+    # Navigation. `indexes` is what lets a section have its own landing page, which is how
+    # Build with it gets an overview without a README.md sitting inside the docs tree.
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
+    - navigation.indexes
+    - navigation.path
     - navigation.top
+    - navigation.footer
+    - toc.follow
+    # Content. `tabs.link` is the important one: it synchronises every content tab sharing a
+    # label across the whole site, so choosing "Client" once on the quickstart keeps every
+    # capability page on the client flavour.
+    - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+    - content.code.select
+    - content.tooltips
+    - content.action.edit
     - search.highlight
     - search.suggest
-    - content.code.copy
+    - search.share
+    - announce.dismiss
 
 extra_css:
   - stylesheets/extra.css
 
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/erfangholami/Android-Solid-Services
+      name: Android Solid Services on GitHub
+    - icon: fontawesome/brands/android
+      link: https://github.com/erfangholami/Android-Solid-Services/releases
+      name: Download the app
+
 nav:
   - Home: index.md
-  - Get started:
-      - Getting Started: getting-started.md
-      - How It Works: concepts.md
-  - Integrate:
-      - Client Library: client-library.md
-      - API Library: api-library.md
-      - Solid-OIDC Client ID Document: client-id-document/README.md
-  - Architecture: architecture.md
-  - More:
-      - Troubleshooting: troubleshooting.md
-      - Releases: release.md
-      - Privacy Policy: privacy.md
-  # A tab that leaves the site: it opens the generated Dokka reference directly, rather than a
-  # page that merely links to it. `dokkaToDocs` writes it into docs/api before the site builds.
-  - API reference: api/index.html
+  - Start here:
+      - Quickstart: start/quickstart.md
+      - Client or API?: start/client-or-api.md
+      - How it works: start/how-it-works.md
+      - Install the app: start/install-app.md
+  - Build with it:
+      - build/index.md
+      - Sign in & accounts: build/auth.md
+      - Resources & containers: build/resources.md
+      - Contacts: build/contacts.md
+      - Tickets: build/tickets.md
+      - Sharing: build/sharing.md
+      - Notifications: build/notifications.md
+      - Access control: build/access-control.md
+      - Type index: build/type-index.md
+      - Telemetry: build/telemetry.md
+  - Reference:
+      - Error codes: reference/errors.md
+      - Solid-OIDC Client ID Document: reference/client-id-document.md
+      # A nav entry that leaves the site: it opens the generated Dokka reference directly, rather
+      # than a page that merely links to it. `dokkaToDocs` writes it into docs/api before the
+      # site builds.
+      - API reference: api/index.html
+  - Project:
+      - Architecture: project/architecture.md
+      - Adding a data module: project/adding-a-data-module.md
+      - Troubleshooting: project/troubleshooting.md
+      - Releases: project/releases.md
+      - Contributing: project/contributing.md
+      - Privacy Policy: project/privacy.md
 
 plugins:
   - search
+  - tags
+  - glightbox
+  # Social cards need Cairo and friends, which the workflow apt-installs. Leaving them on
+  # locally would mean every contributor needs that stack to run `mkdocs serve`, so they render
+  # in CI only.
+  - social:
+      enabled: !ENV [CI, false]
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: date
+      fallback_to_build_date: true
+      # Following renames across the restructure reports a creation date newer than the last
+      # revision on every moved page, which is a wall of warnings for no gain.
+      enable_git_follow: false
+  - llmstxt:
+      markdown_description: >-
+        Android Solid Services gives Android apps a single Solid sign-in. One app holds the
+        user's pod accounts; every other app reaches those pods through it over AIDL, with the
+        user's permission and without handling a credential.
+      sections:
+        Start here:
+          - start/quickstart.md
+          - start/client-or-api.md
+          - start/how-it-works.md
+        Capabilities:
+          - build/*.md
+        Reference:
+          - reference/*.md
+        Project:
+          - project/architecture.md
+          - project/troubleshooting.md
+  - redirects:
+      # Every path the restructure moved. These are the URLs already in the README, in release
+      # notes and in community posts.
+      redirect_maps:
+        getting-started.md: start/quickstart.md
+        concepts.md: start/how-it-works.md
+        client-library.md: start/client-or-api.md
+        api-library.md: start/client-or-api.md
+        architecture.md: project/architecture.md
+        troubleshooting.md: project/troubleshooting.md
+        release.md: project/releases.md
+        privacy.md: project/privacy.md
+        client-id-document/README.md: reference/client-id-document.md
+        features/README.md: build/index.md
+        features/auth.md: build/auth.md
+        features/resources.md: build/resources.md
+        features/access-control.md: build/access-control.md
+        features/sharing.md: build/sharing.md
+        features/notifications.md: build/notifications.md
+        features/data-modules.md: project/adding-a-data-module.md
+        features/tickets.md: build/tickets.md
+        features/contacts.md: build/contacts.md
+        features/type-index.md: build/type-index.md
+        features/telemetry.md: build/telemetry.md
 
 markdown_extensions:
   - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - abbr
+  - footnotes
   - pymdownx.details
   - pymdownx.superfences:
       custom_fences:
@@ -64,10 +179,28 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.highlight:
       anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.tabbed:
       alternate_style: true
-  - attr_list
-  - md_in_html
+      slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
+  # Snippets serve two jobs: the dependency blocks generated from the git tag, so no version is
+  # ever typed by hand, and the glossary appended to every page for `content.tooltips`.
+  - pymdownx.snippets:
+      base_path:
+        - docs/_includes
+        - .
+      check_paths: true
+      auto_append:
+        - abbreviations.md
+  - pymdownx.blocks.caption
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.keys
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
+      toc_depth: 3

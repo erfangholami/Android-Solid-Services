@@ -60,7 +60,7 @@ sequenceDiagram
 After login, ASS stores the tokens (access + refresh) in an **encrypted-at-rest** DataStore — AES-256-GCM under an Android Keystore key — so the persisted session is unreadable off-device. When DPoP is in use, each account also has **its own DPoP key pair** held by ASS, so a stolen token is useless without the private key.
 
 !!! tip "Stable client identity (0.5.0)"
-    By default ASS registers a client dynamically with each OpenID Provider. You can instead point the login at a hosted **Solid-OIDC Client ID Document** (a stable `client_id` URL) so registration never expires and the consent screen shows your app's real name. See [Using a Client ID Document](client-id-document/README.md).
+    By default ASS registers a client dynamically with each OpenID Provider. You can instead point the login at a hosted **Solid-OIDC Client ID Document** (a stable `client_id` URL) so registration never expires and the consent screen shows your app's real name. See [Using a Client ID Document](../reference/client-id-document.md).
 
 ---
 
@@ -137,7 +137,8 @@ sequenceDiagram
     ASS->>Pod2: GET /data/other.ttl<br/>(token for bob)
 ```
 
-Persist the WebID after login: `signInClient.getAccount()?.webId`. Pass it on every subsequent call.
+Persist the WebID after login: `signInClient.getAccount(webId)?.webId`, or take it straight from
+`SolidSignInResult.Authorized`. Pass it on every subsequent call.
 
 ---
 

@@ -1,2 +1,25 @@
+# The docs site. `mkdocs serve` locally, `mike deploy` from CI — see .github/workflows/docs.yml.
 mkdocs
-mkdocs-material
+
+# `[imaging]` pulls the Pillow/CairoSVG stack the built-in social-card plugin renders with. Those
+# need system libraries too, which the workflow installs; locally the plugin stays off, so
+# `mkdocs serve` on a laptop needs nothing beyond pip.
+mkdocs-material[imaging]
+
+# Click-to-zoom on the screenshots.
+mkdocs-glightbox
+
+# Publishes /llms.txt — one machine-readable index of the site, so an agent reading these docs
+# fetches a single file instead of crawling the nav.
+mkdocs-llmstxt
+
+# Keeps the pre-restructure URLs alive. Community links and search results point at paths that
+# moved, and a 404 is a worse answer than a redirect.
+mkdocs-redirects
+
+# "Last updated" dates, read from git history.
+mkdocs-git-revision-date-localized-plugin
+
+# Versioned docs. Before 1.0 the IPC wire protocol breaks between minors, so a reader whose
+# installed app is a version behind needs the docs that match it.
+mike
