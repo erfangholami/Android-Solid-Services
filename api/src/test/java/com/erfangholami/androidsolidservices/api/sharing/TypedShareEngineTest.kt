@@ -213,6 +213,37 @@ class TypedShareEngineTest {
     }
 
     @Test
+    fun `rebuild drops the rows of a resource the pod no longer has`() = runBlocking {
+        val surviving = "https://alice.pod/notes/n1"
+        manager().createShare(alice, container, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+        manager().createShare(alice, surviving, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+
+        pod.deleteEverythingUnder(container)
+        manager().rebuildGivenIndex(alice).getOrThrow()
+
+        assertEquals(
+            listOf(surviving),
+            manager().getStoredGivenShares(alice).getOrThrow().map { it.resourceUri },
+        )
+    }
+
+    @Test
+    fun `rebuild keeps the rows of a resource that only fails transiently`() = runBlocking {
+        manager().createShare(alice, container, ShareMode.READ, bob, notifyReceiver = false)
+            .getOrThrow()
+
+        pod.failHeadFor += container
+        manager().rebuildGivenIndex(alice).getOrThrow()
+
+        assertEquals(
+            listOf(container),
+            manager().getStoredGivenShares(alice).getOrThrow().map { it.resourceUri },
+        )
+    }
+
+    @Test
     fun `a resource that only fails transiently keeps its rows`() = runBlocking {
         manager().createShare(alice, container, ShareMode.READ, bob, notifyReceiver = false)
             .getOrThrow()

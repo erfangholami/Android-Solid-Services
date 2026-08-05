@@ -183,8 +183,18 @@ internal class GivenSharesEngine(
             .mapValues { (_, list) -> list.firstNotNullOfOrNull { it.createdAt } }
         previous.map { it.receiver.toRdfSubject() to it.resourceUri }.distinct().forEach { pair ->
             val resourceUri = pair.second
-            val prune = resourceUri in scan.observedResources || scanner.isExcludedFromScan(resourceUri)
-            if (!prune) return@forEach
+            val observed =
+                resourceUri in scan.observedResources || scanner.isExcludedFromScan(resourceUri)
+            val gone = !observed &&
+                helper.resourceIsGone(webId, encodeUriString(resourceUri).toString())
+            if (gone) {
+                Log.i(
+                    TAG,
+                    "rebuildGivenIndex: $resourceUri no longer exists on the pod; dropping its " +
+                            "stale index row rather than preserving it as unreadable.",
+                )
+            }
+            if (!observed && !gone) return@forEach
             val receiver = previous.first {
                 it.receiver.toRdfSubject() == pair.first && it.resourceUri == resourceUri
             }.receiver
