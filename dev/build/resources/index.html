@@ -1,0 +1,2834 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Read, write, patch, list, copy and stream anything on a Solid pod — the verbs every other capability is built on.">
+      
+      
+        <meta name="author" content="Erfan Gholami">
+      
+      
+        <link rel="canonical" href="https://androidsolidservices.erfangholami.com/dev/build/resources/">
+      
+      
+        <link rel="prev" href="../auth/">
+      
+      
+        <link rel="next" href="../contacts/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../logo.png">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Resources &amp; containers - Android Solid Services</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website">
+<meta property="og:title" content="Resources &amp; containers - Android Solid Services">
+<meta property="og:description" content="Read, write, patch, list, copy and stream anything on a Solid pod — the verbs every other capability is built on.">
+<meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/build/resources.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/build/resources/">
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="Resources &amp; containers - Android Solid Services">
+<meta property="twitter:description" content="Read, write, patch, list, copy and stream anything on a Solid pod — the verbs every other capability is built on.">
+<meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/build/resources.png">
+<link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#resources-containers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+              </button>
+            
+            
+  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
+  versions. Pin a version, and read the
+  <a href="../../project/releases/">release notes</a> before upgrading.
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden="">
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Android Solid Services" class="md-header__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Android Solid Services
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Resources &amp; containers
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/quickstart/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Build with it
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/errors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Android Solid Services" class="md-nav__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    Android Solid Services
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/client-or-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client or API?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/install-app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install the app
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build with it
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Build with it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources &amp; containers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources &amp; containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#what-you-can-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you can build
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recipes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#write-a-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write a file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read-it-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read it back
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-without-clobbering-someone-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update without clobbering someone else
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#change-part-of-an-rdf-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Change part of an RDF document
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-a-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List a container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-into-a-container-you-were-only-given-add-access-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write into a container you were only given "Add" access to
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copy-move-rename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copy, move, rename
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stream-a-large-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream a large file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-access-before-offering-the-action" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check access before offering the action
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#does-it-exist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Does it exist?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-youll-hit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors you'll hit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Under the hood
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sharing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sharing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../type-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/client-id-document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solid-OIDC Client ID Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/adding-a-data-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#what-you-can-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you can build
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recipes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#write-a-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write a file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read-it-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read it back
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-without-clobbering-someone-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update without clobbering someone else
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#change-part-of-an-rdf-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Change part of an RDF document
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-a-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List a container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-into-a-container-you-were-only-given-add-access-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write into a container you were only given "Add" access to
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copy-move-rename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copy, move, rename
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stream-a-large-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream a large file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-access-before-offering-the-action" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check access before offering the action
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#does-it-exist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Does it exist?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-youll-hit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors you'll hit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Under the hood
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation">
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Build with it
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags">
+    
+      
+      
+      
+      
+        <span class="md-tag">containers</span>
+      
+    
+      
+      
+      
+      
+        <span class="md-tag">http</span>
+      
+    
+      
+      
+      
+      
+        <span class="md-tag">resources</span>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/erfangholami/Android-Solid-Services/edit/dev/docs/build/resources.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="resources-containers">Resources &amp; containers<a class="headerlink" href="#resources-containers" title="Permanent link">¶</a></h1>
+<p>Everything on a pod is a resource, and this is how you work with them: files, <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> documents and
+containers, with conditional writes, partial updates and streaming for the large ones.</p>
+<p>Every other capability on this site — contacts, sharing, notifications — is written in terms of
+these verbs. Learning them once covers the rest.</p>
+<h2 id="what-you-can-build">What you can build<a class="headerlink" href="#what-you-can-build" title="Permanent link">¶</a></h2>
+<ul>
+<li>Store and read your app's own data on the user's pod instead of your server.</li>
+<li>Sync safely across devices, without one overwriting the other.</li>
+<li>Upload and download files of any size without holding them in memory.</li>
+<li>Browse a pod like a filesystem — containers, listings, copy and move.</li>
+<li>Check what the user is allowed to do before you offer them the button.</li>
+</ul>
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">¶</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="client-via-android-solid-services" name="__tabbed_1" type="radio"><input id="api-direct-to-the-pod" name="__tabbed_1" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:client:0.6.1"</span><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.client.sdk.Solid</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">resources</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solid</span><span class="p">.</span><span class="na">getResourceClient</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Wait for the service before your first call:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">resources</span><span class="p">.</span><span class="na">resourceServiceConnectionState</span><span class="p">().</span><span class="na">first</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<p>Calls throw a <code>SolidException</code> subtype on failure.</p>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:api:0.6.1"</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.api.resource.SolidResourceManager</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">resources</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SolidResourceManager</span><span class="p">.</span><span class="na">getInstance</span><span class="p">(</span><span class="n">authenticator</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Calls return <code>SolidResult&lt;T&gt;</code>. Use <code>getOrThrow()</code>, or <code>getOrNull()</code> where absence is fine.</p>
+</div>
+</div>
+</div>
+<p>Every call takes the <code>webId</code> first. A device can hold several signed-in identities at once, and
+the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> picks which session signs the request.</p>
+<h2 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">¶</a></h2>
+<h3 id="write-a-file">Write a file<a class="headerlink" href="#write-a-file" title="Permanent link">¶</a></h3>
+<div class="language-kotlin annotate highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">resources</span><span class="p">.</span><span class="na">ensureContainer</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="s">"</span><span class="si">${</span><span class="n">storage</span><span class="si">}</span><span class="s">notes/"</span><span class="p">)</span><span class="w">          </span><span class="c1">// (1)!</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">resources</span><span class="p">.</span><span class="na">putRaw</span><span class="p">(</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"</span><span class="si">${</span><span class="n">storage</span><span class="si">}</span><span class="s">notes/hello.txt"</span><span class="p">,</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="n">contentType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"text/plain"</span><span class="p">,</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Hello from Android"</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">(),</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>Creates the container and every missing parent, bottom-up. Idempotent — call it every time
+   rather than checking first. Some pod servers will not auto-create parents, so skipping this is
+   the most common cause of a mysterious <code>404</code> on write.</li>
+</ol>
+<h3 id="read-it-back">Read it back<a class="headerlink" href="#read-it-back" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resources</span><span class="p">.</span><span class="na">readStream</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">).</span><span class="na">use</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">stream</span><span class="p">().</span><span class="na">readBytes</span><span class="p">().</span><span class="na">decodeToString</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<p><code>readStream</code> hands back a live pipe — always consume it inside <code>use { }</code>.</p>
+<h3 id="update-without-clobbering-someone-else">Update without clobbering someone else<a class="headerlink" href="#update-without-clobbering-someone-else" title="Permanent link">¶</a></h3>
+<p>Two devices editing the same resource will overwrite each other unless you make the write
+conditional. Read the <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr>, then pass it back as <code>ifMatch</code>:</p>
+<div class="language-kotlin annotate highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">meta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resources</span><span class="p">.</span><span class="na">head</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">)</span><span class="w">                 </span><span class="c1">// (1)!</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">resources</span><span class="p">.</span><span class="na">putRaw</span><span class="p">(</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">uri</span><span class="p">,</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="n">contentType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"text/plain"</span><span class="p">,</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newBody</span><span class="p">,</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="n">ifMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">meta</span><span class="p">.</span><span class="na">etag</span><span class="p">,</span><span class="w">                              </span><span class="c1">// (2)!</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li><code>head</code> fetches only headers — <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr>, content type and length, <code>WAC-Allow</code>, <code>Last-Modified</code> — with
+   no body transfer. Cheap enough to call before every conditional write.</li>
+<li>If anyone changed the resource since you read it, this fails with <strong>412</strong> instead of silently
+   discarding their edit. Catch it, re-read, and either merge or ask the user.</li>
+</ol>
+<p>Pass <code>ifMatch = "*"</code> instead to mean "must already exist", which turns a create into an
+update-only.</p>
+<h3 id="change-part-of-an-rdf-document">Change part of an <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> document<a class="headerlink" href="#change-part-of-an-rdf-document" title="Permanent link">¶</a></h3>
+<p>For <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, prefer a patch over a full rewrite: it is atomic and does not need a read first, so two
+concurrent patches to different triples both survive.</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">resources</span><span class="p">.</span><span class="na">patch</span><span class="p">(</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"</span><span class="si">${</span><span class="n">storage</span><span class="si">}</span><span class="s">profile/settings.ttl"</span><span class="p">,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="n">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N3Patch</span><span class="p">.</span><span class="na">build</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">        </span><span class="n">delete</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span><span class="w"> </span><span class="n">predicate</span><span class="p">,</span><span class="w"> </span><span class="n">oldValue</span><span class="p">)</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">        </span><span class="n">insert</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span><span class="w"> </span><span class="n">predicate</span><span class="p">,</span><span class="w"> </span><span class="n">newValue</span><span class="p">)</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>The builder takes subject, predicate and an <strong>IRI</strong> object. For literal values use
+<code>insertLiteral</code> / <code>deleteLiteral</code>, and <code>where(subject, predicate, variable)</code> to bind a variable the
+patch matches on:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N3Patch</span><span class="p">.</span><span class="na">build</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="n">deleteLiteral</span><span class="p">(</span><span class="n">profileUri</span><span class="p">,</span><span class="w"> </span><span class="n">VCARD</span><span class="p">.</span><span class="na">FN</span><span class="p">,</span><span class="w"> </span><span class="s">"Old name"</span><span class="p">)</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="n">insertLiteral</span><span class="p">(</span><span class="n">profileUri</span><span class="p">,</span><span class="w"> </span><span class="n">VCARD</span><span class="p">.</span><span class="na">FN</span><span class="p">,</span><span class="w"> </span><span class="s">"New name"</span><span class="p">)</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><code>N3Patch.fromDiff(original, updated)</code> builds one from two versions of a resource, and
+<code>N3Patch.insert(triples)</code> / <code>N3Patch.delete(triples)</code> take raw triple strings when you already have
+them.</p>
+<div class="admonition tip">
+<p class="admonition-title">On Inrupt <abbr title="Enterprise Solid Server — Inrupt's pod server, behind PodSpaces">ESS</abbr></p>
+<p>Some servers reject <code>text/n3</code> and accept only SPARQL Update. The library notices the 415 and
+retries as SPARQL automatically — you do not have to branch on the server.</p>
+</div>
+<h3 id="list-a-container">List a container<a class="headerlink" href="#list-a-container" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resources</span><span class="p">.</span><span class="na">listContainer</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="s">"</span><span class="si">${</span><span class="n">storage</span><span class="si">}</span><span class="s">notes/"</span><span class="p">)</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">children</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="s">"</span><span class="si">${</span><span class="n">child</span><span class="p">.</span><span class="na">identifier</span><span class="si">}</span><span class="s"> — </span><span class="si">${</span><span class="n">child</span><span class="p">.</span><span class="na">headMetadata</span><span class="o">?.</span><span class="na">contentType</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="s">"</span><span class="n">container</span><span class="s">"</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>One request. Some servers describe their children in the listing already; where yours does not and
+you need sizes or content types, pass <code>enrichWithHead = true</code> — that costs one extra request per
+child, so do it only when you will show the data.</p>
+<h3 id="write-into-a-container-you-were-only-given-add-access-to">Write into a container you were only given "Add" access to<a class="headerlink" href="#write-into-a-container-you-were-only-given-add-access-to" title="Permanent link">¶</a></h3>
+<p><code>create</code> and <code>putRaw</code> PUT to a URI you choose, which needs <strong>Write</strong>. If you were granted <em>Add</em>
+only — a drop-box — let the server pick the name instead:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">location</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resources</span><span class="p">.</span><span class="na">createInContainer</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">containerUri</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span>
+</span></code></pre></div>
+<p>This POSTs, needs only Append, and returns the URI the server allocated.</p>
+<h3 id="copy-move-rename">Copy, move, rename<a class="headerlink" href="#copy-move-rename" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">resources</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">sourceUri</span><span class="p">,</span><span class="w"> </span><span class="n">destinationUri</span><span class="p">)</span><span class="w">     </span><span class="c1">// works on a whole container tree</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">resources</span><span class="p">.</span><span class="na">move</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">sourceUri</span><span class="p">,</span><span class="w"> </span><span class="n">destinationUri</span><span class="p">)</span><span class="w">     </span><span class="c1">// copy, then delete the source</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">resources</span><span class="p">.</span><span class="na">rename</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">sourceUri</span><span class="p">,</span><span class="w"> </span><span class="s">"new-name.txt"</span><span class="p">)</span><span class="w">   </span><span class="c1">// move to a sibling name</span>
+</span></code></pre></div>
+<p>None of these are transactional — a failure part-way leaves both sides partially written. For a
+tree that matters, verify afterwards.</p>
+<h3 id="stream-a-large-file">Stream a large file<a class="headerlink" href="#stream-a-large-file" title="Permanent link">¶</a></h3>
+<p>Neither direction buffers the body in memory, so file size is bounded by the pod, not by your heap:</p>
+<div class="language-kotlin annotate highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1">// Upload</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">contentResolver</span><span class="p">.</span><span class="na">openInputStream</span><span class="p">(</span><span class="n">pickedUri</span><span class="p">)</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="n">resources</span><span class="p">.</span><span class="na">writeStream</span><span class="p">(</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">        </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">        </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"</span><span class="si">${</span><span class="n">storage</span><span class="si">}</span><span class="s">media/video.mp4"</span><span class="p">,</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">        </span><span class="n">contentType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"video/mp4"</span><span class="p">,</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">        </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w">                    </span><span class="c1">// (1)!</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">        </span><span class="n">contentLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">knownLength</span><span class="p">,</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="p">}</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="c1">// Download</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="n">resources</span><span class="p">.</span><span class="na">readStream</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">).</span><span class="na">use</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">    </span><span class="n">stream</span><span class="p">.</span><span class="na">stream</span><span class="p">().</span><span class="na">copyTo</span><span class="p">(</span><span class="n">outputFile</span><span class="p">.</span><span class="na">outputStream</span><span class="p">())</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li>Read once and closed for you. Do not reuse it afterwards.</li>
+</ol>
+<p>This is also the way around the ~1 MB Binder transaction limit on the <code>client</code> path: streams cross
+as a file descriptor, not as bytes in a transaction.</p>
+<h3 id="check-access-before-offering-the-action">Check access before offering the action<a class="headerlink" href="#check-access-before-offering-the-action" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">probe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resources</span><span class="p">.</span><span class="na">probeAccess</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">AccessProbe</span><span class="p">.</span><span class="na">Accessible</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ShareMode</span><span class="p">.</span><span class="na">WRITE</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">probe</span><span class="p">.</span><span class="na">modes</span><span class="p">)</span><span class="w"> </span><span class="n">showEditButton</span><span class="p">()</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">showReadOnlyBadge</span><span class="p">()</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="n">AccessProbe</span><span class="p">.</span><span class="na">Denied</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">hideResource</span><span class="p">()</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><code>Accessible</code> carries the exact <code>modes</code> the user holds, and the owner's <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> where the server
+reports it — so you can distinguish "can read" from "can edit" rather than guessing.</p>
+<div class="admonition danger">
+<p class="admonition-title">Never treat an error as a denial</p>
+<p>A network blip, a 5xx or an expired token <strong>throws</strong> — it does not come back as <code>Denied</code>.
+Collapsing a failure into "no access" is how apps end up hiding a button the user actually
+has the right to press.</p>
+</div>
+<h3 id="delete">Delete<a class="headerlink" href="#delete" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">resources</span><span class="p">.</span><span class="na">delete</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w">                     </span><span class="c1">// one resource</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">resources</span><span class="p">.</span><span class="na">deleteContainer</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="s">"</span><span class="si">${</span><span class="n">storage</span><span class="si">}</span><span class="s">notes/"</span><span class="p">)</span><span class="w">  </span><span class="c1">// container and everything under it</span>
+</span></code></pre></div>
+<p><code>deleteContainer</code> recurses inside Android Solid Services, so a deep tree costs one <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> round trip
+rather than one per resource.</p>
+<h3 id="does-it-exist">Does it exist?<a class="headerlink" href="#does-it-exist" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resources</span><span class="p">.</span><span class="na">exists</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* … */</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<p>A <code>404</code> is <code>false</code>. Anything indeterminate — 403, auth failure, network, 5xx — throws rather than
+being flattened into <code>false</code>.</p>
+<h2 id="how-it-flows">How it flows<a class="headerlink" href="#how-it-flows" title="Permanent link">¶</a></h2>
+<p>A conditional write on the <code>client</code> path:</p>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    participant App as Your app
+    participant SDK as client SDK
+    participant ASS as Android Solid Services
+    participant Pod as Solid pod
+
+    App-&gt;&gt;SDK: head(webId, uri)
+    SDK-&gt;&gt;ASS: AIDL head(…)
+    ASS-&gt;&gt;Pod: HEAD /notes/hello.txt
+    Pod--&gt;&gt;ASS: 200 + ETag "abc"
+    ASS--&gt;&gt;App: SolidMetadata(etag = "abc")
+
+    App-&gt;&gt;SDK: putRaw(…, ifMatch = "abc")
+    SDK-&gt;&gt;ASS: AIDL putRaw(…)
+    ASS-&gt;&gt;Pod: PUT + If-Match: "abc"
+    alt nobody else wrote
+        Pod--&gt;&gt;ASS: 205 Reset Content
+        ASS--&gt;&gt;App: success
+    else someone did
+        Pod--&gt;&gt;ASS: 412 Precondition Failed
+        ASS--&gt;&gt;App: throws — re-read and retry
+    end</code></pre>
+<h2 id="errors-youll-hit">Errors you'll hit<a class="headerlink" href="#errors-youll-hit" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>Why</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>412 Precondition Failed</code></td>
+<td>someone wrote since your <code>head</code></td>
+<td>re-read, merge or ask the user, write again</td>
+</tr>
+<tr>
+<td><code>404</code> on a write</td>
+<td>the parent container does not exist</td>
+<td>call <code>ensureContainer</code> first</td>
+</tr>
+<tr>
+<td><code>403</code> on a write to a shared container</td>
+<td>you have Add, not Write</td>
+<td>use <code>createInContainer</code> and let the server name it</td>
+</tr>
+<tr>
+<td><code>415</code> on a patch</td>
+<td>the server takes only SPARQL Update</td>
+<td>already handled — the library retries automatically</td>
+</tr>
+<tr>
+<td><code>SolidNotLoggedInException</code></td>
+<td>no session for that <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr></td>
+<td>send the user back through sign-in</td>
+</tr>
+<tr>
+<td><code>NotPermissionException</code></td>
+<td>your app has no grant for this account</td>
+<td>the user declined; ask again</td>
+</tr>
+<tr>
+<td><code>TransactionTooLargeException</code></td>
+<td>body over ~1 MB on the <code>client</code> path</td>
+<td>use <code>writeStream</code> / <code>readStream</code></td>
+</tr>
+<tr>
+<td>A read returning stale data</td>
+<td>the in-memory response cache</td>
+<td>it revalidates with ETags; a write invalidates it</td>
+</tr>
+<tr>
+<td><code>UnsupportedRdfContentTypeException</code></td>
+<td>the server answered Turtle</td>
+<td>see the note on <code>Accept</code> under the hood</td>
+</tr>
+</tbody>
+</table>
+<h2 id="under-the-hood">Under the hood<a class="headerlink" href="#under-the-hood" title="Permanent link">¶</a></h2>
+<p>Everything below is how the manager behaves against a real pod. You do not need it to use the
+API, but it explains most surprises.</p>
+<details class="info" id="the-manager-and-the-pod-shape-it-reads-and-writes">
+<summary>The manager, and the pod shape it reads and writes</summary>
+<p><code>SolidResourceManager</code> is the library's whole conversation with a pod. Every read, write, patch,
+delete, container listing, copy and byte stream goes through it, and everything above it — sharing,
+notifications, the type index, the data modules — is written in terms of its verbs rather than its
+own HTTP requests. It takes a <code>webId</code> on every call because a device can hold several authorized
+identities at once: the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> chooses which session signs the request, not which pod is addressed.</p>
+<p>It is an interface with thirteen abstract verbs and nine that ship with a working default, so a test
+double implements thirteen methods and inherits the rest, and the production manager overrides two of
+the defaults with streaming versions. Locations are plain <code>String</code> IRIs; the library encodes them at
+its own boundary via <code>encodeUriString</code> (idempotent), so callers store decoded identifiers and never
+construct a <code>java.net.URI</code> at a call site
+(<code>api/src/main/java/com/erfangholami/androidsolidservices/api/resource/SolidResourceManager.kt:28</code>).</p>
+<h4 id="pod-shape">Pod shape<a class="headerlink" href="#pod-shape" title="Permanent link">¶</a></h4>
+<p><abbr title="Linked Data Platform — the W3C spec Solid containers are built on">LDP</abbr> gives a pod two kinds of thing, and the resource model mirrors them exactly rather than
+inventing a third:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RDFResource</code></td>
+<td>An <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> source: triples held in memory as <code>RdfQuad</code>s, serialized to <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> by <code>getEntity()</code>.</td>
+</tr>
+<tr>
+<td><code>NonRDFResource</code></td>
+<td>A non-<abbr title="Resource Description Framework — the data model pods store">RDF</abbr> source: an opaque byte stream described only by its <code>Content-Type</code>.</td>
+</tr>
+<tr>
+<td><code>SolidRDFResource</code> / <code>SolidNonRDFResource</code></td>
+<td>The same, plus the server's <code>SolidMetadata</code> parsed from the response headers.</td>
+</tr>
+<tr>
+<td><code>SolidContainer</code></td>
+<td>An <code>ldp:BasicContainer</code>, i.e. a <code>SolidRDFResource</code> that also parses its own membership.</td>
+</tr>
+<tr>
+<td><code>WebId</code>, <code>PrivateTypeIndex</code>, index documents, …</td>
+<td>Domain subclasses of <code>RDFResource</code>; the manager reads any of them by class token.</td>
+</tr>
+</tbody>
+</table>
+<p>A container is identified by a trailing <code>/</code>, and that convention is load-bearing: <code>delete</code> treats a
+URI ending in <code>/</code> as a tree to remove recursively
+(<code>SolidResourceManagerImplementation.kt:182</code>), <code>ensureContainer</code> walks up by trimming path segments,
+and <code>SolidSourceReference.isContainerByUri()</code> uses it as the fallback when a listing carries no
+<code>rdf:type</code>.</p>
+<h4 id="the-container-representation">The container representation<a class="headerlink" href="#the-container-representation" title="Permanent link">¶</a></h4>
+<p><code>SolidContainer</code> builds its child references from the container's own <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, reading <code>ldp:contains</code>
+and whatever stat metadata the server chose to include alongside it — <code>rdf:type</code>, <code>stat:size</code>,
+<code>dcterms:modified</code>, <code>stat:mtime</code>
+(<code>Shared/src/main/java/com/erfangholami/androidsolidservices/shared/model/resource/SolidContainer.kt:53</code>).
+That is the entire listing contract: one GET of the container yields the members and, on servers
+that enrich, their sizes and modification times, which is why the type is a <em>reference</em> rather than
+a resource. Anything the server did not volunteer stays <code>null</code> until someone HEADs the child.</p>
+<h4 id="the-headers-that-matter">The headers that matter<a class="headerlink" href="#the-headers-that-matter" title="Permanent link">¶</a></h4>
+<p>Solid puts most of its protocol in HTTP headers, and <code>SolidMetadata.from(headers)</code> is the single
+place they are read
+(<code>Shared/.../shared/model/resource/SolidMetadata.kt:177</code>). The four that drive behaviour rather than
+display:</p>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Read for</th>
+<th>Written by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Link: rel="type"</code></td>
+<td>Is this a storage root (<code>pim:Storage</code>)? Is this child a container?</td>
+<td>Every <code>PUT</code> and <code>POST</code> the library makes, declaring the <abbr title="Linked Data Platform — the W3C spec Solid containers are built on">LDP</abbr> interaction model.</td>
+</tr>
+<tr>
+<td><code>WAC-Allow</code></td>
+<td>What the caller may do, without writing anything — the basis of <code>probeAccess</code>.</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>ETag</code></td>
+<td>The validator for a conditional write; strong vs weak decides <em>which</em> precondition is sent.</td>
+<td><code>If-Match</code> on <code>update</code>, <code>putRaw</code>, <code>patch</code>, <code>delete</code>.</td>
+</tr>
+<tr>
+<td><code>Accept-Patch</code> / <code>Accept-Post</code> / <code>Accept-Put</code></td>
+<td>Surfaced on <code>SolidMetadata</code>; PATCH format is settled by negotiation instead (see below).</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>The request side is not guesswork — the library states the interaction model on every write, exactly
+as here (<code>api/.../transport/SolidHttpClient.kt:160</code>):</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">linkType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span><span class="n">SolidContainer</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">java</span><span class="p">.</span><span class="na">isAssignableFrom</span><span class="p">(</span><span class="n">resource</span><span class="p">.</span><span class="na">javaClass</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"&lt;</span><span class="si">${</span><span class="n">LDP</span><span class="p">.</span><span class="na">BASIC_CONTAINER</span><span class="si">}</span><span class="s">&gt;; rel=\"type\""</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="n">RDFResource</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">java</span><span class="p">.</span><span class="na">isAssignableFrom</span><span class="p">(</span><span class="n">resource</span><span class="p">.</span><span class="na">javaClass</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"&lt;</span><span class="si">${</span><span class="n">LDP</span><span class="p">.</span><span class="na">RDF_SOURCE</span><span class="si">}</span><span class="s">&gt;; rel=\"type\""</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">"&lt;</span><span class="si">${</span><span class="n">LDP</span><span class="p">.</span><span class="na">NON_RDF_SOURCE</span><span class="si">}</span><span class="s">&gt;; rel=\"type\""</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>On the response side, a HEAD of a container carries the shapes the code parses — the <code>WAC-Allow</code>
+form is the one documented at <code>Shared/.../shared/http/HTTPConstants.kt:40</code> and parsed at
+<code>WacAllow.kt:55</code>, and the <code>Allow</code> form the one at <code>Shared/.../shared/util/HeaderExtensions.kt:152</code>:</p>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="err">Link: &lt;http://www.w3.org/ns/ldp#BasicContainer&gt;; rel="type"</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="err">Link: &lt;http://www.w3.org/ns/pim/space#Storage&gt;; rel="type"</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="err">WAC-Allow: user="read write", public="read"</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="err">Allow: GET, HEAD, OPTIONS, PUT, PATCH, DELETE</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="err">ETag: W/"1234-abc"</span>
+</span></code></pre></div>
+<p>That <code>W/</code> prefix is not cosmetic. <code>getETag()</code> returns only <em>strong</em> tags
+(<code>HeaderExtensions.kt:122</code>), because <code>If-Match</code> uses the strong comparison function and a weak
+validator can never satisfy it — sending one guarantees a 412. <code>EntityTag.parse</code> keeps the strength
+so callers can tell the two apart (<code>Shared/.../shared/http/EntityTag.kt</code>).</p>
+<h4 id="accept-and-the-rdf-formats-that-are-deliberately-absent">Accept, and the <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> formats that are deliberately absent<a class="headerlink" href="#accept-and-the-rdf-formats-that-are-deliberately-absent" title="Permanent link">¶</a></h4>
+<p>A read sends <code>Accept: application/ld+json</code> when the requested class is an <code>RDFResource</code>, and <code>*/*</code>
+otherwise (<code>SolidHttpClient.kt:137</code>). The parser accepts <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> and N-Triples/N-Quads, and
+<strong>throws</strong> <code>UnsupportedRdfContentTypeException</code> for Turtle, <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr>, TriG, <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>/XML and <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>/JSON
+(<code>SolidResourceParser.kt:92</code>).</p>
+<p>This is a decision, not a gap. Shipping a Turtle reader means shipping an <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> parser stack into an
+Android APK; the library instead relies on content negotiation, which every Solid server supports,
+and fails loudly with the content type and URI in the message when a server ignores the <code>Accept</code>
+header. The failure names exactly what happened rather than returning an empty triple set that would
+look like an empty document.</p>
+</details>
+<details class="info" id="the-public-surface-in-full">
+<summary>The public surface in full</summary>
+<p>The thirteen verbs an implementation must provide:</p>
+<table>
+<thead>
+<tr>
+<th>Verb</th>
+<th>Signature that matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>head</code></td>
+<td><code>head(webId, uri): SolidResult&lt;SolidMetadata&gt;</code> — headers only, no body.</td>
+</tr>
+<tr>
+<td><code>read</code></td>
+<td><code>read(webId, resource, clazz): SolidResult&lt;T&gt;</code> — the class token picks the codec.</td>
+</tr>
+<tr>
+<td><code>create</code></td>
+<td><code>create(webId, resource): SolidResult&lt;T&gt;</code> — PUT with <code>If-None-Match: *</code>.</td>
+</tr>
+<tr>
+<td><code>update</code></td>
+<td><code>update(webId, newResource, ifMatch, ifUnmodifiedSince): SolidResult&lt;T&gt;</code> — the conditional PUT.</td>
+</tr>
+<tr>
+<td><code>patch</code> / <code>patchRaw</code></td>
+<td><code>patch(webId, uri, patch: N3Patch, ifMatch)</code> and the pre-serialized <code>text/n3</code> twin for <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr>.</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td><code>delete(webId, resource)</code> and <code>delete(webId, resourceUri, ifMatch): SolidResult&lt;Boolean&gt;</code>.</td>
+</tr>
+<tr>
+<td><code>putRaw</code> / <code>post</code></td>
+<td>Opaque bodies, for endpoints that reject the compacted <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> <code>update</code> produces and for <abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> inbox writes.</td>
+</tr>
+<tr>
+<td><code>createInContainer</code></td>
+<td><code>createInContainer(webId, containerUri, resource): SolidResult&lt;String?&gt;</code> — POST, server allocates the URI.</td>
+</tr>
+<tr>
+<td><code>readPublic</code> / <code>headPublic</code></td>
+<td>Unauthenticated reads, for world-readable documents like foreign <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> profiles.</td>
+</tr>
+</tbody>
+</table>
+<p>The nine that come with a default, so a fake gets them free
+(<code>SolidResourceManager.kt:90</code>–<code>:303</code>): <code>exists</code>, <code>ensureContainer</code>, <code>probeAccess</code>, <code>listContainer</code>,
+<code>copy</code>, <code>move</code>, <code>rename</code>, <code>readStream</code>, <code>writeStream</code>. The production manager overrides only the
+last two, replacing the buffering fallbacks with real streaming
+(<code>SolidResourceManagerImplementation.kt:227</code>).</p>
+<p>Three of the defaults exist to stop callers from re-deriving a subtle rule:</p>
+<ul>
+<li><code>exists</code> collapses only a 404 to <code>false</code>; a 403, an auth blip or a 5xx stays a <code>Failure</code>, because
+  "couldn't tell" is not "absent" (<code>SolidResourceManager.kt:90</code>).</li>
+<li><code>probeAccess</code> returns <code>Accessible</code>/<code>Denied</code> for authoritative answers and a <code>Failure</code> for
+  indeterminate ones. A reachable resource that advertises no <code>WAC-Allow</code> is reported as View
+  (<code>SolidResourceManager.kt:136</code>).</li>
+<li><code>ensureContainer</code> recurses to the parent before creating, so it works on servers that do not
+  auto-create intermediates, and stops at the first ancestor that exists.</li>
+</ul>
+<h4 id="the-reified-read">The reified read<a class="headerlink" href="#the-reified-read" title="Permanent link">¶</a></h4>
+<p><code>read</code> takes a <code>Class&lt;T&gt;</code> because the parser needs a constructor to reflect on, but callers should
+not have to write Java class literals. <code>ReifiedReads.kt</code> forwards verbatim:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kd">public</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">inline</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="k">reified</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Resource</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SolidResourceManager</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span><span class="n">webId</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="n">uri</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="p">):</span><span class="w"> </span><span class="n">SolidResult</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">java</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Same for <code>readPublic</code>. No behaviour is added — this is the whole file, and that is the point
+(<code>api/.../resource/ReifiedReads.kt:13</code>).</p>
+<h4 id="reflective-codec-construction">Reflective codec construction<a class="headerlink" href="#reflective-codec-construction" title="Permanent link">¶</a></h4>
+<p><code>SolidResourceParser.parse</code> decides what to build from the <em>requested</em> class, not the response
+(<code>SolidResourceParser.kt:24</code>). A <code>SolidContainer</code> subclass and any other <code>RDFResource</code> subclass are
+constructed through <code>getConstructor(String, String, List, SolidHeaders)</code> and handed the URI, content
+type, parsed quads and headers; a non-<abbr title="Resource Description Framework — the data model pods store">RDF</abbr> class is tried against three constructor shapes in turn —
+<code>(String, String, InputStream, SolidHeaders)</code>, then <code>(String, String, SolidHeaders, InputStream)</code>,
+then <code>(String, String, InputStream)</code> — before giving up (<code>SolidResourceParser.kt:113</code>).</p>
+<p>That is why a domain type like <code>WebId</code> or a data module's index document needs no registration
+anywhere: it is an <code>RDFResource</code> subclass with the four-argument constructor, so <code>read&lt;WebId&gt;(…)</code>
+already works. The cost is that the constructor signature is a real contract — the reflective lookup
+is also why the library's consumer ProGuard rules keep resource constructors. Containers are parsed
+with <code>i18nDirection = false</code> and other <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> sources with <code>true</code>, so a directional language string in a
+document round-trips as an <code>i18n-datatype</code> while a container listing stays plain
+(<code>SolidResourceParser.kt:49</code>, <code>:66</code>).</p>
+<h4 id="the-rest-of-the-surface">The rest of the surface<a class="headerlink" href="#the-rest-of-the-surface" title="Permanent link">¶</a></h4>
+<ul>
+<li><code>StreamingResource</code> — an unbuffered body with a <code>close()</code> that releases the network response;
+  callers use <code>use { }</code> (<code>api/.../resource/StreamingResource.kt:24</code>).</li>
+<li><code>ProfileOperations.kt</code> — <code>readProfile</code>, <code>updateProfile</code>, <code>setAvatar</code> as extension functions over
+  the core verbs. <code>readProfile</code> merges the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document with every extended profile document it
+  links, and reads all of them <em>unauthenticated</em>, because a foreign issuer's token is often rejected
+  against another pod's profile (<code>api/.../resource/ProfileOperations.kt:23</code>).</li>
+<li><code>SolidResourceManager.getInstance(authenticator)</code> returns an application-scoped singleton; the
+  first call binds the authenticator and later calls return that same instance
+  (<code>SolidResourceManagerImplementation.kt:41</code>).</li>
+<li><code>setHttpTrace(true)</code> turns on <code>→ METHOD URI</code> / <code>← STATUS METHOD URI</code> logging under the tag
+  <code>SolidHttp</code>, with a body excerpt for non-2xx only.</li>
+</ul>
+</details>
+<details class="info" id="how-it-flows-in-detail">
+<summary>How it flows in detail</summary>
+<h4 id="a-conditional-write-casupdate">A conditional write: <code>casUpdate</code><a class="headerlink" href="#a-conditional-write-casupdate" title="Permanent link">¶</a></h4>
+<p>Anything that edits a shared document — a type index, a data-module index, a contact book — goes
+through <code>casUpdate</code>, and nothing else in the library open-codes read-modify-write
+(<code>api/.../resource/implementation/ConditionalUpdate.kt:16</code>). The loop is four steps:</p>
+<ol>
+<li><strong>Read</strong> through the caller's own lambda, so the caller keeps its codec and its URI.</li>
+<li><strong>Mutate</strong> the in-memory resource. The lambda returns a <code>Boolean</code>: <code>false</code> means "nothing
+   changed", and the write is skipped entirely — an idempotent caller costs zero requests.</li>
+<li><strong>Precondition.</strong> The <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> from the <em>just-read</em> resource becomes <code>If-Match</code>. When the server gave
+   only a weak tag, <code>getETag()</code> returns <code>null</code> and the <code>Last-Modified</code> value is sent as
+   <code>If-Unmodified-Since</code> instead (<code>ConditionalUpdate.kt:31</code>). Never both: a strong validator always
+   wins.</li>
+<li><strong>Retry on 412.</strong> A <code>PRECONDITION_FAILED</code> re-enters the loop — re-reading, so the concurrent
+   writer's change is in hand before the mutation is applied again — with a jittered backoff and a
+   budget of four attempts. Any other failure returns immediately, because retrying a 403 is just a
+   slower 403.</li>
+</ol>
+<p>The important property is that the retry re-reads. Two devices adding rows to the same index both
+land: the loser of the race sees the winner's row before re-applying its own, which
+<code>CasUpdateTest.kt:169</code> pins by asserting both predicates survive.</p>
+<h4 id="creating-inside-a-container-put-versus-post">Creating inside a container: PUT versus POST<a class="headerlink" href="#creating-inside-a-container-put-versus-post" title="Permanent link">¶</a></h4>
+<p><code>create</code> PUTs to a URI the caller chose, with <code>If-None-Match: *</code> so an existing resource is not
+silently overwritten (<code>SolidResourceManager.kt:327</code>). <code>createInContainer</code> POSTs the same resource to
+the container and lets the <strong>server</strong> mint the URI, using the resource's identifier only to derive a
+<code>Slug</code> hint (<code>SolidHttpClient.kt:398</code>, <code>slugFrom</code> at <code>:434</code>).</p>
+<p>The difference is not stylistic, it is the difference between working and not working on a shared
+container. <abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr>'s <code>acl:Append</code> permits adding new members but not modifying existing ones; a PUT to a
+chosen URI is a write to <em>that</em> URI and demands <code>acl:Write</code>, so an Append-only recipient is refused
+even for a name nobody is using. A POST to the container is an append to the container, which is
+exactly the right the grant conveys. So the rule is: own the container, <code>create</code>; contributing to
+someone else's shared container, <code>createInContainer</code> and store whatever <code>Location</code> comes back — that
+URI, not the one you would have picked, is the resource's identity.</p>
+<p><code>post</code> is the untyped sibling, used for <abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> inbox writes where the body is an <abbr title="Activity Streams 2.0 — the vocabulary Solid notifications are written in">AS2</abbr> activity and the
+target is an inbox container; it returns the <code>Location</code> too (<code>SolidResourceManager.kt:532</code>).</p>
+<h4 id="storage-discovery">Storage discovery<a class="headerlink" href="#storage-discovery" title="Permanent link">¶</a></h4>
+<p>Several features need "where does this identity keep its data" before they can allocate anything.
+<code>StorageDiscovery.discover</code> answers in two passes and never guesses a path
+(<code>api/.../resource/implementation/StorageDiscovery.kt:10</code>):</p>
+<ol>
+<li>Read the profile and take the first <code>pim:storage</code>. If the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document has none, follow
+   <code>foaf:isPrimaryTopicOf</code> / <code>rdfs:seeAlso</code> into the extended profile documents and look there.</li>
+<li>Failing that, walk up from the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document's own container, HEADing each ancestor and stopping
+   at the first that advertises <code>Link: rel="type" &lt;pim:Storage&gt;</code>, bounded to 32 hops.</li>
+</ol>
+<p>Returning <code>null</code> is a real answer, and callers treat it as one — <code>requireStorage</code> in the data-module
+toolkit throws with the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> in the message rather than allocating somewhere plausible.</p>
+<h4 id="reads-go-through-a-short-lived-cache">Reads go through a short-lived cache<a class="headerlink" href="#reads-go-through-a-short-lived-cache" title="Permanent link">¶</a></h4>
+<p>GET and HEAD pass through <code>SolidResponseCache</code> keyed by principal, method, URL and <code>Accept</code>
+(<code>api/.../transport/SolidResponseCache.kt:58</code>). Fresh entries are served directly;
+stale ones are revalidated with <code>If-None-Match</code> (or <code>If-Modified-Since</code>), and a <code>304</code> refreshes the
+stored entry rather than re-downloading it. Concurrent callers for the same key single-flight onto
+one request. <abbr title="Turtle — the RDF syntax most pod documents are written in">TTL</abbr> is 5 seconds for data and 60 for things that rarely move — <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> profiles and
+<code>.acl</code>/<code>.acr</code> documents (<code>SolidHttpClient.kt:495</code>). Responses carrying <code>no-store</code> or <code>Vary: *</code> are
+never stored, and 404/410 evicts.</p>
+<p>Every write invalidates the target <strong>and its parent container</strong>, because a create or delete changes
+the parent's <code>ldp:contains</code> listing as much as it changes the resource
+(<code>SolidResponseCache.kt:90</code>). A 412 invalidates too — a failed precondition means the cached
+validator is already wrong.</p>
+<p>One behaviour to know about listings: the production <code>read</code> of a container HEADs each child
+concurrently to fill <code>headMetadata</code> (<code>SolidResourceManagerImplementation.kt:71</code>), so
+<code>listContainer(enrichWithHead = false)</code> is a single GET only over an implementation whose <code>read</code>
+does not enrich — which is what the fake in <code>ContainerVerbsTest.kt:121</code> pins. The recursive delete
+path deliberately bypasses that by calling the HTTP client's <code>get</code> directly rather than <code>read</code>.</p>
+</details>
+<details class="info" id="failure-behaviour">
+<summary>Failure behaviour</summary>
+<p>Every verb returns <code>SolidResult&lt;T&gt;</code>: <code>Success(value)</code> or <code>Failure(SolidError)</code>, and never a thrown
+domain exception, a nullable "maybe it worked", or an empty success
+(<code>Shared/.../shared/result/SolidResult.kt:16</code>). <code>SolidError</code> carries a stable <code>SolidErrorCode</code> to
+branch on, a developer-facing message that is explicitly <em>not</em> an end-user string, the <code>httpStatus</code>
+when a server answered, a <code>retryable</code> hint and the <code>cause</code>. Statuses are classified in exactly one
+place, <code>SolidError.fromHttp</code> (<code>Shared/.../shared/result/SolidError.kt:302</code>), and throwables in
+<code>fromThrowable</code> (<code>:324</code>); cancellation is rethrown rather than converted, at every catch site.</p>
+<p><strong>404 means absent, and only that.</strong> <code>exists</code> reports <code>false</code>, <code>probeAccess</code> reports <code>Denied</code>, the
+recursive delete treats a missing child as already deleted (<code>SolidResourceManagerImplementation.kt:310</code>),
+and the data-module layer's tolerant delete calls it success. No other status is folded into
+absence.</p>
+<p><strong>Weak-<abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> servers.</strong> Node Solid Server emits only weak validators for <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, so an <code>If-Match</code> there
+fails 100% of the time. Rather than sending a doomed precondition or dropping to an unconditional
+write, <code>casUpdate</code> falls back to <code>If-Unmodified-Since</code> — one-second granularity optimistic
+concurrency instead of none. <code>CasUpdateTest.kt:147</code> runs the whole loop against a pod that emits
+<code>W/"…"</code> and asserts the fallback header is what went out.</p>
+<p><strong>412 is surfaced, not translated</strong> — except in <code>create</code>, where a 412 from <code>If-None-Match: *</code> means
+the resource already exists, and is reported as <code>409 Conflict</code> because that is what actually
+happened (<code>SolidResourceManagerImplementation.kt:104</code>).</p>
+<p><strong>Redirects, and re-signing <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>.</strong> OkHttp's own redirect following is switched off
+(<code>SolidHttpClient.kt:48</code>) and the client follows redirects itself, up to five hops. It has to: a
+<abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> proof is bound to the method and URL it was minted for, so a proof carried over to the new
+<code>Location</code> would be rejected. Each hop rebuilds the auth headers for the URI it is about to request
+(<code>SolidHttpClient.kt:732</code>), and credentials are attached only while the hop stays on the origin the
+request started at (<code>:686</code>) — a cross-origin redirect is followed anonymously rather than leaking a
+token to whatever host the <code>Location</code> named. A 303 on a non-GET/HEAD request becomes a GET with the
+body dropped, per HTTP. <code>SolidHttpClientTest.kt:156</code> and <code>:178</code> pin both halves.</p>
+<p><strong>The 401 classifier.</strong> A 401 answers two unrelated questions with one status, and the library
+refuses to conflate them (<code>api/.../transport/AuthChallenge.kt</code>):</p>
+<table>
+<thead>
+<tr>
+<th><code>WWW-Authenticate</code> says</th>
+<th>Classified as</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>use_dpop_nonce</code> (and no token complaint)</td>
+<td><code>NonceStale</code></td>
+<td>Retry with the server's nonce. No refresh.</td>
+</tr>
+<tr>
+<td><code>invalid_token</code> / <code>expired_token</code></td>
+<td><code>TokenExpired</code></td>
+<td>Force one token refresh, then retry.</td>
+</tr>
+<tr>
+<td><code>insufficient_scope</code> / <code>invalid_request</code></td>
+<td><code>NotAuthorized</code></td>
+<td>Return the 401. Refreshing cannot change the answer.</td>
+</tr>
+<tr>
+<td>Nothing machine-readable</td>
+<td><code>Unspecified</code></td>
+<td>Refresh <strong>only</strong> if the request was against the identity's own origin.</td>
+</tr>
+</tbody>
+</table>
+<p>That last row is the one that matters. A bare 401 from a foreign pod is an authorization outcome, not
+an expiry: a server that meant "your token is stale" would have said so. Treating it as expiry turns
+every cross-pod read of a resource you cannot see into refresh traffic — which rate-limits a healthy
+token, and on providers that revoke a refresh-token family when a token is replayed, kills the
+session outright. So <code>warrantsTokenRefresh(requestIsOwnOrigin)</code> returns <code>false</code> there, and the
+manager logs "401 kept as authorization outcome" instead of spending a refresh
+(<code>SolidHttpClient.kt:760</code>). A refresh is attempted at most once per request, and the whole retry
+budget is three attempts.</p>
+<p><strong>PATCH format negotiation, in both directions.</strong> The Solid Protocol makes <code>text/n3</code> the mandatory
+PATCH format; Inrupt <abbr title="Enterprise Solid Server — Inrupt's pod server, behind PodSpaces">ESS</abbr> deployments advertise only SPARQL Update and answer 415 for <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr>. So <code>patch</code>
+sends <code>application/sparql-update</code> first and retries as <code>text/n3</code> on a 415
+(<code>SolidHttpClient.kt:205</code>), while <code>patchRaw</code> — whose body arrived as <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr> text across the <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr>
+boundary — sends <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr> first and retries as SPARQL, translating via <code>N3PatchConverter</code>
+(<code>:242</code>). When the converter cannot read a document with confidence it returns <code>null</code> and the
+server's original 415 is kept, rather than a guessed rewrite being sent
+(<code>api/.../resource/implementation/N3PatchConverter.kt:29</code>). A 403 is never reinterpreted as a media
+type problem.</p>
+<p><strong>Recursive delete.</strong> Children are deleted with bounded concurrency (6) and each transient
+failure — 408, 429, 5xx, or no response at all — is retried up to four times with exponential
+backoff (<code>SolidResourceManagerImplementation.kt:299</code>). If any child still fails, the container is
+<strong>left intact</strong> and a 409 naming the count is returned, because a half-emptied container the caller
+believes is gone is worse than a container that is still there.</p>
+</details>
+<details class="info" id="extension-points">
+<summary>Extension points</summary>
+<ul>
+<li><strong><code>SolidResourceManager</code> is an interface, and most of it is defaults.</strong> A fake implements thirteen
+  methods; <code>casUpdate</code>, <code>probeAccess</code>, <code>copy</code>, <code>ensureContainer</code> and the rest then run their real
+  logic over it. Every resource test in the library is written this way, which is why they exercise
+  the shipped code paths rather than a re-implementation.</li>
+<li><strong><code>SolidHttpClient(auth, httpClient)</code></strong> takes an <code>OkHttpClient</code>, so a test can point the real
+  client at a <code>MockWebServer</code>, and an <code>AuthSession</code>, so the <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>/refresh behaviour can be observed
+  without an identity provider (<code>SolidHttpClient.kt:41</code>).</li>
+<li><strong><code>SolidHttpClient.cacheEnabled</code></strong> and <strong><code>setHttpTrace</code></strong> are the two runtime switches: the first
+  lets a test see every request, the second is for diagnosing a bare 401/403/404 in the field.</li>
+<li><strong>Resource subclasses are the codec seam.</strong> Any <code>RDFResource</code> subclass with the four-argument
+  constructor can be read by class token; no registry, no factory.</li>
+<li><strong><code>ProfileOperations</code> and <code>ReifiedReads</code> are extension functions</strong>, not interface members, which is
+  the intended shape for new conveniences: they compose the verbs, so they cannot drift from them
+  and cost nothing to a fake.</li>
+<li><strong>The <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> surface mirrors this API</strong> — <code>client/.../sdk/SolidResourceClient.kt</code> exposes the same
+  verbs across <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr>, including <code>probeAccess</code>, which is why <code>AccessProbe</code> is <code>Parcelable</code> and lives in
+  <code>Shared</code> rather than <code>api</code>.</li>
+</ul>
+</details>
+<details class="info" id="tests">
+<summary>Tests</summary>
+<p>They live in <code>api/src/test/java/com/erfangholami/androidsolidservices/api/resource/</code>, split between
+behaviour pinned over a fake manager and wire behaviour pinned over <code>MockWebServer</code>.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it pins</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CasUpdateTest.kt</code></td>
+<td>The whole conditional-write contract: strong <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> on the first attempt; the weak-<abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> fallback to <code>If-Unmodified-Since</code>; re-read-and-retry on 412 preserving the concurrent writer's change; no write at all when <code>mutate</code> returns <code>false</code>; and a <code>PRECONDITION_FAILED</code> once the budget is spent.</td>
+</tr>
+<tr>
+<td><code>ContainerVerbsTest.kt</code></td>
+<td>Listing over an unenriched <code>read</code> costs zero HEADs; <code>copy</code> duplicates bytes verbatim and leaves the source; a container tree is recreated in full; <code>move</code> copies then deletes; <code>rename</code> lands on a sibling URI.</td>
+</tr>
+<tr>
+<td><code>ProbeAccessTest.kt</code></td>
+<td><code>WAC-Allow</code> modes and owner; no header means View; 403/404 are <code>Denied</code>; a 5xx is a <code>Failure</code>, <strong>not</strong> <code>Denied</code>; an empty mode list is <code>Denied</code>.</td>
+</tr>
+<tr>
+<td><code>SolidResourceManagerCapabilitiesTest.kt</code></td>
+<td><code>exists</code> on present and absent; <code>ensureContainer</code> creating the missing ancestor chain and doing nothing when the target is there.</td>
+</tr>
+<tr>
+<td><code>StreamingFallbackTest.kt</code></td>
+<td>The interface defaults: <code>writeStream</code> buffers and delegates to <code>putRaw</code> with progress; <code>readStream</code> wraps a buffered read.</td>
+</tr>
+<tr>
+<td><code>ProfileOperationsTest.kt</code></td>
+<td>The extended-profile merge, the safe-replace patch, the no-op when nothing is passed, the avatar upload, and that the reified read forwards to the token overload.</td>
+</tr>
+<tr>
+<td><code>implementation/SolidHttpClientTest.kt</code></td>
+<td>The wire: a nonce 401 retried without a refresh; an <code>expired_token</code> 401 refreshed exactly once; a persistent 401 returned rather than looped; a quoted <code>If-Match</code>; same-origin redirects re-signed and cross-origin redirects stripped of credentials; both PATCH fallbacks; streaming GET/PUT including re-opening the source on retry; the <code>Location</code> from a POST.</td>
+</tr>
+<tr>
+<td><code>implementation/AuthChallengeTest.kt</code></td>
+<td>The classifier one row at a time. The foreign-origin case is named <code>a bare 401 from a foreign pod is a denial, not an expiry</code>, and its assertion message records why the rule exists: "this is the cross-pod read that produced the refresh storm".</td>
+</tr>
+<tr>
+<td><code>implementation/N3PatchConverterTest.kt</code></td>
+<td>Round-tripping the <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr> documents the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> itself emits into SPARQL, and refusing — rather than guessing at — ambiguous or unterminated ones.</td>
+</tr>
+<tr>
+<td><code>implementation/SolidResponseCacheTest.kt</code>, <code>…CancellationTest.kt</code></td>
+<td>Freshness, 304 revalidation, LRU eviction, per-principal isolation, separate HEAD and GET entries, <code>no-store</code>/oversize/error responses staying uncached, concurrent identical reads coalescing into one fetch, and a cancelled single-flight follower throwing instead of busy-spinning.</td>
+</tr>
+</tbody>
+</table>
+<p>Two fixtures carry the rest: <code>api/src/test/java/.../api/testing/InMemoryPodResourceManager.kt</code> (a
+map-backed pod that records <code>rawPuts</code>, <code>patches</code> and <code>deletedUris</code>, and can be told to fail specific
+deletes) and <code>api/src/test/java/.../api/notifications/FakeSolidResourceManager.kt</code> (lambda-per-verb,
+for tests that only care about one call).</p>
+</details>
+<details class="info" id="specifications-implemented">
+<summary>Specifications implemented</summary>
+<ul>
+<li><a href="https://solidproject.org/TR/protocol">Solid Protocol</a> — resource identity, auxiliary resources
+  via <code>Link: rel="acl"</code>, storage discovery through <code>pim:Storage</code>, and the <code>solid:owner</code> link.</li>
+<li><a href="https://www.w3.org/TR/ldp/">Linked Data Platform</a> — the <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>-source/non-<abbr title="Resource Description Framework — the data model pods store">RDF</abbr>-source split the model
+  mirrors, <code>ldp:contains</code>, and the interaction model declared by <code>Link: rel="type"</code> on create.</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9110#section-13">RFC 9110 §13, Conditional Requests</a> —
+  <code>If-Match</code>, <code>If-None-Match</code>, <code>If-Unmodified-Since</code>, and the strong comparison function that makes
+  a weak <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> useless for <code>If-Match</code>. This is the whole basis of <code>casUpdate</code>'s fallback.</li>
+<li><a href="https://solidproject.org/TR/protocol#n3-patch">Solid Protocol §<abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr> Patch</a> — the mandatory PATCH
+  format, which <code>N3Patch</code> builds and serializes. SPARQL Update is <strong>not</strong> a Solid requirement; the
+  library sends it because deployments demand it, and negotiates back to <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr> on a 415.</li>
+<li><a href="https://solidproject.org/TR/wac">Web Access Control</a> — the <code>WAC-Allow</code> header <code>probeAccess</code>
+  reads, and the <code>acl:Append</code>-versus-<code>acl:Write</code> distinction that makes <code>createInContainer</code> a
+  separate verb.</li>
+<li><a href="https://www.w3.org/TR/turtle/"><abbr title="Resource Description Framework — the data model pods store">RDF</abbr> 1.1 Turtle</a> — <strong>not implemented as a read format</strong>, and named
+  here so a reader can tell an omission from a decision: reads negotiate for <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> or N-Triples
+  and a Turtle response raises <code>UnsupportedRdfContentTypeException</code>. Revisited if a server appears
+  that ignores <code>Accept</code>.</li>
+</ul>
+</details>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../auth/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Sign in &amp; accounts">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Sign in &amp; accounts
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../contacts/" class="md-footer__link md-footer__link--next" aria-label="Next: Contacts">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Contacts
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services" target="_blank" rel="noopener" title="Android Solid Services on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.tabs.link", "content.code.copy", "content.code.annotate", "content.code.select", "content.tooltips", "content.action.edit", "search.highlight", "search.suggest", "search.share", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

@@ -1,0 +1,2677 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+      
+      
+        <meta name="author" content="Erfan Gholami">
+      
+      
+        <link rel="canonical" href="https://androidsolidservices.erfangholami.com/dev/project/architecture/">
+      
+      
+        <link rel="prev" href="../../api/">
+      
+      
+        <link rel="next" href="../adding-a-data-module/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../logo.png">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Architecture - Android Solid Services</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website">
+<meta property="og:title" content="Architecture - Android Solid Services">
+<meta property="og:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/architecture.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/project/architecture/">
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="Architecture - Android Solid Services">
+<meta property="twitter:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/architecture.png">
+<link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+              </button>
+            
+            
+  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
+  versions. Pin a version, and read the
+  <a href="../releases/">release notes</a> before upgrading.
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden="">
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Android Solid Services" class="md-header__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Android Solid Services
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/quickstart/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../build/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Build with it
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/errors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Android Solid Services" class="md-nav__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    Android Solid Services
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/client-or-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client or API?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/install-app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install the app
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../build/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build with it
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Build with it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources &amp; containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/contacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/sharing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sharing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/type-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/client-id-document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solid-OIDC Client ID Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked="">
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#modules-and-integration-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modules and Integration Paths
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ipc-how-apps-communicate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IPC: How Apps Communicate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-openid-connect-dpop-or-bearer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication: OpenID Connect (DPoP or Bearer)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Breakdown
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module Breakdown">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shared-comerfangholamiandroidsolidservicesshared" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared (com.erfangholami.androidsolidservices.shared)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-comerfangholamiandroidsolidservicesapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        api (com.erfangholami.androidsolidservices.api)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#client-comerfangholamiandroidsolidservicesclient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        client (com.erfangholami.androidsolidservices.client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-comerfangholamiandroidsolidservices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        app (com.erfangholami.androidsolidservices)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technology-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-the-libraries-stay-firebase-free" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the libraries stay Firebase-free
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-reported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is reported
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributing-failures-to-the-integrating-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributing failures to the integrating app
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Privacy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#release-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-firebase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up Firebase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugging-in-your-own-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugging in your own backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-collection-user-consented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making collection user-consented
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-a-data-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#modules-and-integration-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modules and Integration Paths
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ipc-how-apps-communicate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IPC: How Apps Communicate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-openid-connect-dpop-or-bearer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication: OpenID Connect (DPoP or Bearer)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Breakdown
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module Breakdown">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shared-comerfangholamiandroidsolidservicesshared" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared (com.erfangholami.androidsolidservices.shared)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-comerfangholamiandroidsolidservicesapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        api (com.erfangholami.androidsolidservices.api)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#client-comerfangholamiandroidsolidservicesclient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        client (com.erfangholami.androidsolidservices.client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-comerfangholamiandroidsolidservices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        app (com.erfangholami.androidsolidservices)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technology-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-the-libraries-stay-firebase-free" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the libraries stay Firebase-free
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-reported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is reported
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributing-failures-to-the-integrating-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributing failures to the integrating app
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Privacy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#release-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-firebase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up Firebase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugging-in-your-own-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugging in your own backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-collection-user-consented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making collection user-consented
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation">
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Project
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/erfangholami/Android-Solid-Services/edit/dev/docs/project/architecture.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">¶</a></h1>
+<h2 id="modules-and-integration-paths">Modules and Integration Paths<a class="headerlink" href="#modules-and-integration-paths" title="Permanent link">¶</a></h2>
+<p>Four Gradle modules in a layered chain. <code>Shared</code> holds the common types; <code>api</code> and <code>client</code> both build
+on it; the <code>app</code> (the host) bundles both. Three of the four — <code>Shared</code>, <code>api</code>, and <code>client</code> — are
+published to Maven Central, so a third-party app can integrate along <strong>either of two paths</strong>:</p>
+<ul>
+<li><strong>Path 1 — embedded (<code>api</code>):</strong> depend on <code>api</code> and reach the Solid pod <strong>directly</strong>, performing your
+  own login and signing every request in-process. Self-contained — no <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app needs to be installed,
+  but your app manages its own credentials and keys.</li>
+<li><strong>Path 2 — single sign-in (<code>client</code>):</strong> depend on <code>client</code> and delegate over <strong><abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr></strong> to the
+  installed <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app, which holds the credentials and talks to the pod for you. One shared login across
+  every Solid app on the device, and no token handling in your app.</li>
+</ul>
+<pre class="mermaid"><code>graph TD
+    %% ── Consumers: the two integration paths ──
+    TPA1["Third-party app&lt;br/&gt;&lt;b&gt;Path 1 · embedded&lt;/b&gt;&lt;br/&gt;self-hosted auth and keys"]
+    TPA2["Third-party app&lt;br/&gt;&lt;b&gt;Path 2 · single sign-in&lt;/b&gt;&lt;br/&gt;delegates to the ASS app"]
+
+    subgraph CLIENT["client — IPC SDK (Maven Central)"]
+        direction TB
+        CL_ENTRY["Solid — get*Client()"]
+        CL_PROXY["SignIn · Resource · Contacts ·&lt;br/&gt;Sharing · Notifications clients"]
+        CL_CONN["ServiceConnector · SolidException"]
+    end
+
+    subgraph API["api — direct Solid access (Maven Central)"]
+        direction TB
+        AP_AUTH["Authenticator — OIDC,&lt;br/&gt;DPoP or Bearer, multi-account"]
+        AP_RES["SolidResourceManager"]
+        AP_SHARE["SharingManager · NotificationsManager ·&lt;br/&gt;SolidContactsDataModule"]
+        AP_HTTP["SolidHttpClient + cache ·&lt;br/&gt;WAC / ACP access backends"]
+    end
+
+    subgraph APP["app — Android Solid Services (the host)"]
+        direction TB
+        AP_SVC["5 bound AIDL services&lt;br/&gt;Authenticator · Resource · DataModules ·&lt;br/&gt;Sharing · Notifications"]
+        AP_UI["Compose UI · MVVM · Hilt"]
+        AP_STORE["DataStore · encrypted token store"]
+    end
+
+    subgraph SHARED["Shared — common types · AIDL · RDF (Maven Central)"]
+        direction TB
+        SH_MODEL["model/ — resource · sharing ·&lt;br/&gt;contacts · profile · access"]
+        SH_RDF["rdf/ codecs · vocab/ · http/"]
+        SH_AIDL["AIDL service + parcelable defs"]
+    end
+
+    POD["Solid Pod"]
+
+    %% Path 1 — embed api, talk to the pod directly
+    TPA1 --&gt;|depends on| API
+    API --&gt;|"HTTPS · DPoP or Bearer"| POD
+
+    %% Path 2 — use client, which IPCs into the ASS app
+    TPA2 --&gt;|depends on| CLIENT
+    CLIENT -.-&gt;|AIDL IPC| AP_SVC
+    AP_SVC --&gt; API
+
+    %% Foundation dependencies (the app depends on both libraries — see prose)
+    API --&gt; SHARED
+    CLIENT --&gt; SHARED
+
+    %% Outlines only — fills and text follow the page theme, so this reads in light and dark.
+    classDef consumer stroke:#4285f4,stroke-width:2px;
+    classDef pod stroke:#ea4335,stroke-width:2px;
+    class TPA1,TPA2 consumer
+    class POD pod
+
+    style CLIENT stroke:#34a853,stroke-width:2px
+    style API stroke:#34a853,stroke-width:2px
+    style SHARED stroke:#34a853,stroke-width:2px
+    style APP stroke:#f9ab00,stroke-width:2px</code></pre>
+<p>Both paths run the <strong>same <code>api</code> engine</strong> against the pod — the difference is <em>where</em> it runs: in the
+third-party app's own process (Path 1), or inside the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app's process behind <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> (Path 2). <code>api</code>
+and <code>client</code> each depend on <code>Shared</code>; the <code>app</code> depends on both.</p>
+<p>Package roots: <code>app</code> → <code>com.erfangholami.androidsolidservices</code>, with <code>…api</code>, <code>…client</code>, and
+<code>…shared</code> for the three libraries.</p>
+<hr>
+<h2 id="ipc-how-apps-communicate"><abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr>: How Apps Communicate<a class="headerlink" href="#ipc-how-apps-communicate" title="Permanent link">¶</a></h2>
+<p>Apps that take the single-sign-in path (<code>client</code>) <strong>never talk directly to the Solid pod</strong>. They bind to one of the <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> services in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app, which uses the <code>api</code> module to reach the pod over authenticated HTTPS. (Apps on the embedded path link <code>api</code> and make these same calls in-process.)</p>
+<pre class="mermaid"><code>graph LR
+    subgraph "Third-party app process"
+        C["client SDK&lt;br/&gt;Solid.get*Client()"]
+    end
+    subgraph "Android Solid Services app process"
+        SVC["Bound services (AIDL)&lt;br/&gt;Authenticator · Resource · DataModules&lt;br/&gt;Sharing · Notifications"]
+        API["api&lt;br/&gt;SolidHttpClient · DPoP/Bearer · response cache"]
+        SVC --&gt; API
+    end
+    POD["Solid Pod"]
+
+    C -- "AIDL IPC" --&gt; SVC
+    API -- "HTTPS + DPoP/Bearer" --&gt; POD</code></pre>
+<p>Each <code>client</code> entry point binds to its matching bound service:</p>
+<table>
+<thead>
+<tr>
+<th><code>client</code> entry point</th>
+<th>Bound service</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Solid.getSignInClient()</code></td>
+<td><code>ASSAuthenticatorService</code></td>
+<td>Login, access grants</td>
+</tr>
+<tr>
+<td><code>Solid.getResourceClient()</code></td>
+<td><code>ASSResourceService</code></td>
+<td><abbr title="Create, read, update, delete">CRUD</abbr> on pod resources</td>
+</tr>
+<tr>
+<td><code>Solid.getContactsDataModule()</code></td>
+<td><code>SolidDataModulesService</code></td>
+<td>Contacts, address books</td>
+</tr>
+<tr>
+<td><code>Solid.getSharingClient()</code></td>
+<td><code>ASSSharingService</code></td>
+<td>Shares, access grants <em>(0.5.0)</em></td>
+</tr>
+<tr>
+<td><code>Solid.getNotificationsClient()</code></td>
+<td><code>ASSNotificationsService</code></td>
+<td><abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> inbox <em>(0.5.0)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Each service is an Android <strong>bound service</strong>. The client libraries expose <code>Flow&lt;Boolean&gt;</code> connection state so apps can react to connect/disconnect events in real time.</p>
+<p><abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> interface definitions (both parcelable types and service contracts) live in <code>Shared/src/main/aidl/</code>.</p>
+<hr>
+<h2 id="authentication-openid-connect-dpop-or-bearer">Authentication: OpenID Connect (<abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> or Bearer)<a class="headerlink" href="#authentication-openid-connect-dpop-or-bearer" title="Permanent link">¶</a></h2>
+<p>The auth flow uses the <strong>AppAuth</strong> library (<code>net.openid:appauth</code>) for the OpenID Connect code exchange. Token binding is <strong>negotiated</strong> from the provider's discovery document: if it advertises <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> (Demonstration of Proof-of-Possession) support via <code>dpop_signing_alg_values_supported</code>, <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> uses <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>; otherwise it falls back to standard <strong>Bearer</strong> tokens.</p>
+<ol>
+<li>User enters their <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> or selects an OpenID provider.</li>
+<li><abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> resolves the <abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> issuer from the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document.</li>
+<li>A browser intent opens the provider's login page.</li>
+<li>The provider redirects back to <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> with an authorization code.</li>
+<li><abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> exchanges the code for access + refresh tokens.</li>
+<li>Every subsequent pod request carries an <code>Authorization: &lt;DPoP|Bearer&gt; &lt;token&gt;</code> header; when <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> was negotiated, a freshly signed <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> proof is attached as well — binding the token to the request and preventing replay.</li>
+</ol>
+<p>When <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> is in effect, each account has its <strong>own <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> key pair</strong> in the Android Keystore. Multi-account state (profiles, tokens) is persisted with <strong>DataStore</strong>, <strong>encrypted at rest</strong> (AES-256-GCM via an Android Keystore key). Login can use either dynamic client registration or a hosted <strong>Solid-<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> Client ID Document</strong> (<code>clientId</code>). Token refresh is nonce-aware (per-origin <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> nonces, retry on <code>use_dpop_nonce</code>) and resilient — a recoverable failure no longer forces a re-login.</p>
+<hr>
+<h2 id="module-breakdown">Module Breakdown<a class="headerlink" href="#module-breakdown" title="Permanent link">¶</a></h2>
+<h3 id="shared-comerfangholamiandroidsolidservicesshared">Shared (<code>com.erfangholami.androidsolidservices.shared</code>)<a class="headerlink" href="#shared-comerfangholamiandroidsolidservicesshared" title="Permanent link">¶</a></h3>
+<p>Common types shared across all modules. Published implicitly as a transitive dependency. Since 0.5.0
+it is organized into intent-based packages (<code>model/</code>, <code>rdf/</code>, <code>http/</code>, <code>result/</code>, <code>error/</code>, <code>util/</code>,
+<code>vocab/</code>), and its public API exposes only plain types — a <code>String</code> content-type and a <code>SolidHeaders</code>
+value type rather than okhttp / titanium-json-ld types (the <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> codec is an internal dependency).</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Resource model</td>
+<td><code>Resource</code> → <code>RDFResource</code> / <code>NonRDFResource</code> → <code>SolidRDFResource</code> / <code>SolidNonRDFResource</code> / <code>SolidContainer</code> (with <code>size</code> / <code>createdTime</code> / <code>lastModified</code> accessors since 0.5.0)</td>
+</tr>
+<tr>
+<td>Result types</td>
+<td><code>SolidResult&lt;T&gt;</code> (sealed: <code>Success</code>, <code>Failure</code>) with typed <code>SolidError</code>, <code>SolidHeaders</code>, <code>HTTPConstants</code></td>
+</tr>
+<tr>
+<td>Data module types</td>
+<td><code>AddressBook</code>, <code>AddressBookList</code>, <code>Contact</code>, <code>SolidContact</code>, <code>SolidContactList</code>, <code>ContactData</code>, <code>FullGroup</code>, <code>NewTicket</code>, <code>Ticket</code>, <code>TicketList</code></td>
+</tr>
+<tr>
+<td>Sharing types</td>
+<td><code>GivenShare</code>, <code>ReceivedShare</code>, <code>ShareMode</code>, <code>ShareReceiver</code>, <code>AccessGrant</code>, <code>CatalogEntry</code>, <code>ShareNotification</code>, <code>ShareRequest</code> (0.5.0)</td>
+</tr>
+<tr>
+<td>Patch type</td>
+<td><code>N3Patch</code> — type-safe DSL and diff factory for <a href="https://solidproject.org/TR/protocol#n3-patch">Solid <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr> Patch</a> documents</td>
+</tr>
+<tr>
+<td>Vocabulary</td>
+<td><code>LDP</code>, <code>VCARD</code>, <code>ACL</code>, <code>ACP</code>, <code>OWL</code>, <code>DC</code>, <code>RDFS</code>, <code>Solid</code> constants</td>
+</tr>
+<tr>
+<td><abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> parcelables</td>
+<td>Parcelable wrappers for cross-process data transfer (all definitions consolidated here)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="api-comerfangholamiandroidsolidservicesapi">api (<code>com.erfangholami.androidsolidservices.api</code>)<a class="headerlink" href="#api-comerfangholamiandroidsolidservicesapi" title="Permanent link">¶</a></h3>
+<p>Direct Solid server communication. Used internally by the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app and available as a standalone library.</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Authenticator</code> / <code>AuthenticatorImplementation</code></td>
+<td><abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> auth (<abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> or Bearer), multi-account, Client ID Document</td>
+</tr>
+<tr>
+<td><code>SolidResourceManager</code> / <code>SolidResourceManagerImplementation</code></td>
+<td><abbr title="Create, read, update, delete">CRUD</abbr> on pod resources (+ <code>head</code>/<code>patch</code>/<code>createInContainer</code>)</td>
+</tr>
+<tr>
+<td><code>SolidContactsDataModule</code> / <code>SolidContactsDataModuleImplementation</code></td>
+<td>Contacts data module</td>
+</tr>
+<tr>
+<td><code>SharingManager</code> / <code>SharingManagerImplementation</code></td>
+<td>Resource sharing — <abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr>/<abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr> grants, index, share links (0.5.0)</td>
+</tr>
+<tr>
+<td><code>NotificationsManager</code> / <code>NotificationsManagerImplementation</code></td>
+<td><abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> inbox — offers, requests, accept/reject (0.5.0)</td>
+</tr>
+<tr>
+<td><code>AccessBackend</code> (<code>WacBackend</code> / <code>AcpBackend</code>)</td>
+<td>Internal access-control writers behind sharing (0.5.0)</td>
+</tr>
+<tr>
+<td><code>SolidHttpClient</code> / <code>SolidResponseCache</code></td>
+<td>OkHttp-based Solid HTTP client + in-memory response cache (0.5.0)</td>
+</tr>
+<tr>
+<td><code>DPoPGenerator</code></td>
+<td>Signs <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> proof JWTs when the provider supports <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> (per-account keys)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="client-comerfangholamiandroidsolidservicesclient">client (<code>com.erfangholami.androidsolidservices.client</code>)<a class="headerlink" href="#client-comerfangholamiandroidsolidservicesclient" title="Permanent link">¶</a></h3>
+<p><abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> client library. No direct pod access — all calls are proxied through the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app.</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Solid</code></td>
+<td>Entry point: <code>getSignInClient()</code>, <code>getResourceClient()</code>, <code>getContactsDataModule()</code>, <code>getSharingClient()</code>, <code>getNotificationsClient()</code></td>
+</tr>
+<tr>
+<td><code>SolidSignInClient</code></td>
+<td>Auth <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> client</td>
+</tr>
+<tr>
+<td><code>SolidResourceClient</code></td>
+<td>Resource <abbr title="Create, read, update, delete">CRUD</abbr> <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> client (<code>head</code>/<code>patch</code>/<code>update(ifMatch)</code> since 0.5.0)</td>
+</tr>
+<tr>
+<td><code>SolidContactsDataModule</code></td>
+<td>Contacts <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> client</td>
+</tr>
+<tr>
+<td><code>SolidSharingClient</code></td>
+<td>Resource sharing <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> client (0.5.0)</td>
+</tr>
+<tr>
+<td><code>SolidNotificationsClient</code></td>
+<td><abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> inbox <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> client (0.5.0)</td>
+</tr>
+<tr>
+<td><code>ServiceConnector</code></td>
+<td>Shared, self-healing <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> bind/callback plumbing (0.5.0)</td>
+</tr>
+<tr>
+<td><code>SolidException</code> hierarchy</td>
+<td>Typed exceptions for all failure modes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="app-comerfangholamiandroidsolidservices">app (<code>com.erfangholami.androidsolidservices</code>)<a class="headerlink" href="#app-comerfangholamiandroidsolidservices" title="Permanent link">¶</a></h3>
+<p>The host application. Users interact with this; third-party apps bind to its services.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Technology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UI</td>
+<td>Jetpack Compose, Navigation Compose</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td>MVVM, ViewModel, Kotlin StateFlow</td>
+</tr>
+<tr>
+<td>DI</td>
+<td>Hilt</td>
+</tr>
+<tr>
+<td>Services</td>
+<td><code>ASSAuthenticatorService</code>, <code>ASSResourceService</code>, <code>SolidDataModulesService</code>, <code>ASSSharingService</code>, <code>ASSNotificationsService</code></td>
+</tr>
+<tr>
+<td>Persistence</td>
+<td>DataStore + Protocol Buffers (access grants, profiles); token store encrypted at rest (AES-256-GCM, Android Keystore)</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td><code>net.openid:appauth</code> (<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr>) + <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> or Bearer tokens</td>
+</tr>
+<tr>
+<td>Solid protocol</td>
+<td>Custom <code>SolidHttpClient</code> (OkHttp-based; Inrupt Java Client removed)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="technology-summary">Technology Summary<a class="headerlink" href="#technology-summary" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Version / Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kotlin</td>
+<td>Coroutines, Flow, serialization</td>
+</tr>
+<tr>
+<td>Jetpack Compose</td>
+<td>UI — no XML views</td>
+</tr>
+<tr>
+<td>Hilt</td>
+<td>Dependency injection (app module only)</td>
+</tr>
+<tr>
+<td><abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr></td>
+<td>Cross-process communication</td>
+</tr>
+<tr>
+<td>AppAuth (<code>net.openid:appauth</code>)</td>
+<td>OpenID Connect</td>
+</tr>
+<tr>
+<td><code>SolidHttpClient</code></td>
+<td>Custom OkHttp-based Solid HTTP client (replaces Inrupt Java Client <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>); in-memory response cache since 0.5.0</td>
+</tr>
+<tr>
+<td>Titanium <abbr title="A JSON serialisation of RDF">JSON-LD</abbr></td>
+<td><abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> parsing (internal <code>implementation</code> dependency — off the public API surface since 0.5.0)</td>
+</tr>
+<tr>
+<td>DataStore</td>
+<td>Local persistence (Preferences + a kotlinx.serialization JSON <code>Serializer</code>); token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0</td>
+</tr>
+<tr>
+<td>kotlinx.serialization</td>
+<td>JSON serialization (replaced Gson in v0.3.0)</td>
+</tr>
+<tr>
+<td>Min <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr></td>
+<td>26 (Android 8.0)</td>
+</tr>
+<tr>
+<td>Target / Compile <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr></td>
+<td>36 / 37</td>
+</tr>
+<tr>
+<td>JVM target</td>
+<td>17</td>
+</tr>
+</tbody>
+</table>
+<h2 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">¶</a></h2>
+<p>Android Solid Services reports crashes and performance data through Firebase Crashlytics and
+Firebase Performance Monitoring. The app carries the Firebase dependency; the three published
+libraries do not.</p>
+<h3 id="why-the-libraries-stay-firebase-free">Why the libraries stay Firebase-free<a class="headerlink" href="#why-the-libraries-stay-firebase-free" title="Permanent link">¶</a></h3>
+<p><code>api</code>, <code>client</code> and <code>shared</code> are published to Maven Central and are compiled into third-party
+applications. Making them depend on Firebase would force every consumer to add a Firebase project
+and a <code>google-services.json</code>, and would route <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> telemetry into <em>their</em> Firebase project — a poor
+fit for an <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> whose whole purpose is keeping personal data under the user's control.</p>
+<p>Instead the libraries emit through a small interface in <code>shared.telemetry</code>:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>libraries  ──emit──▶  Telemetry (facade)  ──▶  TelemetrySink
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                                                    │
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                          no sink installed ────────┤──▶ no-op, nothing collected
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                          app installs bridge ──────┴──▶ FirebaseTelemetrySink
+</span></code></pre></div>
+<p>Nothing is collected or transmitted until a host application calls <code>Telemetry.install(...)</code>. The
+libraries add no monitoring dependency of any kind.</p>
+<h3 id="what-is-reported">What is reported<a class="headerlink" href="#what-is-reported" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Source</th>
+<th>Destination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Uncaught crashes</td>
+<td>Whole app process, incl. binder threads</td>
+<td>Crashlytics</td>
+</tr>
+<tr>
+<td>Swallowed data-module exceptions</td>
+<td><code>AidlDispatch.dispatchDataModule</code></td>
+<td>Crashlytics (non-fatal)</td>
+</tr>
+<tr>
+<td>Non-transport request faults</td>
+<td><code>SolidHttpClient.solidFailure</code></td>
+<td>Crashlytics (non-fatal)</td>
+</tr>
+<tr>
+<td>Transport failures (offline, reset)</td>
+<td><code>SolidHttpClient.solidFailure</code></td>
+<td>Crashlytics breadcrumb only</td>
+</tr>
+<tr>
+<td>Terminal token-refresh failures</td>
+<td><code>TokenRefreshCoordinator</code></td>
+<td>Crashlytics (non-fatal) + <code>solid_auth_refresh</code> trace</td>
+</tr>
+<tr>
+<td>HTTP request timing</td>
+<td><code>SolidHttpClient.send</code></td>
+<td>Performance (network span)</td>
+</tr>
+<tr>
+<td><abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> bind latency and binder deaths</td>
+<td><code>client</code> <code>ServiceConnector</code></td>
+<td>Performance + breadcrumbs</td>
+</tr>
+<tr>
+<td>App start, screen rendering</td>
+<td>Firebase <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr></td>
+<td>Performance</td>
+</tr>
+</tbody>
+</table>
+<p>A dropped connection is a fact of mobile life, not a defect, so <code>IOException</code> is recorded as a
+breadcrumb rather than a non-fatal. That keeps a device going offline from generating hundreds of
+identical Crashlytics reports while still leaving the context attached to whatever is reported next.</p>
+<h3 id="attributing-failures-to-the-integrating-app">Attributing failures to the integrating app<a class="headerlink" href="#attributing-failures-to-the-integrating-app" title="Permanent link">¶</a></h3>
+<p>Every report carries a <code>calling_app</code> custom key naming the application whose <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> call was being
+serviced, or <code>self</code> when the work started in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> UI. <code>CallerAttribution.currentCaller()</code> reads
+<code>Binder.getCallingUid()</code> and resolves it through <code>PackageManager</code>, caching successful lookups.</p>
+<p>The read happens in <code>beginAttributedCall()</code> <strong>before</strong> <code>launch</code>, because a caller's identity is only
+visible while the binder transaction is still on the stack — by the time the coroutine runs,
+<code>getCallingUid()</code> reports the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> process itself. <code>dispatchDataModule</code> carries the resolved name into
+its closure and attaches it to the report directly.</p>
+<p>Note that Crashlytics custom keys are process-global, so under genuinely concurrent calls from two
+different apps the <code>calling_app</code> key on a deep <code>api</code> non-fatal reflects the most recent caller rather
+than the one that failed. The per-report attribute on <code>dispatchDataModule</code> is exact.</p>
+<h3 id="privacy">Privacy<a class="headerlink" href="#privacy" title="Permanent link">¶</a></h3>
+<p>A Solid pod URL's path names the user's containers and resources, so no path ever reaches Firebase.</p>
+<ul>
+<li><strong>Manual network spans report the origin only</strong> — <code>scheme://host[:port]</code>, via
+  <code>URI.telemetryOrigin()</code> in <code>api/http/TelemetryOrigin.kt</code>. This is enough to break latency down per
+  pod provider without describing what the user stores there.</li>
+<li><strong>Automatic Performance instrumentation is disabled.</strong> The Firebase Performance Gradle plugin
+  rewrites bytecode to trace every OkHttp call with its complete URL, which would defeat the above.
+  <code>firebasePerformanceInstrumentationEnabled=false</code> in <code>gradle.properties</code> turns that off. App-start
+  and screen-render traces are <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>-side and unaffected; <code>@AddTrace</code> is also disabled by this flag.</li>
+<li><strong>No Firebase Analytics.</strong> Crashlytics breadcrumb-from-Analytics integration is not wired up.</li>
+<li>WebIDs, pod resource paths, tokens and refresh-token fingerprints are never sent as attributes.</li>
+</ul>
+<h3 id="release-only">Release only<a class="headerlink" href="#release-only" title="Permanent link">¶</a></h3>
+<p>Collection is a <strong>release-build feature</strong>. Debug builds initialise Firebase but gather nothing:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>debug</code></th>
+<th><code>release</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>firebase_crashlytics_collection_enabled</code> (manifest)</td>
+<td><code>false</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>firebase_performance_collection_enabled</code> (manifest)</td>
+<td><code>false</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>BuildConfig.TELEMETRY_ENABLED</code></td>
+<td><code>false</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>Telemetry</code> sink installed</td>
+<td>no — stays no-op</td>
+<td><code>FirebaseTelemetrySink</code></td>
+</tr>
+</tbody>
+</table>
+<p>The manifest flags are the Firebase SDKs' own switches, so nothing is gathered in the window before
+<code>Application.onCreate</code> runs. <code>installFirebaseTelemetry</code> then re-asserts both settings from
+<code>TELEMETRY_ENABLED</code> — they persist across launches and the two build types share an <code>applicationId</code>,
+so it sets them explicitly rather than trusting what a previous install left behind — and installs
+the sink only when enabled.</p>
+<p>To collect from a debug build temporarily, flip the <code>debug</code> block in <code>app/build.gradle.kts</code>:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">debug</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">manifestPlaceholders</span><span class="o">[</span><span class="s">"crashlyticsEnabled"</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">manifestPlaceholders</span><span class="o">[</span><span class="s">"performanceEnabled"</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="n">buildConfigField</span><span class="p">(</span><span class="s">"boolean"</span><span class="p">,</span><span class="w"> </span><span class="s">"TELEMETRY_ENABLED"</span><span class="p">,</span><span class="w"> </span><span class="s">"true"</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="setting-up-firebase">Setting up Firebase<a class="headerlink" href="#setting-up-firebase" title="Permanent link">¶</a></h3>
+<p><code>app/google-services.json</code> must be present and must register an Android app with package name
+<code>com.erfangholami.androidsolidservices</code> — the <code>google-services</code>, <code>crashlytics</code> and <code>firebase-perf</code>
+plugins are applied unconditionally and the build fails without it. Download it from the
+<a href="https://console.firebase.google.com/">Firebase console</a> into <code>app/</code>.</p>
+<h4 id="release-builds-upload-the-r8-mapping">Release builds upload the R8 mapping<a class="headerlink" href="#release-builds-upload-the-r8-mapping" title="Permanent link">¶</a></h4>
+<p><code>assembleRelease</code> runs <code>uploadCrashlyticsMappingFileRelease</code>, which sends <code>mapping.txt</code> to Firebase
+so release stack traces deobfuscate. It needs network access. To build a release without uploading:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>./gradlew<span class="w"> </span>:app:assembleRelease<span class="w"> </span>-x<span class="w"> </span>uploadCrashlyticsMappingFileRelease
+</span></code></pre></div>
+<p><code>app/proguard-rules.pro</code> keeps <code>SourceFile,LineNumberTable</code>, which Crashlytics needs to
+symbolicate, and <code>-keepnames</code> the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>'s own exception classes, which is how Crashlytics groups
+non-fatals by type.</p>
+<h3 id="plugging-in-your-own-backend">Plugging in your own backend<a class="headerlink" href="#plugging-in-your-own-backend" title="Permanent link">¶</a></h3>
+<p>Third-party apps embedding the <code>client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> can capture the same signals without Firebase by
+implementing <code>TelemetrySink</code>:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">SentryTelemetrySink</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TelemetrySink</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startSpan</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">TelemetrySpan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/* … */</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startNetworkSpan</span><span class="p">(</span><span class="n">url</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">TelemetryNetworkSpan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/* … */</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">recordException</span><span class="p">(</span><span class="n">throwable</span><span class="p">:</span><span class="w"> </span><span class="n">Throwable</span><span class="p">,</span><span class="w"> </span><span class="n">attributes</span><span class="p">:</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="kt">String</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="n">Sentry</span><span class="p">.</span><span class="na">captureException</span><span class="p">(</span><span class="n">throwable</span><span class="p">)</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sentry</span><span class="p">.</span><span class="na">addBreadcrumb</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setKey</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sentry</span><span class="p">.</span><span class="na">setTag</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="kd">class</span><span class="w"> </span><span class="nc">MyApplication</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Application</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="k">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">()</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">        </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">install</span><span class="p">(</span><span class="n">SentryTelemetrySink</span><span class="p">())</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><code>Telemetry</code> isolates sink failures: an exception thrown by a sink is swallowed rather than
+propagated into <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> code, so a broken backend can never break a pod operation.</p>
+<h4 id="what-the-sdk-author-can-and-cannot-see">What the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> author can and cannot see<a class="headerlink" href="#what-the-sdk-author-can-and-cannot-see" title="Permanent link">¶</a></h4>
+<table>
+<thead>
+<tr>
+<th>Integration</th>
+<th>Where the code runs</th>
+<th>Visible in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> Firebase console</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>client</code> + <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app installed</td>
+<td><code>client</code> in the integrator's process; <strong><code>api</code> in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> process</strong></td>
+<td>Yes for everything <code>api</code> does, tagged with <code>calling_app</code>. No for the integrator's own process.</td>
+</tr>
+<tr>
+<td><code>api</code> embedded directly</td>
+<td>Entirely in the integrator's process</td>
+<td><strong>Nothing.</strong></td>
+</tr>
+</tbody>
+</table>
+<p>There is no supported way to change the second row: <code>FirebaseCrashlytics.getInstance()</code> takes no
+<code>FirebaseApp</code>, so a library cannot report to a Crashlytics project other than its host app's, and
+installing an uncaught-exception handler from a library would break the host's own crash reporting.
+A library embedded in someone else's app can only report where that app tells it to — which is what
+<code>TelemetrySink</code> is for.</p>
+<h3 id="making-collection-user-consented">Making collection user-consented<a class="headerlink" href="#making-collection-user-consented" title="Permanent link">¶</a></h3>
+<p>Collection currently follows the build type. To put it behind a user opt-in instead, replace the
+<code>BuildConfig.TELEMETRY_ENABLED</code> reads in <code>installFirebaseTelemetry</code> with the stored preference and
+re-run it when the preference changes:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">crashlytics</span><span class="p">.</span><span class="na">setCrashlyticsCollectionEnabled</span><span class="p">(</span><span class="n">userOptedIn</span><span class="p">)</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">performance</span><span class="p">.</span><span class="na">isPerformanceCollectionEnabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userOptedIn</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">userOptedIn</span><span class="p">)</span><span class="w"> </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">install</span><span class="p">(</span><span class="n">FirebaseTelemetrySink</span><span class="p">(</span><span class="n">crashlytics</span><span class="p">,</span><span class="w"> </span><span class="n">performance</span><span class="p">))</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">else</span><span class="w"> </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">uninstall</span><span class="p">()</span>
+</span></code></pre></div>
+<p><code>Telemetry.uninstall()</code> restores the no-op sink, so the libraries go quiet immediately.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../../api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: API reference">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                API reference
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../adding-a-data-module/" class="md-footer__link md-footer__link--next" aria-label="Next: Adding a data module">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Adding a data module
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services" target="_blank" rel="noopener" title="Android Solid Services on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.tabs.link", "content.code.copy", "content.code.annotate", "content.code.select", "content.tooltips", "content.action.edit", "search.highlight", "search.suggest", "search.share", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

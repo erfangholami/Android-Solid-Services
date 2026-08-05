@@ -1,0 +1,2304 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A monitoring seam with no backend of its own — install a sink and the libraries report through it, or install nothing and they stay silent.">
+      
+      
+        <meta name="author" content="Erfan Gholami">
+      
+      
+        <link rel="canonical" href="https://androidsolidservices.erfangholami.com/dev/build/telemetry/">
+      
+      
+        <link rel="prev" href="../type-index/">
+      
+      
+        <link rel="next" href="../../reference/errors/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../logo.png">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Telemetry - Android Solid Services</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website">
+<meta property="og:title" content="Telemetry - Android Solid Services">
+<meta property="og:description" content="A monitoring seam with no backend of its own — install a sink and the libraries report through it, or install nothing and they stay silent.">
+<meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/build/telemetry.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/build/telemetry/">
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="Telemetry - Android Solid Services">
+<meta property="twitter:description" content="A monitoring seam with no backend of its own — install a sink and the libraries report through it, or install nothing and they stay silent.">
+<meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/build/telemetry.png">
+<link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#telemetry" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+              </button>
+            
+            
+  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
+  versions. Pin a version, and read the
+  <a href="../../project/releases/">release notes</a> before upgrading.
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden="">
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Android Solid Services" class="md-header__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Android Solid Services
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Telemetry
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/quickstart/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Build with it
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/errors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Android Solid Services" class="md-nav__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    Android Solid Services
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/client-or-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client or API?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/install-app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install the app
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build with it
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Build with it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources &amp; containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sharing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sharing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../type-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Telemetry
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#what-you-can-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you can build
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recipes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#report-to-your-own-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Report to your own backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#make-collection-user-consented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Make collection user-consented
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-get-and-what-you-never-get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you get, and what you never get
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-flows_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-youll-hit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors you'll hit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Under the hood
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/client-id-document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solid-OIDC Client ID Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/adding-a-data-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#what-you-can-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you can build
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recipes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#report-to-your-own-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Report to your own backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#make-collection-user-consented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Make collection user-consented
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-get-and-what-you-never-get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you get, and what you never get
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-flows_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-youll-hit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors you'll hit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Under the hood
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation">
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Build with it
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags">
+    
+      
+      
+      
+      
+        <span class="md-tag">monitoring</span>
+      
+    
+      
+      
+      
+      
+        <span class="md-tag">telemetry</span>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/erfangholami/Android-Solid-Services/edit/dev/docs/build/telemetry.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="telemetry">Telemetry<a class="headerlink" href="#telemetry" title="Permanent link">¶</a></h1>
+<p>The libraries are instrumented, but they carry <strong>no monitoring dependency</strong>. <code>Shared</code> defines an
+interface; nothing implements it until a host app installs a sink. Install nothing and every call
+is a no-op.</p>
+<p>That is deliberate: adding this <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> to your app must not add Firebase, or any other backend, to
+it. What you monitor stays your decision.</p>
+<h2 id="what-you-can-build">What you can build<a class="headerlink" href="#what-you-can-build" title="Permanent link">¶</a></h2>
+<ul>
+<li>Crash reports and traces from the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>, landing in the backend you already use.</li>
+<li>Latency measurement of real pod calls, per origin, without patching the library.</li>
+<li>Nothing at all — which is the default, and needs no action.</li>
+</ul>
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">¶</a></h2>
+<p>Only if you want reporting. Implement <code>TelemetrySink</code> and install it once, at startup:</p>
+<div class="language-kotlin highlight"><span class="filename">YourApplication.kt</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.shared.telemetry.Telemetry</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kd">class</span><span class="w"> </span><span class="nc">YourApplication</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Application</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="k">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">()</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BuildConfig</span><span class="p">.</span><span class="na">TELEMETRY_ENABLED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">            </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">install</span><span class="p">(</span><span class="n">YourSink</span><span class="p">())</span><span class="w">     </span><span class="c1">// (1)!</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li>Gate it on a build flag. Android Solid Services itself installs its sink in release builds only
+   and leaves the no-op in place for debug, so development never ships noise to a dashboard.</li>
+</ol>
+<p><code>Telemetry.uninstall()</code> puts the no-op back — useful when a user withdraws consent at runtime.</p>
+<h2 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">¶</a></h2>
+<h3 id="report-to-your-own-backend">Report to your own backend<a class="headerlink" href="#report-to-your-own-backend" title="Permanent link">¶</a></h3>
+<p><code>TelemetrySink</code> has five members. Implement all of them — spans, network spans, exceptions,
+breadcrumbs and keys:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">YourSink</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TelemetrySink</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startSpan</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">TelemetrySpan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">object</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nc">TelemetrySpan</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">trace</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">YourTracer</span><span class="p">.</span><span class="na">start</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">putAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">attr</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">putMetric</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="kt">Long</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">metric</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">stop</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">stop</span><span class="p">()</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startNetworkSpan</span><span class="p">(</span><span class="n">url</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">TelemetryNetworkSpan</span><span class="w"> </span><span class="o">=</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="k">object</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nc">TelemetryNetworkSpan</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">            </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">trace</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">YourTracer</span><span class="p">.</span><span class="na">startHttp</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="p">)</span><span class="w">   </span><span class="c1">// (1)!</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">            </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setResponseCode</span><span class="p">(</span><span class="n">code</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">status</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">            </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setRequestPayloadSize</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span><span class="w"> </span><span class="kt">Long</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">requestSize</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">            </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setResponsePayloadSize</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span><span class="w"> </span><span class="kt">Long</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">responseSize</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">            </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setResponseContentType</span><span class="p">(</span><span class="n">contentType</span><span class="p">:</span><span class="w"> </span><span class="kt">String?</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">contentType</span><span class="p">(</span><span class="n">contentType</span><span class="p">)</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">            </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">putAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">attr</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">            </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">stop</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trace</span><span class="p">.</span><span class="na">stop</span><span class="p">()</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">recordException</span><span class="p">(</span><span class="n">throwable</span><span class="p">:</span><span class="w"> </span><span class="n">Throwable</span><span class="p">,</span><span class="w"> </span><span class="n">attributes</span><span class="p">:</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="kt">String</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">        </span><span class="n">YourCrashReporter</span><span class="p">.</span><span class="na">report</span><span class="p">(</span><span class="n">throwable</span><span class="p">,</span><span class="w"> </span><span class="n">attributes</span><span class="p">)</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">YourCrashReporter</span><span class="p">.</span><span class="na">breadcrumb</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setKey</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">YourCrashReporter</span><span class="p">.</span><span class="na">setTag</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li><code>url</code> here is the request <strong>origin</strong> — <code>https://alice.solidcommunity.net</code> — never the path. See
+   below.</li>
+</ol>
+<h3 id="make-collection-user-consented">Make collection user-consented<a class="headerlink" href="#make-collection-user-consented" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">onConsentChanged</span><span class="p">(</span><span class="n">granted</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">granted</span><span class="p">)</span><span class="w"> </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">install</span><span class="p">(</span><span class="n">YourSink</span><span class="p">())</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">uninstall</span><span class="p">()</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Because the seam is a single install point, consent is a one-line switch rather than a flag
+threaded through every call site.</p>
+<h2 id="what-you-get-and-what-you-never-get">What you get, and what you never get<a class="headerlink" href="#what-you-get-and-what-you-never-get" title="Permanent link">¶</a></h2>
+<p>Network spans report the <strong>origin only</strong> — <code>https://alice.solidcommunity.net</code>, never the path.</p>
+<div class="admonition danger">
+<p class="admonition-title">Pod paths identify the user</p>
+<p>A path like <code>/contacts/b1/Person/p3/index.ttl</code> says this person keeps contacts and how many.
+The instrumentation is built so a path cannot reach your dashboard even if you want it to.
+Do not add one in your own sink.</p>
+</div>
+<p>Also never reported: WebIDs, tokens, <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> proofs, resource bodies, <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> contents, and the names of
+anything on a pod.</p>
+<h2 id="how-it-flows_1">How it flows<a class="headerlink" href="#how-it-flows_1" title="Permanent link">¶</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    A["A library call&lt;br/&gt;(read, share, refresh…)"] --&gt; B{"Telemetry:&lt;br/&gt;sink installed?"}
+    B --&gt;|"no — the default"| C["No-op.&lt;br/&gt;Nothing recorded,&lt;br/&gt;no dependency loaded"]
+    B --&gt;|"yes"| D["Your TelemetrySink"]
+    D --&gt; E["Your backend"]
+    D -.-&gt;|"origin only,&lt;br/&gt;never the path"| E</code></pre>
+<p>The decision is made per call against a single installed reference, so installing or uninstalling
+takes effect immediately — no restart, and no flag to thread through call sites.</p>
+<h2 id="errors-youll-hit">Errors you'll hit<a class="headerlink" href="#errors-youll-hit" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>Why</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No data in your dashboard</td>
+<td>no sink installed, or installed after the calls</td>
+<td>install in <code>Application.onCreate</code></td>
+</tr>
+<tr>
+<td>Debug builds reporting</td>
+<td>the build flag was not gated</td>
+<td>gate <code>install</code> on a release-only flag</td>
+</tr>
+<tr>
+<td>Nothing from a standalone <code>api</code> consumer</td>
+<td>a host app's crash reporter cannot report for another app</td>
+<td>expected; install your own sink</td>
+</tr>
+<tr>
+<td>Paths in your dashboard</td>
+<td>your sink added them</td>
+<td>the library never emits them — remove it from your sink</td>
+</tr>
+</tbody>
+</table>
+<h2 id="under-the-hood">Under the hood<a class="headerlink" href="#under-the-hood" title="Permanent link">¶</a></h2>
+<p>A session that dies on a stranger's phone cannot be debugged from a stack trace you never
+received. The library therefore has to be observable in production — but an <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> that ships an
+analytics dependency makes that dependency, and its privacy posture, every consumer's problem.
+<code>Telemetry</code> is the seam that squares this: one object in <code>Shared</code>
+(<code>Shared/src/main/java/com/erfangholami/androidsolidservices/shared/telemetry/Telemetry.kt:125</code>)
+through which every signal the library emits passes, and behind which there is nothing until the
+host application installs a <code>TelemetrySink</code>. No sink, no dependency, no bytes leaving the
+process. The library never knows which backend it is talking to — Firebase, Sentry,
+OpenTelemetry and plain logs are all one interface away — and the FOSS build of the host app
+proves the point by installing nothing at all.</p>
+<details class="info" id="pod-shape">
+<summary>Pod shape</summary>
+<p>None, and that is the point. Telemetry owns no containers, no documents and no <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> — nothing is
+ever written to or read from any pod, and no signal references one beyond its hostname. Signals
+exist only in process and leave it only through whatever sink the host installed.</p>
+</details>
+<details class="info" id="public-surface">
+<summary>Public surface</summary>
+<h4 id="telemetry-the-entry-point"><code>Telemetry</code> — the entry point<a class="headerlink" href="#telemetry-the-entry-point" title="Permanent link">¶</a></h4>
+<table>
+<thead>
+<tr>
+<th>Member</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>install(sink)</code> / <code>uninstall()</code></td>
+<td>Sets the destination for all subsequent signals; uninstall restores the built-in no-op. The most recently installed sink wins.</td>
+</tr>
+<tr>
+<td><code>isInstalled</code></td>
+<td>Whether anything other than the no-op is installed.</td>
+</tr>
+<tr>
+<td><code>startSpan(name)</code></td>
+<td>A timed unit of work; returns a no-op span when no sink is installed, so callers never null-check.</td>
+</tr>
+<tr>
+<td><code>startNetworkSpan(url, method)</code></td>
+<td>A timed outbound HTTP request. <code>url</code> is the request <em>origin</em> only — callers strip the path, query and fragment before reporting, because pod URLs identify the user (<code>Telemetry.kt:82</code>).</td>
+</tr>
+<tr>
+<td><code>recordException(throwable, attributes)</code></td>
+<td>A handled, non-fatal error with contextual attributes; map and vararg overloads.</td>
+</tr>
+<tr>
+<td><code>log(message)</code></td>
+<td>A breadcrumb attached to subsequent reports.</td>
+</tr>
+<tr>
+<td><code>setKey(key, value)</code></td>
+<td>A key/value pair attached to subsequent reports.</td>
+</tr>
+</tbody>
+</table>
+<p>Every member is thread-safe and none ever throws: an exception raised by the installed sink is
+swallowed rather than propagated into <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> code, and the span factories fall back to no-op span
+objects when the sink fails (<code>Telemetry.kt:148</code>). A broken monitoring backend can lose signals;
+it cannot break a login.</p>
+<h4 id="the-span-contracts">The span contracts<a class="headerlink" href="#the-span-contracts" title="Permanent link">¶</a></h4>
+<p><code>TelemetrySpan</code> carries <code>putAttribute</code>, <code>putMetric</code> and an idempotent <code>stop</code>;
+<code>TelemetryNetworkSpan</code> carries <code>setResponseCode</code>, <code>setRequestPayloadSize</code>,
+<code>setResponsePayloadSize</code>, <code>setResponseContentType</code>, <code>putAttribute</code> and <code>stop</code>. The privacy rule
+is stated on the contract itself: attributes are low-cardinality labels, and user-identifying
+data — WebIDs, pod resource paths, tokens — must never be passed, because sinks forward
+attributes to third-party backends (<code>Telemetry.kt:14</code>).</p>
+<h4 id="traced-and-the-attribute-vocabulary"><code>traced</code> and the attribute vocabulary<a class="headerlink" href="#traced-and-the-attribute-vocabulary" title="Permanent link">¶</a></h4>
+<p><code>traced(name) { … }</code> (<code>Telemetry.kt:213</code>) runs a block inside a span, marks
+<code>outcome=success/error</code>, reports a thrown exception with the span's name attached, and always
+stops the span. <code>TelemetryAttribute</code> (<code>Telemetry.kt:232</code>) fixes the names the library reports —
+<code>outcome</code>, <code>span</code>, <code>operation</code>, <code>calling_app</code>, <code>error_type</code>, <code>host</code>, <code>method</code> — so dashboards
+built on one release survive the next.</p>
+<p>Three parts of this surface have no library call site today, and that is deliberate. The two
+auth spans manage their lifecycle by hand instead of through <code>traced</code> because their outcome
+vocabulary is richer than success/error (<code>terminal</code>, <code>transient</code>). <code>putMetric</code> and the <code>host</code> /
+<code>method</code> constants are part of the contract for sinks and future spans — the network span
+carries its origin and method as constructor arguments instead — and they are exercised by the
+tests so a sink must implement them.</p>
+</details>
+<details class="info" id="how-it-flows">
+<summary>How it flows</summary>
+<h4 id="installing-a-sink">Installing a sink<a class="headerlink" href="#installing-a-sink" title="Permanent link">¶</a></h4>
+<p>The host calls <code>Telemetry.install(sink)</code> from <code>Application.onCreate</code>. This repository's own
+<code>:app</code> host is the reference in both directions:</p>
+<ul>
+<li>The <code>gms</code> flavor installs <code>FirebaseTelemetrySink</code>
+  (<code>app/src/gms/java/com/erfangholami/androidsolidservices/telemetry/FirebaseTelemetrySink.kt:11</code>),
+  which maps spans to Firebase Performance <code>Trace</code>s, network spans to <code>HttpMetric</code>s, and
+  exceptions, breadcrumbs and keys to Crashlytics. Installation is gated on
+  <code>BuildConfig.TELEMETRY_ENABLED</code> and skipped entirely when Firebase fails to initialise
+  (<code>app/src/gms/java/com/erfangholami/androidsolidservices/telemetry/TelemetryInstaller.kt:13</code>).</li>
+<li>The <code>foss</code> flavor installs nothing, so the no-op sink stays and the libraries emit nothing
+  (<code>app/src/foss/java/com/erfangholami/androidsolidservices/telemetry/TelemetryInstaller.kt:13</code>).
+  That absence is a decision with a stated reason: F-Droid rejects proprietary analytics, and
+  its Tracking anti-feature covers any reporting that is not opt-in and off by default, so a
+  future FOSS sink has to be consent-gated.</li>
+</ul>
+<h4 id="what-a-consumer-then-sees">What a consumer then sees<a class="headerlink" href="#what-a-consumer-then-sees" title="Permanent link">¶</a></h4>
+<p>Once a sink is in, every pod request arrives as a network span: <code>SolidHttpClient.send</code> opens it
+with origin and method before the call, sets the request body size, then the status code,
+response size and content type, and stops it in a <code>finally</code> so transport failures are timed too
+(<code>api/src/main/java/com/erfangholami/androidsolidservices/api/transport/SolidHttpClient.kt:81</code>).
+Logins and token refreshes arrive as the <code>solid_auth_login</code> and <code>solid_auth_refresh</code> spans.
+Handled failures arrive through <code>recordException</code> with <code>operation</code> attributes; breadcrumbs
+arrive through <code>log</code> and attach to whatever report comes next. In the <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> host, every <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> call
+stamps <code>calling_app</code> with the caller's package name before doing anything else
+(<code>app/src/main/java/com/erfangholami/androidsolidservices/services/dispatch/AidlDispatch.kt:40</code>),
+so a report can be traced to the integrating app that triggered it.</p>
+</details>
+<details class="info" id="what-is-reported">
+<summary>What is reported</summary>
+<p>The full span inventory:</p>
+<table>
+<thead>
+<tr>
+<th>Span</th>
+<th>Attributes and measurements</th>
+<th>Site</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>network span (every pod request)</td>
+<td>origin, method; request and response bytes; status code; response content type</td>
+<td><code>SolidHttpClient.kt:81</code></td>
+</tr>
+<tr>
+<td><code>solid_auth_login</code></td>
+<td><code>outcome</code>; on failure <code>stage</code> (<code>token_exchange</code>, <code>no_id_token</code>, <code>id_token_validation</code>, <code>issuer_mismatch</code>) and the OAuth <code>auth_error</code> code; on success the issuer host and <code>refresh_token</code> present/absent</td>
+<td><code>AuthenticatorImplementation.kt:160</code></td>
+</tr>
+<tr>
+<td><code>solid_auth_refresh</code></td>
+<td>issuer host, <code>forced</code>; <code>outcome</code> <code>success</code> / <code>terminal</code> / <code>transient</code>; <code>rt_rotation</code> (<code>rotated</code>, <code>reissued_same</code>, <code>unrotated</code>)</td>
+<td><code>TokenRefreshCoordinator.kt:273</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <code>recordException</code> inventory:</p>
+<table>
+<thead>
+<tr>
+<th><code>operation</code></th>
+<th>Extra attributes</th>
+<th>Raised when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>solid.http</code></td>
+<td><code>error_type</code> (exception class name)</td>
+<td>a non-I/O throwable escapes a request (<code>SolidHttpClient.kt:659</code>)</td>
+</tr>
+<tr>
+<td><code>solid.auth.refresh</code></td>
+<td><code>auth_error</code>, issuer host</td>
+<td>a refresh fails terminally — <code>invalid_grant</code> / <code>invalid_client</code> (<code>TokenRefreshCoordinator.kt:316</code>)</td>
+</tr>
+<tr>
+<td><code>solid.auth.expiry</code></td>
+<td><code>auth_error</code>, <code>reason=no_refresh_token</code>, issuer host</td>
+<td>the access token is spent and there is no refresh token (<code>TokenRefreshCoordinator.kt:372</code>)</td>
+</tr>
+<tr>
+<td><code>solid.auth.profile_store</code></td>
+<td><code>auth_error</code> ∈ <code>store_init_failed</code>, <code>store_decrypt_failed</code> (+ <code>strikes</code>), <code>store_corrupt</code>, <code>store_wiped</code>, <code>store_key_unrecoverable</code></td>
+<td>the encrypted profile store misbehaves (<code>ProfileManager.kt:124</code>, <code>UserRepositoryImplementation.kt:69</code>, <code>:100</code>, <code>:160</code>, <code>KeystoreCipher.kt:70</code>)</td>
+</tr>
+<tr>
+<td><code>solid.auth.dpop_key</code></td>
+<td><code>auth_error=dpop_key_unrecoverable</code></td>
+<td>a <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> key exists in the Keystore but cannot be loaded (<code>DPoPGenerator.kt:202</code>)</td>
+</tr>
+<tr>
+<td><code>aidl.dispatch</code> / <code>aidl.dataModule</code></td>
+<td><code>error_type</code>, <code>calling_app</code></td>
+<td>an uncaught throwable in the <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> service host (<code>AidlDispatch.kt:55</code>, <code>:98</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Breadcrumbs (<code>Telemetry.log</code>) narrate the decisions between those events: whether a 401 was kept
+as an authorization outcome or converted into a forced token refresh, with the request origin
+and the <code>WWW-Authenticate</code> value truncated to 60 characters (<code>SolidHttpClient.kt:761</code>, <code>:771</code>);
+transient refresh failures by OAuth error code (<code>TokenRefreshCoordinator.kt:340</code>); token-endpoint
+429 backoff in seconds (<code>:429</code>) and forced-refresh suppression (<code>:415</code>); the authorization
+response's error code when a login is abandoned (<code>AuthenticatorImplementation.kt:156</code>); JWKS
+refetch falling back to cached keys, by issuer host and cache age (<code>IdTokenVerifier.kt:61</code>,
+<code>:67</code>); <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> signing retries after a Keystore operation prune (<code>DPoPGenerator.kt:111</code>); the
+generation of the profile-store key and of a <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> key — the latter naming its Keystore alias,
+which is built from a random per-login identifier, not from the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>
+(<code>KeystoreCipher.kt:57</code>, <code>DPoPGenerator.kt:209</code>, <code>AuthenticatorImplementation.kt:121</code>); the
+active-account reconciler moving, clearing or ignoring a stale emission, with profile <em>counts</em>
+only (<code>ProfileManager.kt:159</code>, <code>:177</code>, <code>:186</code>); and I/O transport failures as exception class
+plus message (<code>SolidHttpClient.kt:657</code>). The one <code>setKey</code> call site is the <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> host stamping
+<code>calling_app</code> (<code>AidlDispatch.kt:40</code>).</p>
+</details>
+<details class="info" id="what-is-never-reported">
+<summary>What is never reported</summary>
+<p>This is the load-bearing half, and each rule is visible at a call site:</p>
+<ul>
+<li><strong>Tokens, never, in any form.</strong> Access, refresh and ID tokens, <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> proofs and key material
+  appear in no span, attribute, breadcrumb or exception attribute. Where the auth log needs to
+  correlate token rotation it uses logcat with <code>tokenFp</code> fingerprints — compare the <code>Log.i</code> at
+  <code>TokenRefreshCoordinator.kt:266</code>, which fingerprints the refresh token, with the span two
+  lines later, which reports only the issuer host and a <code>forced</code> flag. <code>rt_rotation</code> reports
+  <em>that</em> rotation happened, not anything about the token.</li>
+<li><strong>Full resource URLs, never.</strong> Network spans carry <code>telemetryOrigin()</code> — lowercased scheme,
+  host and explicit port, with path, query, fragment and userinfo all dropped, and hostless URIs
+  degrading to <code>scheme://unknown</code> rather than leaking what follows the scheme
+  (<code>api/src/main/java/com/erfangholami/androidsolidservices/api/transport/TelemetryOrigin.kt:5</code>).
+  The 401 breadcrumbs likewise report <code>scheme://authority</code> only. A pod path like
+  <code>/private/2026/health/…</code> is user data; the host is enough to tell providers apart.</li>
+<li><strong>WebIDs, never — a host suffices.</strong> Wherever a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> is in hand, what crosses the seam is the
+  issuer host (<code>issuerHost</code>, with an <code>unknown</code> fallback — <code>TokenRefreshCoordinator.kt:351</code>) or a
+  bare count. The reconciler is the clearest example: its logcat lines name the WebIDs being
+  moved between, while the parallel telemetry breadcrumbs say <code>profiles=N</code>
+  (<code>ProfileManager.kt:172</code> versus <code>:177</code>). The one identity that is reported by design is the
+  <code>calling_app</code> package name over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> — attribution to an app, not to a person.</li>
+<li><strong>Server strings are truncated.</strong> The <code>WWW-Authenticate</code> header is cut to 60 characters before
+  it enters a breadcrumb (<code>SolidHttpClient.kt:763</code>). OAuth <code>errorDescription</code> strings go to
+  logcat only; telemetry gets the error <em>code</em> (<code>TokenRefreshCoordinator.kt:334</code> versus <code>:340</code>).</li>
+<li><strong>No pod content, ever.</strong> Document bodies, <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, contact fields and ticket fields appear at no
+  call site; response <em>sizes</em> are reported, response bytes are not.</li>
+</ul>
+<p>One boundary is stated honestly rather than papered over: <code>recordException</code> hands the
+<code>Throwable</code> itself to the sink, message included, and the <code>solid.http</code> transport breadcrumb
+carries the <code>IOException</code>'s own message — which, coming from OkHttp, can name the host it could
+not reach. The invariants above are enforced on everything the library composes: every span
+name, attribute, key and breadcrumb string. The reference Firebase sink additionally clamps
+attribute values to 100 characters and sanitises names on its side of the seam
+(<code>FirebaseTelemetrySink.kt:121</code>, <code>:107</code>).</p>
+</details>
+<details class="info" id="extension-points">
+<summary>Extension points</summary>
+<ul>
+<li><strong>Any backend is one class.</strong> Implement <code>TelemetrySink</code> — five methods — and install it from
+  <code>Application.onCreate</code>. <code>FirebaseTelemetrySink</code> is the worked example of sink-side duties:
+  mapping the span contracts onto the backend's types, sanitising names to the backend's
+  charset and length limits, clamping values, and guarding against use-after-stop.</li>
+<li><strong>Consent is the host's job, and the seam has no opinion.</strong> Nothing reports until <code>install</code>,
+  <code>uninstall</code> returns to silence, and <code>isInstalled</code> lets a settings screen reflect the state —
+  which is exactly the shape an opt-in flow needs, and the reason the FOSS flavor can ship the
+  identical library with telemetry structurally absent.</li>
+<li><strong>New spans reuse the vocabulary.</strong> <code>traced</code> for success/error work, hand-managed spans where
+  the outcome set is richer, and <code>TelemetryAttribute</code> constants rather than fresh strings, so
+  one dashboard covers all emitters.</li>
+<li><strong>Cross-process attribution is built in.</strong> An <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> host sets
+  <code>TelemetryAttribute.CALLING_APP</code> per call, as <code>AidlDispatch.beginAttributedCall</code> does, and
+  every subsequent report names the integrating app.</li>
+</ul>
+</details>
+<details class="info" id="tests">
+<summary>Tests</summary>
+<p><code>Shared/src/test/java/com/erfangholami/androidsolidservices/shared/telemetry/TelemetryTest.kt</code>
+pins the seam's guarantees: nothing is installed by default; signals are discarded until a sink
+is installed; an installed sink receives logs, keys and exceptions with their attributes;
+uninstall goes quiet again; a hostile sink that throws on every call never reaches the caller
+and still yields usable span objects; <code>traced</code> marks success, marks failure with the span name
+attached and rethrows the block's own exception even when the sink is hostile; and the most
+recently installed sink wins.</p>
+<p><code>api/src/test/java/com/erfangholami/androidsolidservices/api/transport/TelemetryOriginTest.kt</code> pins
+the redaction rule segment by segment: the container path, query and fragment are dropped;
+userinfo never survives; a non-default port is kept so providers stay distinguishable; scheme
+and host are lowercased so one provider is one bucket; a hostless URI degrades to <code>unknown</code>
+rather than leaking the rest; and no path segment of a deep pod URI appears anywhere in the
+output.</p>
+</details>
+<details class="info" id="specifications">
+<summary>Specifications</summary>
+<p>No Solid or W3C wire specification governs this feature, because it deliberately has no wire
+shape: telemetry writes nothing to a pod and defines no <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>. The relevant documents are about
+privacy posture rather than protocol:</p>
+<ul>
+<li><a href="https://solid.github.io/security-considerations/">Solid Security Considerations</a> — pod URLs
+  and WebIDs identify people; the origin-only and host-only rules above treat them as the
+  personal data they are.</li>
+<li><a href="https://f-droid.org/docs/Anti-Features/">F-Droid Anti-Features</a> — the Tracking anti-feature
+  is why the FOSS flavor installs no sink and why any future one must be consent-gated, as
+  recorded in that installer's own documentation.</li>
+</ul>
+</details>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../type-index/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Type index">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Type index
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../reference/errors/" class="md-footer__link md-footer__link--next" aria-label="Next: Error codes">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Error codes
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services" target="_blank" rel="noopener" title="Android Solid Services on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.tabs.link", "content.code.copy", "content.code.annotate", "content.code.select", "content.tooltips", "content.action.edit", "search.highlight", "search.suggest", "search.share", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

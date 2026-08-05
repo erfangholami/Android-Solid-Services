@@ -1,0 +1,35 @@
+# Android Solid Services
+
+> Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.
+
+Android Solid Services gives Android apps a single Solid sign-in. One app holds the user's pod accounts; every other app reaches those pods through it over AIDL, with the user's permission and without handling a credential.
+
+## Start here
+
+- [Quickstart](https://androidsolidservices.erfangholami.com/dev/start/quickstart/index.md)
+- [Client or API?](https://androidsolidservices.erfangholami.com/dev/start/client-or-api/index.md)
+- [How it works](https://androidsolidservices.erfangholami.com/dev/start/how-it-works/index.md)
+
+## Capabilities
+
+- [Build with it](https://androidsolidservices.erfangholami.com/dev/build/index.md)
+- [Access control](https://androidsolidservices.erfangholami.com/dev/build/access-control/index.md)
+- [Sign in & accounts](https://androidsolidservices.erfangholami.com/dev/build/auth/index.md)
+- [Contacts](https://androidsolidservices.erfangholami.com/dev/build/contacts/index.md)
+- [Notifications](https://androidsolidservices.erfangholami.com/dev/build/notifications/index.md)
+- [Resources & containers](https://androidsolidservices.erfangholami.com/dev/build/resources/index.md)
+- [Sharing](https://androidsolidservices.erfangholami.com/dev/build/sharing/index.md)
+- [Telemetry](https://androidsolidservices.erfangholami.com/dev/build/telemetry/index.md)
+- [Tickets](https://androidsolidservices.erfangholami.com/dev/build/tickets/index.md)
+- [Type index](https://androidsolidservices.erfangholami.com/dev/build/type-index/index.md)
+
+## Reference
+
+- [Solid-OIDC Client ID Document](https://androidsolidservices.erfangholami.com/dev/reference/client-id-document/index.md)
+- [Error codes](https://androidsolidservices.erfangholami.com/dev/reference/errors/index.md)
+
+## Project
+
+- [Architecture](https://androidsolidservices.erfangholami.com/dev/project/architecture/index.md)
+- [Troubleshooting](https://androidsolidservices.erfangholami.com/dev/project/troubleshooting/index.md)
+

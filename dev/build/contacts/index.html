@@ -1,0 +1,2831 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Read and write address books, contacts and groups on a Solid pod as standard vCard RDF, without writing any RDF yourself.">
+      
+      
+        <meta name="author" content="Erfan Gholami">
+      
+      
+        <link rel="canonical" href="https://androidsolidservices.erfangholami.com/dev/build/contacts/">
+      
+      
+        <link rel="prev" href="../resources/">
+      
+      
+        <link rel="next" href="../tickets/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../logo.png">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Contacts - Android Solid Services</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website">
+<meta property="og:title" content="Contacts - Android Solid Services">
+<meta property="og:description" content="Read and write address books, contacts and groups on a Solid pod as standard vCard RDF, without writing any RDF yourself.">
+<meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/build/contacts.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/build/contacts/">
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="Contacts - Android Solid Services">
+<meta property="twitter:description" content="Read and write address books, contacts and groups on a Solid pod as standard vCard RDF, without writing any RDF yourself.">
+<meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/build/contacts.png">
+<link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#contacts" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+              </button>
+            
+            
+  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
+  versions. Pin a version, and read the
+  <a href="../../project/releases/">release notes</a> before upgrading.
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden="">
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Android Solid Services" class="md-header__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Android Solid Services
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Contacts
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/quickstart/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Build with it
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/errors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Android Solid Services" class="md-nav__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    Android Solid Services
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/client-or-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client or API?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/install-app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install the app
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build with it
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Build with it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources &amp; containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contacts
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#what-you-can-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you can build
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recipes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-an-address-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create an address book
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-the-books-a-user-already-has" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List the books a user already has
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-a-contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add a contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-and-read-contacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List and read contacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-a-contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update a contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attach-a-photo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attach a photo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-contacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Group contacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find-someone-by-webid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Find someone by WebID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete a contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-youll-hit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors you'll hit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Under the hood
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sharing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sharing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../type-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/client-id-document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solid-OIDC Client ID Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/adding-a-data-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#what-you-can-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you can build
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recipes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-an-address-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create an address book
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-the-books-a-user-already-has" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List the books a user already has
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-a-contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add a contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-and-read-contacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List and read contacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-a-contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update a contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attach-a-photo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attach a photo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-contacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Group contacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find-someone-by-webid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Find someone by WebID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete a contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it flows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-youll-hit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors you'll hit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Under the hood
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation">
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Build with it
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags">
+    
+      
+      
+      
+      
+        <span class="md-tag">contacts</span>
+      
+    
+      
+      
+      
+      
+        <span class="md-tag">data modules</span>
+      
+    
+      
+      
+      
+      
+        <span class="md-tag">vcard</span>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/erfangholami/Android-Solid-Services/edit/dev/docs/build/contacts.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="contacts">Contacts<a class="headerlink" href="#contacts" title="Permanent link">¶</a></h1>
+<p>Address books, contacts and groups, stored on the user's pod as standard vCard <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>. You work with
+Kotlin data classes; the module handles the <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, the indexes and the discovery.</p>
+<p>Because the layout matches the one SolidOS uses, contacts your app writes show up in other Solid
+contact apps, and theirs show up in yours.</p>
+<h2 id="what-you-can-build">What you can build<a class="headerlink" href="#what-you-can-build" title="Permanent link">¶</a></h2>
+<ul>
+<li>A contacts app whose data lives on the user's pod instead of your backend.</li>
+<li>Import from the device address book or a <code>.vcf</code> file into a pod.</li>
+<li>A "share this person" feature — a contact is a shareable entity, not just a file.</li>
+<li>Duplicate detection when someone scans a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>.</li>
+<li>Anything that needs contacts to outlive your app: the user keeps them when they switch.</li>
+</ul>
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">¶</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="client-via-android-solid-services" name="__tabbed_1" type="radio"><input id="api-direct-to-the-pod" name="__tabbed_1" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:client:0.6.1"</span><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.client.sdk.Solid</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">contacts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solid</span><span class="p">.</span><span class="na">getContactsDataModule</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Wait for the service before your first call:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">contacts</span><span class="p">.</span><span class="na">contactsDataModuleServiceConnectionState</span><span class="p">().</span><span class="na">first</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<p>Calls return <code>T?</code> — <code>null</code> when there is no result — and throw <code>SolidException</code> on failure.</p>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:api:0.6.1"</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.api.datamodule.contacts.SolidContactsDataModule</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">contacts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SolidContactsDataModule</span><span class="p">.</span><span class="na">getInstance</span><span class="p">(</span><span class="n">authenticator</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Calls return <code>SolidResult&lt;T&gt;</code>. Use <code>getOrThrow()</code>, or <code>getOrNull()</code> where absence is fine.</p>
+</div>
+</div>
+</div>
+<p>Both surfaces are the same three stores — <code>books</code>, <code>contacts</code> and <code>groups</code> — so the recipes below
+differ only in how a result is unwrapped.</p>
+<h2 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">¶</a></h2>
+<h3 id="create-an-address-book">Create an address book<a class="headerlink" href="#create-an-address-book" title="Permanent link">¶</a></h3>
+<p>Most apps want "the user's address book, whatever it is", not a new one every launch.
+<code>ensureDefault</code> returns the existing one or creates it:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="client-via-android-solid-services_1" name="__tabbed_2" type="radio"><input id="api-direct-to-the-pod_1" name="__tabbed_2" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_1">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_1">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">book</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">books</span><span class="p">.</span><span class="na">ensureDefault</span><span class="p">(</span><span class="n">webId</span><span class="p">)</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="o">?:</span><span class="w"> </span><span class="n">error</span><span class="p">(</span><span class="s">"could not open an address book"</span><span class="p">)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">bookUri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">book</span><span class="p">.</span><span class="na">uri</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">book</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">books</span><span class="p">.</span><span class="na">ensureDefault</span><span class="p">(</span><span class="n">webId</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">bookUri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">book</span><span class="p">.</span><span class="na">uri</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>To create a named one explicitly:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="client-via-android-solid-services_2" name="__tabbed_3" type="radio"><input id="api-direct-to-the-pod_2" name="__tabbed_3" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_2">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_2">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin annotate highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">book</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">books</span><span class="p">.</span><span class="na">create</span><span class="p">(</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Conference contacts"</span><span class="p">,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="n">isPrivate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">   </span><span class="c1">// (1)!</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li><code>true</code> registers the book in the user's <strong>private</strong> type index, so only they can discover
+   it. <code>false</code> registers it publicly — the book becomes listable by anyone who reads their
+   profile. Private is almost always what you want.</li>
+</ol>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin annotate highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">book</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">books</span><span class="p">.</span><span class="na">create</span><span class="p">(</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Conference contacts"</span><span class="p">,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">isPrivate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">   </span><span class="c1">// (1)!</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span></code></pre></div>
+<ol>
+<li><code>true</code> registers the book in the user's <strong>private</strong> type index, so only they can discover
+   it. <code>false</code> registers it publicly — the book becomes listable by anyone who reads their
+   profile. Private is almost always what you want.</li>
+</ol>
+</div>
+</div>
+</div>
+<h3 id="list-the-books-a-user-already-has">List the books a user already has<a class="headerlink" href="#list-the-books-a-user-already-has" title="Permanent link">¶</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="client-via-android-solid-services_3" name="__tabbed_4" type="radio"><input id="api-direct-to-the-pod_3" name="__tabbed_4" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_3">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_3">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">books</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">books</span><span class="p">.</span><span class="na">list</span><span class="p">(</span><span class="n">webId</span><span class="p">)</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">allUris</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">books</span><span class="o">?.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">privateAddressBookUris</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">publicAddressBookUris</span><span class="w"> </span><span class="p">}.</span><span class="na">orEmpty</span><span class="p">()</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">books</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">books</span><span class="p">.</span><span class="na">list</span><span class="p">(</span><span class="n">webId</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">allUris</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">books</span><span class="p">.</span><span class="na">privateAddressBookUris</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">books</span><span class="p">.</span><span class="na">publicAddressBookUris</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>An unreadable or missing type index reads as <strong>empty</strong>, not as an error — a pod that has never
+stored contacts is not a failure case.</p>
+<h3 id="add-a-contact">Add a contact<a class="headerlink" href="#add-a-contact" title="Permanent link">¶</a></h3>
+<p>Contact data is one immutable snapshot built with the <code>contactData { }</code> DSL:</p>
+<div class="language-kotlin annotate highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.shared.model.contacts.AddressType</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.shared.model.contacts.EmailType</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.shared.model.contacts.PhoneType</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.shared.model.contacts.contactData</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">jane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contactData</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="n">fullName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Dr. Jane A. Doe"</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="n">name</span><span class="w"> </span><span class="p">{</span><span class="w">                                   </span><span class="c1">// (1)!</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">        </span><span class="n">given</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Jane"</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">        </span><span class="n">family</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Doe"</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">        </span><span class="n">prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Dr."</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="n">nickname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Janey"</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">    </span><span class="n">phone</span><span class="p">(</span><span class="s">"+31 6 1234 5678"</span><span class="p">,</span><span class="w"> </span><span class="n">PhoneType</span><span class="p">.</span><span class="na">CELL</span><span class="p">)</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">    </span><span class="n">email</span><span class="p">(</span><span class="s">"jane@example.com"</span><span class="p">,</span><span class="w"> </span><span class="n">EmailType</span><span class="p">.</span><span class="na">HOME</span><span class="p">)</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="n">email</span><span class="p">(</span><span class="s">"jane@work.example"</span><span class="p">,</span><span class="w"> </span><span class="n">EmailType</span><span class="p">.</span><span class="na">WORK</span><span class="p">)</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">    </span><span class="n">address</span><span class="p">(</span><span class="n">AddressType</span><span class="p">.</span><span class="na">HOME</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">        </span><span class="n">street</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Kerkstraat 1"</span>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">        </span><span class="n">locality</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Amsterdam"</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="w">        </span><span class="n">countryName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Netherlands"</span>
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="w">    </span><span class="n">organizationName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"NLnet"</span>
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Senior Software Engineer"</span>
+</span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="w">    </span><span class="n">birthday</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"1990-04-01"</span>
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a><span class="w">    </span><span class="n">category</span><span class="p">(</span><span class="s">"Friends"</span><span class="p">)</span>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span class="w">    </span><span class="n">webId</span><span class="p">(</span><span class="s">"https://jane.solidcommunity.net/profile/card#me"</span><span class="p">)</span><span class="w">   </span><span class="c1">// (2)!</span>
+</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="w">    </span><span class="n">note</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Met at FOSDEM"</span>
+</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="p">}</span>
+</span></code></pre></div>
+<ol>
+<li>The structured name is optional — <code>fullName</code> alone is enough. Supply both when you have them;
+   vCard consumers use the parts for sorting.</li>
+<li>Recording someone's <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> is what makes <code>findByWebId</code> and person-to-person sharing work later.</li>
+</ol>
+<p>Then write it:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="client-via-android-solid-services_4" name="__tabbed_5" type="radio"><input id="api-direct-to-the-pod_4" name="__tabbed_5" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_4">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_4">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">created</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">create</span><span class="p">(</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="n">addressBookUri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bookUri</span><span class="p">,</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jane</span><span class="p">,</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="p">)</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">error</span><span class="p">(</span><span class="s">"the module returned no contact"</span><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">contactUri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">created</span><span class="p">.</span><span class="na">uri</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">created</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">create</span><span class="p">(</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="n">addressBookUri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bookUri</span><span class="p">,</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jane</span><span class="p">,</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">contactUri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">created</span><span class="p">.</span><span class="na">uri</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>The data must resolve to <em>some</em> display name. If you set no <code>fullName</code> and no name parts, the
+module falls back through nickname, first email, then first phone — and fails only if all of them
+are empty.</p>
+<h3 id="list-and-read-contacts">List and read contacts<a class="headerlink" href="#list-and-read-contacts" title="Permanent link">¶</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="client-via-android-solid-services_5" name="__tabbed_6" type="radio"><input id="api-direct-to-the-pod_5" name="__tabbed_6" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_5">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_5">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1">// Lightweight summaries, straight from the book's cached index — one request.</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">summaries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">list</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">bookUri</span><span class="p">)</span><span class="o">?.</span><span class="na">contacts</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">()</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1">// The full record for one person.</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">full</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">)</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">full</span><span class="o">?.</span><span class="na">data</span><span class="o">?.</span><span class="na">emails</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">()</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">summaries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">list</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">bookUri</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">().</span><span class="na">contacts</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">full</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">full</span><span class="p">.</span><span class="na">data</span><span class="p">.</span><span class="na">emails</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>Listing does <strong>not</strong> fetch each contact document — the display names are cached in the book's
+index, so rendering a list is one request no matter how many contacts there are.</p>
+<h3 id="update-a-contact">Update a contact<a class="headerlink" href="#update-a-contact" title="Permanent link">¶</a></h3>
+<div class="admonition danger">
+<p class="admonition-title"><code>update</code> replaces, it does not merge</p>
+<p>Anything absent from the snapshot you pass is <strong>removed</strong> from the contact. Always derive the
+new snapshot from the stored one with <code>buildUpon { }</code> rather than constructing a fresh
+<code>contactData { }</code>, or you will silently delete the fields you did not mention.</p>
+</div>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="client-via-android-solid-services_6" name="__tabbed_7" type="radio"><input id="api-direct-to-the-pod_6" name="__tabbed_7" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_6">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_6">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.shared.model.contacts.buildUpon</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">stored</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">)</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="k">return</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stored</span><span class="p">.</span><span class="na">data</span><span class="p">.</span><span class="na">buildUpon</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="n">phone</span><span class="p">(</span><span class="s">"+31 20 123 4567"</span><span class="p">,</span><span class="w"> </span><span class="n">PhoneType</span><span class="p">.</span><span class="na">WORK</span><span class="p">)</span><span class="w">   </span><span class="c1">// added; everything else survives</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span><span class="n">note</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Met at FOSDEM, follow up in March"</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="p">}</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">update</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">bookUri</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">,</span><span class="w"> </span><span class="n">updated</span><span class="p">)</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.shared.model.contacts.buildUpon</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">stored</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stored</span><span class="p">.</span><span class="na">data</span><span class="p">.</span><span class="na">buildUpon</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">    </span><span class="n">phone</span><span class="p">(</span><span class="s">"+31 20 123 4567"</span><span class="p">,</span><span class="w"> </span><span class="n">PhoneType</span><span class="p">.</span><span class="na">WORK</span><span class="p">)</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span><span class="n">note</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Met at FOSDEM, follow up in March"</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="p">}</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">update</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">bookUri</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">,</span><span class="w"> </span><span class="n">updated</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>Two things the library manages for you and <code>update</code> will not clear: the photo link (use
+<code>setPhoto</code>/<code>removePhoto</code>) and the UID (passing <code>null</code> carries the stored one forward).</p>
+<p>Renaming ripples automatically — the cached display name is rewritten in the book index and in
+every group the contact belongs to.</p>
+<h3 id="attach-a-photo">Attach a photo<a class="headerlink" href="#attach-a-photo" title="Permanent link">¶</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="client-via-android-solid-services_7" name="__tabbed_8" type="radio"><input id="api-direct-to-the-pod_7" name="__tabbed_8" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_7">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_7">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">setPhoto</span><span class="p">(</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="n">contactUri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contactUri</span><span class="p">,</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="n">photo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jpegBytes</span><span class="p">,</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span><span class="n">contentType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"image/jpeg"</span><span class="p">,</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="p">)</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="c1">// Reading it back</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">photo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">getPhoto</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">requireNotNull</span><span class="p">(</span><span class="n">stored</span><span class="p">.</span><span class="na">photoUri</span><span class="p">))</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">setPhoto</span><span class="p">(</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span><span class="n">webId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">webId</span><span class="p">,</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="n">contactUri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contactUri</span><span class="p">,</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span><span class="n">photo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jpegBytes</span><span class="p">,</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span><span class="n">contentType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"image/jpeg"</span><span class="p">,</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">photo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">getPhoto</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">requireNotNull</span><span class="p">(</span><span class="n">stored</span><span class="p">.</span><span class="na">photoUri</span><span class="p">)).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Photos travel inline over Binder</p>
+<p>On the <code>client</code> path the bytes cross a Binder transaction, which caps at roughly <strong>1 MB</strong>.
+A larger image fails the call rather than being truncated — downscale before uploading.
+The <code>api</code> path has no such limit.</p>
+</div>
+<p>The upload happens before the link is written, so an interrupted call leaves at worst an orphaned
+image, never a contact pointing at a photo that is not there.</p>
+<h3 id="group-contacts">Group contacts<a class="headerlink" href="#group-contacts" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">groups</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">bookUri</span><span class="p">,</span><span class="w"> </span><span class="s">"FOSDEM 2026"</span><span class="p">)</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">contacts</span><span class="p">.</span><span class="na">groups</span><span class="p">.</span><span class="na">addMember</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="p">.</span><span class="na">uri</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">)</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">contacts</span><span class="p">.</span><span class="na">groups</span><span class="p">.</span><span class="na">removeMember</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="p">.</span><span class="na">uri</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Groups are <code>vcard:Group</code> documents inside the book, so they travel with it — deleting the book
+deletes its groups.</p>
+<h3 id="find-someone-by-webid">Find someone by <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr><a class="headerlink" href="#find-someone-by-webid" title="Permanent link">¶</a></h3>
+<p>The duplicate check before adding a scanned profile:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:2"><input checked="checked" id="client-via-android-solid-services_8" name="__tabbed_9" type="radio"><input id="api-direct-to-the-pod_8" name="__tabbed_9" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_8">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_8">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">findByWebId</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="s">"https://jane.example/profile/card#me"</span><span class="p">)</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">match</span><span class="o">?.</span><span class="na">contactUri</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span><span class="c1">// already in the pod — offer to open rather than create</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="p">}</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">findByWebId</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="s">"https://jane.example/profile/card#me"</span><span class="p">)</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span><span class="p">.</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">This one is expensive</p>
+<p>It scans every book and fetches every contact — O(books × contacts) requests. It exists for
+a one-off duplicate check on a scanned profile, not for a search box. An unreadable book is
+skipped rather than failing the whole lookup.</p>
+</div>
+<h3 id="delete-a-contact">Delete a contact<a class="headerlink" href="#delete-a-contact" title="Permanent link">¶</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:2"><input checked="checked" id="client-via-android-solid-services_9" name="__tabbed_10" type="radio"><input id="api-direct-to-the-pod_9" name="__tabbed_10" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_9">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_9">API (direct to the pod)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">delete</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">bookUri</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">)</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">contacts</span><span class="p">.</span><span class="na">contacts</span><span class="p">.</span><span class="na">delete</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">bookUri</span><span class="p">,</span><span class="w"> </span><span class="n">contactUri</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>This removes the contact's document, its photo, its row in the book index, and its membership in
+every group — in that order, so a failure part-way leaves the contact findable rather than
+stranded.</p>
+<p>Deleting the whole book (<code>contacts.books.delete</code>) removes everything in it and deregisters it from
+the type index.</p>
+<h2 id="how-it-flows">How it flows<a class="headerlink" href="#how-it-flows" title="Permanent link">¶</a></h2>
+<p>Creating a contact on the <code>client</code> path, end to end:</p>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    participant App as Your app
+    participant SDK as client SDK
+    participant ASS as Android Solid Services
+    participant Pod as Solid pod
+
+    App-&gt;&gt;SDK: contacts.create(webId, bookUri, data)
+    SDK-&gt;&gt;ASS: AIDL createContact(…)
+    Note over ASS: routes on webId to&lt;br/&gt;the right account's tokens
+    ASS-&gt;&gt;Pod: PUT Person/{uuid}/index.ttl
+    Pod--&gt;&gt;ASS: 201 Created
+    ASS-&gt;&gt;Pod: PATCH people.ttl (compare-and-set)
+    Pod--&gt;&gt;ASS: 205 Reset Content
+    ASS--&gt;&gt;SDK: SolidContact
+    SDK--&gt;&gt;App: SolidContact</code></pre>
+<p>On the <code>api</code> path the two middle participants collapse: your process talks to the pod directly.
+The pod-side sequence is identical, which is why the same code shape works against both.</p>
+<h2 id="errors-youll-hit">Errors you'll hit<a class="headerlink" href="#errors-youll-hit" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>Why</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SolidNotLoggedInException</code></td>
+<td>no account signed in for that <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr></td>
+<td>send the user back through sign-in</td>
+</tr>
+<tr>
+<td><code>SolidAppNotFoundException</code></td>
+<td>Android Solid Services is not installed</td>
+<td>prompt to <a href="../../start/install-app/">install it</a>, or use <code>api</code></td>
+</tr>
+<tr>
+<td><code>NotPermissionException</code></td>
+<td>the user has not granted your app access</td>
+<td>the grant dialog was declined; ask again</td>
+</tr>
+<tr>
+<td><code>403</code> on a write</td>
+<td>signed in, but no write access to that container</td>
+<td>the pod owner has to grant it — see <a href="../sharing/">Sharing</a></td>
+</tr>
+<tr>
+<td>Empty list where you expected contacts</td>
+<td>the book or its index does not exist yet</td>
+<td>this is normal on a fresh pod; call <code>books.ensureDefault</code></td>
+</tr>
+<tr>
+<td>Fields silently disappearing after <code>update</code></td>
+<td>replace semantics</td>
+<td>derive from the stored snapshot with <code>buildUpon { }</code></td>
+</tr>
+<tr>
+<td>Photo call fails on a large image</td>
+<td>the ~1 MB Binder limit on the <code>client</code> path</td>
+<td>downscale first, or use <code>api</code></td>
+</tr>
+<tr>
+<td><code>findByWebId</code> is slow</td>
+<td>it scans every contact</td>
+<td>use it once, on demand — never in a list or a search box</td>
+</tr>
+</tbody>
+</table>
+<h2 id="under-the-hood">Under the hood<a class="headerlink" href="#under-the-hood" title="Permanent link">¶</a></h2>
+<p>Everything below describes how the module behaves on the pod. You do not need it to use the API,
+but you will want it when something surprises you.</p>
+<details class="info" id="pod-shape-and-rdf">
+<summary>Pod shape and RDF</summary>
+<p>The contacts data module reads and writes a pod user's address books, contacts and contact
+groups in the W3C vCard ontology, laid out the way SolidOS lays them out so other Solid contact
+apps find the same data. It is a <a href="../../project/adding-a-data-module/">data module</a>, but the <strong>nested</strong> one: where
+tickets are a flat collection — one index, one entity type, one container per row — an address
+book is itself a container of containers (contacts under <code>Person/</code>, groups under <code>Group/</code>), with
+three interlinked documents at its root.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>{storage}datamodule/contacts/
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>└── {bookUuid}/                     ← one address book
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>    ├── index.ttl#this              ← vcard:AddressBook: owner, title, links to both indexes
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>    ├── people.ttl                  ← name-email index: one row per contact, cached vcard:fn
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    ├── groups.ttl                  ← groups index: one row per group, cached vcard:fn
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    ├── Person/
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>    │   └── {uuid}/                 ← one container per contact
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>    │       ├── index.ttl#this      ← the vcard:Individual document
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>    │       └── photo.jpg           ← vcard:hasPhoto target, role-named attachment
+</span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>    └── Group/
+</span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>        └── {uuid}.ttl              ← one vcard:Group document (no per-group container)
+</span></code></pre></div>
+<p>New books are allocated under the framework root: <code>CONTACTS_DIRECTORY_SUFFIX</code> is
+<code>DATA_MODULE_ROOT + "contacts/"</code>
+(<code>Shared/src/main/java/com/erfangholami/androidsolidservices/shared/model/contacts/Constants.kt:8</code>).
+Books are found through the type index, never through the path, so pods that registered a book
+under the older <code>{storage}contacts/</code> root keep working untouched — the same
+<a href="../../project/adding-a-data-module/#existing-pods-are-not-relocated-and-that-is-a-decision">no-relocation decision</a>
+the toolkit makes for every module.</p>
+<p>The document names keep SolidOS's <code>.ttl</code> convention because the layout is SolidOS's, but the
+module writes and reads <code>application/ld+json</code> bodies and lets the server negotiate the
+representation. The excerpts below render the exact quads the codecs write, pinned by
+<code>Shared/src/test/java/com/erfangholami/androidsolidservices/shared/rdf/contacts/ContactRDFDataTest.kt</code>
+and <code>api/src/test/java/com/erfangholami/androidsolidservices/api/datamodule/contacts/ContactEngineTest.kt</code>,
+as Turtle for readability.</p>
+<h4 id="the-book-root">The book root<a class="headerlink" href="#the-book-root" title="Permanent link">¶</a></h4>
+<p>From the fixture in <code>ContactEngineTest.kt:61</code> (identical to what <code>AddressBookEngine.createBook</code>
+writes):</p>
+<div class="language-turtle highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="k">@prefix</span><span class="w"> </span><span class="nn">vcard:</span><span class="w">   </span><span class="nv">&lt;http://www.w3.org/2006/vcard/ns#&gt;</span><span class="w"> </span><span class="p">.</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="k">@prefix</span><span class="w"> </span><span class="nn">dcterms:</span><span class="w"> </span><span class="nv">&lt;http://purl.org/dc/terms/&gt;</span><span class="w"> </span><span class="p">.</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="k">@prefix</span><span class="w"> </span><span class="nn">acl:</span><span class="w">     </span><span class="nv">&lt;http://www.w3.org/ns/auth/acl#&gt;</span><span class="w"> </span><span class="p">.</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="nv">&lt;https://alice.pod/datamodule/contacts/b1/index.ttl#this&gt;</span>
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>    <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">AddressBook</span> <span class="p">;</span>
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    <span class="nn">acl</span><span class="p">:</span><span class="nt">owner</span> <span class="nv">&lt;https://alice.pod/profile/card#me&gt;</span> <span class="p">;</span>
+</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>    <span class="nn">dcterms</span><span class="p">:</span><span class="nt">title</span> <span class="s">"Contacts"</span> <span class="p">;</span>
+</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">nameEmailIndex</span> <span class="nv">&lt;https://alice.pod/datamodule/contacts/b1/people.ttl&gt;</span> <span class="p">;</span>
+</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">groupIndex</span>     <span class="nv">&lt;https://alice.pod/datamodule/contacts/b1/groups.ttl&gt;</span> <span class="p">.</span>
+</span></code></pre></div>
+<p><code>people.ttl</code> holds one row per contact — the membership triple plus a cached type and display
+name, so a list renders without fetching every contact document
+(<code>Shared/.../shared/rdf/contacts/NameEmailIndexRDF.kt:49</code>). Note the direction the module writes:
+the <em>book</em> is the subject of <code>vcard:inAddressBook</code>. <code>groups.ttl</code> is the same pattern with
+<code>vcard:includesGroup</code>.</p>
+<div class="language-turtle highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="nv">&lt;https://alice.pod/datamodule/contacts/b1/index.ttl#this&gt;</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">inAddressBook</span> <span class="nv">&lt;https://alice.pod/datamodule/contacts/b1/Person/p1/index.ttl#this&gt;</span> <span class="p">.</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="nv">&lt;https://alice.pod/datamodule/contacts/b1/Person/p1/index.ttl#this&gt;</span>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>    <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Individual</span> <span class="p">;</span>
+</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">fn</span> <span class="s">"Jane"</span> <span class="p">.</span>
+</span></code></pre></div>
+<h4 id="a-contact">A contact<a class="headerlink" href="#a-contact" title="Permanent link">¶</a></h4>
+<p>The maximal contact from <code>ContactRDFDataTest.kt:30</code> (a fixture that predates the <code>datamodule/</code>
+root — discovery does not care), exactly as <code>ContactRDF.setContactData</code> writes it:</p>
+<div class="language-turtle highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="k">@prefix</span><span class="w"> </span><span class="nn">vcard:</span><span class="w"> </span><span class="nv">&lt;http://www.w3.org/2006/vcard/ns#&gt;</span><span class="w"> </span><span class="p">.</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="k">@prefix</span><span class="w"> </span><span class="nn">xsd:</span><span class="w">   </span><span class="nv">&lt;http://www.w3.org/2001/XMLSchema#&gt;</span><span class="w"> </span><span class="p">.</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="nv">&lt;https://alice.pod/contacts/book1/Person/p1/index.ttl#this&gt;</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>    <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Individual</span> <span class="p">;</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">fn</span> <span class="s">"Dr. Jane A. Doe"</span> <span class="p">;</span>
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasName</span> <span class="nv">&lt;https://alice.pod/contacts/book1/Person/p1/index.ttl#name&gt;</span> <span class="p">;</span>
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">nickname</span> <span class="s">"Janey"</span> <span class="p">;</span>
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasTelephone</span> <span class="nn">_</span><span class="p">:</span><span class="nt">phone0</span><span class="p">,</span> <span class="nn">_</span><span class="p">:</span><span class="nt">phone1</span> <span class="p">;</span>
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasEmail</span> <span class="nn">_</span><span class="p">:</span><span class="nt">email0</span><span class="p">,</span> <span class="nn">_</span><span class="p">:</span><span class="nt">email1</span> <span class="p">;</span>
+</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasInstantMessage</span> <span class="nn">_</span><span class="p">:</span><span class="nt">im0</span><span class="p">,</span> <span class="nn">_</span><span class="p">:</span><span class="nt">im1</span> <span class="p">;</span>
+</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasAddress</span> <span class="nn">_</span><span class="p">:</span><span class="nt">addr0</span><span class="p">,</span> <span class="nn">_</span><span class="p">:</span><span class="nt">addr1</span> <span class="p">;</span>
+</span><span id="__span-28-13"><a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">bday</span> <span class="s">"1990-04-01"</span><span class="p">^^</span><span class="nn">xsd</span><span class="p">:</span><span class="nt">date</span> <span class="p">;</span>
+</span><span id="__span-28-14"><a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">anniversary</span> <span class="s">"2015-06-20"</span><span class="p">^^</span><span class="nn">xsd</span><span class="p">:</span><span class="nt">date</span> <span class="p">;</span>
+</span><span id="__span-28-15"><a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">organization-name</span> <span class="s">"NLnet"</span> <span class="p">;</span>
+</span><span id="__span-28-16"><a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">organization-unit</span> <span class="s">"Grants"</span> <span class="p">;</span>
+</span><span id="__span-28-17"><a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">role</span> <span class="s">"Engineer"</span> <span class="p">;</span>
+</span><span id="__span-28-18"><a id="__codelineno-28-18" name="__codelineno-28-18" href="#__codelineno-28-18"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">title</span> <span class="s">"Senior Software Engineer"</span> <span class="p">;</span>
+</span><span id="__span-28-19"><a id="__codelineno-28-19" name="__codelineno-28-19" href="#__codelineno-28-19"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">note</span> <span class="s">"Met at FOSDEM"</span> <span class="p">;</span>
+</span><span id="__span-28-20"><a id="__codelineno-28-20" name="__codelineno-28-20" href="#__codelineno-28-20"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasCategory</span> <span class="s">"Friends"</span><span class="p">,</span> <span class="s">"Colleagues"</span> <span class="p">;</span>
+</span><span id="__span-28-21"><a id="__codelineno-28-21" name="__codelineno-28-21" href="#__codelineno-28-21"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasGender</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Female</span> <span class="p">;</span>
+</span><span id="__span-28-22"><a id="__codelineno-28-22" name="__codelineno-28-22" href="#__codelineno-28-22"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasGeo</span> <span class="nv">&lt;geo:52.3676,4.9041&gt;</span> <span class="p">;</span>
+</span><span id="__span-28-23"><a id="__codelineno-28-23" name="__codelineno-28-23" href="#__codelineno-28-23"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasLanguage</span> <span class="nn">_</span><span class="p">:</span><span class="nt">lang0</span><span class="p">,</span> <span class="nn">_</span><span class="p">:</span><span class="nt">lang1</span> <span class="p">;</span>
+</span><span id="__span-28-24"><a id="__codelineno-28-24" name="__codelineno-28-24" href="#__codelineno-28-24"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">url</span> <span class="nn">_</span><span class="p">:</span><span class="nt">url0</span><span class="p">,</span> <span class="nn">_</span><span class="p">:</span><span class="nt">url1</span> <span class="p">;</span>
+</span><span id="__span-28-25"><a id="__codelineno-28-25" name="__codelineno-28-25" href="#__codelineno-28-25"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasUID</span> <span class="nv">&lt;urn:uuid:2f1c0000-0000-0000-0000-000000000001&gt;</span> <span class="p">;</span>
+</span><span id="__span-28-26"><a id="__codelineno-28-26" name="__codelineno-28-26" href="#__codelineno-28-26"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">hasPhoto</span> <span class="nv">&lt;https://alice.pod/contacts/book1/Person/p1/photo.jpg&gt;</span> <span class="p">.</span>
+</span><span id="__span-28-27"><a id="__codelineno-28-27" name="__codelineno-28-27" href="#__codelineno-28-27"></a>
+</span><span id="__span-28-28"><a id="__codelineno-28-28" name="__codelineno-28-28" href="#__codelineno-28-28"></a><span class="nv">&lt;https://alice.pod/contacts/book1/Person/p1/index.ttl#name&gt;</span>
+</span><span id="__span-28-29"><a id="__codelineno-28-29" name="__codelineno-28-29" href="#__codelineno-28-29"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">family-name</span> <span class="s">"Doe"</span> <span class="p">;</span>
+</span><span id="__span-28-30"><a id="__codelineno-28-30" name="__codelineno-28-30" href="#__codelineno-28-30"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">given-name</span> <span class="s">"Jane"</span> <span class="p">;</span>
+</span><span id="__span-28-31"><a id="__codelineno-28-31" name="__codelineno-28-31" href="#__codelineno-28-31"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">additional-name</span> <span class="s">"A."</span> <span class="p">;</span>
+</span><span id="__span-28-32"><a id="__codelineno-28-32" name="__codelineno-28-32" href="#__codelineno-28-32"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">honorific-prefix</span> <span class="s">"Dr."</span> <span class="p">;</span>
+</span><span id="__span-28-33"><a id="__codelineno-28-33" name="__codelineno-28-33" href="#__codelineno-28-33"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">honorific-suffix</span> <span class="s">"PhD"</span> <span class="p">.</span>
+</span><span id="__span-28-34"><a id="__codelineno-28-34" name="__codelineno-28-34" href="#__codelineno-28-34"></a>
+</span><span id="__span-28-35"><a id="__codelineno-28-35" name="__codelineno-28-35" href="#__codelineno-28-35"></a><span class="nn">_</span><span class="p">:</span><span class="nt">phone0</span> <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Cell</span> <span class="p">;</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">value</span> <span class="s">"tel:+31612345678"</span> <span class="p">.</span>
+</span><span id="__span-28-36"><a id="__codelineno-28-36" name="__codelineno-28-36" href="#__codelineno-28-36"></a><span class="nn">_</span><span class="p">:</span><span class="nt">phone1</span> <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Work</span> <span class="p">;</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">value</span> <span class="s">"tel:+31201234567"</span> <span class="p">.</span>
+</span><span id="__span-28-37"><a id="__codelineno-28-37" name="__codelineno-28-37" href="#__codelineno-28-37"></a><span class="nn">_</span><span class="p">:</span><span class="nt">email0</span> <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Home</span> <span class="p">;</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">value</span> <span class="s">"mailto:jane@example.com"</span> <span class="p">.</span>
+</span><span id="__span-28-38"><a id="__codelineno-28-38" name="__codelineno-28-38" href="#__codelineno-28-38"></a><span class="nn">_</span><span class="p">:</span><span class="nt">email1</span> <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Work</span> <span class="p">;</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">value</span> <span class="s">"mailto:jane@work.example"</span> <span class="p">.</span>
+</span><span id="__span-28-39"><a id="__codelineno-28-39" name="__codelineno-28-39" href="#__codelineno-28-39"></a><span class="nn">_</span><span class="p">:</span><span class="nt">im0</span>    <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Home</span> <span class="p">;</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">value</span> <span class="s">"xmpp:jane@jabber.example"</span> <span class="p">.</span>
+</span><span id="__span-28-40"><a id="__codelineno-28-40" name="__codelineno-28-40" href="#__codelineno-28-40"></a><span class="nn">_</span><span class="p">:</span><span class="nt">im1</span>    <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Work</span> <span class="p">;</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">value</span> <span class="s">"skype:jane.doe"</span> <span class="p">.</span>
+</span><span id="__span-28-41"><a id="__codelineno-28-41" name="__codelineno-28-41" href="#__codelineno-28-41"></a>
+</span><span id="__span-28-42"><a id="__codelineno-28-42" name="__codelineno-28-42" href="#__codelineno-28-42"></a><span class="nn">_</span><span class="p">:</span><span class="nt">addr0</span> <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Address</span><span class="p">,</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Home</span> <span class="p">;</span>
+</span><span id="__span-28-43"><a id="__codelineno-28-43" name="__codelineno-28-43" href="#__codelineno-28-43"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">street-address</span> <span class="s">"Kerkstraat 1"</span> <span class="p">;</span>
+</span><span id="__span-28-44"><a id="__codelineno-28-44" name="__codelineno-28-44" href="#__codelineno-28-44"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">locality</span> <span class="s">"Amsterdam"</span> <span class="p">;</span>
+</span><span id="__span-28-45"><a id="__codelineno-28-45" name="__codelineno-28-45" href="#__codelineno-28-45"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">region</span> <span class="s">"NH"</span> <span class="p">;</span>
+</span><span id="__span-28-46"><a id="__codelineno-28-46" name="__codelineno-28-46" href="#__codelineno-28-46"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">postal-code</span> <span class="s">"1017GA"</span> <span class="p">;</span>
+</span><span id="__span-28-47"><a id="__codelineno-28-47" name="__codelineno-28-47" href="#__codelineno-28-47"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">country-name</span> <span class="s">"Netherlands"</span> <span class="p">.</span>
+</span><span id="__span-28-48"><a id="__codelineno-28-48" name="__codelineno-28-48" href="#__codelineno-28-48"></a>
+</span><span id="__span-28-49"><a id="__codelineno-28-49" name="__codelineno-28-49" href="#__codelineno-28-49"></a><span class="nn">_</span><span class="p">:</span><span class="nt">addr1</span> <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Address</span><span class="p">,</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Work</span> <span class="p">;</span>
+</span><span id="__span-28-50"><a id="__codelineno-28-50" name="__codelineno-28-50" href="#__codelineno-28-50"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">street-address</span> <span class="s">"Science Park 400"</span> <span class="p">;</span>
+</span><span id="__span-28-51"><a id="__codelineno-28-51" name="__codelineno-28-51" href="#__codelineno-28-51"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">locality</span> <span class="s">"Amsterdam"</span> <span class="p">;</span>
+</span><span id="__span-28-52"><a id="__codelineno-28-52" name="__codelineno-28-52" href="#__codelineno-28-52"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">country-name</span> <span class="s">"Netherlands"</span> <span class="p">;</span>
+</span><span id="__span-28-53"><a id="__codelineno-28-53" name="__codelineno-28-53" href="#__codelineno-28-53"></a>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">post-office-box</span> <span class="s">"94079"</span> <span class="p">.</span>
+</span><span id="__span-28-54"><a id="__codelineno-28-54" name="__codelineno-28-54" href="#__codelineno-28-54"></a>
+</span><span id="__span-28-55"><a id="__codelineno-28-55" name="__codelineno-28-55" href="#__codelineno-28-55"></a><span class="nn">_</span><span class="p">:</span><span class="nt">lang0</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">language</span> <span class="s">"nl"</span> <span class="p">.</span>
+</span><span id="__span-28-56"><a id="__codelineno-28-56" name="__codelineno-28-56" href="#__codelineno-28-56"></a><span class="nn">_</span><span class="p">:</span><span class="nt">lang1</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">language</span> <span class="s">"en-GB"</span> <span class="p">.</span>
+</span><span id="__span-28-57"><a id="__codelineno-28-57" name="__codelineno-28-57" href="#__codelineno-28-57"></a>
+</span><span id="__span-28-58"><a id="__codelineno-28-58" name="__codelineno-28-58" href="#__codelineno-28-58"></a><span class="nn">_</span><span class="p">:</span><span class="nt">url0</span> <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">WebId</span> <span class="p">;</span>    <span class="nn">vcard</span><span class="p">:</span><span class="nt">value</span> <span class="nv">&lt;https://jane.solidcommunity.net/profile/card#me&gt;</span> <span class="p">.</span>
+</span><span id="__span-28-59"><a id="__codelineno-28-59" name="__codelineno-28-59" href="#__codelineno-28-59"></a><span class="nn">_</span><span class="p">:</span><span class="nt">url1</span> <span class="kt">a</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">Homepage</span> <span class="p">;</span> <span class="nn">vcard</span><span class="p">:</span><span class="nt">value</span> <span class="nv">&lt;https://jane.example&gt;</span> <span class="p">.</span>
+</span></code></pre></div>
+<p>That is the full coverage the model round-trips — <code>ContactRDFDataTest</code> asserts this snapshot
+survives both an in-memory rewrite and a serialize-parse wire trip. The write forms worth
+knowing, all in
+<code>Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/contacts/ContactRDF.kt</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Stored form</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Structured name</td>
+<td>Fragment node <code>{document}#name</code>, not a blank node (<code>ContactRDF.kt:151</code>)</td>
+</tr>
+<tr>
+<td>Phones</td>
+<td><code>_:phone{n}</code> typed <code>Cell/Home/Work/Fax/Pager/Voice/Text/Video/TextPhone</code>; value normalized to a real <code>tel:</code> IRI — RFC 3966 visual separators stripped, the rest percent-encoded (<code>ContactRDF.kt:312</code>)</td>
+</tr>
+<tr>
+<td>Emails</td>
+<td><code>_:email{n}</code> typed <code>Home/Work</code>; value a <code>mailto:</code> IRI</td>
+</tr>
+<tr>
+<td>Instant messaging</td>
+<td><code>_:im{n}</code> typed <code>Home/Work</code>; handle kept verbatim — schemes vary too much to normalize</td>
+</tr>
+<tr>
+<td>Addresses</td>
+<td><code>_:addr{n}</code>, always <code>vcard:Address</code> plus <code>Home/Work</code> when classified; six postal parts</td>
+</tr>
+<tr>
+<td>URLs</td>
+<td><code>_:url{n}</code> typed <code>Home/Work/Homepage/WebId/PublicId</code>; the value is an IRI object, unlike the literal <code>vcard:value</code> of phones and emails</td>
+</tr>
+<tr>
+<td>Dates</td>
+<td><code>bday</code>/<code>anniversary</code> verbatim, typed <code>xsd:dateTime</code> when the value contains a <code>T</code>, <code>xsd:date</code> otherwise</td>
+</tr>
+<tr>
+<td>Gender</td>
+<td>One of the five ontology classes as an IRI, never a literal</td>
+</tr>
+<tr>
+<td>Geo</td>
+<td>Direct IRI object per the TR; a bare <code>lat,lng</code> gains the <code>geo:</code> scheme on write; a foreign entry on a value node still reads (<code>ContactRDF.kt:516</code>)</td>
+</tr>
+<tr>
+<td>Languages</td>
+<td><code>_:lang{n}</code> carrying <code>vcard:language</code> BCP-47 tags; list order carries vCard <code>PREF</code> order</td>
+</tr>
+<tr>
+<td>UID</td>
+<td>An IRI: absolute IRIs verbatim, anything else wrapped <code>urn:uid:{percent-encoded}</code> so the object is always valid; unwrapped on read (<code>ContactRDF.kt:483</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Two compatibility rules run through all of it: entries of type <code>OTHER</code> are written <strong>without</strong> a
+type triple, byte-compatible with older writers, and untyped or unrecognized foreign nodes read
+back as <code>OTHER</code> instead of being dropped. Blank-node labels are counter-based (<code>_:phone0</code>,
+<code>_:addr1</code>) because values like URLs and phone numbers are not safe labels.</p>
+</details>
+<details class="info" id="the-public-surface-in-full">
+<summary>The public surface in full</summary>
+<p><code>SolidContactsDataModule</code>
+(<code>api/src/main/java/com/erfangholami/androidsolidservices/api/datamodule/contacts/SolidContactsDataModule.kt:19</code>)
+is a facade over three role interfaces, obtained via <code>getInstance(authenticator)</code> or
+<code>getInstance(resourceManager)</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Verbs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>books: AddressBookStore</code></td>
+<td><code>list</code>, <code>ensureContainer</code>, <code>get</code>, <code>create</code>, <code>rename</code>, <code>delete</code>, <code>ensureDefault</code></td>
+</tr>
+<tr>
+<td><code>contacts: ContactStore</code></td>
+<td><code>get</code>, <code>list</code>, <code>create</code>, <code>update</code>, <code>delete</code>, <code>setPhoto</code>, <code>removePhoto</code>, <code>getPhoto</code>, <code>findByWebId</code>, plus the <code>ShareableEntityStore</code> verbs</td>
+</tr>
+<tr>
+<td><code>groups: GroupStore</code></td>
+<td><code>create</code>, <code>get</code>, <code>delete</code>, <code>addMember</code>, <code>removeMember</code></td>
+</tr>
+</tbody>
+</table>
+<p>Everything returns <code>SolidResult&lt;T&gt;</code>. The writable state of a contact is one immutable snapshot,
+<code>ContactData</code>, built with the <code>contactData {}</code> DSL and derived with <code>buildUpon {}</code>
+(<code>Shared/.../shared/model/contacts/ContactData.kt:109</code>) — typed phones, emails, IMs, addresses
+and URLs, plus every scalar in the coverage table. Reads return <code>SolidContact</code> (uri, etag,
+modified, photoUri, data); listings carry lightweight <code>Contact(uri, name)</code> summaries straight
+from the cached index names, and <code>AddressBook</code> bundles the root's title with both summary lists.
+<code>ContactStore.update</code> has <strong>replace semantics</strong> — properties absent from the snapshot are removed
+— with two library-managed exceptions: the photo link is preserved (managed only through
+<code>setPhoto</code>/<code>removePhoto</code>) and a <code>null</code> uid carries the stored UID forward rather than clearing it.
+<code>create</code> requires the data to resolve to <em>some</em> display name — <code>effectiveFullName()</code> falls back
+through name parts, nickname, first email, first phone (<code>ContactData.kt:89</code>) — and assigns
+<code>urn:uuid:{contactId}</code> when no uid is supplied. <code>findByWebId</code> scans every book for a
+WebId-typed URL at a cost of one fetch per contact; its KDoc says O(books × contacts) and means
+it — it exists for duplicate-checking a scanned profile, not for hot paths.</p>
+<p><code>ContactStore</code> is also the module's <code>ShareableEntityStore&lt;SolidContact&gt;</code> implementation
+(<code>api/src/main/java/com/erfangholami/androidsolidservices/api/datamodule/ShareableEntityStore.kt</code>):
+<code>entityTypeIri</code> is <code>vcard:Individual</code>, and <code>shareTarget</code> maps a contact URI to its <code>Person/{uuid}/</code>
+container (<code>ContactStore.kt:31</code>) so one grant covers the document and its photo.
+<code>publicShareTarget</code> returns <code>null</code> unconditionally (<code>ContactStore.kt:38</code>): <strong>contacts are never
+shared publicly, and that is a decision</strong>, made at the contract level rather than left to UI
+policy. An anyone-with-the-link grant would disclose a document about a third person to an
+unbounded audience, and unlike a ticket — whose public form is its self-contained <code>.pkpass</code>
+artifact — a contact has no single representation that makes sense to a receiver without pod
+access. Shares of contacts are always person-to-person grants.</p>
+</details>
+<details class="info" id="how-it-flows-in-detail">
+<summary>How it flows in detail</summary>
+<h4 id="bootstrapping-a-book">Bootstrapping a book<a class="headerlink" href="#bootstrapping-a-book" title="Permanent link">¶</a></h4>
+<p><code>AddressBookEngine.createBook</code>
+(<code>api/.../datamodule/contacts/implementation/AddressBookEngine.kt:136</code>) is the part the toolkit
+does not do for contacts, because a book is three documents, not one:</p>
+<ol>
+<li><code>ensureContainer</code> creates <code>{storage}datamodule/contacts/{uuid}/</code> bottom-up (the storage root
+   resolved by the toolkit's <code>requireStorage</code> when the caller passes none).</li>
+<li>The two indexes are created first — an empty <code>people.ttl</code> and <code>groups.ttl</code> — and the
+   <code>index.ttl#this</code> root <strong>last</strong>, carrying <code>acl:owner</code>, <code>dcterms:title</code> and the two index links.
+   The root is never published pointing at documents that do not exist yet, the same
+   attachments-before-document ordering the toolkit's ticket flow uses.</li>
+<li><code>TypeIndexResolver.addInstance</code> registers the root in the private (default) or public type
+   index for <code>vcard:AddressBook</code>.</li>
+</ol>
+<p><code>ensureDefault</code> (<code>AddressBookEngine.kt:102</code>) returns the first private-index book or creates one
+titled "Contacts"; <code>ensureContainer</code> (<code>AddressBookEngine.kt:30</code>) just provisions
+<code>{storage}datamodule/contacts/</code> and returns the (possibly empty) book list, so a consumer can call
+it on every read of an unprovisioned pod without failing.</p>
+<h4 id="creating-a-contact-with-a-photo">Creating a contact with a photo<a class="headerlink" href="#creating-a-contact-with-a-photo" title="Permanent link">¶</a></h4>
+<p><code>ContactEngine.create</code> (<code>api/.../implementation/ContactEngine.kt:66</code>) then <code>setPhoto</code>
+(<code>ContactEngine.kt:150</code>):</p>
+<ol>
+<li>A UUID is minted and <code>{book}Person/{uuid}/</code> created (<code>ensureContainer</code>, which also provisions
+   the intermediate <code>Person/</code> on servers that do not auto-create parents).</li>
+<li>The <code>ContactRDF</code> is written at <code>{container}index.ttl#this</code>, uid defaulted to <code>urn:uuid:{uuid}</code>.</li>
+<li>The people index gains its row under compare-and-set (<code>ContactsPodAccess.updatePeopleIndex</code>
+   delegates to <code>casUpdate</code>), and any requested group memberships are added.</li>
+<li><code>setPhoto</code> stores the binary through the toolkit's <code>putAttachment</code> with role <code>photo</code> — so a
+   replacement overwrites <code>photo.jpg</code> in place — <strong>before</strong> CAS-linking <code>vcard:hasPhoto</code> in the
+   document; the document never links a binary that is not there. If the link previously pointed
+   at a different URI (a content-type change renames the file), the stale binary is deleted
+   tolerantly afterwards.</li>
+</ol>
+<p>Renames ripple: when an <code>update</code> changes the display name, <code>ContactsPodAccess.refreshCachedName</code>
+(<code>ContactsPodAccess.kt:54</code>) rewrites the cached <code>vcard:fn</code> in the people index and in every group
+document of the book, each under CAS.</p>
+<h4 id="deleting-a-contact-and-its-group-memberships">Deleting a contact and its group memberships<a class="headerlink" href="#deleting-a-contact-and-its-group-memberships" title="Permanent link">¶</a></h4>
+<p><code>ContactEngine.delete</code> (<code>ContactEngine.kt:125</code>) runs strictly in this order:</p>
+<ol>
+<li>Read the contact once, best-effort, so the removed entity can be returned.</li>
+<li><code>deleteTolerant</code> the whole <code>Person/{uuid}/</code> container — document and photo in one stroke.
+   If this fails, the call fails <strong>here</strong>, and the index row survives to keep the contact
+   discoverable (pinned by <code>ContactEngineTest</code>).</li>
+<li>Remove the people-index row under CAS.</li>
+<li>Only when a row was actually removed, walk the book's groups index and strip the membership
+   (and its cached name) from each group document.</li>
+</ol>
+<p><code>AddressBookStore.delete</code> is the cascade one level up: the whole book container first, the
+type-index deregistration second — so a failed container delete leaves the registration intact
+and the data still findable.</p>
+<h4 id="finding-a-contact-inside-a-shared-container">Finding a contact inside a shared container<a class="headerlink" href="#finding-a-contact-inside-a-shared-container" title="Permanent link">¶</a></h4>
+<p>A receiver granted someone's <code>Person/{uuid}/</code> container calls
+<code>contacts.findInContainer(ownerWebId, containerUri)</code> (<code>ContactEngine.kt:38</code>), which is the
+toolkit's <code>findEntityInContainer</code> parameterized with document name <code>index.ttl</code>, fragment <code>#this</code>
+and type <code>vcard:Individual</code>: membership is listed, the conventional name wins when present
+(followed by a typed re-read), otherwise every member document is scanned for a subject typed
+<code>vcard:Individual</code>. Every hop is a followed link against the foreign pod; nothing is a guessed
+path.</p>
+</details>
+<details class="info" id="failure-behaviour">
+<summary>Failure behaviour</summary>
+<ul>
+<li><strong>A partially written or foreign book root does not crash.</strong> <code>AddressBookRDF.getOwner</code>,
+  <code>getTitle</code>, <code>getNameEmailIndex</code> and <code>getGroupsIndex</code> all return <code>null</code> when the triple is
+  absent (<code>Shared/.../shared/rdf/contacts/AddressBookRDF.kt:39</code>), and every caller treats absence
+  as empty: <code>readBook</code> substitutes empty index codecs (<code>AddressBookEngine.kt:123</code>), <code>fetchAll</code>
+  returns an empty list (<code>ContactEngine.kt:229</code>), and the index-update helpers silently skip a
+  book that declares no index (<code>ContactsPodAccess.kt:75</code>). These reads used to be non-null and a
+  book root missing its links crashed the listing; the null path is now pinned explicitly by
+  <code>AddressBookRDFTest</code>.</li>
+<li><strong>A missing people index means "no contacts", not an error.</strong> <code>contacts.list</code> returns empty
+  when the book or its people index reads <code>NOT_FOUND</code> (<code>ContactsPodAccess.dataOrNullIfMissing</code>,
+  <code>ContactsPodAccess.kt:114</code>) — only genuinely other errors surface. Likewise <code>books.list</code>
+  returns empty lists when a type index is unreadable, and <code>findByWebId</code> skips an unreadable book
+  instead of sinking the whole lookup, returning a clean <code>ContactMatch()</code> miss.</li>
+<li><strong>A photo that will not load fails only the photo.</strong> <code>vcard:hasPhoto</code> is just a link, so the
+  contact document reads fine with a dangling target; <code>getPhoto</code> returns the pod's error as a
+  <code>SolidResult.Failure</code> for that call alone. The upload-before-link ordering in <code>setPhoto</code> and
+  the unlink-before-delete ordering in <code>removePhoto</code> mean a crash between steps leaves at worst
+  an orphaned binary, never a document pointing at nothing.</li>
+<li><strong>Index rewrites are compare-and-set</strong> through <code>casUpdate</code>, so two devices adding contacts to
+  the same book do not lose each other's rows — the toolkit's rule, inherited unchanged.</li>
+<li><strong>Cascade order protects discoverability.</strong> Both delete flows destroy data before bookkeeping
+  (container before index row, container before type-index registration), so any failure leaves
+  the entity findable rather than leaking an unreachable container.</li>
+</ul>
+</details>
+<details class="info" id="extension-points">
+<summary>Extension points</summary>
+<p>What contacts takes from the <a href="../../project/adding-a-data-module/">toolkit</a> versus what it keeps, precisely:</p>
+<ul>
+<li><strong>Used from the toolkit</strong>: the type-index registry verbs (<code>TypeIndexResolver.addInstance</code> /
+  <code>removeResource</code> — books register as <code>vcard:AddressBook</code> instances), storage resolution
+  (<code>requireStorage</code>), attachment storage for photos (<code>putAttachment</code> / <code>readAttachment</code> with the
+  shared content-type table), <code>deleteTolerant</code>, <code>findEntityInContainer</code>, <code>containerOf</code>, and
+  <code>casUpdate</code> for every index and document rewrite.</li>
+<li><strong>Kept module-specific</strong>: the three-document book bootstrap, the people/groups index row
+  formats with their cached names, the rename ripple, the two-level cascade deletes, and the
+  <code>Person/</code> / <code>Group/</code> nesting itself. <code>EntityCollection</code> assumes one index document with rows of
+  one entity type per collection container; a book root that <em>links</em> two sibling indexes and
+  parents two entity families does not reduce to that, so contacts does not instantiate a
+  <code>CollectionSpec</code> at all.</li>
+</ul>
+<p>The seams a consumer plugs into: <code>ShareableEntityStore</code> makes contacts first-class in typed
+entity sharing (the sharing engine threads <code>vcard:Individual</code> and the display name as opaque
+strings); the <code>ContactData</code> DSL is the write model for every source an app builds (device import,
+<code>.vcf</code>, scanned profiles); and the cross-process mirror lives in
+<code>client/src/main/java/com/erfangholami/androidsolidservices/client/sdk/SolidContactsDataModule.kt</code>
+for apps consuming the module over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr>. <code>addressBookUriForContact</code>
+(<code>Shared/.../shared/model/contacts/ContactUris.kt:3</code>) maps a contact URI back to its book root by
+the <code>Person/</code> segment, for callers that hold only the contact.</p>
+</details>
+<details class="info" id="tests">
+<summary>Tests</summary>
+<p><code>api/src/test/java/com/erfangholami/androidsolidservices/api/datamodule/contacts/ContactEngineTest.kt</code>
+runs all three engines against the shared <code>inMemoryPod</code> fixture and pins the decisions: that
+<code>create</code> registers the row in the people index and assigns a <code>urn:uuid:</code> uid; that <code>update</code>
+refreshes the cached name in the people index <em>and</em> in group documents while preserving the photo
+link and a <code>null</code>-uid carry-forward; that <code>delete</code> cleans index, memberships and the whole
+<code>Person/</code> container — and that a failed container delete surfaces and keeps the index row; that
+<code>findByWebId</code> hits with its book and misses cleanly; that <code>ensureDefault</code> reuses before creating;
+that a missing people index, book root or type index reads as empty rather than failing; that
+<code>ensureContainer</code> and <code>create</code> provision the nested container chain; that a book delete removes
+container plus registration, keeping the registration when the container delete fails; and that
+<code>findInContainer</code> and the <code>shareTarget</code> mapping honor the shareable-entity contract.</p>
+<p><code>Shared/src/test/java/com/erfangholami/androidsolidservices/shared/rdf/contacts/AddressBookRDFTest.kt</code>
+pins the codec's failure posture: a book that declares nothing reads as all-null rather than
+throwing, a fully described book reads every link back, and the legacy <code>https</code>
+<code>dcterms:title</code> variant still reads.</p>
+<p>The full-fidelity round-trip itself — the maximal snapshot surviving rewrite and wire trip, OTHER
+entries written untyped, legacy untyped nodes reading as OTHER, counter-based blank-node labels,
+date datatypes by value shape — is pinned by <code>ContactRDFDataTest.kt</code> beside the codec.</p>
+</details>
+<details class="info" id="specifications-implemented">
+<summary>Specifications implemented</summary>
+<ul>
+<li><a href="https://www.w3.org/TR/vcard-rdf/">vCard Ontology (W3C)</a> — the vocabulary for everything on a
+  contact. Deliberate deviations: multi-valued entries live on blank nodes carrying a
+  <code>vcard:value</code> and a classifying <code>rdf:type</code> (the SolidOS convention this module must read and
+  write to coexist with SolidOS contacts) rather than the TR's direct-object forms; and the book
+  layout terms — <code>vcard:AddressBook</code>, <code>nameEmailIndex</code>, <code>groupIndex</code>, <code>inAddressBook</code>,
+  <code>includesGroup</code> — are SolidOS extensions in the vCard namespace, not defined by the TR at all.
+  One module-internal quirk to know: the people index writes the <em>book</em> as the subject of
+  <code>vcard:inAddressBook</code>, and reads only its own form.</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6350">RFC 6350 (vCard 4.0)</a> — the property semantics the
+  model mirrors: typed TEL/EMAIL/ADR/IMPP, <code>GEO</code> as a <code>geo:</code> URI, <code>LANG</code> preference order,
+  <code>GENDER</code> reduced to the ontology's five classes (the RFC's free-text identity component is not
+  modeled), <code>UID</code> always an IRI. Not implemented: <code>RELATED</code> (the vocabulary constant exists at
+  <code>Shared/.../shared/vocab/VCARD.kt:71</code>, no codec support), <code>TZ</code>, <code>KEY</code>, <code>LOGO</code>, <code>SOUND</code> — none
+  of the module's sources (device contacts, <code>.vcf</code> files in the wild, scanned profiles) produce
+  them and no consumer renders them. Because updates mutate the fetched quad set in place,
+  foreign triples using those properties survive a rewrite untouched; they are invisible to
+  <code>ContactData</code>, not destroyed by it.</li>
+<li><a href="https://github.com/solid/type-indexes">Solid type index</a> — book discovery and registration,
+  private by default, public on request; the module follows registrations, never paths, which is
+  what lets pre-<code>datamodule/</code> books stay where they are.</li>
+</ul>
+</details>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../resources/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Resources &amp; containers">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Resources &amp; containers
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../tickets/" class="md-footer__link md-footer__link--next" aria-label="Next: Tickets">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Tickets
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services" target="_blank" rel="noopener" title="Android Solid Services on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.tabs.link", "content.code.copy", "content.code.annotate", "content.code.select", "content.tooltips", "content.action.edit", "search.highlight", "search.suggest", "search.share", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>
