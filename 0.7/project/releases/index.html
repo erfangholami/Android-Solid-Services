@@ -1,0 +1,2926 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+      
+      
+        <meta name="author" content="Erfan Gholami">
+      
+      
+        <link rel="canonical" href="https://androidsolidservices.erfangholami.com/0.7/project/releases/">
+      
+      
+        <link rel="prev" href="../troubleshooting/">
+      
+      
+        <link rel="next" href="../contributing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../logo.png">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Releases - Android Solid Services</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website">
+<meta property="og:title" content="Releases - Android Solid Services">
+<meta property="og:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="og:image" content="https://androidsolidservices.erfangholami.com/0.7/assets/images/social/project/releases.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://androidsolidservices.erfangholami.com/0.7/project/releases/">
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="Releases - Android Solid Services">
+<meta property="twitter:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/0.7/assets/images/social/project/releases.png">
+<link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#releases" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+              </button>
+            
+            
+  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
+  versions. Pin a version, and read the
+  <a href="./">release notes</a> before upgrading.
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden="">
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Android Solid Services" class="md-header__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Android Solid Services
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Releases
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../start/quickstart/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../build/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Build with it
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/errors/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Android Solid Services" class="md-nav__button md-logo" aria-label="Android Solid Services" data-md-component="logo">
+      
+  <img src="../../logo.png" alt="logo">
+
+    </a>
+    Android Solid Services
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/erfangholami/Android-Solid-Services" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    Android-Solid-Services
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/client-or-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client or API?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/install-app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install the app
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../build/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build with it
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Build with it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources &amp; containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/contacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tickets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/sharing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sharing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/type-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/client-id-document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solid-OIDC Client ID Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked="">
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-a-data-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#v061-1st-august-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6.1 — 1st August 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.6.1 — 1st August 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-sign-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Sign-in
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v060-30th-july-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6.0 — 30th July 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.6.0 — 30th July 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-tickets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Tickets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-profiles-streaming-and-live-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Profiles, streaming and live updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-monitoring-and-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Monitoring and distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvements_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v051-16th-june-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.1 — 16th June 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.1 — 16th June 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#improvements_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v050-16th-june-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.0 — 16th June 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.0 — 16th June 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-resource-sharing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Resource sharing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-notifications-inbox-linked-data-notifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Notifications &amp; inbox (Linked Data Notifications)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-resources-contacts-over-ipc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Resources &amp; contacts over IPC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvements_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v041-12th-may-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.1 — 12th May 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.4.1 — 12th May 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maven-coordinates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maven coordinates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gradle-modules-and-kotlin-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gradle modules and Kotlin packages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-level-changes-android-solid-services-host-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App-level changes (Android Solid Services host app)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v040-3rd-may-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.0 — 3rd May 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.4.0 — 3rd May 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-api-solidresourcemanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New API — SolidResourceManager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-type-n3patch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Type — N3Patch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-account-in-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-account in client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug Fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v031-14th-april-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.3.1 — 14th April 2026
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v030-13th-april-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.3.0 — 13th April 2026
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v021-19th-december-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.2.1 — 19th December 2024
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v020-17th-december-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.2.0 — 17th December 2024
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v01-20th-march-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1 — 20th March 2024
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#v061-1st-august-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6.1 — 1st August 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.6.1 — 1st August 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-sign-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Sign-in
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v060-30th-july-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.6.0 — 30th July 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.6.0 — 30th July 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-tickets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Tickets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-profiles-streaming-and-live-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Profiles, streaming and live updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-monitoring-and-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Monitoring and distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvements_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v051-16th-june-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.1 — 16th June 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.1 — 16th June 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#improvements_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v050-16th-june-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.0 — 16th June 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.0 — 16th June 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-resource-sharing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Resource sharing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-notifications-inbox-linked-data-notifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Notifications &amp; inbox (Linked Data Notifications)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-resources-contacts-over-ipc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New — Resources &amp; contacts over IPC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvements_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v041-12th-may-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.1 — 12th May 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.4.1 — 12th May 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maven-coordinates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maven coordinates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gradle-modules-and-kotlin-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gradle modules and Kotlin packages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-level-changes-android-solid-services-host-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App-level changes (Android Solid Services host app)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v040-3rd-may-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.0 — 3rd May 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.4.0 — 3rd May 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-api-solidresourcemanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New API — SolidResourceManager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-type-n3patch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Type — N3Patch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-account-in-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-account in client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug Fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v031-14th-april-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.3.1 — 14th April 2026
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v030-13th-april-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.3.0 — 13th April 2026
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v021-19th-december-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.2.1 — 19th December 2024
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v020-17th-december-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.2.0 — 17th December 2024
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v01-20th-march-2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1 — 20th March 2024
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation">
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../architecture/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Project
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/erfangholami/Android-Solid-Services/edit/dev/docs/project/releases.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="releases">Releases<a class="headerlink" href="#releases" title="Permanent link">¶</a></h1>
+<p>All releases are published on the <a href="https://github.com/erfangholami/Android-Solid-Services/releases">GitHub Releases page</a>.</p>
+<p>Library versions are published to Maven Central:</p>
+<ul>
+<li><a href="https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/client"><code>client</code></a></li>
+<li><a href="https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/api"><code>api</code></a></li>
+<li><a href="https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/shared"><code>shared</code></a></li>
+</ul>
+<hr>
+<h2 id="v061-1st-august-2026">v0.6.1 — 1st August 2026<a class="headerlink" href="#v061-1st-august-2026" title="Permanent link">¶</a></h2>
+<p>Sign-in no longer needs the overlay permission, Solid profiles become real Android accounts, and
+sessions stop expiring after a day. Several release-only defects are fixed.</p>
+<h3 id="new-sign-in">New — Sign-in<a class="headerlink" href="#new-sign-in" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong><code>AuthorizeWithSolid</code></strong>, an <code>ActivityResultContract</code> your app launches from its own foreground.
+  The app no longer requests <code>SYSTEM_ALERT_WINDOW</code> at all, and the dialog that used to demand it
+  on first launch is gone. See <a href="../../start/quickstart/">Getting Started</a>.</li>
+<li><strong>Solid accounts in Android Settings.</strong> Each signed-in <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> appears under Settings → Accounts.
+  "Add account" there opens sign-in and returns where it was invoked; removing an account signs
+  that profile out. <code>ChooseSolidAccount</code> offers the system account chooser to apps that want it.</li>
+<li><strong>Add an account mid-sign-in</strong> — the authorize dialog can hand off to login, and the new account
+  is waiting in the list on return.</li>
+</ul>
+<h3 id="improvements">Improvements<a class="headerlink" href="#improvements" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>No dangerous permissions.</strong> <code>SYSTEM_ALERT_WINDOW</code> went with the overlay dialog, and the three
+  account permissions were dropped — <code>GET_ACCOUNTS</code> belongs to Android's <strong>Contacts</strong> group, so the
+  app looked like it wanted your contacts, while <code>AUTHENTICATE_ACCOUNTS</code> and <code>MANAGE_ACCOUNTS</code> have
+  been deprecated since API 23 and 22. Only normal-level permissions remain.</li>
+<li><strong>Static client registration.</strong> The app identifies itself with a hosted
+  <a href="https://androidsolidservices.erfangholami.com/client.jsonld">Client ID Document</a> instead of
+  registering dynamically with each provider.
+  Dynamic registrations expire — Inrupt discards them after 24 hours and the refresh token dies
+  with them, which is what forced a fresh sign-in roughly once a day. Existing sessions keep the
+  registration they were created with; only new sign-ins use the hosted identity. Your own app can
+  do the same: see <a href="../../reference/client-id-document/">Client ID Document</a>.</li>
+<li><strong>PATCH on SPARQL-only servers</strong> — a <code>text/n3</code> patch refused with 415 is restated as SPARQL
+  Update and retried, so patching works on Inrupt <abbr title="Enterprise Solid Server — Inrupt's pod server, behind PodSpaces">ESS</abbr> over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> too.</li>
+<li><strong>Versions come from the git tag</strong>, so a release is a tag and nothing is edited by hand.</li>
+<li><strong>The <code>client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> gained a test suite</strong> — 36 unit and 152 instrumented tests driving every call
+  across a real binder, running on an emulator in CI.</li>
+</ul>
+<h3 id="bug-fixes">Bug fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Metadata calls failed in release builds.</strong> R8 renamed the parcelable models, and their names
+  travel inside the parcel, so <code>head</code>, <code>headPublic</code>, <code>readContainer</code> and enriched <code>listContainer</code>
+  raised <code>BadParcelableException</code> in every consumer.</li>
+<li><strong>A crash in the app hung the caller forever.</strong> Failures now arrive as typed errors, and a call
+  left parked on a dead service is retried after a rebind.</li>
+<li><strong>Out-of-range enum values crashed the app</strong> — any app could reach the exported sharing and
+  notification services with an unknown share mode or receiver kind.</li>
+<li><strong>Third-party apps could not build</strong> — <code>Shared</code> exposed AppAuth, forcing consumers to declare an
+  <code>appAuthRedirectScheme</code> placeholder for a flow they never run.</li>
+<li><strong>A provider address without <code>https://</code> crashed the app</strong> when signing in with a custom provider.</li>
+<li><strong>A login finishing after the main screen opened</strong> left no system account until the next cold start.</li>
+<li><strong>The authorize dialog flashed a purple status bar</strong> as it opened and closed.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title"><code>requestLogin</code> no longer works</p>
+<p>The deprecated <code>SolidSignInClient.requestLogin</code> drew its picker over the calling app from a
+background service, which Android allows only with the overlay permission the app has now
+dropped. It fails immediately with <code>SolidServicesDrawPermissionDeniedException</code> instead of
+leaving you waiting on a callback that cannot arrive. Migrate to <code>AuthorizeWithSolid</code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The account type changed from a placeholder to <code>com.erfangholami.androidsolidservices</code>. Android
+purges accounts of the old type on update, and they are re-registered on first launch — sessions
+and pod data are untouched.</p>
+</div>
+<hr>
+<h2 id="v060-30th-july-2026">v0.6.0 — 30th July 2026<a class="headerlink" href="#v060-30th-july-2026" title="Permanent link">¶</a></h2>
+<p>Tickets, <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> profiles, streaming and live notifications, on a unified result type. Adds crash
+reporting on the Play build and a Firebase-free build for F-Droid. <strong>Source-breaking</strong> for <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>
+consumers (the project is pre-1.0 and unstable).</p>
+<h3 id="new-tickets">New — Tickets<a class="headerlink" href="#new-tickets" title="Permanent link">¶</a></h3>
+<ul>
+<li>Store passes and reservations on a pod, with full <code>.pkpass</code> parity — pass identity and
+  web-service block, beacons, relevancy interval, colours and rich detail fields — plus BCBP
+  coverage for boarding passes.</li>
+<li>Pass images live in per-ticket sub-containers; colours are cached on index rows so a wallet list
+  paints from a single GET.</li>
+</ul>
+<h3 id="new-profiles-streaming-and-live-updates">New — Profiles, streaming and live updates<a class="headerlink" href="#new-profiles-streaming-and-live-updates" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong><abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> profile API</strong>: read a profile (merging linked documents), update name fields, set an avatar.</li>
+<li><strong>Streaming read/write with progress</strong>, so large files no longer buffer entirely in memory.</li>
+<li><strong>Live resource notifications</strong> over <code>WebSocketChannel2023</code>, exposed as a lifecycle-scoped <code>Flow</code>
+  alongside the existing inbox polling.</li>
+</ul>
+<h3 id="new-monitoring-and-distribution">New — Monitoring and distribution<a class="headerlink" href="#new-monitoring-and-distribution" title="Permanent link">¶</a></h3>
+<ul>
+<li>Crash reporting and performance monitoring on the <strong>Google Play build</strong>, through a <code>TelemetrySink</code>
+  seam in <code>Shared</code>. The published libraries take on no monitoring dependency and stay silent until a
+  host app installs a sink — you can plug in your own (Sentry, OpenTelemetry, logs).</li>
+<li>Network spans report the <strong>origin only</strong> (<code>scheme://host[:port]</code>), never pod paths. See the
+  <a href="../privacy/">Privacy Policy</a>.</li>
+<li>A <strong>FOSS build flavour</strong> with no Firebase or Play Services, for F-Droid.</li>
+</ul>
+<h3 id="improvements_1">Improvements<a class="headerlink" href="#improvements_1" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>One result type</strong>: every API returns <code>SolidResult&lt;T&gt;</code> with a typed <code>SolidError</code> (machine code,
+  retryable), replacing six historical error idioms. <strong>Breaking.</strong></li>
+<li><strong>String IRIs</strong> replace <code>URI</code> across the public API. <strong>Breaking.</strong></li>
+<li>The <code>client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> reaches <strong>every <code>api</code> capability</strong> over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> — tickets, contacts, derived resource
+  verbs and streaming.</li>
+<li><strong>Lost-update protection</strong>: contact, group and ticket edits use conditional <code>If-Match</code> writes with
+  retry, falling back to weak ETags on servers like NSS.</li>
+<li>New resource helpers — <code>exists</code>, <code>ensureContainer</code>, <code>probeAccess</code>.</li>
+<li>Contacts gain instant-messaging handles, vCard <code>GEO</code> and <code>LANG</code>.</li>
+<li>Type-index registration uses compare-and-swap instead of a blind write.</li>
+<li>Narrowed the <code>api</code> consumer R8 rules: jjwt's implementation tree keeps only what is reached
+  reflectively instead of every member, so apps embedding <code>api</code> pin far less.</li>
+<li>Build and tooling: ktlint and detekt in CI on every PR, a published
+  <a href="../../api/">API reference</a>, <code>targetSdk</code> 36, AGP and <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> 37.</li>
+</ul>
+<h3 id="bug-fixes_1">Bug fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Login</strong>: restored the lowercase Solid-<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> <code>webid</code> scope and ID-token claim, and 303 redirects
+  are now followed when resolving a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>.</li>
+<li><strong>Sessions</strong>: accounts issued no refresh token stay signed in until their access token actually
+  expires; expired sessions stay visible instead of silently disappearing.</li>
+<li><strong>Sharing</strong>: <abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr> grant/revoke fails fast instead of silently wiping co-shares; <abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr> surfaces
+  inherited access.</li>
+<li><strong>Transport</strong>: redirects re-sign <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> per hop, PATCH negotiates its format, and pod storage is
+  discovered rather than assumed.</li>
+<li>Fixed binary corruption over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr>; cancellation is no longer retried.</li>
+</ul>
+<hr>
+<h2 id="v051-16th-june-2026">v0.5.1 — 16th June 2026<a class="headerlink" href="#v051-16th-june-2026" title="Permanent link">¶</a></h2>
+<h3 id="improvements_2">Improvements<a class="headerlink" href="#improvements_2" title="Permanent link">¶</a></h3>
+<ul>
+<li>The libraries ship consumer ProGuard rules, so minified apps need no keep rules of their own.</li>
+</ul>
+<hr>
+<h2 id="v050-16th-june-2026">v0.5.0 — 16th June 2026<a class="headerlink" href="#v050-16th-june-2026" title="Permanent link">¶</a></h2>
+<p>Headline release: <strong>resource sharing</strong> and a <strong>Linked Data Notifications inbox</strong>, plus a
+security-focused overhaul of authentication and a clean-architecture refactor of the libraries.
+<strong>Source-breaking</strong> for external <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> consumers (the project is pre-1.0 and unstable).</p>
+<h3 id="new-resource-sharing">New — Resource sharing<a class="headerlink" href="#new-resource-sharing" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong><code>SharingManager</code></strong> (<code>api</code>) / <strong><code>Solid.getSharingClient()</code></strong> (<code>client</code>): share any pod resource or
+  container with another <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> at a chosen level — <strong>View</strong> (Read), <strong>Add</strong> (append-only), or <strong>Edit</strong>
+  (read/write) — and change the level or revoke it later, optionally notifying the receiver.</li>
+<li>Authorization works on both <strong>Web Access Control (<abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr>)</strong> and <strong>Access Control Policy (<abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr>)</strong> pods;
+  the backend is auto-selected from the resource's advertised authorization links.</li>
+<li>Make a resource <strong>private</strong> (owner-only) in one call; add-only recipients can upload into a shared
+  container via <code>createInContainer(...)</code> without read/write on its other contents.</li>
+<li><strong>Share links</strong> as <code>https://solidshare.app/s…</code> Android App Links, a public catalog of given/received
+  shares (rebuildable from the pod's own ACLs), and a typed <code>SharingException</code> hierarchy.</li>
+</ul>
+<h3 id="new-notifications-inbox-linked-data-notifications">New — Notifications &amp; inbox (Linked Data Notifications)<a class="headerlink" href="#new-notifications-inbox-linked-data-notifications" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong><code>NotificationsManager</code></strong> (<code>api</code>) / <strong><code>Solid.getNotificationsClient()</code></strong> (<code>client</code>): a full <abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr>
+  loop over the user's inbox. An owner offers access — or a peer requests it — the notification lands
+  in the target's inbox, and the recipient accepts or rejects, with a response sent back.</li>
+<li>The inbox is auto-provisioned with <strong>public append-but-not-read</strong> access. Notification senders are
+  verified cross-pod by reading their <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> profile anonymously. Pull-only (no push subscription yet).</li>
+</ul>
+<h3 id="new-authentication">New — Authentication<a class="headerlink" href="#new-authentication" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Solid-<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> Client ID Document</strong> — authenticate with a stable, hosted <code>client_id</code> instead of
+  per-device dynamic registration, removing forced re-logins when a provider drops an old
+  registration. See <a href="../../reference/client-id-document/">Using a Client ID Document</a>.</li>
+<li><strong>Per-account <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> keys</strong> — each account gets its own <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> keypair in the Android Keystore.</li>
+</ul>
+<h3 id="new-resources-contacts-over-ipc">New — Resources &amp; contacts over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr><a class="headerlink" href="#new-resources-contacts-over-ipc" title="Permanent link">¶</a></h3>
+<ul>
+<li><code>head()</code>, <code>patch()</code>, and conditional <code>update(…, ifMatch)</code> (<abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> optimistic concurrency) are now
+  reachable over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> through <code>SolidResourceClient</code>.</li>
+<li>New <strong>size</strong>, <strong>created-time</strong>, and <strong>modified-time</strong> accessors on the resource models.</li>
+<li>The <strong>contacts data module</strong> is now wired end-to-end over the <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> service and <code>client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>.</li>
+</ul>
+<h3 id="improvements_3">Improvements<a class="headerlink" href="#improvements_3" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Authentication hardening</strong> — the token/profile store is now <strong>encrypted at rest</strong> (AES-256-GCM
+  via an Android Keystore key, with transparent migration of pre-0.5.0 plaintext stores); logins are
+  rejected unless the token issuer is authorized by the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> (<code>solid:oidcIssuer</code>); the ID token
+  returned by a refresh is re-validated; silent token refresh is fixed against servers that enforce a
+  <code>DPoP-Nonce</code> on the token endpoint (e.g. Inrupt <abbr title="Enterprise Solid Server — Inrupt's pod server, behind PodSpaces">ESS</abbr>), with per-origin nonce tracking and coalesced
+  concurrent refreshes. Transport-level token/header plumbing was removed from the public
+  <code>Authenticator</code> (<strong>source-breaking</strong>; no known external caller).</li>
+<li><strong>Networking</strong> — <code>SolidHttpClient</code> gained an in-memory response cache (per-account keyed, <abbr title="Turtle — the RDF syntax most pod documents are written in">TTL</abbr>
+  freshness, <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr>/Last-Modified revalidation, single-flight de-duplication, LRU eviction) with
+  write-through invalidation, on by default.</li>
+<li><strong>Library refactor</strong> — <code>Shared</code> reorganized into intent-based packages (<code>model/</code>, <code>rdf/</code>, <code>http/</code>,
+  …) and stripped of okhttp / titanium-json-ld types on its public API (resource models now expose a
+  <code>String</code> content-type and a <code>SolidHeaders</code> value type); the <code>client</code> library extracted a shared,
+  self-healing <code>ServiceConnector</code> and <strong>unified its error contract</strong> so every method throws
+  <code>SolidException</code> (<strong>source-breaking</strong> for resource calls).</li>
+</ul>
+<h3 id="bug-fixes_2">Bug fixes<a class="headerlink" href="#bug-fixes_2" title="Permanent link">¶</a></h3>
+<ul>
+<li>Fixed adding received shares from notifications when a cross-pod access probe fails.</li>
+<li>Fixed <abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr> grants to write the implied <abbr title="Access Control List — the resource that says who may read or write a Solid resource">ACL</abbr> modes, matching <abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr> behaviour.</li>
+<li>401 retry handling now distinguishes a <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>-nonce rotation from an expired token and never returns
+  an expired or post-failed-refresh token to callers.</li>
+</ul>
+<hr>
+<h2 id="v041-12th-may-2026">v0.4.1 — 12th May 2026<a class="headerlink" href="#v041-12th-may-2026" title="Permanent link">¶</a></h2>
+<p>Namespace migration release. No new features; everything moves under <code>com.erfangholami.androidsolidservices</code>.</p>
+<h3 id="maven-coordinates">Maven coordinates<a class="headerlink" href="#maven-coordinates" title="Permanent link">¶</a></h3>
+<p>The three published libraries now share one groupId with short artifact ids:</p>
+<table>
+<thead>
+<tr>
+<th>Previous coordinates</th>
+<th>New coordinates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>com.pondersource.solidandroidclient:solidandroidclient</code></td>
+<td><code>com.erfangholami.androidsolidservices:client</code></td>
+</tr>
+<tr>
+<td><code>com.pondersource.solidandroidapi:solidandroidapi</code></td>
+<td><code>com.erfangholami.androidsolidservices:api</code></td>
+</tr>
+<tr>
+<td><code>com.pondersource.shared:shared</code></td>
+<td><code>com.erfangholami.androidsolidservices:shared</code></td>
+</tr>
+</tbody>
+</table>
+<p>Update the dependency lines in your module-level <code>build.gradle.kts</code>.</p>
+<h3 id="gradle-modules-and-kotlin-packages">Gradle modules and Kotlin packages<a class="headerlink" href="#gradle-modules-and-kotlin-packages" title="Permanent link">¶</a></h3>
+<p>The local Gradle module folders (<code>SolidAndroidApi/</code> → <code>api/</code>, <code>SolidAndroidClient/</code> → <code>client/</code>) and source packages (<code>com.pondersource.*</code> → <code>com.erfangholami.androidsolidservices.*</code>) were renamed to match the new coordinates. If you consume the libraries via Maven Central, this affects only your <code>import</code> statements; if you build this project from source, update local module paths in scripts and CI.</p>
+<h3 id="app-level-changes-android-solid-services-host-app">App-level changes (Android Solid Services host app)<a class="headerlink" href="#app-level-changes-android-solid-services-host-app" title="Permanent link">¶</a></h3>
+<ul>
+<li><code>applicationId</code> is now <code>com.erfangholami.androidsolidservices</code>. The host app on existing devices cannot auto-upgrade — users have to uninstall the old build and install 0.4.1 fresh.</li>
+<li>The AccountManager <code>accountType</code> changed to match. Existing Solid accounts on user devices will be orphaned and must be re-added.</li>
+<li>The AppAuth redirect scheme changed. If you registered the OAuth callback with a specific Solid identity provider, update the redirect URI provider-side.</li>
+</ul>
+<hr>
+<h2 id="v040-3rd-may-2026">v0.4.0 — 3rd May 2026<a class="headerlink" href="#v040-3rd-may-2026" title="Permanent link">¶</a></h2>
+<h3 id="new-api-solidresourcemanager">New API — <code>SolidResourceManager</code><a class="headerlink" href="#new-api-solidresourcemanager" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong><code>head(webid, uri)</code></strong> — HTTP HEAD returns a <code>SolidMetadata</code> object (<abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr>, Content-Type, Content-Length, <abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr>-Allow, <abbr title="Access Control List — the resource that says who may read or write a Solid resource">ACL</abbr> link, Accept-Patch/Post, Last-Modified, and more) without transferring the resource body. Ideal for caching checks and permission discovery before a full read.</li>
+<li><strong><code>patch(webid, uri, patch)</code> / <code>patchRaw(webid, uri, n3Body)</code></strong> — <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr> Patch support for atomic partial updates to <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> resources. The typed overload accepts an <code>N3Patch</code> value; the raw overload accepts a pre-serialised <code>text/n3</code> string.</li>
+<li><strong><code>update()</code> now accepts <code>ifMatch</code></strong> — pass the <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> from a prior <code>head</code> or <code>read</code> call for optimistic-concurrency protection (server returns 412 on version mismatch).</li>
+<li><strong><code>delete(webid, resourceUri: URI)</code></strong> — delete a resource by URI directly, without reading it first.</li>
+</ul>
+<h3 id="new-type-n3patch">New Type — <code>N3Patch</code><a class="headerlink" href="#new-type-n3patch" title="Permanent link">¶</a></h3>
+<p>Type-safe DSL and diff-based factory for building <a href="https://solidproject.org/TR/protocol#n3-patch">Solid <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr> Patch</a> documents:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// DSL builder</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N3Patch</span><span class="p">.</span><span class="na">build</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="k">where</span><span class="p">(</span><span class="n">contactUri</span><span class="p">,</span><span class="w"> </span><span class="n">VCARD</span><span class="p">.</span><span class="na">FN</span><span class="p">,</span><span class="w"> </span><span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"oldName"</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="n">deleteVar</span><span class="p">(</span><span class="n">contactUri</span><span class="p">,</span><span class="w"> </span><span class="n">VCARD</span><span class="p">.</span><span class="na">FN</span><span class="p">,</span><span class="w"> </span><span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"oldName"</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">insertLiteral</span><span class="p">(</span><span class="n">contactUri</span><span class="p">,</span><span class="w"> </span><span class="n">VCARD</span><span class="p">.</span><span class="na">FN</span><span class="p">,</span><span class="w"> </span><span class="s">"Alice"</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">}</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1">// Auto-diff from two resource states</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">N3Patch</span><span class="p">.</span><span class="na">fromDiff</span><span class="p">(</span><span class="n">originalResource</span><span class="p">,</span><span class="w"> </span><span class="n">modifiedResource</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong><abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> algorithm negotiation</strong> — the <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> generator now reads the <code>WWW-Authenticate</code> response header and selects the best algorithm the server supports; improves compatibility with different pod implementations.</li>
+<li><strong>ID token verification</strong> — new <code>IdTokenVerifier</code> validates claims in the received ID token.</li>
+<li><strong><abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> nonce conflict fix</strong> — token refresh no longer races with an in-flight nonce update.</li>
+<li><strong><abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> parsing fix</strong> — correctly extracts the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> string from the token response.</li>
+<li><strong>Crash fixes</strong> — multiple crash points removed from the token exchange and session handling paths.</li>
+</ul>
+<h3 id="multi-account-in-client">Multi-account in <code>client</code><a class="headerlink" href="#multi-account-in-client" title="Permanent link">¶</a></h3>
+<p>Third-party apps must now pass the target <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> on each resource and contacts call. This enables per-account <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> routing when the user has multiple Solid accounts logged in.</p>
+<h3 id="resource-operations">Resource Operations<a class="headerlink" href="#resource-operations" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong><abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> on writes</strong> — PUT requests now include <code>ETag</code> headers for optimistic concurrency.</li>
+<li><strong>Special characters in URIs</strong> — resource URIs containing spaces and other characters are now percent-encoded correctly.</li>
+<li><strong>Unified delete</strong> — <code>delete</code> and <code>deleteContainer</code> paths merged; redundant network round-trips removed.</li>
+</ul>
+<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Removed Inrupt Java Client library</strong> — replaced with a custom <code>SolidHttpClient</code>; significantly leaner dependency footprint.</li>
+<li><strong>API binary compatibility enforcement</strong> — API Validator plugin added to all modules; the public surface is tracked via <code>.api</code> files to prevent accidental breakage.</li>
+<li><strong><abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> consolidated in <code>Shared</code></strong> — all parcelable definitions moved to the <code>Shared</code> module; no more duplication across modules.</li>
+<li><strong>ProGuard + minification</strong> — release builds of the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app are now minified.</li>
+<li><strong>Extended vocabulary</strong> — new <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> vocabulary constants added to the <code>Shared</code> module for broader developer use.</li>
+</ul>
+<h3 id="bug-fixes_3">Bug Fixes<a class="headerlink" href="#bug-fixes_3" title="Permanent link">¶</a></h3>
+<ul>
+<li>Fixed wrong Dublin Core namespace in the Contacts data module; old data using the incorrect namespace is still readable.</li>
+<li>Fixed <code>ETag</code> header name casing.</li>
+<li>Fixed granted apps not persisting across process restarts.</li>
+</ul>
+<h3 id="ui">UI<a class="headerlink" href="#ui" title="Permanent link">¶</a></h3>
+<ul>
+<li><abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> now shows a dialog prompting users to grant the overlay draw permission when it is missing.</li>
+<li>Updated "Sign in with Solid" login screen.</li>
+<li>UI strings moved to Android string resources.</li>
+</ul>
+<h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">¶</a></h3>
+<ul>
+<li>Updated several library versions across all modules.</li>
+</ul>
+<hr>
+<h2 id="v031-14th-april-2026">v0.3.1 — 14th April 2026<a class="headerlink" href="#v031-14th-april-2026" title="Permanent link">¶</a></h2>
+<ul>
+<li>Fix saving accounts bug.</li>
+</ul>
+<hr>
+<h2 id="v030-13th-april-2026">v0.3.0 — 13th April 2026<a class="headerlink" href="#v030-13th-april-2026" title="Permanent link">¶</a></h2>
+<ul>
+<li><strong>Multi-account support</strong> — log in with multiple Solid accounts and switch between them from the Settings page.</li>
+<li><strong>Suspend functions</strong> — all resource and contacts data module methods are now Kotlin <code>suspend</code> functions instead of callback-based, for cleaner coroutine integration.</li>
+<li><strong>Unified result types</strong> — resource operations return <code>SolidNetworkResponse&lt;T&gt;</code> (sealed: <code>Success</code>, <code>Error</code>, <code>Exception</code>); contacts operations return <code>DataModuleResult&lt;T&gt;</code>.</li>
+<li><strong>Structured exceptions</strong> — new <code>SolidException</code> sealed class hierarchy with typed subclasses (<code>SolidAppNotFoundException</code>, <code>SolidServiceConnectionException</code>, <code>SolidNotLoggedInException</code>, <code>SolidResourceException</code>, etc.).</li>
+<li><strong><abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> authentication</strong> — proper <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> (Demonstration of Proof-of-Possession) token support for all authenticated pod requests.</li>
+<li><strong>kotlinx.serialization</strong> — replaced Gson for better Kotlin compatibility.</li>
+<li><strong>JVM 17</strong> — upgraded project JVM target from 11 to 17.</li>
+<li><strong>Compile <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> 36</strong> — updated compile <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> from 35 to 36.</li>
+<li><strong>CI/CD</strong> — GitHub Actions workflows for publishing libraries and the application.</li>
+<li><strong>Internal API encapsulation</strong> — implementation classes are now <code>internal</code>, exposing only the public <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> surface.</li>
+</ul>
+<hr>
+<hr>
+<h2 id="v021-19th-december-2024">v0.2.1 — 19th December 2024<a class="headerlink" href="#v021-19th-december-2024" title="Permanent link">¶</a></h2>
+<ul>
+<li>Remove SolidCommunity.net from the login provider list (simplify provider options).</li>
+<li>Add app screenshots to documentation.</li>
+</ul>
+<hr>
+<h2 id="v020-17th-december-2024">v0.2.0 — 17th December 2024<a class="headerlink" href="#v020-17th-december-2024" title="Permanent link">¶</a></h2>
+<ul>
+<li><strong>Contacts data module</strong> — full contacts management over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr>: create, read, rename, and delete address books, contacts, and groups stored on the pod.</li>
+<li><strong>Suspend functions for contacts</strong> — all contacts data module methods converted from callbacks to <code>suspend</code> functions.</li>
+<li><strong>Service connection flow</strong> — added <code>Flow&lt;Boolean&gt;</code> connection state for all <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> services so apps can react to connect/disconnect events.</li>
+<li><strong>Container deletion</strong> — recursive deletion of <abbr title="Linked Data Platform — the W3C spec Solid containers are built on">LDP</abbr> containers and their contents.</li>
+<li><strong>Private and public type indexes</strong> — support for Solid type index registration.</li>
+<li><strong>Disconnect from Solid</strong> — apps can now programmatically revoke their own access grant.</li>
+<li><strong>Shared module</strong> — extracted common types (resource model, <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> parcelables, contacts types) into a standalone <code>Shared</code> library.</li>
+<li><strong>Bug fixes</strong> — token saving on network error, app relogin flow, authentication edge cases, reading <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> resources as NonRDF.</li>
+</ul>
+<hr>
+<h2 id="v01-20th-march-2024">v0.1 — 20th March 2024<a class="headerlink" href="#v01-20th-march-2024" title="Permanent link">¶</a></h2>
+<p>Initial public release.</p>
+<ul>
+<li><strong>Authentication</strong> — OpenID Connect login with Inrupt and SolidCommunity.net identity providers; browser-based auth flow via AppAuth.</li>
+<li><strong><abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr></strong> — <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> authentication headers on all pod requests.</li>
+<li><strong>Resource <abbr title="Create, read, update, delete">CRUD</abbr></strong> — read, create, update, and delete resources on a Solid pod over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> (<abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr>).</li>
+<li><strong>SolidContainer</strong> — support for listing and navigating pod containers (directories).</li>
+<li><strong><abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr></strong> — <code>getWebId()</code> exposed as an <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> service.</li>
+<li><strong>Access grants</strong> — permission dialog in <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> when a third-party app requests access; grants tracked in the Settings page.</li>
+<li><strong><abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app</strong> — initial Jetpack-based UI with login, settings, and access grant management.</li>
+<li><strong>Client library</strong> — first version of <code>client</code> connecting to <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> over <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr>.</li>
+</ul>
+<hr>
+<div class="admonition question">
+<p class="admonition-title">Found a bug or want to request a feature?</p>
+<p>Please <a href="https://github.com/erfangholami/Android-Solid-Services/issues">open an issue on GitHub</a>. Include your device/emulator Android version, library version, and any relevant error output.</p>
+</div>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../troubleshooting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Troubleshooting">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Troubleshooting
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../contributing/" class="md-footer__link md-footer__link--next" aria-label="Next: Contributing">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Contributing
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services" target="_blank" rel="noopener" title="Android Solid Services on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.tabs.link", "content.code.copy", "content.code.annotate", "content.code.select", "content.tooltips", "content.action.edit", "search.highlight", "search.suggest", "search.share", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

@@ -1,0 +1,1101 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SAI</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":Shared/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":Shared/release" data-filter=":Shared/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Shared::com.erfangholami.androidsolidservices.shared.vocab/SAI///PointingToDeclaration//1769164051">
+  <div class="breadcrumbs"><a href="../../index.html">Shared</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.shared.vocab</a><span class="delimiter">/</span><span class="current">SAI</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>SAI</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">SAI</a></div><p class="paragraph">Solid Application Interoperability (SAI) vocabulary constants. http://www.w3.org/ns/solid/interop# Spec: https://solidproject.org/TR/sai</p><p class="paragraph">SAI defines how applications request and receive delegated access to data across Solid pods via registries, access needs, and access grants.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="2122344586%2FProperties%2F1769164051" anchor-label="ACCESS_AUTHORIZATION" id="2122344586%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-a-u-t-h-o-r-i-z-a-t-i-o-n.html"><span>ACCESS_</span><wbr><span><span>AUTHORIZATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2122344586%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-a-u-t-h-o-r-i-z-a-t-i-o-n.html">ACCESS_AUTHORIZATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Records the decision to grant access to data for an agent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1221203129%2FProperties%2F1769164051" anchor-label="ACCESS_GRANT" id="-1221203129%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-g-r-a-n-t.html"><span>ACCESS_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1221203129%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-g-r-a-n-t.html">ACCESS_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Describes the access that has been granted to an agent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="403671476%2FProperties%2F1769164051" anchor-label="ACCESS_MODE" id="403671476%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-m-o-d-e.html"><span>ACCESS_</span><wbr><span>MODE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="403671476%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-m-o-d-e.html">ACCESS_MODE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The requested access modes (e.g. <code class="lang-kotlin">acl:Read</code>, <code class="lang-kotlin">acl:Write</code>).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-412400146%2FProperties%2F1769164051" anchor-label="ACCESS_NECESSITY" id="-412400146%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-n-e-c-e-s-s-i-t-y.html"><span>ACCESS_</span><wbr><span>NECESSITY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-412400146%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-n-e-c-e-s-s-i-t-y.html">ACCESS_NECESSITY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Marks an access need as required (<code class="lang-kotlin">interop:Required</code>) or optional (<code class="lang-kotlin">interop:Optional</code>).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="279765537%2FProperties%2F1769164051" anchor-label="ACCESS_NEED" id="279765537%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-n-e-e-d.html"><span>ACCESS_</span><wbr><span>NEED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="279765537%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-n-e-e-d.html">ACCESS_NEED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A requirement for access to one specific data type / shape tree.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1667789249%2FProperties%2F1769164051" anchor-label="ACCESS_NEED_GROUP" id="1667789249%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-n-e-e-d_-g-r-o-u-p.html"><span>ACCESS_</span><wbr><span>NEED_</span><wbr><span>GROUP</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1667789249%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-n-e-e-d_-g-r-o-u-p.html">ACCESS_NEED_GROUP</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A group of related access needs communicated together.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-480967756%2FProperties%2F1769164051" anchor-label="ACCESS_REQUEST" id="-480967756%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-r-e-q-u-e-s-t.html"><span>ACCESS_</span><wbr><span>REQUEST</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-480967756%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-r-e-q-u-e-s-t.html">ACCESS_REQUEST</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Sent from one agent to another to communicate access need groups.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="56606567%2FProperties%2F1769164051" anchor-label="ACCESS_SCENARIO" id="56606567%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-e-s-s_-s-c-e-n-a-r-i-o.html"><span>ACCESS_</span><wbr><span>SCENARIO</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="56606567%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-e-s-s_-s-c-e-n-a-r-i-o.html">ACCESS_SCENARIO</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Context for presenting the access need (<code class="lang-kotlin">interop:PersonalAccess</code>, <code class="lang-kotlin">interop:SharedAccess</code>).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1510975313%2FProperties%2F1769164051" anchor-label="AGENT_REGISTRY" id="1510975313%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-g-e-n-t_-r-e-g-i-s-t-r-y.html"><span>AGENT_</span><wbr><span>REGISTRY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1510975313%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-g-e-n-t_-r-e-g-i-s-t-r-y.html">AGENT_REGISTRY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A collection of agent registrations (known apps and social agents).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="726792290%2FProperties%2F1769164051" anchor-label="APPLICATION" id="726792290%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-p-p-l-i-c-a-t-i-o-n.html"><span><span>APPLICATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="726792290%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-p-p-l-i-c-a-t-i-o-n.html">APPLICATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A software-based agent (app) used to access and manage pod data.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1425153038%2FProperties%2F1769164051" anchor-label="APPLICATION_AUTHOR" id="1425153038%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-p-p-l-i-c-a-t-i-o-n_-a-u-t-h-o-r.html"><span>APPLICATION_</span><wbr><span>AUTHOR</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1425153038%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-p-p-l-i-c-a-t-i-o-n_-a-u-t-h-o-r.html">APPLICATION_AUTHOR</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The social agent who authored this application.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1744887141%2FProperties%2F1769164051" anchor-label="APPLICATION_DESCRIPTION" id="1744887141%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-p-p-l-i-c-a-t-i-o-n_-d-e-s-c-r-i-p-t-i-o-n.html"><span>APPLICATION_</span><wbr><span><span>DESCRIPTION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1744887141%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-p-p-l-i-c-a-t-i-o-n_-d-e-s-c-r-i-p-t-i-o-n.html">APPLICATION_DESCRIPTION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Human-readable description of the application's function.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1649078770%2FProperties%2F1769164051" anchor-label="APPLICATION_NAME" id="-1649078770%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-p-p-l-i-c-a-t-i-o-n_-n-a-m-e.html"><span>APPLICATION_</span><wbr><span>NAME</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1649078770%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-p-p-l-i-c-a-t-i-o-n_-n-a-m-e.html">APPLICATION_NAME</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Human-readable name of the application.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="815080352%2FProperties%2F1769164051" anchor-label="APPLICATION_REGISTRATION" id="815080352%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-p-p-l-i-c-a-t-i-o-n_-r-e-g-i-s-t-r-a-t-i-o-n.html"><span>APPLICATION_</span><wbr><span><span>REGISTRATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="815080352%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-p-p-l-i-c-a-t-i-o-n_-r-e-g-i-s-t-r-a-t-i-o-n.html">APPLICATION_REGISTRATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Records metadata about an application used by a social agent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="151204725%2FProperties%2F1769164051" anchor-label="APPLICATION_THUMBNAIL" id="151204725%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-p-p-l-i-c-a-t-i-o-n_-t-h-u-m-b-n-a-i-l.html"><span>APPLICATION_</span><wbr><span>THUMBNAIL</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="151204725%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-p-p-l-i-c-a-t-i-o-n_-t-h-u-m-b-n-a-i-l.html">APPLICATION_THUMBNAIL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">URI of a thumbnail image for the application.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1373629453%2FProperties%2F1769164051" anchor-label="AUTHORIZATION_AGENT" id="-1373629453%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-u-t-h-o-r-i-z-a-t-i-o-n_-a-g-e-n-t.html"><span>AUTHORIZATION_</span><wbr><span>AGENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1373629453%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-u-t-h-o-r-i-z-a-t-i-o-n_-a-g-e-n-t.html">AUTHORIZATION_AGENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The authorization agent application managing data access on behalf of an agent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="704630560%2FProperties%2F1769164051" anchor-label="CAPABILITY_URL" id="704630560%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-a-p-a-b-i-l-i-t-y_-u-r-l.html"><span>CAPABILITY_</span><wbr><span>URL</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="704630560%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-c-a-p-a-b-i-l-i-t-y_-u-r-l.html">CAPABILITY_URL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A secure URL for accepting a social agent invitation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-8573689%2FProperties%2F1769164051" anchor-label="CREATOR_ACCESS_MODE" id="-8573689%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-r-e-a-t-o-r_-a-c-c-e-s-s_-m-o-d-e.html"><span>CREATOR_</span><wbr><span>ACCESS_</span><wbr><span>MODE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-8573689%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-c-r-e-a-t-o-r_-a-c-c-e-s-s_-m-o-d-e.html">CREATOR_ACCESS_MODE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Additional access modes granted to the data creator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-644432316%2FProperties%2F1769164051" anchor-label="DATA_AUTHORIZATION" id="-644432316%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-a-t-a_-a-u-t-h-o-r-i-z-a-t-i-o-n.html"><span>DATA_</span><wbr><span><span>AUTHORIZATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-644432316%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-a-t-a_-a-u-t-h-o-r-i-z-a-t-i-o-n.html">DATA_AUTHORIZATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Authorizes access to a specific data type within an access authorization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-860710143%2FProperties%2F1769164051" anchor-label="DATA_GRANT" id="-860710143%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-a-t-a_-g-r-a-n-t.html"><span>DATA_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-860710143%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-a-t-a_-g-r-a-n-t.html">DATA_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Detailed access description for a specific data type within an access grant.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-742878902%2FProperties%2F1769164051" anchor-label="DATA_OWNER" id="-742878902%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-a-t-a_-o-w-n-e-r.html"><span>DATA_</span><wbr><span>OWNER</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-742878902%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-a-t-a_-o-w-n-e-r.html">DATA_OWNER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The social agent who owns the authorized data.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2059477092%2FProperties%2F1769164051" anchor-label="DATA_REGISTRATION" id="2059477092%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-a-t-a_-r-e-g-i-s-t-r-a-t-i-o-n.html"><span>DATA_</span><wbr><span><span>REGISTRATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2059477092%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-a-t-a_-r-e-g-i-s-t-r-a-t-i-o-n.html">DATA_REGISTRATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Stores data instances for a specific shape tree within a data registry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="349646176%2FProperties%2F1769164051" anchor-label="DATA_REGISTRY" id="349646176%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-a-t-a_-r-e-g-i-s-t-r-y.html"><span>DATA_</span><wbr><span>REGISTRY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="349646176%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-a-t-a_-r-e-g-i-s-t-r-y.html">DATA_REGISTRY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A collection of data registrations for a specific shape tree.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-352177055%2FProperties%2F1769164051" anchor-label="DELEGATED_DATA_GRANT" id="-352177055%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-l-e-g-a-t-e-d_-d-a-t-a_-g-r-a-n-t.html"><span>DELEGATED_</span><wbr><span>DATA_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-352177055%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-e-l-e-g-a-t-e-d_-d-a-t-a_-g-r-a-n-t.html">DELEGATED_DATA_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A data grant that re-shares access from a grantee to another agent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1996741849%2FProperties%2F1769164051" anchor-label="DELEGATION_OF_GRANT" id="-1996741849%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-d-e-l-e-g-a-t-i-o-n_-o-f_-g-r-a-n-t.html"><span>DELEGATION_</span><wbr><span>OF_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1996741849%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-d-e-l-e-g-a-t-i-o-n_-o-f_-g-r-a-n-t.html">DELEGATION_OF_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The data grant this delegated grant re-shares.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-915292975%2FProperties%2F1769164051" anchor-label="GRANTED_AT" id="-915292975%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-a-n-t-e-d_-a-t.html"><span>GRANTED_</span><wbr><span>AT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-915292975%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-a-n-t-e-d_-a-t.html">GRANTED_AT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Timestamp when the authorization was granted (xsd:dateTime).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="201420077%2FProperties%2F1769164051" anchor-label="GRANTED_BY" id="201420077%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-a-n-t-e-d_-b-y.html"><span>GRANTED_</span><wbr><span>BY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="201420077%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-a-n-t-e-d_-b-y.html">GRANTED_BY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The social agent who granted the authorization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-756352546%2FProperties%2F1769164051" anchor-label="GRANTED_WITH" id="-756352546%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-a-n-t-e-d_-w-i-t-h.html"><span>GRANTED_</span><wbr><span>WITH</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-756352546%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-a-n-t-e-d_-w-i-t-h.html">GRANTED_WITH</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The application used to perform the authorization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="87519990%2FProperties%2F1769164051" anchor-label="GRANTEE" id="87519990%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-a-n-t-e-e.html"><span><span>GRANTEE</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="87519990%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-a-n-t-e-e.html">GRANTEE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The agent receiving the authorization or grant.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-472901694%2FProperties%2F1769164051" anchor-label="HAS_ACCESS_GRANT" id="-472901694%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-a-c-c-e-s-s_-g-r-a-n-t.html"><span>HAS_</span><wbr><span>ACCESS_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-472901694%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-a-c-c-e-s-s_-g-r-a-n-t.html">HAS_ACCESS_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links a social agent registration or access grant to an access grant.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1412282950%2FProperties%2F1769164051" anchor-label="HAS_ACCESS_NEED" id="1412282950%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-a-c-c-e-s-s_-n-e-e-d.html"><span>HAS_</span><wbr><span>ACCESS_</span><wbr><span>NEED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1412282950%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-a-c-c-e-s-s_-n-e-e-d.html">HAS_ACCESS_NEED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links an access need group to its constituent access needs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-298984922%2FProperties%2F1769164051" anchor-label="HAS_ACCESS_NEED_GROUP" id="-298984922%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-a-c-c-e-s-s_-n-e-e-d_-g-r-o-u-p.html"><span>HAS_</span><wbr><span>ACCESS_</span><wbr><span>NEED_</span><wbr><span>GROUP</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-298984922%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-a-c-c-e-s-s_-n-e-e-d_-g-r-o-u-p.html">HAS_ACCESS_NEED_GROUP</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links an authorization or grant to its access need groups.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-925851380%2FProperties%2F1769164051" anchor-label="HAS_AGENT_REGISTRY" id="-925851380%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-a-g-e-n-t_-r-e-g-i-s-t-r-y.html"><span>HAS_</span><wbr><span>AGENT_</span><wbr><span>REGISTRY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-925851380%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-a-g-e-n-t_-r-e-g-i-s-t-r-y.html">HAS_AGENT_REGISTRY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links a registry set to an agent registry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1682010011%2FProperties%2F1769164051" anchor-label="HAS_APPLICATION_REGISTRATION" id="1682010011%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-a-p-p-l-i-c-a-t-i-o-n_-r-e-g-i-s-t-r-a-t-i-o-n.html"><span>HAS_</span><wbr><span>APPLICATION_</span><wbr><span><span>REGISTRATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1682010011%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-a-p-p-l-i-c-a-t-i-o-n_-r-e-g-i-s-t-r-a-t-i-o-n.html">HAS_APPLICATION_REGISTRATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links an agent registry to an application registration.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1657997544%2FProperties%2F1769164051" anchor-label="HAS_AUTHORIZATION_AGENT" id="-1657997544%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-a-u-t-h-o-r-i-z-a-t-i-o-n_-a-g-e-n-t.html"><span>HAS_</span><wbr><span>AUTHORIZATION_</span><wbr><span>AGENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1657997544%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-a-u-t-h-o-r-i-z-a-t-i-o-n_-a-g-e-n-t.html">HAS_AUTHORIZATION_AGENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links a social agent to their authorization agent application.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="700526830%2FProperties%2F1769164051" anchor-label="HAS_AUTHORIZATION_CALLBACK_ENDPOINT" id="700526830%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-a-u-t-h-o-r-i-z-a-t-i-o-n_-c-a-l-l-b-a-c-k_-e-n-d-p-o-i-n-t.html"><span>HAS_</span><wbr><span>AUTHORIZATION_</span><wbr><span>CALLBACK_</span><wbr><span>ENDPOINT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="700526830%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-a-u-t-h-o-r-i-z-a-t-i-o-n_-c-a-l-l-b-a-c-k_-e-n-d-p-o-i-n-t.html">HAS_AUTHORIZATION_CALLBACK_ENDPOINT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">URI the authorization agent redirects to after authorization.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1197120827%2FProperties%2F1769164051" anchor-label="HAS_AUTHORIZATION_REDIRECT_ENDPOINT" id="-1197120827%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-a-u-t-h-o-r-i-z-a-t-i-o-n_-r-e-d-i-r-e-c-t_-e-n-d-p-o-i-n-t.html"><span>HAS_</span><wbr><span>AUTHORIZATION_</span><wbr><span>REDIRECT_</span><wbr><span>ENDPOINT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1197120827%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-a-u-t-h-o-r-i-z-a-t-i-o-n_-r-e-d-i-r-e-c-t_-e-n-d-p-o-i-n-t.html">HAS_AUTHORIZATION_REDIRECT_ENDPOINT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">URI the authorization agent uses for authorization redirects.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1655461316%2FProperties%2F1769164051" anchor-label="HAS_DATA_GRANT" id="-1655461316%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-d-a-t-a_-g-r-a-n-t.html"><span>HAS_</span><wbr><span>DATA_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1655461316%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-d-a-t-a_-g-r-a-n-t.html">HAS_DATA_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links an access grant to one of its constituent data grants.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-843759891%2FProperties%2F1769164051" anchor-label="HAS_DATA_INSTANCE" id="-843759891%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-d-a-t-a_-i-n-s-t-a-n-c-e.html"><span>HAS_</span><wbr><span>DATA_</span><wbr><span>INSTANCE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-843759891%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-d-a-t-a_-i-n-s-t-a-n-c-e.html">HAS_DATA_INSTANCE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links a data registration to a specific data instance.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="92702921%2FProperties%2F1769164051" anchor-label="HAS_DATA_REGISTRATION" id="92702921%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-d-a-t-a_-r-e-g-i-s-t-r-a-t-i-o-n.html"><span>HAS_</span><wbr><span>DATA_</span><wbr><span><span>REGISTRATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="92702921%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-d-a-t-a_-r-e-g-i-s-t-r-a-t-i-o-n.html">HAS_DATA_REGISTRATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links a data registry to a data registration.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2072154181%2FProperties%2F1769164051" anchor-label="HAS_DATA_REGISTRY" id="2072154181%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-d-a-t-a_-r-e-g-i-s-t-r-y.html"><span>HAS_</span><wbr><span>DATA_</span><wbr><span>REGISTRY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2072154181%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-d-a-t-a_-r-e-g-i-s-t-r-y.html">HAS_DATA_REGISTRY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links a registry set to a data registry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="851399107%2FProperties%2F1769164051" anchor-label="HAS_REGISTRY_SET" id="851399107%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-r-e-g-i-s-t-r-y_-s-e-t.html"><span>HAS_</span><wbr><span>REGISTRY_</span><wbr><span>SET</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="851399107%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-r-e-g-i-s-t-r-y_-s-e-t.html">HAS_REGISTRY_SET</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links a social agent to their registry set.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1317536754%2FProperties%2F1769164051" anchor-label="HAS_SOCIAL_AGENT_REGISTRATION" id="1317536754%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-h-a-s_-s-o-c-i-a-l_-a-g-e-n-t_-r-e-g-i-s-t-r-a-t-i-o-n.html"><span>HAS_</span><wbr><span>SOCIAL_</span><wbr><span>AGENT_</span><wbr><span><span>REGISTRATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1317536754%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-a-s_-s-o-c-i-a-l_-a-g-e-n-t_-r-e-g-i-s-t-r-a-t-i-o-n.html">HAS_SOCIAL_AGENT_REGISTRATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links an agent registry to a social agent registration.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1353710247%2FProperties%2F1769164051" anchor-label="INHERITS_FROM_AUTHORIZATION" id="1353710247%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-h-e-r-i-t-s_-f-r-o-m_-a-u-t-h-o-r-i-z-a-t-i-o-n.html"><span>INHERITS_</span><wbr><span>FROM_</span><wbr><span><span>AUTHORIZATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1353710247%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-n-h-e-r-i-t-s_-f-r-o-m_-a-u-t-h-o-r-i-z-a-t-i-o-n.html">INHERITS_FROM_AUTHORIZATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">References a parent authorization this authorization inherits from.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1072436636%2FProperties%2F1769164051" anchor-label="INHERITS_FROM_GRANT" id="-1072436636%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-h-e-r-i-t-s_-f-r-o-m_-g-r-a-n-t.html"><span>INHERITS_</span><wbr><span>FROM_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1072436636%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-n-h-e-r-i-t-s_-f-r-o-m_-g-r-a-n-t.html">INHERITS_FROM_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">References a parent data grant this grant inherits from.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="146017124%2FProperties%2F1769164051" anchor-label="INHERITS_FROM_NEED" id="146017124%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-h-e-r-i-t-s_-f-r-o-m_-n-e-e-d.html"><span>INHERITS_</span><wbr><span>FROM_</span><wbr><span>NEED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="146017124%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-n-h-e-r-i-t-s_-f-r-o-m_-n-e-e-d.html">INHERITS_FROM_NEED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">References a parent access need this need inherits from.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="627585015%2FProperties%2F1769164051" anchor-label="NAMESPACE" id="627585015%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-n-a-m-e-s-p-a-c-e.html"><span><span>NAMESPACE</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="627585015%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-n-a-m-e-s-p-a-c-e.html">NAMESPACE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-490679128%2FProperties%2F1769164051" anchor-label="OPTIONAL" id="-490679128%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-o-p-t-i-o-n-a-l.html"><span><span>OPTIONAL</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-490679128%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-o-p-t-i-o-n-a-l.html">OPTIONAL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Marks an access need as optional.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-266690001%2FProperties%2F1769164051" anchor-label="PERSONAL_ACCESS" id="-266690001%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-e-r-s-o-n-a-l_-a-c-c-e-s-s.html"><span>PERSONAL_</span><wbr><span>ACCESS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-266690001%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-e-r-s-o-n-a-l_-a-c-c-e-s-s.html">PERSONAL_ACCESS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Access for the agent's own personal data.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1390906860%2FProperties%2F1769164051" anchor-label="RECIPROCAL_REGISTRATION" id="-1390906860%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-c-i-p-r-o-c-a-l_-r-e-g-i-s-t-r-a-t-i-o-n.html"><span>RECIPROCAL_</span><wbr><span><span>REGISTRATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1390906860%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-c-i-p-r-o-c-a-l_-r-e-g-i-s-t-r-a-t-i-o-n.html">RECIPROCAL_REGISTRATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">References the mutual registration in the other agent's registry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="333172512%2FProperties%2F1769164051" anchor-label="REGISTERED_AGENT" id="333172512%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-g-i-s-t-e-r-e-d_-a-g-e-n-t.html"><span>REGISTERED_</span><wbr><span>AGENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="333172512%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-g-i-s-t-e-r-e-d_-a-g-e-n-t.html">REGISTERED_AGENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The agent (app or social agent) that was registered.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="481792322%2FProperties%2F1769164051" anchor-label="REGISTERED_AT" id="481792322%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-g-i-s-t-e-r-e-d_-a-t.html"><span>REGISTERED_</span><wbr><span>AT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="481792322%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-g-i-s-t-e-r-e-d_-a-t.html">REGISTERED_AT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Timestamp when the registration was created (xsd:dateTime).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1598505374%2FProperties%2F1769164051" anchor-label="REGISTERED_BY" id="1598505374%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-g-i-s-t-e-r-e-d_-b-y.html"><span>REGISTERED_</span><wbr><span>BY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1598505374%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-g-i-s-t-e-r-e-d_-b-y.html">REGISTERED_BY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The social agent that created this registration.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1760746503%2FProperties%2F1769164051" anchor-label="REGISTERED_SHAPE_TREE" id="-1760746503%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-g-i-s-t-e-r-e-d_-s-h-a-p-e_-t-r-e-e.html"><span>REGISTERED_</span><wbr><span>SHAPE_</span><wbr><span>TREE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1760746503%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-g-i-s-t-e-r-e-d_-s-h-a-p-e_-t-r-e-e.html">REGISTERED_SHAPE_TREE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The shape tree that describes the registered data type.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1812821519%2FProperties%2F1769164051" anchor-label="REGISTERED_WITH" id="1812821519%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-g-i-s-t-e-r-e-d_-w-i-t-h.html"><span>REGISTERED_</span><wbr><span>WITH</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1812821519%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-g-i-s-t-e-r-e-d_-w-i-t-h.html">REGISTERED_WITH</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The application used to create this registration.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="103097672%2FProperties%2F1769164051" anchor-label="REGISTRY_SET" id="103097672%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-g-i-s-t-r-y_-s-e-t.html"><span>REGISTRY_</span><wbr><span>SET</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="103097672%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-g-i-s-t-r-y_-s-e-t.html">REGISTRY_SET</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links to all registries owned by a social agent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-311334583%2FProperties%2F1769164051" anchor-label="REQUIRED" id="-311334583%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-q-u-i-r-e-d.html"><span><span>REQUIRED</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-311334583%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-q-u-i-r-e-d.html">REQUIRED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Marks an access need as required.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-375069377%2FProperties%2F1769164051" anchor-label="SATISFIES_ACCESS_NEED" id="-375069377%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-a-t-i-s-f-i-e-s_-a-c-c-e-s-s_-n-e-e-d.html"><span>SATISFIES_</span><wbr><span>ACCESS_</span><wbr><span>NEED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-375069377%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-a-t-i-s-f-i-e-s_-a-c-c-e-s-s_-n-e-e-d.html">SATISFIES_ACCESS_NEED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Links a data grant to the access need it satisfies.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="132280748%2FProperties%2F1769164051" anchor-label="SCOPE_OF_AUTHORIZATION" id="132280748%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-c-o-p-e_-o-f_-a-u-t-h-o-r-i-z-a-t-i-o-n.html"><span>SCOPE_</span><wbr><span>OF_</span><wbr><span><span>AUTHORIZATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="132280748%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-c-o-p-e_-o-f_-a-u-t-h-o-r-i-z-a-t-i-o-n.html">SCOPE_OF_AUTHORIZATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Scope of the authorization (<code class="lang-kotlin">All</code>, <code class="lang-kotlin">AllFromAgent</code>, <code class="lang-kotlin">AllFromRegistry</code>, <code class="lang-kotlin">SelectedFromRegistry</code>, <code class="lang-kotlin">Inherited</code>).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1459866007%2FProperties%2F1769164051" anchor-label="SCOPE_OF_GRANT" id="-1459866007%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-c-o-p-e_-o-f_-g-r-a-n-t.html"><span>SCOPE_</span><wbr><span>OF_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1459866007%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-c-o-p-e_-o-f_-g-r-a-n-t.html">SCOPE_OF_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Scope of the grant (mirrors scopeOfAuthorization for the issued grant).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1062447508%2FProperties%2F1769164051" anchor-label="SHARED_ACCESS" id="1062447508%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-h-a-r-e-d_-a-c-c-e-s-s.html"><span>SHARED_</span><wbr><span>ACCESS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1062447508%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-h-a-r-e-d_-a-c-c-e-s-s.html">SHARED_ACCESS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Access shared with or from other agents.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-423309739%2FProperties%2F1769164051" anchor-label="SOCIAL_AGENT" id="-423309739%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-o-c-i-a-l_-a-g-e-n-t.html"><span>SOCIAL_</span><wbr><span>AGENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-423309739%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-o-c-i-a-l_-a-g-e-n-t.html">SOCIAL_AGENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">An individual, group, or organization identifiable by a WebID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-488964115%2FProperties%2F1769164051" anchor-label="SOCIAL_AGENT_INVITATION" id="-488964115%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-o-c-i-a-l_-a-g-e-n-t_-i-n-v-i-t-a-t-i-o-n.html"><span>SOCIAL_</span><wbr><span>AGENT_</span><wbr><span>INVITATION</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-488964115%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-o-c-i-a-l_-a-g-e-n-t_-i-n-v-i-t-a-t-i-o-n.html">SOCIAL_AGENT_INVITATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A secure way to initiate a data-sharing relationship.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="212521101%2FProperties%2F1769164051" anchor-label="SOCIAL_AGENT_REGISTRATION" id="212521101%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-o-c-i-a-l_-a-g-e-n-t_-r-e-g-i-s-t-r-a-t-i-o-n.html"><span>SOCIAL_</span><wbr><span>AGENT_</span><wbr><span><span>REGISTRATION</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="212521101%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-o-c-i-a-l_-a-g-e-n-t_-r-e-g-i-s-t-r-a-t-i-o-n.html">SOCIAL_AGENT_REGISTRATION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Records another social agent that has been interacted with.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2116069073%2FProperties%2F1769164051" anchor-label="UPDATED_AT" id="2116069073%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-p-d-a-t-e-d_-a-t.html"><span>UPDATED_</span><wbr><span>AT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2116069073%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-u-p-d-a-t-e-d_-a-t.html">UPDATED_AT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Timestamp when the registration was last updated (xsd:dateTime).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

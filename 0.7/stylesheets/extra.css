@@ -1,0 +1,7 @@
+/* Match the Solid project's purple brand color */
+:root {
+  --md-primary-fg-color:        #7C4DFF;
+  --md-primary-fg-color--light: #B47CFF;
+  --md-primary-fg-color--dark:  #5C35CC;
+  --md-accent-fg-color:         #7C4DFF;
+}

@@ -1,0 +1,14 @@
+{
+  "@context": ["https://www.w3.org/ns/solid/oidc-context.jsonld"],
+  "client_id": "https://example.org/solid/client-id.jsonld",
+  "client_name": "My Solid App",
+  "redirect_uris": ["com.example.myapp:/oauth2redirect"],
+  "client_uri": "https://example.org/",
+  "logo_uri": "https://example.org/logo.png",
+  "tos_uri": "https://example.org/terms",
+  "scope": "openid webid offline_access",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none",
+  "application_type": "native"
+}
