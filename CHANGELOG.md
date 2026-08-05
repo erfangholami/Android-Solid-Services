@@ -2,6 +2,89 @@
 
 All notable changes to this project are documented here.
 
+## [0.7.0] — 5th August 2026
+
+The IPC contract is rewritten, contacts is reshaped around one immutable write model, and every
+data module moves under a shared root. Source- and wire-breaking: the app and the SDK have to be
+updated together.
+
+### Breaking changes
+
+- **Two AIDL callbacks replace twenty-two.** Every per-type callback interface
+  (`IASSStringCallback`, `IASSBooleanCallback`, `IASSUnitCallback`, `IASSGivenShareCallback`, and
+  the rest) is gone, replaced by `IASSParcelableCallback` and `IASSParcelableListCallback`
+  carrying a `Bundle` envelope. **An app built against `client` 0.6.x cannot talk to this version
+  of Android Solid Services, and an app built against 0.7.0 cannot talk to an older one** — the
+  two must be updated as a pair.
+- **Contacts is three role stores, and every call names its WebID.** `contacts.books`,
+  `contacts.contacts` and `contacts.groups` replace the flat `createAddressBook` /
+  `createNewContact` / `renameContact` / `addNewPhoneNumber` surface. `NewContact` and
+  `FullContact` give way to `ContactData` — one immutable snapshot with full vCard 4.0 coverage,
+  built with `contactData { }` and derived with `buildUpon { }` — and to `SolidContact`. Note that
+  `ContactStore.update` has **replace** semantics: properties absent from the snapshot are
+  removed, so derive from the stored one rather than building a fresh snapshot.
+- **`SolidSignInClient.getAccount(webId)`** now takes the WebID it is asking about.
+- **Data modules allocate under `{storage}datamodule/`.** Existing pods are *not* relocated:
+  discovery follows the type-index registration, so an address book or wallet registered under the
+  older root keeps working exactly where it is. Only fresh allocations use the new root.
+- **`ExceptionsErrorCode` moved** from `shared.error` to `shared.result`.
+- **`SettingTypeIndex` lost its address-book helpers** — `getAddressBooks`, `addAddressBook`,
+  `containsAddressBook` and `removeAddressBook`. The collection toolkit owns that registration now.
+- **`SharingManager.getShareDeepLink` changed signature.**
+
+### Features
+
+- **Share an entity, not a file.** A contact or a ticket can be shared as the thing it is: the
+  grant covers the entity's whole container, so a receiver gets the document and its photo or
+  artifact together. Share records and notifications now carry `resourceType` and `resourceName`,
+  so a receiving app can say "Alice shared a contact" instead of showing a bare URI. Contacts are
+  never shareable publicly — that is enforced at the contract level, not left to UI policy.
+- **`purgeGivenShares(webId, resourceUri, includeDescendants, notifyReceivers)`** — withdraw every
+  share under a subtree and remove its bookkeeping, so records stop outliving the resources they
+  describe and pointing at URIs that no longer resolve.
+- **`ShareableEntityStore`** — the seam a data module implements to become first-class in typed
+  entity sharing, without the sharing engine learning anything about the module.
+- **`SolidSession`** — the session contract `Authenticator` now implements, separating what a
+  caller needs from how sessions are stored.
+- **`SolidAccount.hasRefreshToken`** — distinguishes a session that can be refreshed from one that
+  never could, so expiry can be surfaced as a state rather than a surprise failure.
+
+### Improvements
+
+- **One collection engine for every data module.** Container bootstrap, type-index registration,
+  UUID allocation, index caching and attachment naming live once in `api/datamodule/core/` instead
+  of being reimplemented per module.
+- **The build enforces the layering.** Module dependency rules are checked rather than documented,
+  with empty baselines so nothing pre-existing is grandfathered in.
+- **`listContainer` stops re-HEADing children** the listing already described — one request per
+  child saved on servers that enrich their listings, with `enrichWithHead` for those that do not.
+- **Auth persistence and the HTTP transport have packages of their own**, and session, refresh
+  policy and account state are real seams rather than internals of one class.
+- **The Firebase Performance Gradle plugin is gone**, its SDK kept — the plugin's build-time
+  instrumentation was doing nothing the code did not already do explicitly.
+- **The documentation site is organised by capability.** One page per thing you can build,
+  usage first with the pod-level detail folded away, `client` and `api` shown as linked tabs, and
+  a published `llms.txt` for agents. Dependency versions are generated from the git tag, so they
+  cannot drift again.
+
+### Bug fixes
+
+- **Sessions survive a JWKS outage, a pruned keystore, and having no refresh token** — each was
+  previously indistinguishable from a revoked session, and cost the user a fresh sign-in.
+- **A refresh that finishes inline no longer corrupts the in-flight map**, which could leave a
+  session wedged until the process restarted.
+- **A client's binder can no longer crash the provider.** A misbehaving or dying consumer took the
+  host app down with it.
+- **The profile store no longer blocks the main thread while it initialises.**
+- **A partial address book reads as empty instead of crashing.** A book root missing its index
+  links used to sink the whole listing.
+- **Stale index rows are dropped** for resources the pod no longer has.
+
+### Notes
+
+- Pre-1.0: the SDK is source-breaking between minor versions and the IPC contract changes with it.
+  Pin a version, and update the app and the libraries together.
+
 ## [0.6.1] — 1st August 2026
 
 Sign-in no longer needs the overlay permission, Solid profiles become real Android accounts, and
