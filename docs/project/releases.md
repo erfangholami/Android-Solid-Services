@@ -10,6 +10,19 @@ Library versions are published to Maven Central:
 
 ---
 
+## v0.7.2 — 12th September 2026
+
+A one-fix release: Community Solid Server pods no longer break every second read.
+
+### Bug fixes
+
+- **A `304 Not Modified` that carries a `Content-Length` no longer fails the request.** Community
+  Solid Server answers a conditional `GET` for a resource served in its stored format with a `304`
+  plus the `Content-Length` of the full body and no body; OkHttp treated that as a truncated body.
+  The transport now reads no body on `304`, `204` or `HEAD` responses. Seen as "could not reach
+  your pod" on the Share screen of Solid Share against `solid.redpencil.io`.
+  See [Troubleshooting](troubleshooting.md).
+
 ## v0.7.1 — 12th September 2026
 
 A maintenance release driven by Solid Share's crash reports. Nothing changes on the wire or in the

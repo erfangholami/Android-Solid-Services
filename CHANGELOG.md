@@ -2,7 +2,9 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.7.2] — 12th September 2026
+
+A one-fix release: Community Solid Server pods no longer break every second read.
 
 ### Bug fixes
 
