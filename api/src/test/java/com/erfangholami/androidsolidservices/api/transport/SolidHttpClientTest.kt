@@ -158,6 +158,24 @@ class SolidHttpClientTest {
     }
 
     @Test
+    fun `a 304 that carries the full Content-Length is returned without reading a body`() {
+        server.enqueue(
+            MockResponse().setResponseCode(304)
+                .addHeader("ETag", "\"1783591793426-text/turtle\"")
+                .addHeader("Content-Type", "text/turtle")
+                .addHeader("Content-Length", "1229"),
+        )
+
+        val response = runBlocking {
+            client.send("GET", url("/profile/card"), accept = "text/turtle", headers = mapOf("If-None-Match" to "\"1783591793426-text/turtle\""))
+        }
+
+        assertEquals(304, response.statusCode)
+        assertEquals(0, response.bodyBytes.size)
+        assertEquals("\"1783591793426-text/turtle\"", response.headers["ETag"])
+    }
+
+    @Test
     fun `a 412 on putRaw surfaces as Error 412 and sends a quoted If-Match`() {
         server.enqueue(MockResponse().setResponseCode(412))
 

@@ -84,13 +84,17 @@ internal class SolidHttpClient(
         requestBody?.contentLength()?.takeIf { it >= 0 }?.let(span::setRequestPayloadSize)
         try {
             val response = httpClient.newCall(request).execute()
-            val bodyBytes = response.body?.bytes() ?: ByteArray(0)
+            val statusCode = response.code
+            val bodyBytes = if (method == "HEAD" || statusCode in BODILESS_STATUSES) {
+                ByteArray(0)
+            } else {
+                response.body?.bytes() ?: ByteArray(0)
+            }
             val effectiveUri = try {
                 response.request.url.toUri()
             } catch (_: Exception) {
                 uri
             }
-            val statusCode = response.code
             val responseHeaders = response.headers
             response.close()
             span.setResponseCode(statusCode)
@@ -803,6 +807,8 @@ internal class SolidHttpClient(
 
     internal companion object {
         const val MAX_AUTH_ATTEMPTS = 3
+
+        val BODILESS_STATUSES = setOf(204, 304)
 
         const val HTTP_UNSUPPORTED_MEDIA_TYPE = 415
 

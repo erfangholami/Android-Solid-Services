@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Bug fixes
+
+- **A `304 Not Modified` that carries a `Content-Length` no longer fails the request.** Community
+  Solid Server answers a conditional `GET` for a resource served in its stored format with a `304`
+  plus the `Content-Length` of the full body and no body. OkHttp treats that as a truncated body and
+  throws, which surfaced as "could not reach your pod" on every re-read of the share indexes on
+  such servers (seen on `solid.redpencil.io`). The transport no longer reads a body on `304`, `204`
+  or `HEAD` responses.
+
 ## [0.7.1] — 12th September 2026
 
 A maintenance release driven by Solid Share's crash reports: a signed-out account no longer floods
