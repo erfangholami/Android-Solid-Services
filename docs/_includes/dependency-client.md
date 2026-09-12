@@ -1,5 +1,5 @@
 ```kotlin title="build.gradle.kts"
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.7.0")
+    implementation("com.erfangholami.androidsolidservices:client:0.7.1")
 }
 ```

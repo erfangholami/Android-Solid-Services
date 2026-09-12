@@ -162,7 +162,10 @@ not finished. The `api` path has nothing to wait for.
 ### Notice an expired session
 
 Expiry is a **state**, not an error — a profile whose refresh has run out stays in the list,
-flagged, so you can prompt for re-authentication instead of silently losing the user's data.
+flagged, so you can prompt for re-authentication instead of silently losing the user's data. While
+a profile is expired, every request made for it fails fast with `SolidError.NotAuthenticated`
+(`SolidNotLoggedInException` over IPC) and leaves only a breadcrumb in telemetry, so an expired
+account does not flood a crash reporter.
 
 ```kotlin
 authenticator.expiredProfilesFlow.collect { expired ->
@@ -224,7 +227,7 @@ sequenceDiagram
 
 | What you see | Why | What to do |
 |---|---|---|
-| `SolidNotLoggedInException` | no session for that WebID | send the user through sign-in again |
+| `SolidNotLoggedInException` | no usable session for that WebID, including one that expired | send the user through sign-in again |
 | `SolidAppNotFoundException` | the host app is not installed | prompt to [install it](../start/install-app.md), or use `api` |
 | `SolidServiceConnectionException` | called before the binding completed | collect the connection-state flow first |
 | A session that dies about once a day | dynamic registration expired — Inrupt drops them after 24h | host a [Client ID Document](../reference/client-id-document.md) and pass `clientId` |

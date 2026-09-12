@@ -49,7 +49,7 @@ Google Play and F-Droid are in progress.
 For your own app, one dependency:
 
 ```kotlin
-implementation("com.erfangholami.androidsolidservices:client:0.6.1")
+implementation("com.erfangholami.androidsolidservices:client:0.7.1")
 ```
 
 Then follow **[Getting Started](https://androidsolidservices.erfangholami.com/getting-started/)**.

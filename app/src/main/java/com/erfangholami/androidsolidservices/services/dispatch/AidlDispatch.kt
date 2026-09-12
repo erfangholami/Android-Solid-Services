@@ -18,6 +18,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 private fun SolidError.toExceptionsErrorCode(): Int = when (code) {
+    SolidErrorCode.NOT_AUTHENTICATED -> ExceptionsErrorCode.SOLID_NOT_LOGGED_IN
     SolidErrorCode.ACCESS_DENIED -> ExceptionsErrorCode.ACCESS_DENIED
     SolidErrorCode.NO_INBOX -> ExceptionsErrorCode.NO_INBOX
     SolidErrorCode.INBOX_UNAUTHORIZED -> ExceptionsErrorCode.INBOX_UNAUTHORIZED

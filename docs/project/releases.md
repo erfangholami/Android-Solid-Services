@@ -10,6 +10,76 @@ Library versions are published to Maven Central:
 
 ---
 
+## v0.7.1 — 12th September 2026
+
+A maintenance release driven by Solid Share's crash reports. Nothing changes on the wire or in the
+public API: pin `0.7.1` and rebuild.
+
+### Bug fixes
+
+- **A signed-out account no longer floods telemetry.** A request for a WebID with no usable
+  session — never signed in, signed out, or expired — used to trip the transport's auth-header
+  precondition and reach the host's crash reporter as a non-fatal on every attempt. It now fails
+  fast with `SolidError.NotAuthenticated` (`SolidNotLoggedInException` over IPC) and leaves a
+  breadcrumb only. A 401 whose forced token refresh fails is returned as that 401.
+  See [Telemetry](../build/telemetry.md).
+- **Inbox notifications parse with no network.** The Activity Streams 2.0 context every
+  notification names ships inside `Shared`, so reading an inbox no longer depends on `www.w3.org`
+  answering; other remote contexts are fetched once and cached in memory.
+  See [Notifications](../build/notifications.md).
+- **An expired session reaches `client` callers as `SolidNotLoggedInException`** instead of
+  `UnknownException`, as the [error reference](../reference/errors.md) promised.
+
+## v0.7.0 — 5th August 2026
+
+The IPC contract is rewritten, contacts is reshaped around one immutable write model, and every
+data module moves under a shared root. **Source- and wire-breaking**: the app and the SDK have to
+be updated together.
+
+### Breaking changes
+
+- **Two AIDL callbacks replace twenty-two.** Every per-type callback interface is gone, replaced
+  by `IASSParcelableCallback` and `IASSParcelableListCallback` carrying a `Bundle` envelope. An app
+  built against `client` 0.6.x cannot talk to this version of Android Solid Services, and one built
+  against 0.7.0 cannot talk to an older one.
+- **Contacts is three role stores, and every call names its WebID.** `contacts.books`,
+  `contacts.contacts` and `contacts.groups` replace the flat surface; `NewContact` and
+  `FullContact` give way to `ContactData`, built with `contactData { }` and derived with
+  `buildUpon { }`. `ContactStore.update` has replace semantics. See [Contacts](../build/contacts.md).
+- **`SolidSignInClient.getAccount(webId)`** now takes the WebID it is asking about.
+- **Data modules allocate under `{storage}datamodule/`.** Existing pods are not relocated;
+  discovery follows the type-index registration.
+- **`ExceptionsErrorCode` moved** to `shared.result`, **`SettingTypeIndex` lost its address-book
+  helpers**, and **`SharingManager.getShareDeepLink` changed signature**.
+
+### New — Entity sharing
+
+- **Share an entity, not a file.** A contact or a ticket can be shared as the thing it is; share
+  records and notifications carry `resourceType` and `resourceName`. Contacts are never shareable
+  publicly. See [Sharing](../build/sharing.md).
+- **`purgeGivenShares`** withdraws every share under a subtree and removes its bookkeeping.
+- **`ShareableEntityStore`** is the seam a data module implements to join typed entity sharing.
+- **`SolidSession`** is the session contract `Authenticator` implements, and
+  **`SolidAccount.hasRefreshToken`** tells a refreshable session from one that never was.
+
+### Improvements
+
+- One collection engine for every data module, in `api/datamodule/core/`.
+- The build enforces the module layering, with empty baselines.
+- `listContainer` stops re-HEADing children the listing already described.
+- Auth persistence and the HTTP transport have packages of their own.
+- The Firebase Performance Gradle plugin is gone, its SDK kept.
+- The documentation site is organised by capability, with a published `llms.txt`.
+
+### Bug fixes
+
+- Sessions survive a JWKS outage, a pruned keystore, and having no refresh token.
+- A refresh that finishes inline no longer corrupts the in-flight map.
+- A client's binder can no longer crash the provider.
+- The profile store no longer blocks the main thread while it initialises.
+- A partial address book reads as empty instead of crashing.
+- Stale index rows are dropped for resources the pod no longer has.
+
 ## v0.6.1 — 1st August 2026
 
 Sign-in no longer needs the overlay permission, Solid profiles become real Android accounts, and

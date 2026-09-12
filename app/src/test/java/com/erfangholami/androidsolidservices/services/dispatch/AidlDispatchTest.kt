@@ -6,6 +6,7 @@ import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
+import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,6 +53,19 @@ class AidlDispatchTest {
             "the caller should learn what was wrong, got: $message",
             message?.contains("99") == true,
         )
+    }
+
+    @Test
+    fun `a NotAuthenticated failure reaches the caller as SOLID_NOT_LOGGED_IN`() {
+        var code: Int? = null
+        val result: SolidResult<Unit> = SolidResult.Failure(SolidError.NotAuthenticated())
+
+        result.handle(
+            onSuccess = { throw AssertionError("a failure must not run success") },
+            onError = { c, _ -> code = c },
+        )
+
+        assertEquals(ExceptionsErrorCode.SOLID_NOT_LOGGED_IN, code)
     }
 
     @Test

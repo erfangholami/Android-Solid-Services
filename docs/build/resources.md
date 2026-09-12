@@ -284,7 +284,7 @@ sequenceDiagram
 | `404` on a write | the parent container does not exist | call `ensureContainer` first |
 | `403` on a write to a shared container | you have Add, not Write | use `createInContainer` and let the server name it |
 | `415` on a patch | the server takes only SPARQL Update | already handled — the library retries automatically |
-| `SolidNotLoggedInException` | no session for that WebID | send the user back through sign-in |
+| `SolidNotLoggedInException` | no usable session for that WebID, including one that expired | send the user back through sign-in |
 | `NotPermissionException` | your app has no grant for this account | the user declined; ask again |
 | `TransactionTooLargeException` | body over ~1 MB on the `client` path | use `writeStream` / `readStream` |
 | A read returning stale data | the in-memory response cache | it revalidates with ETags; a write invalidates it |
@@ -387,7 +387,10 @@ so callers can tell the two apart (`Shared/.../shared/http/EntityTag.kt`).
 A read sends `Accept: application/ld+json` when the requested class is an `RDFResource`, and `*/*`
 otherwise (`SolidHttpClient.kt:137`). The parser accepts JSON-LD and N-Triples/N-Quads, and
 **throws** `UnsupportedRdfContentTypeException` for Turtle, N3, TriG, RDF/XML and RDF/JSON
-(`SolidResourceParser.kt:92`).
+(`SolidResourceParser.kt:92`). JSON-LD contexts resolve offline where they can: the Activity
+Streams 2.0 context ships inside `Shared`, and any other remote context is fetched once and kept in
+an in-memory cache
+(`Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/jsonld/JsonLdContexts.kt`).
 
 This is a decision, not a gap. Shipping a Turtle reader means shipping an RDF parser stack into an
 Android APK; the library instead relies on content negotiation, which every Solid server supports,
@@ -588,8 +591,8 @@ happened (`SolidResourceManagerImplementation.kt:104`).
 (`SolidHttpClient.kt:48`) and the client follows redirects itself, up to five hops. It has to: a
 DPoP proof is bound to the method and URL it was minted for, so a proof carried over to the new
 `Location` would be rejected. Each hop rebuilds the auth headers for the URI it is about to request
-(`SolidHttpClient.kt:732`), and credentials are attached only while the hop stays on the origin the
-request started at (`:686`) — a cross-origin redirect is followed anonymously rather than leaking a
+(`SolidHttpClient.kt:737`), and credentials are attached only while the hop stays on the origin the
+request started at (`:693`) — a cross-origin redirect is followed anonymously rather than leaking a
 token to whatever host the `Location` named. A 303 on a non-GET/HEAD request becomes a GET with the
 body dropped, per HTTP. `SolidHttpClientTest.kt:156` and `:178` pin both halves.
 
@@ -609,7 +612,7 @@ every cross-pod read of a resource you cannot see into refresh traffic — which
 token, and on providers that revoke a refresh-token family when a token is replayed, kills the
 session outright. So `warrantsTokenRefresh(requestIsOwnOrigin)` returns `false` there, and the
 manager logs "401 kept as authorization outcome" instead of spending a refresh
-(`SolidHttpClient.kt:760`). A refresh is attempted at most once per request, and the whole retry
+(`SolidHttpClient.kt:768`). A refresh is attempted at most once per request, and the whole retry
 budget is three attempts.
 
 **PATCH format negotiation, in both directions.** The Solid Protocol makes `text/n3` the mandatory

@@ -191,7 +191,11 @@ public sealed class SolidError {
         override val message: String get() = "Cancelled."
     }
 
-    /** No authorized local session exists for the WebID — complete sign-in first. */
+    /**
+     * No usable local session exists for the WebID: it was never signed in, was signed out, or its
+     * session has expired. The transport refuses such a request before it reaches the network;
+     * complete sign-in first.
+     */
     public data class NotAuthenticated(
         override val message: String = "Not authenticated. Complete sign-in first.",
     ) : SolidError() {

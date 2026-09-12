@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [0.7.1] — 12th September 2026
 
+A maintenance release driven by Solid Share's crash reports: a signed-out account no longer floods
+telemetry, inbox notifications parse with no network, and `client` callers see an expired session
+as `SolidNotLoggedInException`. Nothing changes on the wire or in the public API.
+
 ### Bug fixes
 
 - **A request for an account with no valid session fails as `SolidError.NotAuthenticated`.** It
@@ -16,6 +20,15 @@ All notable changes to this project are documented here.
   `https://www.w3.org/ns/activitystreams` context from `www.w3.org` on every parse, so reading an
   inbox failed offline or whenever that host was slow. The context now ships inside `Shared` and
   is served locally. Other remote contexts are fetched once and kept in an in-memory cache.
+- **An expired session reaches `client` callers as `SolidNotLoggedInException`.** The IPC host
+  mapped `NOT_AUTHENTICATED` to `UnknownException`; it now maps it to `SOLID_NOT_LOGGED_IN`, which
+  is what the error reference promised.
+
+### Notes
+
+- A request for a WebID with no usable session now fails with `SolidError.NotAuthenticated`
+  (code `NOT_AUTHENTICATED`) instead of `SolidError.Unknown` wrapping an `IllegalArgumentException`.
+  Branch on the code, not on the message.
 
 ## [0.7.0] — 5th August 2026
 

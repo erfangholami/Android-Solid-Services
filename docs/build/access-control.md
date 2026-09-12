@@ -364,6 +364,9 @@ so a receiver appears once, at Edit, not three times.
   recognizes that context marker and maps the document to ACP quads with a hand-rolled walker —
   no network, no context resolution — hooked in ahead of the generic reader
   (`api/src/main/java/com/erfangholami/androidsolidservices/api/resource/implementation/SolidResourceParser.kt:100`).
+  The generic reader now bundles the Activity Streams context too
+  (`Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/jsonld/JsonLdContexts.kt`),
+  so inbox parsing cannot fail the same way.
   A non-Inrupt context declines so the generic reader still runs (`InruptAcrJsonTest.kt:64`).
 - **Weak ETags never reach `If-Match`.** `SolidMetadata.etag` carries only strong validators —
   `getETag()` reports `null` for a `W/"…"` tag
