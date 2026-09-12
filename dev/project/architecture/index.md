@@ -190,20 +190,20 @@ ______________________________________________________________________
 
 ## Technology Summary
 
-| Technology                     | Version / Notes                                                                                                                                        |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Kotlin                         | Coroutines, Flow, serialization                                                                                                                        |
-| Jetpack Compose                | UI — no XML views                                                                                                                                      |
-| Hilt                           | Dependency injection (app module only)                                                                                                                 |
-| AIDL                           | Cross-process communication                                                                                                                            |
-| AppAuth (`net.openid:appauth`) | OpenID Connect                                                                                                                                         |
-| `SolidHttpClient`              | Custom OkHttp-based Solid HTTP client (replaces Inrupt Java Client SDK); in-memory response cache since 0.5.0                                          |
-| Titanium JSON-LD               | RDF, JSON-LD parsing (internal `implementation` dependency — off the public API surface since 0.5.0)                                                   |
-| DataStore                      | Local persistence (Preferences + a kotlinx.serialization JSON `Serializer`); token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0 |
-| kotlinx.serialization          | JSON serialization (replaced Gson in v0.3.0)                                                                                                           |
-| Min SDK                        | 26 (Android 8.0)                                                                                                                                       |
-| Target / Compile SDK           | 36 / 37                                                                                                                                                |
-| JVM target                     | 17                                                                                                                                                     |
+| Technology                     | Version / Notes                                                                                                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Kotlin                         | Coroutines, Flow, serialization                                                                                                                                                                              |
+| Jetpack Compose                | UI — no XML views                                                                                                                                                                                            |
+| Hilt                           | Dependency injection (app module only)                                                                                                                                                                       |
+| AIDL                           | Cross-process communication                                                                                                                                                                                  |
+| AppAuth (`net.openid:appauth`) | OpenID Connect                                                                                                                                                                                               |
+| `SolidHttpClient`              | Custom OkHttp-based Solid HTTP client (replaces Inrupt Java Client SDK); in-memory response cache since 0.5.0                                                                                                |
+| Titanium JSON-LD               | RDF, JSON-LD parsing (internal `implementation` dependency — off the public API surface since 0.5.0); the Activity Streams 2.0 context ships in `Shared` since 0.7.1, so notifications parse with no network |
+| DataStore                      | Local persistence (Preferences + a kotlinx.serialization JSON `Serializer`); token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0                                                       |
+| kotlinx.serialization          | JSON serialization (replaced Gson in v0.3.0)                                                                                                                                                                 |
+| Min SDK                        | 26 (Android 8.0)                                                                                                                                                                                             |
+| Target / Compile SDK           | 36 / 37                                                                                                                                                                                                      |
+| JVM target                     | 17                                                                                                                                                                                                           |
 
 ## Monitoring
 
@@ -226,18 +226,19 @@ Nothing is collected or transmitted until a host application calls `Telemetry.in
 
 ### What is reported
 
-| Signal                              | Source                                  | Destination                                          |
-| ----------------------------------- | --------------------------------------- | ---------------------------------------------------- |
-| Uncaught crashes                    | Whole app process, incl. binder threads | Crashlytics                                          |
-| Swallowed data-module exceptions    | `AidlDispatch.dispatchDataModule`       | Crashlytics (non-fatal)                              |
-| Non-transport request faults        | `SolidHttpClient.solidFailure`          | Crashlytics (non-fatal)                              |
-| Transport failures (offline, reset) | `SolidHttpClient.solidFailure`          | Crashlytics breadcrumb only                          |
-| Terminal token-refresh failures     | `TokenRefreshCoordinator`               | Crashlytics (non-fatal) + `solid_auth_refresh` trace |
-| HTTP request timing                 | `SolidHttpClient.send`                  | Performance (network span)                           |
-| IPC bind latency and binder deaths  | `client` `ServiceConnector`             | Performance + breadcrumbs                            |
-| App start, screen rendering         | Firebase SDK                            | Performance                                          |
+| Signal                                      | Source                                  | Destination                                          |
+| ------------------------------------------- | --------------------------------------- | ---------------------------------------------------- |
+| Uncaught crashes                            | Whole app process, incl. binder threads | Crashlytics                                          |
+| Swallowed data-module exceptions            | `AidlDispatch.dispatchDataModule`       | Crashlytics (non-fatal)                              |
+| Non-transport request faults                | `SolidHttpClient.solidFailure`          | Crashlytics (non-fatal)                              |
+| Transport failures (offline, reset)         | `SolidHttpClient.solidFailure`          | Crashlytics breadcrumb only                          |
+| Requests for a WebID with no usable session | `SolidHttpClient.solidFailure`          | Crashlytics breadcrumb only                          |
+| Terminal token-refresh failures             | `TokenRefreshCoordinator`               | Crashlytics (non-fatal) + `solid_auth_refresh` trace |
+| HTTP request timing                         | `SolidHttpClient.send`                  | Performance (network span)                           |
+| IPC bind latency and binder deaths          | `client` `ServiceConnector`             | Performance + breadcrumbs                            |
+| App start, screen rendering                 | Firebase SDK                            | Performance                                          |
 
-A dropped connection is a fact of mobile life, not a defect, so `IOException` is recorded as a breadcrumb rather than a non-fatal. That keeps a device going offline from generating hundreds of identical Crashlytics reports while still leaving the context attached to whatever is reported next.
+A dropped connection is a fact of mobile life, not a defect, so `IOException` is recorded as a breadcrumb rather than a non-fatal. That keeps a device going offline from generating hundreds of identical Crashlytics reports while still leaving the context attached to whatever is reported next. The same holds for a request made for a WebID whose session has expired or was never signed in: it fails as `SolidError.NotAuthenticated` before touching the network and leaves a breadcrumb, because the expiry itself was already reported once by the refresh coordinator.
 
 ### Attributing failures to the integrating app
 

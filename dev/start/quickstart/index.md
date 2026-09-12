@@ -18,7 +18,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.6.1")
+    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
 }
 ```
 
@@ -26,7 +26,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.6.1")
+    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
 }
 ```
 

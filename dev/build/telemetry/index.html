@@ -2010,7 +2010,7 @@ so a report can be traced to the integrating app that triggered it.</p>
 <tr>
 <td><code>solid.http</code></td>
 <td><code>error_type</code> (exception class name)</td>
-<td>a non-I/O throwable escapes a request (<code>SolidHttpClient.kt:659</code>)</td>
+<td>a non-I/O throwable escapes a request (<code>SolidHttpClient.kt:668</code>) — a request refused because the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> has no usable session (<code>SolidError.NotAuthenticated</code>) is a breadcrumb instead (<code>:667</code>)</td>
 </tr>
 <tr>
 <td><code>solid.auth.refresh</code></td>
@@ -2041,7 +2041,8 @@ so a report can be traced to the integrating app that triggered it.</p>
 </table>
 <p>Breadcrumbs (<code>Telemetry.log</code>) narrate the decisions between those events: whether a 401 was kept
 as an authorization outcome or converted into a forced token refresh, with the request origin
-and the <code>WWW-Authenticate</code> value truncated to 60 characters (<code>SolidHttpClient.kt:761</code>, <code>:771</code>);
+and the <code>WWW-Authenticate</code> value truncated to 60 characters (<code>SolidHttpClient.kt:770</code>, <code>:776</code>), and
+a forced refresh that fails, after which the 401 is returned as it stands (<code>:782</code>);
 transient refresh failures by OAuth error code (<code>TokenRefreshCoordinator.kt:340</code>); token-endpoint
 429 backoff in seconds (<code>:429</code>) and forced-refresh suppression (<code>:415</code>); the authorization
 response's error code when a login is abandoned (<code>AuthenticatorImplementation.kt:156</code>); JWKS
@@ -2052,7 +2053,8 @@ which is built from a random per-login identifier, not from the <abbr title="A U
 (<code>KeystoreCipher.kt:57</code>, <code>DPoPGenerator.kt:209</code>, <code>AuthenticatorImplementation.kt:121</code>); the
 active-account reconciler moving, clearing or ignoring a stale emission, with profile <em>counts</em>
 only (<code>ProfileManager.kt:159</code>, <code>:177</code>, <code>:186</code>); and I/O transport failures as exception class
-plus message (<code>SolidHttpClient.kt:657</code>). The one <code>setKey</code> call site is the <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> host stamping
+plus message (<code>SolidHttpClient.kt:666</code>), and a request refused for lack of a signed-in session
+(<code>:667</code>). The one <code>setKey</code> call site is the <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> host stamping
 <code>calling_app</code> (<code>AidlDispatch.kt:40</code>).</p>
 </details>
 <details class="info" id="what-is-never-reported">
@@ -2078,7 +2080,7 @@ plus message (<code>SolidHttpClient.kt:657</code>). The one <code>setKey</code> 
   (<code>ProfileManager.kt:172</code> versus <code>:177</code>). The one identity that is reported by design is the
   <code>calling_app</code> package name over <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> — attribution to an app, not to a person.</li>
 <li><strong>Server strings are truncated.</strong> The <code>WWW-Authenticate</code> header is cut to 60 characters before
-  it enters a breadcrumb (<code>SolidHttpClient.kt:763</code>). OAuth <code>errorDescription</code> strings go to
+  it enters a breadcrumb (<code>SolidHttpClient.kt:770</code>). OAuth <code>errorDescription</code> strings go to
   logcat only; telemetry gets the error <em>code</em> (<code>TokenRefreshCoordinator.kt:334</code> versus <code>:340</code>).</li>
 <li><strong>No pod content, ever.</strong> Document bodies, <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, contact fields and ticket fields appear at no
   call site; response <em>sizes</em> are reported, response bytes are not.</li>
@@ -2162,7 +2164,7 @@ privacy posture rather than protocol:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 11:50:24 UTC">September 12, 2026</span>
   </span>
 
     

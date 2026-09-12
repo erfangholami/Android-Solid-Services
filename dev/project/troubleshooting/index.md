@@ -151,6 +151,16 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+### Reads fail with a network error after the first read on Community Solid Server
+
+**Symptom:** the first read of a resource works, every later read of the same resource fails with `SolidError.Network` (`Content-Length (N) and stream length (0) disagree`), and an app built on the library reports that the pod cannot be reached while the device is online. Seen on `solid.redpencil.io`.
+
+**Cause:** Community Solid Server answers a conditional `GET` for a resource that it serves in its stored format with `304 Not Modified` plus the `Content-Length` of the full `200` body, and no body. RFC 9110 allows that, but OkHttp treats a `304` with a `Content-Length` as a body-carrying response and fails when the body is missing. The library re-reads cached resources conditionally, so the second read is the one that fails.
+
+**Fix:** handled since the version after 0.7.1 — the transport reads no body on `304`, `204` and `HEAD` responses. On an older version, the only workaround is `SolidHttpClient.cacheEnabled = false`, which disables conditional reads at the cost of re-downloading every resource.
+
+______________________________________________________________________
+
 ## Contacts Data Module
 
 ### Contact names appear empty after upgrade from an older version

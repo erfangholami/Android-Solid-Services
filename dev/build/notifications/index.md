@@ -19,7 +19,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.6.1")
+    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
 }
 ```
 
@@ -34,7 +34,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.6.1")
+    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
 }
 ```
 
@@ -268,7 +268,7 @@ How it flows
 
 #### Reading the inbox
 
-`InboxReader.listNotifications` (`InboxReader.kt:33`) resolves the reader's own inbox (`InboxDiscovery.resolveOwnInbox`, authenticated this time), lists the container, and parses each member as a `ShareNotificationRDF` (`Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/sharing/ShareNotificationRDF.kt:36`). Only `as:Offer`, `as:Update`, `as:Accept`, `as:Undo` and `as:Reject` are recognised; anything else — including other apps' LDN traffic — parses to a null type and is skipped, and each item is wrapped in its own `runCatching` so one malformed notification never fails the listing. An Accept or Reject whose actor is the inbox owner becomes `DECISION_GRANTED` / `DECISION_REJECTED` (`InboxReader.kt:133`). The mode is the strongest of the `acl:mode` IRIs, falling back to the profile's legacy literal. Typed entity shares surface through `ShareNotificationRDF.objectType()` and `objectName()` (`ShareNotificationRDF.kt:96`, `ShareNotificationRDF.kt:106`), which read `rdf:type` and `schema:name` off the `as:object` node rather than the activity node.
+`InboxReader.listNotifications` (`InboxReader.kt:33`) resolves the reader's own inbox (`InboxDiscovery.resolveOwnInbox`, authenticated this time), lists the container, and parses each member as a `ShareNotificationRDF` (`Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/sharing/ShareNotificationRDF.kt:36`). Only `as:Offer`, `as:Update`, `as:Accept`, `as:Undo` and `as:Reject` are recognised; anything else — including other apps' LDN traffic — parses to a null type and is skipped, and each item is wrapped in its own `runCatching` so one malformed notification never fails the listing. Parsing needs no network: the Activity Streams 2.0 `@context` every notification names is served from a copy bundled in `Shared` (`Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/jsonld/JsonLdContexts.kt`), and any other remote context is fetched once and kept in an in-memory cache, so an inbox read does not depend on `www.w3.org` answering. An Accept or Reject whose actor is the inbox owner becomes `DECISION_GRANTED` / `DECISION_REJECTED` (`InboxReader.kt:133`). The mode is the strongest of the `acl:mode` IRIs, falling back to the profile's legacy literal. Typed entity shares surface through `ShareNotificationRDF.objectType()` and `objectName()` (`ShareNotificationRDF.kt:96`, `ShareNotificationRDF.kt:106`), which read `rdf:type` and `schema:name` off the `as:object` node rather than the activity node.
 
 Listing is a pure read: it does not delete inbox items (the inbox is the durable history — `deleteNotification` is the explicit dismissal) and it does not itself rewrite the received-shares index. The mirror is the caller's second step: `SharingManager.syncReceivedShares(webId, notifications)` (`api/src/main/java/com/erfangholami/androidsolidservices/api/sharing/SharingManager.kt:310`) takes the already-gated batch, collapses it to the newest presence-changing event per `(owner, resource)` — grant beats revoke on a timestamp tie (`SharingManagerImplementation.kt:436`) — then applies OFFER/ACCEPTED/UPDATED as add-or-update and UNDO as removal (`ReceivedSharesEngine.kt:167`), so one inbox read feeds both the notifications feed and the "shared with me" view.
 
@@ -308,7 +308,7 @@ All under `api/src/test/java/com/erfangholami/androidsolidservices/api/notificat
 
 `InboxReaderGateTest.kt` pins the gate's decisions: a forged offer for another tenant's resource on a shared host is dropped; an offer under the actor's own declared storage is kept; a `solid:owner` header naming the actor keeps a notification that would otherwise fail the storage check, and one naming somebody else drops it; and the ESS-style identity/storage split across sibling subdomains is kept. `TypedShareNotificationTest.kt` pins both halves of typed shares — the notifier writes the object description with `rdf:type` and `schema:name`, an untyped offer writes none, and the reader surfaces `resourceType` / `resourceName` on the parsed notification. `InboxReaderRequestsTest.kt` pins the requests gate: own-resource requests surface, foreign-resource requests drop, untyped items are ignored.
 
-`NotificationTransportTest.kt` pins the protocol layer: the created `Location` on success, HTTP error propagation, delete delegation, inbox discovery via a HEAD link and the null result when nothing is advertised, a listing that surfaces read errors without throwing, and both `subscribe` refusals. `WebSocketChannel2023ClientTest.kt` pins channel negotiation (`notify:receiveFrom` extraction) and that pushed frames decode into `RawNotification`s. `RawNotificationParserTest.kt` and `RawNotificationTest.kt` pin the envelope: AS2 field extraction, `as:inReplyTo`, empty documents, preferring an AS2-typed subject over a blank node, and `objectsOf` scoping to the activity subject. `SolidShareNotificationProfileTest.kt` pins that the default profile reproduces SolidShare's literals and slugs exactly and that a custom profile rebrands them.
+`NotificationTransportTest.kt` pins the protocol layer: the created `Location` on success, HTTP error propagation, delete delegation, inbox discovery via a HEAD link and the null result when nothing is advertised, a listing that surfaces read errors without throwing, and both `subscribe` refusals. `WebSocketChannel2023ClientTest.kt` pins channel negotiation (`notify:receiveFrom` extraction) and that pushed frames decode into `RawNotification`s. `RawNotificationParserTest.kt` and `RawNotificationTest.kt` pin the envelope: AS2 field extraction, `as:inReplyTo`, empty documents, preferring an AS2-typed subject over a blank node, and `objectsOf` scoping to the activity subject. `JsonLdContextsTest.kt` pins that the bundled Activity Streams context answers without the remote loader and that an AS2 notification parses through it. `SolidShareNotificationProfileTest.kt` pins that the default profile reproduces SolidShare's literals and slugs exactly and that a custom profile rebrands them.
 
 Specifications
 

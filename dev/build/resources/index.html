@@ -1932,7 +1932,7 @@ these verbs. Learning them once covers the rest.</p>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:client:0.6.1"</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:client:0.7.2"</span><span class="p">)</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.client.sdk.Solid</span>
@@ -1946,7 +1946,7 @@ these verbs. Learning them once covers the rest.</p>
 </div>
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:api:0.6.1"</span><span class="p">)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:api:0.7.2"</span><span class="p">)</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.api.resource.SolidResourceManager</span>
@@ -2158,7 +2158,7 @@ being flattened into <code>false</code>.</p>
 </tr>
 <tr>
 <td><code>SolidNotLoggedInException</code></td>
-<td>no session for that <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr></td>
+<td>no usable session for that <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>, including one that expired</td>
 <td>send the user back through sign-in</td>
 </tr>
 <tr>
@@ -2306,7 +2306,10 @@ so callers can tell the two apart (<code>Shared/.../shared/http/EntityTag.kt</co
 <p>A read sends <code>Accept: application/ld+json</code> when the requested class is an <code>RDFResource</code>, and <code>*/*</code>
 otherwise (<code>SolidHttpClient.kt:137</code>). The parser accepts <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> and N-Triples/N-Quads, and
 <strong>throws</strong> <code>UnsupportedRdfContentTypeException</code> for Turtle, <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr>, TriG, <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>/XML and <abbr title="Resource Description Framework — the data model pods store">RDF</abbr>/JSON
-(<code>SolidResourceParser.kt:92</code>).</p>
+(<code>SolidResourceParser.kt:92</code>). <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> contexts resolve offline where they can: the Activity
+Streams 2.0 context ships inside <code>Shared</code>, and any other remote context is fetched once and kept in
+an in-memory cache
+(<code>Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/jsonld/JsonLdContexts.kt</code>).</p>
 <p>This is a decision, not a gap. Shipping a Turtle reader means shipping an <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> parser stack into an
 Android APK; the library instead relies on content negotiation, which every Solid server supports,
 and fails loudly with the content type and URI in the message when a server ignores the <code>Accept</code>
@@ -2507,8 +2510,8 @@ happened (<code>SolidResourceManagerImplementation.kt:104</code>).</p>
 (<code>SolidHttpClient.kt:48</code>) and the client follows redirects itself, up to five hops. It has to: a
 <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> proof is bound to the method and URL it was minted for, so a proof carried over to the new
 <code>Location</code> would be rejected. Each hop rebuilds the auth headers for the URI it is about to request
-(<code>SolidHttpClient.kt:732</code>), and credentials are attached only while the hop stays on the origin the
-request started at (<code>:686</code>) — a cross-origin redirect is followed anonymously rather than leaking a
+(<code>SolidHttpClient.kt:739</code>), and credentials are attached only while the hop stays on the origin the
+request started at (<code>:695</code>) — a cross-origin redirect is followed anonymously rather than leaking a
 token to whatever host the <code>Location</code> named. A 303 on a non-GET/HEAD request becomes a GET with the
 body dropped, per HTTP. <code>SolidHttpClientTest.kt:156</code> and <code>:178</code> pin both halves.</p>
 <p><strong>The 401 classifier.</strong> A 401 answers two unrelated questions with one status, and the library
@@ -2550,7 +2553,7 @@ every cross-pod read of a resource you cannot see into refresh traffic — which
 token, and on providers that revoke a refresh-token family when a token is replayed, kills the
 session outright. So <code>warrantsTokenRefresh(requestIsOwnOrigin)</code> returns <code>false</code> there, and the
 manager logs "401 kept as authorization outcome" instead of spending a refresh
-(<code>SolidHttpClient.kt:760</code>). A refresh is attempted at most once per request, and the whole retry
+(<code>SolidHttpClient.kt:770</code>). A refresh is attempted at most once per request, and the whole retry
 budget is three attempts.</p>
 <p><strong>PATCH format negotiation, in both directions.</strong> The Solid Protocol makes <code>text/n3</code> the mandatory
 PATCH format; Inrupt <abbr title="Enterprise Solid Server — Inrupt's pod server, behind PodSpaces">ESS</abbr> deployments advertise only SPARQL Update and answer 415 for <abbr title="Notation3 — the syntax Solid patches are written in">N3</abbr>. So <code>patch</code>
@@ -2692,7 +2695,7 @@ for tests that only care about one call).</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 11:50:24 UTC">September 12, 2026</span>
   </span>
 
     

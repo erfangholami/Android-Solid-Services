@@ -18,7 +18,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.6.1")
+    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
 }
 ```
 
@@ -40,7 +40,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.6.1")
+    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
 }
 ```
 
@@ -254,17 +254,17 @@ sequenceDiagram
 
 ## Errors you'll hit
 
-| What you see                           | Why                                    | What to do                                          |
-| -------------------------------------- | -------------------------------------- | --------------------------------------------------- |
-| `412 Precondition Failed`              | someone wrote since your `head`        | re-read, merge or ask the user, write again         |
-| `404` on a write                       | the parent container does not exist    | call `ensureContainer` first                        |
-| `403` on a write to a shared container | you have Add, not Write                | use `createInContainer` and let the server name it  |
-| `415` on a patch                       | the server takes only SPARQL Update    | already handled — the library retries automatically |
-| `SolidNotLoggedInException`            | no session for that WebID              | send the user back through sign-in                  |
-| `NotPermissionException`               | your app has no grant for this account | the user declined; ask again                        |
-| `TransactionTooLargeException`         | body over ~1 MB on the `client` path   | use `writeStream` / `readStream`                    |
-| A read returning stale data            | the in-memory response cache           | it revalidates with ETags; a write invalidates it   |
-| `UnsupportedRdfContentTypeException`   | the server answered Turtle             | see the note on `Accept` under the hood             |
+| What you see                           | Why                                                          | What to do                                          |
+| -------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------- |
+| `412 Precondition Failed`              | someone wrote since your `head`                              | re-read, merge or ask the user, write again         |
+| `404` on a write                       | the parent container does not exist                          | call `ensureContainer` first                        |
+| `403` on a write to a shared container | you have Add, not Write                                      | use `createInContainer` and let the server name it  |
+| `415` on a patch                       | the server takes only SPARQL Update                          | already handled — the library retries automatically |
+| `SolidNotLoggedInException`            | no usable session for that WebID, including one that expired | send the user back through sign-in                  |
+| `NotPermissionException`               | your app has no grant for this account                       | the user declined; ask again                        |
+| `TransactionTooLargeException`         | body over ~1 MB on the `client` path                         | use `writeStream` / `readStream`                    |
+| A read returning stale data            | the in-memory response cache                                 | it revalidates with ETags; a write invalidates it   |
+| `UnsupportedRdfContentTypeException`   | the server answered Turtle                                   | see the note on `Accept` under the hood             |
 
 ## Under the hood
 
@@ -329,7 +329,7 @@ That `W/` prefix is not cosmetic. `getETag()` returns only *strong* tags (`Heade
 
 #### Accept, and the RDF formats that are deliberately absent
 
-A read sends `Accept: application/ld+json` when the requested class is an `RDFResource`, and `*/*` otherwise (`SolidHttpClient.kt:137`). The parser accepts JSON-LD and N-Triples/N-Quads, and **throws** `UnsupportedRdfContentTypeException` for Turtle, N3, TriG, RDF/XML and RDF/JSON (`SolidResourceParser.kt:92`).
+A read sends `Accept: application/ld+json` when the requested class is an `RDFResource`, and `*/*` otherwise (`SolidHttpClient.kt:137`). The parser accepts JSON-LD and N-Triples/N-Quads, and **throws** `UnsupportedRdfContentTypeException` for Turtle, N3, TriG, RDF/XML and RDF/JSON (`SolidResourceParser.kt:92`). JSON-LD contexts resolve offline where they can: the Activity Streams 2.0 context ships inside `Shared`, and any other remote context is fetched once and kept in an in-memory cache (`Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/jsonld/JsonLdContexts.kt`).
 
 This is a decision, not a gap. Shipping a Turtle reader means shipping an RDF parser stack into an Android APK; the library instead relies on content negotiation, which every Solid server supports, and fails loudly with the content type and URI in the message when a server ignores the `Accept` header. The failure names exactly what happened rather than returning an empty triple set that would look like an empty document.
 
@@ -431,7 +431,7 @@ Every verb returns `SolidResult<T>`: `Success(value)` or `Failure(SolidError)`, 
 
 **412 is surfaced, not translated** — except in `create`, where a 412 from `If-None-Match: *` means the resource already exists, and is reported as `409 Conflict` because that is what actually happened (`SolidResourceManagerImplementation.kt:104`).
 
-**Redirects, and re-signing DPoP.** OkHttp's own redirect following is switched off (`SolidHttpClient.kt:48`) and the client follows redirects itself, up to five hops. It has to: a DPoP proof is bound to the method and URL it was minted for, so a proof carried over to the new `Location` would be rejected. Each hop rebuilds the auth headers for the URI it is about to request (`SolidHttpClient.kt:732`), and credentials are attached only while the hop stays on the origin the request started at (`:686`) — a cross-origin redirect is followed anonymously rather than leaking a token to whatever host the `Location` named. A 303 on a non-GET/HEAD request becomes a GET with the body dropped, per HTTP. `SolidHttpClientTest.kt:156` and `:178` pin both halves.
+**Redirects, and re-signing DPoP.** OkHttp's own redirect following is switched off (`SolidHttpClient.kt:48`) and the client follows redirects itself, up to five hops. It has to: a DPoP proof is bound to the method and URL it was minted for, so a proof carried over to the new `Location` would be rejected. Each hop rebuilds the auth headers for the URI it is about to request (`SolidHttpClient.kt:739`), and credentials are attached only while the hop stays on the origin the request started at (`:695`) — a cross-origin redirect is followed anonymously rather than leaking a token to whatever host the `Location` named. A 303 on a non-GET/HEAD request becomes a GET with the body dropped, per HTTP. `SolidHttpClientTest.kt:156` and `:178` pin both halves.
 
 **The 401 classifier.** A 401 answers two unrelated questions with one status, and the library refuses to conflate them (`api/.../transport/AuthChallenge.kt`):
 
@@ -442,7 +442,7 @@ Every verb returns `SolidResult<T>`: `Success(value)` or `Failure(SolidError)`, 
 | `insufficient_scope` / `invalid_request`  | `NotAuthorized` | Return the 401. Refreshing cannot change the answer.                   |
 | Nothing machine-readable                  | `Unspecified`   | Refresh **only** if the request was against the identity's own origin. |
 
-That last row is the one that matters. A bare 401 from a foreign pod is an authorization outcome, not an expiry: a server that meant "your token is stale" would have said so. Treating it as expiry turns every cross-pod read of a resource you cannot see into refresh traffic — which rate-limits a healthy token, and on providers that revoke a refresh-token family when a token is replayed, kills the session outright. So `warrantsTokenRefresh(requestIsOwnOrigin)` returns `false` there, and the manager logs "401 kept as authorization outcome" instead of spending a refresh (`SolidHttpClient.kt:760`). A refresh is attempted at most once per request, and the whole retry budget is three attempts.
+That last row is the one that matters. A bare 401 from a foreign pod is an authorization outcome, not an expiry: a server that meant "your token is stale" would have said so. Treating it as expiry turns every cross-pod read of a resource you cannot see into refresh traffic — which rate-limits a healthy token, and on providers that revoke a refresh-token family when a token is replayed, kills the session outright. So `warrantsTokenRefresh(requestIsOwnOrigin)` returns `false` there, and the manager logs "401 kept as authorization outcome" instead of spending a refresh (`SolidHttpClient.kt:770`). A refresh is attempted at most once per request, and the whole retry budget is three attempts.
 
 **PATCH format negotiation, in both directions.** The Solid Protocol makes `text/n3` the mandatory PATCH format; Inrupt ESS deployments advertise only SPARQL Update and answer 415 for N3. So `patch` sends `application/sparql-update` first and retries as `text/n3` on a 415 (`SolidHttpClient.kt:205`), while `patchRaw` — whose body arrived as N3 text across the AIDL boundary — sends N3 first and retries as SPARQL, translating via `N3PatchConverter` (`:242`). When the converter cannot read a document with confidence it returns `null` and the server's original 415 is kept, rather than a guessed rewrite being sent (`api/.../resource/implementation/N3PatchConverter.kt:29`). A 403 is never reinterpreted as a media type problem.
 
