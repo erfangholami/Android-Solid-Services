@@ -547,17 +547,10 @@ internal class SolidHttpClient(
                     response.code == 401 -> {
                         val wwwAuth = response.header(HTTPHeaderName.WWW_AUTHENTICATE) ?: ""
                         response.close()
-                        val isNonceChallenge = wwwAuth.contains("use_dpop_nonce", true) &&
-                            !wwwAuth.contains("invalid_token", true) &&
-                            !wwwAuth.contains("expired_token", true)
-                        if (!isNonceChallenge) {
-                            if (didForceRefresh) {
-                                return@withContext SolidResult.Failure(SolidError.fromHttp(401))
-                            }
-                            didForceRefresh = true
-                            if (!requireAuth().hasValidToken(webId, forceRefresh = true)) {
-                                return@withContext SolidResult.Failure(SolidError.fromHttp(401))
-                            }
+                        when (afterUnauthorized(webId, wwwAuth, didForceRefresh)) {
+                            UnauthorizedNext.GIVE_UP -> return@withContext SolidResult.Failure(SolidError.fromHttp(401))
+                            UnauthorizedNext.RETRY_AFTER_REFRESH -> didForceRefresh = true
+                            UnauthorizedNext.RETRY_WITH_NONCE -> Unit
                         }
                     }
 
@@ -618,19 +611,10 @@ internal class SolidHttpClient(
                         return@withContext SolidResult.Failure(SolidError.fromHttp(412, detail))
                     }
 
-                    code == 401 -> {
-                        val isNonceChallenge = wwwAuth.contains("use_dpop_nonce", true) &&
-                            !wwwAuth.contains("invalid_token", true) &&
-                            !wwwAuth.contains("expired_token", true)
-                        if (!isNonceChallenge) {
-                            if (didForceRefresh) {
-                                return@withContext SolidResult.Failure(SolidError.fromHttp(401, detail))
-                            }
-                            didForceRefresh = true
-                            if (!requireAuth().hasValidToken(webId, forceRefresh = true)) {
-                                return@withContext SolidResult.Failure(SolidError.fromHttp(401, detail))
-                            }
-                        }
+                    code == 401 -> when (afterUnauthorized(webId, wwwAuth, didForceRefresh)) {
+                        UnauthorizedNext.GIVE_UP -> return@withContext SolidResult.Failure(SolidError.fromHttp(401, detail))
+                        UnauthorizedNext.RETRY_AFTER_REFRESH -> didForceRefresh = true
+                        UnauthorizedNext.RETRY_WITH_NONCE -> Unit
                     }
 
                     else -> return@withContext SolidResult.Failure(SolidError.fromHttp(code, detail))
@@ -639,6 +623,24 @@ internal class SolidHttpClient(
             SolidResult.Failure(SolidError.fromHttp(lastCode.takeIf { it != 0 } ?: 500, "streaming PUT: retries exhausted"))
         } catch (e: Exception) {
             solidFailure(e)
+        }
+    }
+
+    private enum class UnauthorizedNext { RETRY_WITH_NONCE, RETRY_AFTER_REFRESH, GIVE_UP }
+
+    private suspend fun afterUnauthorized(
+        webId: String,
+        wwwAuth: String,
+        didForceRefresh: Boolean,
+    ): UnauthorizedNext {
+        val isNonceChallenge = wwwAuth.contains("use_dpop_nonce", true) &&
+            !wwwAuth.contains("invalid_token", true) &&
+            !wwwAuth.contains("expired_token", true)
+        return when {
+            isNonceChallenge -> UnauthorizedNext.RETRY_WITH_NONCE
+            didForceRefresh -> UnauthorizedNext.GIVE_UP
+            requireAuth().hasValidToken(webId, forceRefresh = true) -> UnauthorizedNext.RETRY_AFTER_REFRESH
+            else -> UnauthorizedNext.GIVE_UP
         }
     }
 

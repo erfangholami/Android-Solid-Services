@@ -591,8 +591,8 @@ happened (`SolidResourceManagerImplementation.kt:104`).
 (`SolidHttpClient.kt:48`) and the client follows redirects itself, up to five hops. It has to: a
 DPoP proof is bound to the method and URL it was minted for, so a proof carried over to the new
 `Location` would be rejected. Each hop rebuilds the auth headers for the URI it is about to request
-(`SolidHttpClient.kt:737`), and credentials are attached only while the hop stays on the origin the
-request started at (`:693`) — a cross-origin redirect is followed anonymously rather than leaking a
+(`SolidHttpClient.kt:739`), and credentials are attached only while the hop stays on the origin the
+request started at (`:695`) — a cross-origin redirect is followed anonymously rather than leaking a
 token to whatever host the `Location` named. A 303 on a non-GET/HEAD request becomes a GET with the
 body dropped, per HTTP. `SolidHttpClientTest.kt:156` and `:178` pin both halves.
 
@@ -612,7 +612,7 @@ every cross-pod read of a resource you cannot see into refresh traffic — which
 token, and on providers that revoke a refresh-token family when a token is replayed, kills the
 session outright. So `warrantsTokenRefresh(requestIsOwnOrigin)` returns `false` there, and the
 manager logs "401 kept as authorization outcome" instead of spending a refresh
-(`SolidHttpClient.kt:768`). A refresh is attempted at most once per request, and the whole retry
+(`SolidHttpClient.kt:770`). A refresh is attempted at most once per request, and the whole retry
 budget is three attempts.
 
 **PATCH format negotiation, in both directions.** The Solid Protocol makes `text/n3` the mandatory

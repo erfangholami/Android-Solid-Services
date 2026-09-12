@@ -36,8 +36,7 @@ internal class WebSocketChannel2023Client(
         val requestJson = channelRequestBody(topic)
         var didForceRefresh = false
         repeat(MAX_ATTEMPTS) {
-            if (!auth.hasValidToken(webId)) throw SolidError.NotAuthenticated().asException()
-            val headers = auth.authHeaders(webId, "POST", subscriptionService.toString())
+            val headers = sessionHeaders(webId, "POST", subscriptionService.toString())
             val request = Request.Builder()
                 .url(encodeUri(subscriptionService).toString())
                 .apply { headers.forEach { (k, v) -> addHeader(k, v) } }
@@ -70,6 +69,11 @@ internal class WebSocketChannel2023Client(
             }
         }
         throw SolidError.fromHttp(500, "WebSocketChannel2023: channel negotiation exhausted retries").asException()
+    }
+
+    private suspend fun sessionHeaders(webId: String, method: String, uri: String): Map<String, String> {
+        if (!auth.hasValidToken(webId)) throw SolidError.NotAuthenticated().asException()
+        return auth.authHeaders(webId, method, uri)
     }
 
     fun connect(webId: String, receiveFrom: URI): Flow<RawNotification> = callbackFlow {

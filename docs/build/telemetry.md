@@ -252,7 +252,7 @@ The `recordException` inventory:
 
 | `operation` | Extra attributes | Raised when |
 |---|---|---|
-| `solid.http` | `error_type` (exception class name) | a non-I/O throwable escapes a request (`SolidHttpClient.kt:666`) — a request refused because the WebID has no usable session (`SolidError.NotAuthenticated`) is a breadcrumb instead (`:665`) |
+| `solid.http` | `error_type` (exception class name) | a non-I/O throwable escapes a request (`SolidHttpClient.kt:668`) — a request refused because the WebID has no usable session (`SolidError.NotAuthenticated`) is a breadcrumb instead (`:667`) |
 | `solid.auth.refresh` | `auth_error`, issuer host | a refresh fails terminally — `invalid_grant` / `invalid_client` (`TokenRefreshCoordinator.kt:316`) |
 | `solid.auth.expiry` | `auth_error`, `reason=no_refresh_token`, issuer host | the access token is spent and there is no refresh token (`TokenRefreshCoordinator.kt:372`) |
 | `solid.auth.profile_store` | `auth_error` ∈ `store_init_failed`, `store_decrypt_failed` (+ `strikes`), `store_corrupt`, `store_wiped`, `store_key_unrecoverable` | the encrypted profile store misbehaves (`ProfileManager.kt:124`, `UserRepositoryImplementation.kt:69`, `:100`, `:160`, `KeystoreCipher.kt:70`) |
@@ -261,8 +261,8 @@ The `recordException` inventory:
 
 Breadcrumbs (`Telemetry.log`) narrate the decisions between those events: whether a 401 was kept
 as an authorization outcome or converted into a forced token refresh, with the request origin
-and the `WWW-Authenticate` value truncated to 60 characters (`SolidHttpClient.kt:768`, `:774`), and
-a forced refresh that fails, after which the 401 is returned as it stands (`:780`);
+and the `WWW-Authenticate` value truncated to 60 characters (`SolidHttpClient.kt:770`, `:776`), and
+a forced refresh that fails, after which the 401 is returned as it stands (`:782`);
 transient refresh failures by OAuth error code (`TokenRefreshCoordinator.kt:340`); token-endpoint
 429 backoff in seconds (`:429`) and forced-refresh suppression (`:415`); the authorization
 response's error code when a login is abandoned (`AuthenticatorImplementation.kt:156`); JWKS
@@ -273,8 +273,8 @@ which is built from a random per-login identifier, not from the WebID
 (`KeystoreCipher.kt:57`, `DPoPGenerator.kt:209`, `AuthenticatorImplementation.kt:121`); the
 active-account reconciler moving, clearing or ignoring a stale emission, with profile *counts*
 only (`ProfileManager.kt:159`, `:177`, `:186`); and I/O transport failures as exception class
-plus message (`SolidHttpClient.kt:664`), and a request refused for lack of a signed-in session
-(`:665`). The one `setKey` call site is the IPC host stamping
+plus message (`SolidHttpClient.kt:666`), and a request refused for lack of a signed-in session
+(`:667`). The one `setKey` call site is the IPC host stamping
 `calling_app` (`AidlDispatch.kt:40`).
 
 </details>
@@ -304,7 +304,7 @@ This is the load-bearing half, and each rule is visible at a call site:
   (`ProfileManager.kt:172` versus `:177`). The one identity that is reported by design is the
   `calling_app` package name over IPC — attribution to an app, not to a person.
 - **Server strings are truncated.** The `WWW-Authenticate` header is cut to 60 characters before
-  it enters a breadcrumb (`SolidHttpClient.kt:768`). OAuth `errorDescription` strings go to
+  it enters a breadcrumb (`SolidHttpClient.kt:770`). OAuth `errorDescription` strings go to
   logcat only; telemetry gets the error *code* (`TokenRefreshCoordinator.kt:334` versus `:340`).
 - **No pod content, ever.** Document bodies, RDF, contact fields and ticket fields appear at no
   call site; response *sizes* are reported, response bytes are not.
