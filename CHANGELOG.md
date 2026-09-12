@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## [0.7.1] — 12th September 2026
+
+### Bug fixes
+
+- **A request for an account with no valid session fails as `SolidError.NotAuthenticated`.** It
+  used to trip the auth-header precondition, surface as an `IllegalArgumentException`, and reach
+  the host's crash reporter as a non-fatal on every attempt. That made it the largest issue on
+  Solid Share's Crashlytics, with one event per request for each signed-out account. The transport
+  now returns the typed error and leaves a log breadcrumb only. A 401 whose forced refresh fails
+  comes back as that 401 instead of looping into the same precondition.
+- **Activity Streams notifications parse with no network.** The JSON-LD processor fetched the
+  `https://www.w3.org/ns/activitystreams` context from `www.w3.org` on every parse, so reading an
+  inbox failed offline or whenever that host was slow. The context now ships inside `Shared` and
+  is served locally. Other remote contexts are fetched once and kept in an in-memory cache.
+
 ## [0.7.0] — 5th August 2026
 
 The IPC contract is rewritten, contacts is reshaped around one immutable write model, and every

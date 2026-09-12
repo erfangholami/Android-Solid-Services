@@ -11,6 +11,7 @@ import com.apicatalog.jsonld.serialization.QuadsToJsonld
 import com.apicatalog.jsonld.uri.UriValidationPolicy
 import com.apicatalog.rdf.api.RdfQuadConsumer
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
+import com.erfangholami.androidsolidservices.shared.rdf.jsonld.JsonLdContexts
 import com.erfangholami.androidsolidservices.shared.util.encodeUriString
 import com.erfangholami.androidsolidservices.shared.vocab.ACL
 import com.erfangholami.androidsolidservices.shared.vocab.ACP
@@ -102,7 +103,10 @@ public open class RDFResource : Resource {
          * Relative IRIs are resolved against [baseUri] (the document URL), as required by JSON-LD
          * and the Solid Protocol. URI validation is scheme-only, tolerating the relative /
          * non-canonical IRIs some pods emit. The JSON-LD processor (titanium) is used internally and
-         * is not part of this signature, so it stays off consumers' compile classpath.
+         * is not part of this signature, so it stays off consumers' compile classpath. Well-known
+         * remote contexts (Activity Streams 2.0) are served from copies bundled with the library, so
+         * a notification parses with no network; other remote contexts are fetched once and cached
+         * in memory.
          *
          * @param jsonLdText the JSON-LD document text to expand and convert to RDF.
          * @param baseUri base IRI for resolving relative references, or `null`.
@@ -120,6 +124,7 @@ public open class RDFResource : Resource {
                 processingMode = JsonLdVersion.V1_1
                 isProduceGeneralizedRdf = true
                 uriValidation = UriValidationPolicy.SchemeOnly
+                documentLoader = JsonLdContexts.loader
             }
             val document = JsonDocument.of(jsonLdText.byteInputStream())
             val result = mutableListOf<RdfQuad>()
@@ -287,7 +292,7 @@ public open class RDFResource : Resource {
         val compacted = JsonLd.compact(
             JsonDocument.of(jsonLdArray.toString().byteInputStream()),
             contextDocument
-        ).get()
+        ).loader(JsonLdContexts.loader).get()
         return compacted.toString().byteInputStream()
     }
 

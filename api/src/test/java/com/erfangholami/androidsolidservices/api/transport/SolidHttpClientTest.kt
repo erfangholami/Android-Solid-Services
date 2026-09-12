@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.api.transport
 import com.erfangholami.androidsolidservices.api.auth.SolidSession
 import com.erfangholami.androidsolidservices.shared.model.resource.NonRDFResource
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
+import com.erfangholami.androidsolidservices.shared.result.SolidError
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -24,12 +25,16 @@ class SolidHttpClientTest {
         var noRefreshCount = 0
         private var dpop = "proof-initial"
 
+        var hasSession = true
+        var refreshSucceeds = true
+
         override suspend fun hasValidToken(
             webId: String,
             forceRefresh: Boolean,
         ): Boolean {
             if (forceRefresh) forceRefreshCount++ else noRefreshCount++
-            return true
+            if (forceRefresh && !refreshSucceeds) hasSession = false
+            return hasSession
         }
 
         override suspend fun authHeaders(
@@ -122,6 +127,33 @@ class SolidHttpClientTest {
         assertTrue(result is SolidResult.Failure)
         assertEquals(401, (result as SolidResult.Failure).error.httpStatus)
         assertEquals("must not retry endlessly on a real auth failure", 2, server.requestCount)
+        assertEquals(1, fake.forceRefreshCount)
+    }
+
+    @Test
+    fun `a request with no valid session fails as NotAuthenticated and never reaches the wire`() {
+        fake.hasSession = false
+
+        val result = runBlocking { client.delete(webId, url("/r")) }
+
+        assertTrue(result is SolidResult.Failure)
+        assertTrue((result as SolidResult.Failure).error is SolidError.NotAuthenticated)
+        assertEquals(0, server.requestCount)
+    }
+
+    @Test
+    fun `a 401 whose forced refresh fails is returned as that 401`() {
+        fake.refreshSucceeds = false
+        server.enqueue(
+            MockResponse().setResponseCode(401)
+                .addHeader("WWW-Authenticate", "DPoP error=\"expired_token\""),
+        )
+
+        val result = runBlocking { client.delete(webId, url("/r")) }
+
+        assertTrue(result is SolidResult.Failure)
+        assertEquals(401, (result as SolidResult.Failure).error.httpStatus)
+        assertEquals("the failed refresh must not be retried into the auth precondition", 1, server.requestCount)
         assertEquals(1, fake.forceRefreshCount)
     }
 

@@ -36,6 +36,7 @@ internal class WebSocketChannel2023Client(
         val requestJson = channelRequestBody(topic)
         var didForceRefresh = false
         repeat(MAX_ATTEMPTS) {
+            if (!auth.hasValidToken(webId)) throw SolidError.NotAuthenticated().asException()
             val headers = auth.authHeaders(webId, "POST", subscriptionService.toString())
             val request = Request.Builder()
                 .url(encodeUri(subscriptionService).toString())
@@ -57,8 +58,10 @@ internal class WebSocketChannel2023Client(
 
                 code == 401 && !didForceRefresh &&
                     !wwwAuth.contains("use_dpop_nonce", true) -> {
-                    auth.hasValidToken(webId, forceRefresh = true)
                     didForceRefresh = true
+                    if (!auth.hasValidToken(webId, forceRefresh = true)) {
+                        throw SolidError.fromHttp(code, body.take(BODY_EXCERPT)).asException()
+                    }
                 }
 
                 code == 401 -> Unit

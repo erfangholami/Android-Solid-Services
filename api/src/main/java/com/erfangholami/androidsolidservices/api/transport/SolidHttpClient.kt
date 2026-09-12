@@ -554,8 +554,10 @@ internal class SolidHttpClient(
                             if (didForceRefresh) {
                                 return@withContext SolidResult.Failure(SolidError.fromHttp(401))
                             }
-                            requireAuth().hasValidToken(webId, forceRefresh = true)
                             didForceRefresh = true
+                            if (!requireAuth().hasValidToken(webId, forceRefresh = true)) {
+                                return@withContext SolidResult.Failure(SolidError.fromHttp(401))
+                            }
                         }
                     }
 
@@ -624,8 +626,10 @@ internal class SolidHttpClient(
                             if (didForceRefresh) {
                                 return@withContext SolidResult.Failure(SolidError.fromHttp(401, detail))
                             }
-                            requireAuth().hasValidToken(webId, forceRefresh = true)
                             didForceRefresh = true
+                            if (!requireAuth().hasValidToken(webId, forceRefresh = true)) {
+                                return@withContext SolidResult.Failure(SolidError.fromHttp(401, detail))
+                            }
                         }
                     }
 
@@ -655,16 +659,17 @@ internal class SolidHttpClient(
 
     private fun <T> solidFailure(e: Throwable): SolidResult<T> {
         if (e is kotlinx.coroutines.CancellationException) throw e
-        if (e is IOException) {
-            Telemetry.log("solid.http failed: ${e.javaClass.simpleName}: ${e.message}")
-        } else {
-            Telemetry.recordException(
+        val error = SolidError.fromThrowable(e)
+        when {
+            e is IOException -> Telemetry.log("solid.http failed: ${e.javaClass.simpleName}: ${e.message}")
+            error is SolidError.NotAuthenticated -> Telemetry.log("solid.http refused: no authorized session")
+            else -> Telemetry.recordException(
                 e,
                 TelemetryAttribute.OPERATION to "solid.http",
                 TelemetryAttribute.ERROR_TYPE to e.javaClass.simpleName,
             )
         }
-        return SolidResult.Failure(SolidError.fromThrowable(e))
+        return SolidResult.Failure(error)
     }
 
     private suspend fun executeAuthenticated(
@@ -770,8 +775,11 @@ internal class SolidHttpClient(
                 "solid.auth 401 -> forced refresh (origin=${uri.scheme}://${uri.authority}, " +
                     "wwwAuth=${wwwAuth.take(60)})",
             )
-            requireAuth().hasValidToken(webId, forceRefresh = true)
             didForceRefresh = true
+            if (!requireAuth().hasValidToken(webId, forceRefresh = true)) {
+                Telemetry.log("solid.auth forced refresh failed; keeping the 401")
+                return response
+            }
         }
         return lastResponse!!
     }
@@ -823,9 +831,7 @@ internal class SolidHttpClient(
         uri: String,
     ): Map<String, String> {
         val session = requireAuth()
-        require(session.hasValidToken(webId)) {
-            "Not authenticated. Complete login before accessing Solid resources."
-        }
+        if (!session.hasValidToken(webId)) throw SolidError.NotAuthenticated().asException()
         return session.authHeaders(webId, method, uri)
     }
 
