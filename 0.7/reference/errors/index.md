@@ -12,7 +12,7 @@ Calls return `SolidResult<T>`. Unwrap with `getOrThrow()` to get the same except
 SolidException
 ├── SolidAppNotFoundException                    — Android Solid Services is not installed
 ├── SolidServiceConnectionException              — the IPC binding failed or dropped
-├── SolidNotLoggedInException                    — no account signed in for that WebID
+├── SolidNotLoggedInException                    — no usable session for that WebID
 ├── SolidServicesDrawPermissionDeniedException   — legacy; only the removed requestLogin path
 ├── SolidResourceException
 │   ├── NotSupportedClassException               — class does not extend RDFResource/NonRDFResource
@@ -34,12 +34,12 @@ SolidException
 
 ### Setup and connection
 
-| Exception                         | Cause                                                          | Fix                                                                                                                                  |
-| --------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `SolidAppNotFoundException`       | the host app is not on the device                              | prompt to [install it](https://androidsolidservices.erfangholami.com/0.7/start/install-app/index.md), or switch to the `api` library |
-| `SolidServiceConnectionException` | the binding failed, or the host app was stopped or updated     | the connector rebinds itself; collect the connection-state flow and retry once it emits `true`                                       |
-| `SolidNotLoggedInException`       | no session for that WebID — signed out, or removed in Settings | send the user back through sign-in                                                                                                   |
-| `NullWebIdException`              | a call was made with no WebID                                  | keep the WebID you got at sign-in and pass it to every call                                                                          |
+| Exception                         | Cause                                                                                                                                                                              | Fix                                                                                                                                  |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `SolidAppNotFoundException`       | the host app is not on the device                                                                                                                                                  | prompt to [install it](https://androidsolidservices.erfangholami.com/0.7/start/install-app/index.md), or switch to the `api` library |
+| `SolidServiceConnectionException` | the binding failed, or the host app was stopped or updated                                                                                                                         | the connector rebinds itself; collect the connection-state flow and retry once it emits `true`                                       |
+| `SolidNotLoggedInException`       | no usable session for that WebID — signed out, removed in Settings, or expired; the request is refused before it reaches the network (`api` returns `SolidError.NotAuthenticated`) | send the user back through sign-in                                                                                                   |
+| `NullWebIdException`              | a call was made with no WebID                                                                                                                                                      | keep the WebID you got at sign-in and pass it to every call                                                                          |
 
 ### Permission
 

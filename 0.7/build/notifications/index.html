@@ -1824,7 +1824,7 @@ and on user-initiated refresh. Anything promising a live socket is not this laye
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:client:0.7.0"</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:client:0.7.1"</span><span class="p">)</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.client.sdk.Solid</span>
@@ -1835,7 +1835,7 @@ and on user-initiated refresh. Anything promising a live socket is not this laye
 </div>
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:api:0.7.0"</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:api:0.7.1"</span><span class="p">)</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.api.notifications.NotificationsManager</span>
@@ -2186,7 +2186,12 @@ each member as a <code>ShareNotificationRDF</code>
 (<code>Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/sharing/ShareNotificationRDF.kt:36</code>).
 Only <code>as:Offer</code>, <code>as:Update</code>, <code>as:Accept</code>, <code>as:Undo</code> and <code>as:Reject</code> are recognised; anything
 else — including other apps' <abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> traffic — parses to a null type and is skipped, and each item
-is wrapped in its own <code>runCatching</code> so one malformed notification never fails the listing. An
+is wrapped in its own <code>runCatching</code> so one malformed notification never fails the listing.
+Parsing needs no network: the Activity Streams 2.0 <code>@context</code> every notification names is served
+from a copy bundled in <code>Shared</code>
+(<code>Shared/src/main/java/com/erfangholami/androidsolidservices/shared/rdf/jsonld/JsonLdContexts.kt</code>),
+and any other remote context is fetched once and kept in an in-memory cache, so an inbox read does
+not depend on <code>www.w3.org</code> answering. An
 Accept or Reject whose actor is the inbox owner becomes <code>DECISION_GRANTED</code> /
 <code>DECISION_REJECTED</code> (<code>InboxReader.kt:133</code>). The mode is the strongest of the <code>acl:mode</code> IRIs,
 falling back to the profile's legacy literal. Typed entity shares surface through
@@ -2319,7 +2324,9 @@ nothing is advertised, a listing that surfaces read errors without throwing, and
 (<code>notify:receiveFrom</code> extraction) and that pushed frames decode into <code>RawNotification</code>s.
 <code>RawNotificationParserTest.kt</code> and <code>RawNotificationTest.kt</code> pin the envelope: <abbr title="Activity Streams 2.0 — the vocabulary Solid notifications are written in">AS2</abbr> field
 extraction, <code>as:inReplyTo</code>, empty documents, preferring an <abbr title="Activity Streams 2.0 — the vocabulary Solid notifications are written in">AS2</abbr>-typed subject over a blank node,
-and <code>objectsOf</code> scoping to the activity subject. <code>SolidShareNotificationProfileTest.kt</code> pins
+and <code>objectsOf</code> scoping to the activity subject. <code>JsonLdContextsTest.kt</code> pins that the bundled
+Activity Streams context answers without the remote loader and that an <abbr title="Activity Streams 2.0 — the vocabulary Solid notifications are written in">AS2</abbr> notification parses
+through it. <code>SolidShareNotificationProfileTest.kt</code> pins
 that the default profile reproduces SolidShare's literals and slugs exactly and that a custom
 profile rebrands them.</p>
 </details>
@@ -2373,7 +2380,7 @@ profile rebrands them.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 11:29:45 UTC">September 12, 2026</span>
   </span>
 
     

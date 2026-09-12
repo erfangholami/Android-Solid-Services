@@ -17,7 +17,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.7.0")
+    implementation("com.erfangholami.androidsolidservices:client:0.7.1")
 }
 ```
 
@@ -31,7 +31,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.7.0")
+    implementation("com.erfangholami.androidsolidservices:api:0.7.1")
 }
 ```
 
@@ -141,7 +141,7 @@ authenticator.expiredProfilesFlow.collect { expired -> promptReauth(expired) }
 
 ### Notice an expired session
 
-Expiry is a **state**, not an error — a profile whose refresh has run out stays in the list, flagged, so you can prompt for re-authentication instead of silently losing the user's data.
+Expiry is a **state**, not an error — a profile whose refresh has run out stays in the list, flagged, so you can prompt for re-authentication instead of silently losing the user's data. While a profile is expired, every request made for it fails fast with `SolidError.NotAuthenticated` (`SolidNotLoggedInException` over IPC) and leaves only a breadcrumb in telemetry, so an expired account does not flood a crash reporter.
 
 ```kotlin
 authenticator.expiredProfilesFlow.collect { expired ->
@@ -196,14 +196,14 @@ sequenceDiagram
 
 ## Errors you'll hit
 
-| What you see                              | Why                                                        | What to do                                                                                                                               |
-| ----------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `SolidNotLoggedInException`               | no session for that WebID                                  | send the user through sign-in again                                                                                                      |
-| `SolidAppNotFoundException`               | the host app is not installed                              | prompt to [install it](https://androidsolidservices.erfangholami.com/0.7/start/install-app/index.md), or use `api`                       |
-| `SolidServiceConnectionException`         | called before the binding completed                        | collect the connection-state flow first                                                                                                  |
-| A session that dies about once a day      | dynamic registration expired — Inrupt drops them after 24h | host a [Client ID Document](https://androidsolidservices.erfangholami.com/0.7/reference/client-id-document/index.md) and pass `clientId` |
-| `401` that re-authenticating does not fix | the pod wants a DPoP nonce, not a new login                | already handled — the library retries with the nonce                                                                                     |
-| Everything 403s after switching account   | calls are still using the previous WebID                   | pass the new WebID; 403 rather than 401 is the tell                                                                                      |
+| What you see                              | Why                                                          | What to do                                                                                                                               |
+| ----------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `SolidNotLoggedInException`               | no usable session for that WebID, including one that expired | send the user through sign-in again                                                                                                      |
+| `SolidAppNotFoundException`               | the host app is not installed                                | prompt to [install it](https://androidsolidservices.erfangholami.com/0.7/start/install-app/index.md), or use `api`                       |
+| `SolidServiceConnectionException`         | called before the binding completed                          | collect the connection-state flow first                                                                                                  |
+| A session that dies about once a day      | dynamic registration expired — Inrupt drops them after 24h   | host a [Client ID Document](https://androidsolidservices.erfangholami.com/0.7/reference/client-id-document/index.md) and pass `clientId` |
+| `401` that re-authenticating does not fix | the pod wants a DPoP nonce, not a new login                  | already handled — the library retries with the nonce                                                                                     |
+| Everything 403s after switching account   | calls are still using the previous WebID                     | pass the new WebID; 403 rather than 401 is the tell                                                                                      |
 
 ## Under the hood
 

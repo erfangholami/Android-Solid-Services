@@ -2276,7 +2276,7 @@ value type rather than okhttp / titanium-json-ld types (the <abbr title="A JSON 
 </tr>
 <tr>
 <td>Titanium <abbr title="A JSON serialisation of RDF">JSON-LD</abbr></td>
-<td><abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> parsing (internal <code>implementation</code> dependency — off the public API surface since 0.5.0)</td>
+<td><abbr title="Resource Description Framework — the data model pods store">RDF</abbr>, <abbr title="A JSON serialisation of RDF">JSON-LD</abbr> parsing (internal <code>implementation</code> dependency — off the public API surface since 0.5.0); the Activity Streams 2.0 context ships in <code>Shared</code> since 0.7.1, so notifications parse with no network</td>
 </tr>
 <tr>
 <td>DataStore</td>
@@ -2348,6 +2348,11 @@ libraries add no monitoring dependency of any kind.</p>
 <td>Crashlytics breadcrumb only</td>
 </tr>
 <tr>
+<td>Requests for a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> with no usable session</td>
+<td><code>SolidHttpClient.solidFailure</code></td>
+<td>Crashlytics breadcrumb only</td>
+</tr>
+<tr>
 <td>Terminal token-refresh failures</td>
 <td><code>TokenRefreshCoordinator</code></td>
 <td>Crashlytics (non-fatal) + <code>solid_auth_refresh</code> trace</td>
@@ -2371,7 +2376,10 @@ libraries add no monitoring dependency of any kind.</p>
 </table>
 <p>A dropped connection is a fact of mobile life, not a defect, so <code>IOException</code> is recorded as a
 breadcrumb rather than a non-fatal. That keeps a device going offline from generating hundreds of
-identical Crashlytics reports while still leaving the context attached to whatever is reported next.</p>
+identical Crashlytics reports while still leaving the context attached to whatever is reported next.
+The same holds for a request made for a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> whose session has expired or was never signed in: it
+fails as <code>SolidError.NotAuthenticated</code> before touching the network and leaves a breadcrumb, because
+the expiry itself was already reported once by the refresh coordinator.</p>
 <h3 id="attributing-failures-to-the-integrating-app">Attributing failures to the integrating app<a class="headerlink" href="#attributing-failures-to-the-integrating-app" title="Permanent link">¶</a></h3>
 <p>Every report carries a <code>calling_app</code> custom key naming the application whose <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> call was being
 serviced, or <code>self</code> when the work started in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> UI. <code>CallerAttribution.currentCaller()</code> reads
@@ -2535,7 +2543,7 @@ re-run it when the preference changes:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 11:29:45 UTC">September 12, 2026</span>
   </span>
 
     
