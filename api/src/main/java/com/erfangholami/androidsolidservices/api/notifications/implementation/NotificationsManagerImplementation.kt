@@ -22,12 +22,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URI
 
-internal class NotificationsManagerImplementation private constructor(
+internal class NotificationsManagerImplementation internal constructor(
     private val rm: SolidResourceManager,
     profile: ShareNotificationProfile,
+    private val provisioner: InboxProvisioner = InboxProvisioner(rm),
 ) : NotificationsManager {
 
-    private val provisioner = InboxProvisioner(rm)
     private val discovery = InboxDiscovery(rm)
     private val transport = NotificationTransportImplementation.create(rm, discovery)
     internal val inboxReader = InboxReader(rm, discovery, profile)
@@ -187,9 +187,10 @@ internal class NotificationsManagerImplementation private constructor(
     }
 
     override suspend fun ensureInbox(webId: String): SolidResult<String> = wrap {
-        discovery.resolveOwnInbox(webId)?.let { existingInbox ->
-            ensurePublicAppend(webId, existingInbox)
-            return@wrap existingInbox
+        discovery.resolveOwnInboxDetailed(webId)?.let { existing ->
+            ensurePublicAppend(webId, existing.uri)
+            existing.advertisedIn?.let { ensureAdvertisementReadable(webId, it) }
+            return@wrap existing.uri
         }
 
         val podRoot = provisioner.podRoot(webId)
@@ -197,7 +198,31 @@ internal class NotificationsManagerImplementation private constructor(
         provisioner.ensureContainer(webId, inboxUri)
         provisioner.grantPublicAppend(webId, inboxUri)
         advertiseInbox(webId, inboxUri)
+            ?.takeIf { it.substringBefore('#') != webId.substringBefore('#') }
+            ?.let { ensureAdvertisementReadable(webId, it) }
         inboxUri
+    }
+
+    private suspend fun ensureAdvertisementReadable(webId: String, docUri: String) {
+        runCatching { provisioner.ensurePublicRead(webId, docUri) }
+            .onSuccess { granted ->
+                if (granted) {
+                    Log.i(
+                        NOTIFS_LOG_TAG,
+                        "ensureInbox: made $docUri publicly readable so the ldp:inbox it " +
+                                "advertises can be discovered by senders.",
+                    )
+                }
+            }
+            .onFailure { t ->
+                Log.w(
+                    NOTIFS_LOG_TAG,
+                    "ensureInbox: $docUri advertises the inbox but could not be made publicly " +
+                            "readable; senders cannot discover it and will fall back to " +
+                            "{storage}inbox/.",
+                    t,
+                )
+            }
     }
 
     private suspend fun ensurePublicAppend(webId: String, inboxUri: String) {
@@ -329,7 +354,7 @@ internal class NotificationsManagerImplementation private constructor(
         @Suppress("UNUSED_VARIABLE") val unused = targetWebId
     }
 
-    private suspend fun advertiseInbox(webId: String, inboxUri: String) {
+    private suspend fun advertiseInbox(webId: String, inboxUri: String): String? {
         val profile = rm.read(webId, webId, WebId::class.java).getOrThrow()
         val targets = (
                 profile.getPrimaryTopicDocuments() +
@@ -346,13 +371,14 @@ internal class NotificationsManagerImplementation private constructor(
                     )
                 }
                 .getOrDefault(false)
-            if (advertised) return
+            if (advertised) return doc
         }
         Log.w(
             NOTIFS_LOG_TAG,
             "ensureInbox: inbox created at $inboxUri but no writable profile document accepted " +
                     "the ldp:inbox triple. Other apps reading only the bare WebID won't discover it.",
         )
+        return null
     }
 
     private suspend fun patchInboxInto(webId: String, doc: String, inboxUri: String): Boolean {

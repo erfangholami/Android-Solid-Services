@@ -218,9 +218,12 @@ resource's access control so the receiver's own credentials let them reach it:
 ## Notifications Inbox
 
 Sharing across pods is coordinated through each user's [Linked Data Notifications](https://www.w3.org/TR/ldn/)
-(LDN) inbox. The inbox is advertised on the WebID and granted **public append-but-not-read**: anyone
-can POST a notification, but only the owner can read it. The flow is **pull-only** — apps poll the
-inbox (e.g. a 15-minute background worker) rather than holding a push connection.
+(LDN) inbox. The inbox is advertised on the WebID — or, where the WebID document is read-only as
+on Inrupt, in the extended profile, which is then made publicly readable — and granted **public
+append-but-not-read**: anyone can POST a notification, but only the owner can read it. A sender
+that finds no advertised inbox falls back to `{storage}inbox/`, the container `ensureInbox()`
+provisions. The flow is **pull-only** — apps poll the inbox (e.g. a 15-minute background worker)
+rather than holding a push connection.
 
 ```mermaid
 sequenceDiagram

@@ -210,12 +210,13 @@ internal class AuthenticatorImplementation internal constructor(
     ): Pair<WebId, String>? {
         val userInfo = IdTokenClaims.userInfo(idToken)
 
-        val webIdProfile = webIdResolver.resolve(
+        val resolved = webIdResolver.resolveWithExtendedProfiles(
             webIdUri = userInfo.webId,
             tokenProvider = { inProgressAuth.get()!!.authState.lastTokenResponse },
             authHeadersProvider = { method, uri -> buildInProgressAuthHeaders(method, uri) },
             nonceSink = { forUri, nonce -> updateInProgressDPoPNonce(forUri, nonce) },
         )
+        val webIdProfile = resolved.primary
 
         val tokenIss = IdTokenClaims.issuer(idToken)?.trimEnd('/')
         val declaredIssuers = webIdProfile.getOidcIssuers().map { it.toString().trimEnd('/') }
@@ -229,7 +230,7 @@ internal class AuthenticatorImplementation internal constructor(
             failLogin(span, "issuer_mismatch")
             return null
         }
-        return webIdProfile to tokenIss
+        return resolved.merged to tokenIss
     }
 
     private suspend fun persistLogin(
@@ -335,12 +336,12 @@ internal class AuthenticatorImplementation internal constructor(
         profileManager.awaitInit()
         profileManager.getProfile(webId)
         getLastTokenResponse(webId)
-        val refreshedWebId = webIdResolver.resolve(
+        val refreshedWebId = webIdResolver.resolveWithExtendedProfiles(
             webIdUri = webId,
             tokenProvider = { profileManager.getProfileOrNull(webId)?.authState?.lastTokenResponse },
             authHeadersProvider = { method, uri -> authHeaders(webId, method, uri) },
             nonceSink = { forUri, nonce -> updateDPoPNonce(webId, forUri, nonce) },
-        )
+        ).merged
         val updated = tokenCoordinator.withSessionLock(webId) {
             val current = profileManager.getProfile(webId).copy(webId = refreshedWebId)
             profileManager.writeProfile(webId, current)

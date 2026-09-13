@@ -1,5 +1,6 @@
 package com.erfangholami.androidsolidservices.api.notifications.implementation
 
+import android.util.Log
 import com.erfangholami.androidsolidservices.api.notifications.NotificationTransport
 import com.erfangholami.androidsolidservices.api.notifications.ShareNotificationProfile
 import com.erfangholami.androidsolidservices.shared.http.HTTPAcceptType
@@ -15,6 +16,8 @@ import com.erfangholami.androidsolidservices.shared.vocab.XSD
 import java.net.URI
 import java.time.Instant
 import java.util.UUID
+
+private const val INBOX_NOTIFIER_LOG_TAG = "InboxNotifier"
 
 internal class InboxNotifier(
     private val transport: NotificationTransport,
@@ -134,7 +137,9 @@ internal class InboxNotifier(
         slugPrefix: String,
         body: String,
     ): InboxPostResult {
-        val inbox = discovery.resolveInboxOf(receiverWebId, senderWebId)
+        val advertised = discovery.resolveInboxOf(receiverWebId, senderWebId)
+        val inbox = advertised
+            ?: discovery.guessInboxOf(receiverWebId)
             ?: return InboxPostResult.NoInbox(receiverWebId)
         val slug = "$slugPrefix-${UUID.randomUUID()}"
         return when (
@@ -151,6 +156,14 @@ internal class InboxNotifier(
             is SolidResult.Failure -> {
                 val error = r.error
                 val status = error.httpStatus
+                if (advertised == null) {
+                    Log.i(
+                        INBOX_NOTIFIER_LOG_TAG,
+                        "$receiverWebId advertises no inbox and the conventional $inbox did not " +
+                                "accept the notification (${status ?: error.code}); reporting no inbox.",
+                    )
+                    return InboxPostResult.NoInbox(receiverWebId)
+                }
                 when {
                     error.code == SolidErrorCode.UNAUTHORIZED -> InboxPostResult.Unauthorized(inbox)
                     error.code == SolidErrorCode.FORBIDDEN -> InboxPostResult.Forbidden(inbox)

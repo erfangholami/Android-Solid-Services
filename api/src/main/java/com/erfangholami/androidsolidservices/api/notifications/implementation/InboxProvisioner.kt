@@ -1,5 +1,6 @@
 package com.erfangholami.androidsolidservices.api.notifications.implementation
 
+import com.erfangholami.androidsolidservices.api.access.AccessBackend
 import com.erfangholami.androidsolidservices.api.access.AcpBackend
 import com.erfangholami.androidsolidservices.api.access.WacBackend
 import com.erfangholami.androidsolidservices.api.access.pickBackend
@@ -10,10 +11,11 @@ import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
-internal class InboxProvisioner(private val rm: SolidResourceManager) {
-
-    private val wacBackend = WacBackend(rm)
-    private val acpBackend = AcpBackend(rm)
+internal class InboxProvisioner(
+    private val rm: SolidResourceManager,
+    private val backendFor: suspend (webId: String, resourceUri: String) -> AccessBackend =
+        defaultBackendFor(rm),
+) {
 
     suspend fun podRoot(webId: String): String {
         val profile = rm.read(webId, webId, WebId::class.java).getOrThrow()
@@ -28,13 +30,7 @@ internal class InboxProvisioner(private val rm: SolidResourceManager) {
     }
 
     suspend fun grantPublicAppend(webId: String, inboxUri: String) {
-        val metadata = (rm.head(webId, inboxUri) as? SolidResult.Success)?.value
-        val backend = if (metadata != null) {
-            pickBackend(metadata, inboxUri, wacBackend, acpBackend)
-        } else {
-            wacBackend
-        }
-        backend.grant(
+        backendFor(webId, inboxUri).grant(
             webId = webId,
             resourceUri = inboxUri,
             mode = ShareMode.APPEND,
@@ -42,5 +38,37 @@ internal class InboxProvisioner(private val rm: SolidResourceManager) {
             isContainer = true,
             includeImpliedModes = false,
         )
+    }
+
+    /**
+     * Makes [docUri] readable by anyone unless it already is, so a link it advertises — the
+     * `ldp:inbox` of a WebID whose own document is read-only, as on Inrupt — can be discovered
+     * by senders. Returns `true` when a grant was written, `false` when the document was public
+     * already.
+     */
+    suspend fun ensurePublicRead(webId: String, docUri: String): Boolean {
+        if (rm.headPublic(docUri) is SolidResult.Success) return false
+        backendFor(webId, docUri).grant(
+            webId = webId,
+            resourceUri = docUri,
+            mode = ShareMode.READ,
+            receiver = ShareReceiver.Public,
+            isContainer = false,
+            includeImpliedModes = false,
+        )
+        return true
+    }
+
+    companion object {
+        fun defaultBackendFor(
+            rm: SolidResourceManager,
+        ): suspend (webId: String, resourceUri: String) -> AccessBackend {
+            val wac = WacBackend(rm)
+            val acp = AcpBackend(rm)
+            return { webId, resourceUri ->
+                val metadata = (rm.head(webId, resourceUri) as? SolidResult.Success)?.value
+                if (metadata != null) pickBackend(metadata, resourceUri, wac, acp) else wac
+            }
+        }
     }
 }

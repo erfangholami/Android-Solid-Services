@@ -144,6 +144,14 @@ If access should be granted, check the ACL/ACP policy on the pod server side.
 
 ---
 
+### Profile edits fail with 401 / 403 / 405 on an Inrupt WebID
+
+**Cause:** `updateProfile()` and `setAvatar()` used to patch the WebID document, which Inrupt serves read-only from `id.inrupt.com`.
+
+**Fix:** Upgrade to `0.7.3`+. `writableProfileDocument(webId)` picks the document to edit — the WebID document when its `WAC-Allow` grants write, otherwise the linked extended profile on the user's storage — and both operations write there. The account's `WebId` also folds the extended profile in at sign-in and on `reloadProfile()`, so a name that lives only in the extended profile is no longer blank.
+
+---
+
 ### Resource URI with spaces returns 404 or 400
 
 **Cause:** On versions before `0.4.0`, resource URIs were not percent-encoded, causing requests for URIs with spaces or special characters to fail.
@@ -196,6 +204,14 @@ which disables conditional reads at the cost of re-downloading every resource.
 **Cause:** Writing the share onto the resource's access control and notifying the receiver are separate steps — delivery is **best-effort** and never fails the share. The receiver may advertise no LDN inbox, or their inbox rejected the POST.
 
 **Fix:** The receiver's WebID must advertise a writable, public-append `ldp:inbox`. Notifications are also **pull-only**: the receiving app polls `listNotifications()` (e.g. a 15-minute background worker) — there is no push. The share itself still took effect on the resource ACL regardless of delivery.
+
+---
+
+### An Inrupt (PodSpaces) account receives no notifications, and nobody can request access from it
+
+**Cause:** Inrupt serves the WebID document from `id.inrupt.com` read-only, so `ensureInbox()` can only write the `ldp:inbox` link into the extended profile on the pod (`{storage}profile`) — and that document is private by default. A sender reads the public WebID document, finds no inbox, cannot read the extended profile, and reports `NoInbox`. The inbox itself exists and accepts posts; it is simply undiscoverable.
+
+**Fix:** Upgrade to `0.7.3`+. `ensureInbox()` now grants public read on the document that advertises the inbox when that document is not the WebID document itself, and a sender that finds no inbox falls back to the conventional `{storage}inbox/` taken from the public `pim:storage`. The fallback works at once; the public-read repair needs the receiving account to run `ensureInbox()` once more (Solid Share does so on every account activation). Making the extended profile public exposes the fields it holds — name, photo, organisation — which is what a WebID profile is for, but tell your users.
 
 ---
 

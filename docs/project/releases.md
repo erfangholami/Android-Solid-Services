@@ -10,6 +10,29 @@ Library versions are published to Maven Central:
 
 ---
 
+## v0.7.3 — unreleased
+
+Inrupt PodSpaces accounts can now be notified, asked for access, and edited. Nothing changes in
+the public API beyond one new profile helper: pin `0.7.3` and rebuild.
+
+### Bug fixes
+
+- **Inbox discovery on Inrupt.** Inrupt serves the WebID document read-only, so the inbox link
+  could only live in the extended profile on the pod — a document private by default, which left
+  every PodSpaces inbox undiscoverable: no share notification arrived, and every access request
+  failed with `NoInbox`. `ensureInbox()` now makes the advertising document publicly readable
+  (never the WebID document itself), and a sender that finds no inbox falls back to the
+  conventional `{storage}inbox/` from the public `pim:storage`, reporting a refusal there as
+  `NoInbox`. See [Troubleshooting](troubleshooting.md).
+- **Profile edits on Inrupt.** `updateProfile()` and `setAvatar()` patched the read-only WebID
+  document. The new `SolidResourceManager.writableProfileDocument(webId)` picks the editable
+  document — by `WAC-Allow`, else the linked profile on the user's storage — and both write there;
+  an avatar uploaded beside a private profile is granted public read.
+- **The account profile includes the extended profile.** The `WebId` held for a signed-in account
+  now folds in the documents the WebID links through `foaf:isPrimaryTopicOf` / `rdfs:seeAlso`,
+  read with the account's own credentials, so a name kept only there is no longer blank. Identity
+  checks at sign-in still trust the WebID document alone.
+
 ## v0.7.2 — 12th September 2026
 
 A one-fix release: Community Solid Server pods no longer break every second read.

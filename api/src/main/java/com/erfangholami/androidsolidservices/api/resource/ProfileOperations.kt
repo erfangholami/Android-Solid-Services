@@ -1,11 +1,17 @@
 package com.erfangholami.androidsolidservices.api.resource
 
+import com.erfangholami.androidsolidservices.api.access.AcpBackend
+import com.erfangholami.androidsolidservices.api.access.WacBackend
+import com.erfangholami.androidsolidservices.api.access.pickBackend
 import com.erfangholami.androidsolidservices.shared.model.profile.WebId
 import com.erfangholami.androidsolidservices.shared.model.resource.RdfQuad
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
+import com.erfangholami.androidsolidservices.shared.model.sharing.ShareReceiver
 import com.erfangholami.androidsolidservices.shared.rdf.patch.N3Patch
 import com.erfangholami.androidsolidservices.shared.result.SolidResult
 import com.erfangholami.androidsolidservices.shared.vocab.FOAF
 import com.erfangholami.androidsolidservices.shared.vocab.LDP
+import java.net.URI
 
 /**
  * Read/update conveniences for a user's WebID profile, layered over the core
@@ -38,10 +44,47 @@ public suspend fun SolidResourceManager.readProfile(webId: String): SolidResult<
 }
 
 /**
+ * The document an edit to [webId]'s profile must be written to.
+ *
+ * Some identity providers serve the WebID document read-only — Inrupt's `id.inrupt.com` — and
+ * the editable profile is then the extended document the WebID links through
+ * `foaf:isPrimaryTopicOf` / `rdfs:seeAlso`, hosted on the user's own storage. The candidates
+ * are the WebID document first, then the linked documents; the first whose `HEAD` reports
+ * `WAC-Allow` write access wins. Without a usable `WAC-Allow`, a WebID document hosted on
+ * another origin than every `pim:storage` counts as read-only and the first linked document
+ * on a storage origin is chosen; failing that, the WebID document.
+ */
+public suspend fun SolidResourceManager.writableProfileDocument(webId: String): SolidResult<String> {
+    val primary = when (val r = read(webId, webId, WebId::class.java)) {
+        is SolidResult.Success -> r.value
+        is SolidResult.Failure -> return SolidResult.Failure(r.error)
+    }
+    val webIdDoc = webId.substringBefore('#')
+    val linked = (primary.getPrimaryTopicDocuments() + primary.getRelatedResources())
+        .map { it.substringBefore('#') }
+        .distinct()
+        .filter { it != webIdDoc }
+
+    var sawWacAllow = false
+    for (doc in listOf(webIdDoc) + linked) {
+        val allow = (head(webId, doc) as? SolidResult.Success)?.value?.wacAllow ?: continue
+        sawWacAllow = true
+        if (allow.canWrite()) return SolidResult.Success(doc)
+    }
+
+    val storageOrigins = primary.getStorages().mapNotNull(::originOf).toSet()
+    val onStorage = linked.firstOrNull { originOf(it) in storageOrigins }
+    if (onStorage != null && (sawWacAllow || originOf(webIdDoc) !in storageOrigins)) {
+        return SolidResult.Success(onStorage)
+    }
+    return SolidResult.Success(webIdDoc)
+}
+
+/**
  * Updates the single-valued FOAF text fields of [webId]'s profile. Only non-`null`
  * arguments are written; each is a safe replace (bind-and-delete the existing value via
- * an N3 `where`, then insert the new one) targeting the WebID document. Returns the
- * re-read profile.
+ * an N3 `where`, then insert the new one) targeting the document
+ * [writableProfileDocument] picks. Returns the re-read document.
  */
 public suspend fun SolidResourceManager.updateProfile(
     webId: String,
@@ -49,8 +92,11 @@ public suspend fun SolidResourceManager.updateProfile(
     givenName: String? = null,
     familyName: String? = null,
 ): SolidResult<WebId> {
-    val docUri = webId.substringBefore('#')
-    val current = when (val r = read(webId, webId, WebId::class.java)) {
+    val docUri = when (val r = writableProfileDocument(webId)) {
+        is SolidResult.Success -> r.value
+        is SolidResult.Failure -> return SolidResult.Failure(r.error)
+    }
+    val current = when (val r = read(webId, docUri, WebId::class.java)) {
         is SolidResult.Success -> r.value
         is SolidResult.Failure -> return SolidResult.Failure(r.error)
     }
@@ -72,20 +118,25 @@ public suspend fun SolidResourceManager.updateProfile(
     }
     return when (val patched = patch(webId, docUri, profilePatch)) {
         is SolidResult.Failure -> SolidResult.Failure(patched.error)
-        is SolidResult.Success -> read(webId, webId, WebId::class.java)
+        is SolidResult.Success -> read(webId, docUri, WebId::class.java)
     }
 }
 
 /**
- * Uploads [avatar] as a sibling of the WebID document and points `foaf:img` at it
- * (safe-replacing any existing avatar link). Returns the re-read profile.
+ * Uploads [avatar] as a sibling of the writable profile document (see
+ * [writableProfileDocument]) and points `foaf:img` at it, safe-replacing any existing avatar
+ * link. On a pod whose profile container is not public the image is granted public read
+ * (best-effort), so other people's clients can show it. Returns the re-read document.
  */
 public suspend fun SolidResourceManager.setAvatar(
     webId: String,
     avatar: ByteArray,
     contentType: String,
 ): SolidResult<WebId> {
-    val docUri = webId.substringBefore('#')
+    val docUri = when (val r = writableProfileDocument(webId)) {
+        is SolidResult.Success -> r.value
+        is SolidResult.Failure -> return SolidResult.Failure(r.error)
+    }
     val container = docUri.substringBeforeLast('/') + "/"
     val avatarUri = "${container}avatar${avatarExtension(contentType)}"
 
@@ -97,8 +148,9 @@ public suspend fun SolidResourceManager.setAvatar(
         linkHeader = "<${LDP.NON_RDF_SOURCE}>; rel=\"type\"",
     )
     if (put is SolidResult.Failure) return SolidResult.Failure(put.error)
+    runCatching { grantPublicReadIfPrivate(webId, avatarUri) }
 
-    val current = when (val r = read(webId, webId, WebId::class.java)) {
+    val current = when (val r = read(webId, docUri, WebId::class.java)) {
         is SolidResult.Success -> r.value
         is SolidResult.Failure -> return SolidResult.Failure(r.error)
     }
@@ -111,8 +163,28 @@ public suspend fun SolidResourceManager.setAvatar(
     }
     return when (val patched = patch(webId, docUri, profilePatch)) {
         is SolidResult.Failure -> SolidResult.Failure(patched.error)
-        is SolidResult.Success -> read(webId, webId, WebId::class.java)
+        is SolidResult.Success -> read(webId, docUri, WebId::class.java)
     }
+}
+
+private suspend fun SolidResourceManager.grantPublicReadIfPrivate(webId: String, uri: String) {
+    if (headPublic(uri) is SolidResult.Success) return
+    val metadata = (head(webId, uri) as? SolidResult.Success)?.value ?: return
+    pickBackend(metadata, uri, WacBackend(this), AcpBackend(this)).grant(
+        webId = webId,
+        resourceUri = uri,
+        mode = ShareMode.READ,
+        receiver = ShareReceiver.Public,
+        isContainer = false,
+        includeImpliedModes = false,
+    )
+}
+
+private fun originOf(uri: String): String? {
+    val parsed = runCatching { URI.create(uri) }.getOrNull() ?: return null
+    val scheme = parsed.scheme ?: return null
+    val authority = parsed.authority ?: return null
+    return "${scheme.lowercase()}://${authority.lowercase()}"
 }
 
 private fun avatarExtension(contentType: String): String =

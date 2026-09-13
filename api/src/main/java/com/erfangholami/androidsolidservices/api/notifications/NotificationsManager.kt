@@ -119,6 +119,13 @@ public interface NotificationsManager {
      * storage-side extended profile, since the Inrupt-managed WebID document
      * itself is not writable.
      *
+     * An extended profile that carries the advertisement is made publicly
+     * readable (best-effort, only when it is not already), because a link nobody
+     * else can read advertises nothing: Inrupt's extended profile is private by
+     * default, which left every PodSpaces inbox undiscoverable. The WebID
+     * document itself is never touched. Senders that still find no inbox fall
+     * back to posting to `{storage}inbox/`, the container this method provisions.
+     *
      * The public grant is **write-only `acl:Append`** on every backend (WAC and
      * ACP alike): per Web Access Control, creating a member of a container
      * requires `acl:Append` (a subclass of `acl:Write`, not entailing
@@ -187,7 +194,11 @@ public interface NotificationsManager {
 
     /**
      * Posts a `solidshare:AccessRequest` to [ownerWebId]'s inbox asking
-     * for [requestedMode] access on [resourceUri]. The owner sees it via
+     * for [requestedMode] access on [resourceUri]. When [ownerWebId]
+     * advertises no discoverable inbox but declares a `pim:storage`, the
+     * request is posted to `{storage}inbox/` — the inbox [ensureInbox]
+     * provisions — and a refusal there is reported as `NoInbox`, never as an
+     * inbox that turned the request away. The owner sees it via
      * [listRequests] and may
      * [com.erfangholami.androidsolidservices.api.sharing.SharingManager.acceptShareRequest]
      * or
