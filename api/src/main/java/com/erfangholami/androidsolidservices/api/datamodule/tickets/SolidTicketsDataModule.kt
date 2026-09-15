@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.api.datamodule.tickets
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.tickets.implementation.SolidTicketsDataModuleImplementation
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 /**
  * Wallet tickets (`schema:Ticket` resources) on a user's Solid pod.
@@ -35,4 +36,11 @@ public interface SolidTicketsDataModule {
 
     /** The user's wallet-ticket store. */
     public val tickets: TicketStore
+
+    /**
+     * The containers this module occupies on [ownerWebId]'s pod: one per registered ticket
+     * index, plus the root a new collection is allocated in. A host uses them to decide whether
+     * a resource named by a raw resource verb belongs to the module.
+     */
+    public suspend fun rootContainers(ownerWebId: String): SolidResult<List<String>>
 }

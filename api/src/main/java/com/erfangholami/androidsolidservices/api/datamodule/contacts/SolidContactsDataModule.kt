@@ -3,6 +3,7 @@ package com.erfangholami.androidsolidservices.api.datamodule.contacts
 import com.erfangholami.androidsolidservices.api.auth.Authenticator
 import com.erfangholami.androidsolidservices.api.datamodule.contacts.implementation.SolidContactsDataModuleImplementation
 import com.erfangholami.androidsolidservices.api.resource.SolidResourceManager
+import com.erfangholami.androidsolidservices.shared.result.SolidResult
 
 /**
  * Facade over the Solid contacts data module, split into three role interfaces:
@@ -26,6 +27,13 @@ public interface SolidContactsDataModule {
 
     /** Group lifecycle and membership. */
     public val groups: GroupStore
+
+    /**
+     * The containers this module occupies on [ownerWebId]'s pod: one per registered address
+     * book, plus the root a new book is allocated in. A host uses them to decide whether a
+     * resource named by a raw resource verb belongs to the module.
+     */
+    public suspend fun rootContainers(ownerWebId: String): SolidResult<List<String>>
 
     public companion object {
         /**
