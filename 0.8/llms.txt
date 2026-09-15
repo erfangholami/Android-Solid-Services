@@ -1,0 +1,37 @@
+# Android Solid Services
+
+> The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.
+
+Android Solid Services is the Solid SDK for Android. Solid Share holds the user's pod accounts; every other app reaches those pods through it over AIDL, with a grant the user scoped and without handling a credential.
+
+## Start here
+
+- [Quickstart](https://androidsolidservices.erfangholami.com/0.8/start/quickstart/index.md)
+- [Client or API?](https://androidsolidservices.erfangholami.com/0.8/start/client-or-api/index.md)
+- [How it works](https://androidsolidservices.erfangholami.com/0.8/start/how-it-works/index.md)
+
+## Capabilities
+
+- [Build with it](https://androidsolidservices.erfangholami.com/0.8/build/index.md)
+- [Access control](https://androidsolidservices.erfangholami.com/0.8/build/access-control/index.md)
+- [App access](https://androidsolidservices.erfangholami.com/0.8/build/app-access/index.md)
+- [Sign in & accounts](https://androidsolidservices.erfangholami.com/0.8/build/auth/index.md)
+- [Contacts](https://androidsolidservices.erfangholami.com/0.8/build/contacts/index.md)
+- [Hosting the services](https://androidsolidservices.erfangholami.com/0.8/build/hosting/index.md)
+- [Notifications](https://androidsolidservices.erfangholami.com/0.8/build/notifications/index.md)
+- [Resources & containers](https://androidsolidservices.erfangholami.com/0.8/build/resources/index.md)
+- [Sharing](https://androidsolidservices.erfangholami.com/0.8/build/sharing/index.md)
+- [Telemetry](https://androidsolidservices.erfangholami.com/0.8/build/telemetry/index.md)
+- [Tickets](https://androidsolidservices.erfangholami.com/0.8/build/tickets/index.md)
+- [Type index](https://androidsolidservices.erfangholami.com/0.8/build/type-index/index.md)
+
+## Reference
+
+- [Solid-OIDC Client ID Document](https://androidsolidservices.erfangholami.com/0.8/reference/client-id-document/index.md)
+- [Error codes](https://androidsolidservices.erfangholami.com/0.8/reference/errors/index.md)
+
+## Project
+
+- [Architecture](https://androidsolidservices.erfangholami.com/0.8/project/architecture/index.md)
+- [Troubleshooting](https://androidsolidservices.erfangholami.com/0.8/project/troubleshooting/index.md)
+

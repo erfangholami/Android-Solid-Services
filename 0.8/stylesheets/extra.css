@@ -1,0 +1,41 @@
+/* Match the Solid project's purple brand color */
+:root {
+  --md-primary-fg-color:        #7C4DFF;
+  --md-primary-fg-color--light: #B47CFF;
+  --md-primary-fg-color--dark:  #5C35CC;
+  --md-accent-fg-color:         #7C4DFF;
+}
+
+/* Store badges on the Install Solid Share page. The two artworks share an aspect
+   ratio, so one height lines them up; they wrap to one per row on a phone. */
+.store-badges,
+.store-badges p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.md-typeset .store-badges {
+  margin: 1rem 0 1.4rem;
+}
+
+/* md_in_html wraps the two links in a paragraph; keep it from adding its own spacing. */
+.md-typeset .store-badges p {
+  margin: 0;
+}
+
+.store-badges a {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.store-badges img {
+  height: 4.2rem;
+  width: auto;
+  transition: transform 125ms;
+}
+
+.store-badges a:hover img {
+  transform: scale(1.03);
+}

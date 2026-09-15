@@ -1,0 +1,85 @@
+# Build with it
+
+One page per capability. Each opens with what you can build and the code to build it, and keeps the pod-level detail folded away at the bottom for when something surprises you.
+
+Every page shows its code under **Client** and **API** tabs. Pick one and the whole site follows — see [Client or API?](https://androidsolidservices.erfangholami.com/0.8/start/client-or-api/index.md) if you have not chosen yet.
+
+- **[Sign in & accounts](https://androidsolidservices.erfangholami.com/0.8/build/auth/index.md)**
+
+  ______________________________________________________________________
+
+  Getting a WebID to call with, staying signed in, and handling several accounts on one device.
+
+- **[App access](https://androidsolidservices.erfangholami.com/0.8/build/app-access/index.md)**
+
+  ______________________________________________________________________
+
+  What your app asks the user for — a level on the whole pod, on folders, or on a data module — and what each verb needs.
+
+- **[Resources & containers](https://androidsolidservices.erfangholami.com/0.8/build/resources/index.md)**
+
+  ______________________________________________________________________
+
+  Read, write, patch, list, copy and stream. The verbs everything else is built on.
+
+- **[Contacts](https://androidsolidservices.erfangholami.com/0.8/build/contacts/index.md)**
+
+  ______________________________________________________________________
+
+  Address books, contacts and groups as vCard RDF — interoperable with other Solid contact apps.
+
+- **[Tickets](https://androidsolidservices.erfangholami.com/0.8/build/tickets/index.md)**
+
+  ______________________________________________________________________
+
+  A wallet on the pod: passes, their artifacts and images.
+
+- **[Sharing](https://androidsolidservices.erfangholami.com/0.8/build/sharing/index.md)**
+
+  ______________________________________________________________________
+
+  Give someone access to a resource, track what you have given and received, share by link.
+
+- **[Notifications](https://androidsolidservices.erfangholami.com/0.8/build/notifications/index.md)**
+
+  ______________________________________________________________________
+
+  The Linked Data Notifications inbox — offers, withdrawals and access requests.
+
+- **[Access control](https://androidsolidservices.erfangholami.com/0.8/build/access-control/index.md)**
+
+  ______________________________________________________________________
+
+  What WAC and ACP actually enforce, and which one your pod server speaks.
+
+- **[Type index](https://androidsolidservices.erfangholami.com/0.8/build/type-index/index.md)**
+
+  ______________________________________________________________________
+
+  How data is found on a pod by type instead of by path.
+
+- **[Telemetry](https://androidsolidservices.erfangholami.com/0.8/build/telemetry/index.md)**
+
+  ______________________________________________________________________
+
+  The pluggable sink, what is reported, and what never is.
+
+## Two things that apply everywhere
+
+**Every call takes a `webId` first.** A device can hold several signed-in Solid identities at once, so the WebID chooses which session signs the request. Keep the one you got at sign-in.
+
+**Every `client` call needs a grant.** The user approves what your app may do on Solid Share's consent screen, and a call outside that scope fails with `NotPermissionException`. Ask for the least you need; [App access](https://androidsolidservices.erfangholami.com/0.8/build/app-access/index.md) has the verb table.
+
+**The `client` path waits for its binding by itself.** Every call is a `suspend` function that waits for the bound service, so nothing has to be collected first. Each client still exposes a `Flow<Boolean>` of its connection for UI that wants to show it:
+
+```kotlin
+resources.resourceServiceConnectionState().collect { connected -> render(connected) }
+```
+
+The `api` path has no binding at all — there is no service between your app and the pod.
+
+## Not finding it here?
+
+- The generated [API reference](https://androidsolidservices.erfangholami.com/0.8/api/index.md) has every signature.
+- [Adding a data module](https://androidsolidservices.erfangholami.com/0.8/project/adding-a-data-module/index.md) covers extending the library with a new collection type of your own.
+- The [client sample app](https://github.com/erfangholami/Android-Solid-Service_client-sample) runs every call against a live pod beside the code that made it.
