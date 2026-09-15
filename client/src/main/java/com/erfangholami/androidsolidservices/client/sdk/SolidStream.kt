@@ -5,7 +5,7 @@ import java.io.Closeable
 import java.io.InputStream
 
 /**
- * A resource body being streamed across from the Android Solid Services app.
+ * A resource body being streamed across from the host app.
  *
  * The bytes are *not* parcelled — they would not survive the ~1 MB Binder transaction
  * limit. They arrive through a pipe, so a multi-megabyte download is never materialised in

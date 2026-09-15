@@ -1,33 +1,27 @@
 package com.erfangholami.androidsolidservices.client.sdk
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.erfangholami.androidsolidservices.client.internal.HostResolver
 import com.erfangholami.androidsolidservices.client.internal.fakes.FakeSdk
 import com.erfangholami.androidsolidservices.client.internal.fakes.assertArgs
 import com.erfangholami.androidsolidservices.services.ASSAuthenticatorService
+import com.erfangholami.androidsolidservices.shared.model.grant.AccessLevel
+import com.erfangholami.androidsolidservices.shared.model.grant.GrantTarget
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 /**
  * Drives [SolidSignInClient] across a real binder.
  *
- * Unlike the other clients this one is callback-based rather than `suspend`, and its callbacks
- * arrive on a binder thread — so a caller who touches UI state from them is on the wrong thread.
- *
- * It also differs in a way callers have to know about: its methods throw
- * [SolidException.SolidServiceConnectionException] immediately when the binding is not up yet,
- * whereas the `suspend` clients wait for it. Binding is asynchronous, so calling `getAccount`
- * straight after obtaining the client is a race — which is why [awaitConnection] runs first here,
- * and why the class documents collecting [SolidSignInClient.authServiceConnectionState] as step one.
+ * The grant is the interesting payload: a Parcelable with sealed targets inside, written by the
+ * fake in another process and read back here through the envelope's class-loader handling.
  */
 @RunWith(AndroidJUnit4::class)
 class SignInClientIpcTest {
@@ -36,14 +30,7 @@ class SignInClientIpcTest {
     val sdk = FakeSdk()
 
     private val client: SolidSignInClient
-        get() = SolidSignInClient.getInstance(sdk.context, sdk.context.applicationInfo) { true }
-
-    @Before
-    fun awaitConnection() {
-        runBlocking {
-            withTimeout(CONNECT_TIMEOUT) { client.authServiceConnectionState().first { it } }
-        }
-    }
+        get() = SolidSignInClient.getInstance(sdk.context)
 
     @Test
     fun the_connection_flow_reaches_true(): Unit = runBlocking {
@@ -51,86 +38,58 @@ class SignInClientIpcTest {
     }
 
     @Test
-    fun a_call_before_the_binding_is_up_fails_fast_rather_than_waiting() {
+    fun a_call_before_the_binding_is_up_waits_for_it_rather_than_failing(): Unit = runBlocking {
         SolidSignInClient.resetForTests()
-        val fresh = SolidSignInClient.getInstance(sdk.context, sdk.context.applicationInfo) { true }
+        val fresh = SolidSignInClient.getInstance(sdk.context)
 
-        val thrown = runCatching { fresh.getAccount(ASSAuthenticatorService.AUTHORIZED_WEB_ID) }
-            .exceptionOrNull()
+        val account = withTimeout(CONNECT_TIMEOUT) { fresh.getAccount(ASSAuthenticatorService.AUTHORIZED_WEB_ID) }
 
-        assertTrue(
-            "expected SolidServiceConnectionException, got $thrown",
-            thrown is SolidException.SolidServiceConnectionException,
-        )
+        assertEquals(ASSAuthenticatorService.AUTHORIZED_WEB_ID, account?.webId)
     }
 
     @Test
-    fun getAccount_returns_an_account_for_an_authorized_webId() {
+    fun getAccount_returns_the_grant_for_an_authorized_webId(): Unit = runBlocking {
         val account = client.getAccount(ASSAuthenticatorService.AUTHORIZED_WEB_ID)
 
         assertEquals(ASSAuthenticatorService.AUTHORIZED_WEB_ID, account?.webId)
         assertEquals(sdk.context.packageName, account?.packageName)
-        sdk.recorded("isAppAuthorized")
+        assertEquals(AccessLevel.FULL, account?.grant?.podLevel())
+        assertEquals(listOf(GrantTarget.Pod), account?.grant?.entries?.map { it.target })
+        assertEquals(ASSAuthenticatorService.GRANTED_AT, account?.grant?.grantedAt)
+        sdk.recorded("getAppGrant")
             .assertArgs("webId" to ASSAuthenticatorService.AUTHORIZED_WEB_ID)
     }
 
     @Test
-    fun getAccount_returns_null_when_the_app_is_not_authorized() {
+    fun getAccount_returns_null_when_the_app_holds_no_grant(): Unit = runBlocking {
         assertNull(client.getAccount(ASSAuthenticatorService.UNKNOWN_WEB_ID))
     }
 
     @Test
-    fun requestLogin_delivers_the_selected_webId() {
-        val latch = CountDownLatch(1)
-        var selected: String? = null
-        var error: SolidException? = null
+    fun disconnectFromSolid_reports_success_and_sends_the_webId(): Unit = runBlocking {
+        val revoked = client.disconnectFromSolid(ASSAuthenticatorService.AUTHORIZED_WEB_ID)
 
-        client.requestLogin { webId, failure ->
-            selected = webId
-            error = failure
-            latch.countDown()
-        }
-
-        assertTrue("requestLogin never called back", latch.await(CALL_TIMEOUT, TimeUnit.MILLISECONDS))
-        assertEquals(ASSAuthenticatorService.AUTHORIZED_WEB_ID, selected)
-        assertNull(error)
-    }
-
-    @Test
-    fun disconnectFromSolid_reports_success_and_sends_the_webId() {
-        val latch = CountDownLatch(1)
-        var granted = false
-
-        client.disconnectFromSolid(ASSAuthenticatorService.AUTHORIZED_WEB_ID) {
-            granted = it
-            latch.countDown()
-        }
-
-        assertTrue(latch.await(CALL_TIMEOUT, TimeUnit.MILLISECONDS))
-        assertTrue(granted)
+        assertTrue(revoked)
         sdk.recorded("disconnectFromSolid")
             .assertArgs("webId" to ASSAuthenticatorService.AUTHORIZED_WEB_ID)
     }
 
     @Test
-    fun disconnectFromSolid_reports_false_rather_than_throwing_on_a_service_error() {
-        val latch = CountDownLatch(1)
-        var granted = true
+    fun disconnectFromSolid_surfaces_a_service_error_as_a_typed_exception(): Unit = runBlocking {
+        val thrown = runCatching { client.disconnectFromSolid(ASSAuthenticatorService.UNKNOWN_WEB_ID) }
+            .exceptionOrNull()
 
-        client.disconnectFromSolid(ASSAuthenticatorService.UNKNOWN_WEB_ID) {
-            granted = it
-            latch.countDown()
-        }
-
-        assertTrue(latch.await(CALL_TIMEOUT, TimeUnit.MILLISECONDS))
-        assertTrue("a service error must surface as false", !granted)
+        assertTrue(
+            "expected SolidNotLoggedInException, got $thrown",
+            thrown is SolidException.SolidNotLoggedInException,
+        )
     }
 
     @Test
-    fun a_missing_ASS_app_fails_before_any_IPC() {
+    fun a_missing_host_app_fails_before_any_IPC(): Unit = runBlocking {
         SolidSignInClient.resetForTests()
-        val uninstalled =
-            SolidSignInClient.getInstance(sdk.context, sdk.context.applicationInfo) { false }
+        HostResolver.forceAbsent = true
+        val uninstalled = SolidSignInClient.getInstance(sdk.context)
 
         val thrown = runCatching { uninstalled.getAccount("https://x.example/#me") }.exceptionOrNull()
 
@@ -142,6 +101,5 @@ class SignInClientIpcTest {
 
     private companion object {
         const val CONNECT_TIMEOUT = 10_000L
-        const val CALL_TIMEOUT = 5_000L
     }
 }

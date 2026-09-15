@@ -7,16 +7,20 @@ import com.erfangholami.androidsolidservices.client.internal.fakes.CallLog
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.ipc.IpcEnvelope
+import com.erfangholami.androidsolidservices.shared.model.grant.AccessLevel
+import com.erfangholami.androidsolidservices.shared.model.grant.AppGrant
+import com.erfangholami.androidsolidservices.shared.model.grant.GrantEntry
+import com.erfangholami.androidsolidservices.shared.model.grant.GrantTarget
 import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 import java.io.File
 
 /**
- * Stands in for the ASS app's authenticator service.
+ * Stands in for the host app's authenticator service.
  *
- * It carries the **production fully-qualified name** on purpose. `ServiceConnector` builds its
- * Intent from a fixed class name and only the package is redirectable, so a fake is reachable only
- * if it answers to the same FQCN — which is what lets the tests drive the SDK's own entry points
- * instead of a hand-built connector.
+ * The instrumentation manifest declares it with the production **intent action**. `ServiceConnector`
+ * binds by action inside whatever package `HostResolver` answers with, so a fake is reachable once
+ * the resolver is pointed at the test APK — which is what lets the tests drive the SDK's own entry
+ * points instead of a hand-built connector.
  *
  * Declared in the instrumentation manifest with `android:process`, so it is hosted in a **separate
  * process** from the tests. That is the point: binder short-circuits same-process calls and passes
@@ -40,9 +44,23 @@ class ASSAuthenticatorService : Service() {
             return webId == AUTHORIZED_WEB_ID
         }
 
-        override fun requestLogin(callback: IASSParcelableCallback?) {
-            CallLog.record(applicationContext, "requestLogin")
-            callback?.onResult(IpcEnvelope.ofLogin(granted = true, selectedWebId = AUTHORIZED_WEB_ID))
+        override fun getAppGrant(
+            webId: String?,
+            callback: IASSParcelableCallback?,
+        ) {
+            CallLog.record(applicationContext, "getAppGrant", "webId" to webId)
+            val grant = if (webId == AUTHORIZED_WEB_ID) {
+                AppGrant(
+                    packageName = applicationContext.packageName,
+                    webId = AUTHORIZED_WEB_ID,
+                    appLabel = "Fake caller",
+                    entries = listOf(GrantEntry(GrantTarget.Pod, AccessLevel.FULL)),
+                    grantedAt = GRANTED_AT,
+                )
+            } else {
+                null
+            }
+            callback?.onResult(IpcEnvelope.of(grant))
         }
 
         override fun disconnectFromSolid(
@@ -71,6 +89,9 @@ class ASSAuthenticatorService : Service() {
 
     companion object {
         const val AUTHORIZED_WEB_ID: String = "https://alice.pod.example/profile/card#me"
+
+        /** The instant the fake grant for [AUTHORIZED_WEB_ID] reports. */
+        const val GRANTED_AT: String = "2026-09-14T10:00:00Z"
 
         /** No session for this one — calls with it take the error path. */
         const val UNKNOWN_WEB_ID: String = "https://mallory.pod.example/profile/card#me"

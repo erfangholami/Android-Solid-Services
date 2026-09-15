@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.client.sdk
 
 import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidNotLoggedInException
 import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidResourceException
-import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidServicesDrawPermissionDeniedException
 import com.erfangholami.androidsolidservices.client.sdk.SolidException.SolidSharingException
 import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 
@@ -16,13 +15,10 @@ import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
  * ([SolidSharingException]).
  */
 public sealed class SolidException(message: String) : Exception(message) {
-    public class SolidServicesDrawPermissionDeniedException(message: String = "Android Solid Services doesn't have permission to draw overlay.") :
+    public class SolidServiceConnectionException(message: String = "Unable to connect to the host app, Solid Share.") :
         SolidException(message)
 
-    public class SolidServiceConnectionException(message: String = "Unable to connect to Android Solid Services.") :
-        SolidException(message)
-
-    public class SolidAppNotFoundException(message: String = "Android Solid Services has not been installed.") :
+    public class SolidAppNotFoundException(message: String = "Solid Share is not installed.") :
         SolidException(message)
 
     public class SolidNotLoggedInException(message: String = "User has not logged in.") :
@@ -68,10 +64,6 @@ public sealed class SolidException(message: String) : Exception(message) {
 
 internal fun handleSolidException(errorCode: Int, errorMessage: String): SolidException {
     return when (errorCode) {
-        ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED -> SolidServicesDrawPermissionDeniedException(
-            errorMessage
-        )
-
         ExceptionsErrorCode.SOLID_NOT_LOGGED_IN -> SolidNotLoggedInException(errorMessage)
         ExceptionsErrorCode.NOT_SUPPORTED_CLASS -> SolidResourceException.NotSupportedClassException(
             errorMessage

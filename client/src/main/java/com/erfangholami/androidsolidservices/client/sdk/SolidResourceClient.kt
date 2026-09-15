@@ -4,10 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.os.Parcelable
-import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_CRUD_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.CallbackBridge
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSResourceService
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 import com.erfangholami.androidsolidservices.shared.http.SolidHeaders
 import com.erfangholami.androidsolidservices.shared.ipc.parcelable
 import com.erfangholami.androidsolidservices.shared.ipc.parcelableList
@@ -29,7 +29,7 @@ import java.io.InputStream
 
 /**
  * Reads, creates, updates and deletes resources on the authenticated user's Solid pod by
- * communicating with the Android Solid Services app over IPC.
+ * communicating with the host app, Solid Share, over IPC.
  *
  * Obtain an instance via [Solid.getResourceClient].
  *
@@ -39,10 +39,7 @@ import java.io.InputStream
  *
  * @see Solid.getResourceClient
  */
-public class SolidResourceClient private constructor(
-    context: Context,
-    private val hasInstalledAndroidSolidServices: () -> Boolean,
-) {
+public class SolidResourceClient private constructor(context: Context) {
 
     public companion object {
         @Volatile
@@ -51,16 +48,10 @@ public class SolidResourceClient private constructor(
         /**
          * Returns the application-scoped singleton [SolidResourceClient].
          * @param context Any [Context]; the application context is used internally.
-         * @param hasInstalledAndroidSolidServices Returns `true` when the Android Solid Services
-         *   app is installed on the device.
          */
-        public fun getInstance(
-            context: Context,
-            hasInstalledAndroidSolidServices: () -> Boolean,
-        ): SolidResourceClient =
+        public fun getInstance(context: Context): SolidResourceClient =
             instance ?: synchronized(this) {
-                instance ?: SolidResourceClient(context, hasInstalledAndroidSolidServices)
-                    .also { instance = it }
+                instance ?: SolidResourceClient(context).also { instance = it }
             }
 
         /**
@@ -78,7 +69,7 @@ public class SolidResourceClient private constructor(
 
     private val connector = ServiceConnector(
         context,
-        ANDROID_SOLID_SERVICES_CRUD_SERVICE,
+        SolidHostContract.ACTION_RESOURCE_SERVICE,
         IASSResourceService.Stub::asInterface,
     )
 
@@ -230,12 +221,8 @@ public class SolidResourceClient private constructor(
         service.deleteContainer(webId, containerUri, unitBridge(bridge))
     }
 
-    private suspend fun <T> call(register: (IASSResourceService, CallbackBridge<T>) -> Unit): T {
-        if (!hasInstalledAndroidSolidServices()) {
-            throw SolidException.SolidAppNotFoundException()
-        }
-        return connector.await(register)
-    }
+    private suspend fun <T> call(register: (IASSResourceService, CallbackBridge<T>) -> Unit): T =
+        connector.await(register)
 
     /**
      * Applies an already-serialised N3 Patch document to an RDF resource.

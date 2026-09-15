@@ -14,8 +14,8 @@ import android.os.Parcelable
  * that can hold any of them, so both callbacks take a Bundle and this file owns the keys, the
  * packing ([IpcEnvelope]) and the unpacking (the `Bundle?` readers below).
  *
- * Everything an ASS verb answers with fits: a single Parcelable, a list of them, a String, a
- * boolean, nothing at all, an open stream, or a login outcome.
+ * Everything a host verb answers with fits: a single Parcelable, a list of them, a String, a
+ * boolean, nothing at all, or an open stream.
  */
 public object IpcEnvelope {
 
@@ -27,9 +27,6 @@ public object IpcEnvelope {
 
     /** A stream's `Content-Length`, or `-1` when the server advertised none. */
     public const val KEY_CONTENT_LENGTH: String = "ass.ipc.contentLength"
-
-    /** Whether a login was granted, alongside the [KEY_VALUE] WebID the user picked. */
-    public const val KEY_GRANTED: String = "ass.ipc.granted"
 
     /** Envelopes a single [value]; a `null` value is a legitimate answer, not an error. */
     public fun of(value: Parcelable?): Bundle = Bundle(1).apply { putParcelable(KEY_VALUE, value) }
@@ -60,12 +57,6 @@ public object IpcEnvelope {
             putString(KEY_CONTENT_TYPE, contentType)
             putLong(KEY_CONTENT_LENGTH, contentLength)
         }
-
-    /** Envelopes a login outcome: whether it was [granted] and the WebID the user selected. */
-    public fun ofLogin(granted: Boolean, selectedWebId: String?): Bundle = Bundle(2).apply {
-        putBoolean(KEY_GRANTED, granted)
-        putString(KEY_VALUE, selectedWebId)
-    }
 
     internal const val UNKNOWN_LENGTH: Long = -1L
 }
@@ -111,9 +102,6 @@ public fun Bundle?.streamContentType(): String = this?.getString(IpcEnvelope.KEY
 /** Reads a stream's content length; an absent value reads as `-1`, meaning "unknown". */
 public fun Bundle?.streamContentLength(): Long =
     this?.getLong(IpcEnvelope.KEY_CONTENT_LENGTH, IpcEnvelope.UNKNOWN_LENGTH) ?: IpcEnvelope.UNKNOWN_LENGTH
-
-/** Reads whether a login was granted; an absent value reads as `false`. */
-public fun Bundle?.loginGranted(): Boolean = this?.getBoolean(IpcEnvelope.KEY_GRANTED) ?: false
 
 private fun Bundle.withClassLoaderOf(expected: Class<*>): Bundle = apply {
     classLoader = expected.classLoader

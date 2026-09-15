@@ -17,8 +17,6 @@ class SolidExceptionMappingTest {
     @Test
     fun `each error code maps to its own exception type`() {
         val expected = mapOf(
-            ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED to
-                SolidException.SolidServicesDrawPermissionDeniedException::class.java,
             ExceptionsErrorCode.SOLID_NOT_LOGGED_IN to
                 SolidException.SolidNotLoggedInException::class.java,
             ExceptionsErrorCode.NOT_SUPPORTED_CLASS to
@@ -55,7 +53,6 @@ class SolidExceptionMappingTest {
     @Test
     fun `no two codes collapse onto the same type`() {
         val codes = listOf(
-            ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED,
             ExceptionsErrorCode.SOLID_NOT_LOGGED_IN,
             ExceptionsErrorCode.NOT_SUPPORTED_CLASS,
             ExceptionsErrorCode.NOT_PERMISSION,
@@ -108,7 +105,6 @@ class SolidExceptionMappingTest {
     @Test
     fun `error codes keep their numeric values`() {
         val pinned = mapOf(
-            "DRAW_OVERLAY_NOT_PERMITTED" to 1,
             "SOLID_NOT_LOGGED_IN" to 2,
             "NOT_SUPPORTED_CLASS" to 100,
             "NOT_PERMISSION" to 101,

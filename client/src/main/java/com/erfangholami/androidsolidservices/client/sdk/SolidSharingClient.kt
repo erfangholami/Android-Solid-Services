@@ -1,11 +1,11 @@
 package com.erfangholami.androidsolidservices.client.sdk
 
 import android.content.Context
-import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_SHARING_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
 import com.erfangholami.androidsolidservices.shared.IASSParcelableListCallback
 import com.erfangholami.androidsolidservices.shared.IASSharingService
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 import com.erfangholami.androidsolidservices.shared.model.sharing.AccessGrant
 import com.erfangholami.androidsolidservices.shared.model.sharing.CatalogEntry
 import com.erfangholami.androidsolidservices.shared.model.sharing.GivenShare
@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.Flow
  *
  * Sharing is enforced by the pod's access control (Web Access Control, or
  * Access Control Policy on servers that use it). Calls are delegated over IPC
- * to the Android Solid Services app.
+ * to the host app, Solid Share.
  *
  * Obtain an instance via [Solid.getSharingClient]. Collect [connectionState]
  * and wait for `true` before issuing calls. All operations are `suspend`
@@ -54,7 +54,7 @@ public class SolidSharingClient private constructor(context: Context) {
 
     private val connector = ServiceConnector(
         context,
-        ANDROID_SOLID_SERVICES_SHARING_SERVICE,
+        SolidHostContract.ACTION_SHARING_SERVICE,
         IASSharingService.Stub::asInterface,
     )
 

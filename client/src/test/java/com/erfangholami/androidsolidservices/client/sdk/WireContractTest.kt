@@ -9,7 +9,7 @@ import org.junit.Test
 
 /**
  * `SolidSharingClient` and `SolidNotificationsClient` flatten enums onto the AIDL boundary as bare
- * integers — `mode.ordinal`, `receiver.kind()`. The ASS app inflates them back on the other side.
+ * integers — `mode.ordinal`, `receiver.kind()`. The host app inflates them back on the other side.
  *
  * Nothing checks that the two sides agree. Reordering [ShareMode] would still compile, still run,
  * and silently grant Write where the caller asked for Read; and the two sides ship independently,
@@ -24,7 +24,7 @@ class WireContractTest {
         assertEquals(1, ShareMode.APPEND.ordinal)
         assertEquals(2, ShareMode.WRITE.ordinal)
         assertEquals(
-            "a mode was added or removed — the ASS app decodes by ordinal",
+            "a mode was added or removed — the host app decodes by ordinal",
             3,
             ShareMode.entries.size,
         )

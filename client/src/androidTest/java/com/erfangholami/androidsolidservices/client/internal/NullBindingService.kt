@@ -12,4 +12,9 @@ import android.os.IBinder
 class NullBindingService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    companion object {
+        /** A test-only action; the production actions all answer with a binder. */
+        const val ACTION: String = "com.erfangholami.androidsolidservices.client.test.NULL_BINDING"
+    }
 }

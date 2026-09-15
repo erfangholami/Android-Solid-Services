@@ -2,12 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
-      Android 11+ (API 30) package visibility: without this, bindService() and the
-      installed-app check cannot see the Android Solid Services app. Merged into every
-      consuming app's manifest.
+      Android 11+ (API 30) package visibility. Merged into every consuming app's manifest.
+        - Solid Share is the host: without this, bindService() and the installed-app check
+          cannot see it.
+        - The retired Android Solid Services app is queried only so a device that still has it
+          gets a message naming it; the SDK never binds to it.
+        - The market intent lets Solid.hostInstallIntent() tell whether an app store is present.
     -->
     <queries>
+        <package android:name="com.erfangholami.solidshare" />
         <package android:name="com.erfangholami.androidsolidservices" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="market" />
+        </intent>
     </queries>
 
 </manifest>

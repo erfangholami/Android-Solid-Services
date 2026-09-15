@@ -7,9 +7,9 @@
        argument and return value. Without it, Android passes object references directly within the
        process and the Parcelable path — the part most likely to break — would never run.
 
-    2. The fakes are registered under the ASS app's own service class names. ServiceConnector
-       builds its Intent from a fixed class name, so only a class answering to that exact FQCN can
-       stand in for the real service.
+    2. The fakes answer to the production intent actions. ServiceConnector binds by action inside
+       the package HostResolver names, and FakeSdk points the resolver at this APK, so the SDK's own
+       entry points reach these services exactly as they would reach Solid Share.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -28,27 +28,51 @@
         <service
             android:name="com.erfangholami.androidsolidservices.services.ASSAuthenticatorService"
             android:exported="false"
-            android:process=":fakeass" />
+            android:process=":fakeass">
+            <intent-filter>
+                <action android:name="com.erfangholami.androidsolidservices.action.AUTHENTICATOR" />
+            </intent-filter>
+        </service>
         <service
             android:name="com.erfangholami.androidsolidservices.services.ASSResourceService"
             android:exported="false"
-            android:process=":fakeass" />
+            android:process=":fakeass">
+            <intent-filter>
+                <action android:name="com.erfangholami.androidsolidservices.action.RESOURCES" />
+            </intent-filter>
+        </service>
         <service
             android:name="com.erfangholami.androidsolidservices.services.SolidDataModulesService"
             android:exported="false"
-            android:process=":fakeass" />
+            android:process=":fakeass">
+            <intent-filter>
+                <action android:name="com.erfangholami.androidsolidservices.action.DATA_MODULES" />
+            </intent-filter>
+        </service>
         <service
             android:name="com.erfangholami.androidsolidservices.services.ASSSharingService"
             android:exported="false"
-            android:process=":fakeass" />
+            android:process=":fakeass">
+            <intent-filter>
+                <action android:name="com.erfangholami.androidsolidservices.action.SHARING" />
+            </intent-filter>
+        </service>
         <service
             android:name="com.erfangholami.androidsolidservices.services.ASSNotificationsService"
             android:exported="false"
-            android:process=":fakeass" />
+            android:process=":fakeass">
+            <intent-filter>
+                <action android:name="com.erfangholami.androidsolidservices.action.NOTIFICATIONS" />
+            </intent-filter>
+        </service>
         <service
             android:name="com.erfangholami.androidsolidservices.client.internal.NullBindingService"
             android:exported="false"
-            android:process=":fakeass" />
+            android:process=":fakeass">
+            <intent-filter>
+                <action android:name="com.erfangholami.androidsolidservices.client.test.NULL_BINDING" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

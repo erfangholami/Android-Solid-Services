@@ -5,7 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
-import com.erfangholami.androidsolidservices.shared.model.auth.SolidAuthorization
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -30,7 +30,7 @@ class ChooseSolidAccountTest {
         val types = intent.getStringArrayExtra("allowableAccountTypes")
         assertTrue(
             "the chooser must only offer Solid accounts, got ${types?.toList()}",
-            types?.toList() == listOf(SolidAuthorization.ACCOUNT_TYPE),
+            types?.toList() == listOf(SolidHostContract.ACCOUNT_TYPE),
         )
     }
 

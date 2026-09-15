@@ -10,6 +10,7 @@ import com.erfangholami.androidsolidservices.client.sdk.SolidSharingClient
 import com.erfangholami.androidsolidservices.client.sdk.booleanBridge
 import com.erfangholami.androidsolidservices.services.ASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -33,7 +34,7 @@ import org.junit.runner.RunWith
  *
  * `ServiceConnector` catches `DeadObjectException`, rebinds and retries once — a path that only
  * runs when a real process really dies, so no unit test can reach it. It is also the path a user
- * hits every time Android reclaims the ASS app in the background, which makes it the least exotic
+ * hits every time Android reclaims the host app in the background, which makes it the least exotic
  * failure in the SDK despite being the hardest to reproduce.
  */
 @RunWith(AndroidJUnit4::class)
@@ -43,7 +44,7 @@ class ConnectionResilienceTest {
     val sdk = FakeSdk()
 
     private val client: SolidResourceClient
-        get() = SolidResourceClient.getInstance(sdk.context) { true }
+        get() = SolidResourceClient.getInstance(sdk.context)
 
     @Test
     fun a_call_parked_on_a_dying_service_fails_over_instead_of_hanging(): Unit = runBlocking {
@@ -51,10 +52,9 @@ class ConnectionResilienceTest {
 
         val auth = ServiceConnector(
             sdk.context,
-            ASSAuthenticatorService::class.java.name,
-            sdk.context.packageName,
+            SolidHostContract.ACTION_AUTHENTICATOR_SERVICE,
             IASSAuthenticatorService.Stub::asInterface,
-        )
+        ) { HostTarget(it.packageName) }
         try {
             withTimeout(CONNECT_TIMEOUT) { auth.connectionState.first { it } }
 
@@ -83,10 +83,9 @@ class ConnectionResilienceTest {
     fun a_null_binding_reports_disconnected_rather_than_pretending(): Unit = runBlocking {
         val connector = ServiceConnector(
             sdk.context,
-            NullBindingService::class.java.name,
-            sdk.context.packageName,
+            NullBindingService.ACTION,
             IASSAuthenticatorService.Stub::asInterface,
-        )
+        ) { HostTarget(it.packageName) }
         try {
             val everConnected = withTimeoutOrNull(NULL_BINDING_WAIT) {
                 connector.connectionState.first { it }

@@ -1,9 +1,9 @@
 package com.erfangholami.androidsolidservices.client.sdk
 
 import android.content.Context
-import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_NOTIFICATIONS_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSNotificationsService
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareNotification
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareRequest
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.Flow
  *    `PeriodicWorkRequest(15.minutes)` worker for background sync;
  *  - call them again on user-initiated refresh (pull-to-refresh, tab open).
  *
- * Calls are delegated over IPC to the Android Solid Services app. Obtain an
+ * Calls are delegated over IPC to the host app, Solid Share. Obtain an
  * instance via [Solid.getNotificationsClient]; collect [connectionState] and wait
  * for `true` before issuing calls. All operations are `suspend` functions and
  * throw [SolidException] on failure.
@@ -50,7 +50,7 @@ public class SolidNotificationsClient private constructor(context: Context) {
 
     private val connector = ServiceConnector(
         context,
-        ANDROID_SOLID_SERVICES_NOTIFICATIONS_SERVICE,
+        SolidHostContract.ACTION_NOTIFICATIONS_SERVICE,
         IASSNotificationsService.Stub::asInterface,
     )
 

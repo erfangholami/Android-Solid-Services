@@ -1,6 +1,7 @@
 package com.erfangholami.androidsolidservices.client.sdk
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.erfangholami.androidsolidservices.client.internal.HostResolver
 import com.erfangholami.androidsolidservices.client.internal.fakes.FakeSdk
 import com.erfangholami.androidsolidservices.client.internal.fakes.Fixtures
 import com.erfangholami.androidsolidservices.client.internal.fakes.assertArgs
@@ -37,7 +38,7 @@ class ResourceClientIpcTest {
     val sdk = FakeSdk()
 
     private val client: SolidResourceClient
-        get() = SolidResourceClient.getInstance(sdk.context) { true }
+        get() = SolidResourceClient.getInstance(sdk.context)
 
     @Test
     fun getWebId_returns_a_reconstructed_WebId(): Unit = runBlocking {
@@ -359,9 +360,10 @@ class ResourceClientIpcTest {
     }
 
     @Test
-    fun a_missing_ASS_app_fails_before_any_IPC(): Unit = runBlocking {
+    fun a_missing_host_app_fails_before_any_IPC(): Unit = runBlocking {
         SolidResourceClient.resetForTests()
-        val uninstalled = SolidResourceClient.getInstance(sdk.context) { false }
+        HostResolver.forceAbsent = true
+        val uninstalled = SolidResourceClient.getInstance(sdk.context)
 
         val thrown = runCatching { uninstalled.exists(Fixtures.WEB_ID, Fixtures.RESOURCE) }
             .exceptionOrNull()

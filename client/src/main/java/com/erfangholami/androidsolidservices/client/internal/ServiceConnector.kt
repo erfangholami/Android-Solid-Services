@@ -2,7 +2,6 @@ package com.erfangholami.androidsolidservices.client.internal
 
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.ServiceConnection
 import android.os.DeadObjectException
 import android.os.IBinder
@@ -23,12 +22,14 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
- * Owns one binding to an Android Solid Services AIDL service and turns its callback-style calls
- * into `suspend` calls.
+ * Owns one binding to a host AIDL service and turns its callback-style calls into `suspend`
+ * calls.
  *
- * [servicePackageName] is separate so instrumented tests can point the binding at the test APK,
- * which hosts fakes under the production class names; `asInterface` stays last so callers keep
- * passing it as a trailing lambda.
+ * The service is reached by [action] inside whatever package [resolveHost] answers with, which
+ * is Solid Share in production and the instrumentation APK in the SDK's own tests. Resolution
+ * happens at bind time, so a host installed after the client was built is found on the next
+ * call. When no host is installed, a call fails at once with
+ * [SolidException.SolidAppNotFoundException] instead of waiting out the bind timeout.
  *
  * Death handling: a call parked on an AIDL callback is never resumed by the framework when the
  * service process dies, so the connector tracks parked continuations and fails them itself —
@@ -39,19 +40,12 @@ import kotlin.coroutines.resumeWithException
  */
 internal class ServiceConnector<S : Any>(
     context: Context,
-    serviceClassName: String,
-    private val servicePackageName: String,
+    private val action: String,
     private val asInterface: (IBinder) -> S,
+    private val resolveHost: (Context) -> HostTarget? = HostResolver::installedHost,
 ) {
-    /** Binds to the installed Android Solid Services app. */
-    constructor(
-        context: Context,
-        serviceClassName: String,
-        asInterface: (IBinder) -> S,
-    ) : this(context, serviceClassName, SdkTarget.servicePackageName, asInterface)
 
     private val appContext: Context = context.applicationContext
-    private val serviceClassName: String = serviceClassName
 
     private val _connectionState = MutableStateFlow(false)
     val connectionState: StateFlow<Boolean> = _connectionState.asStateFlow()
@@ -62,7 +56,7 @@ internal class ServiceConnector<S : Any>(
     @Volatile
     private var bound: Boolean = false
 
-    private val serviceLabel: String = serviceClassName.substringAfterLast('.')
+    private val serviceLabel: String = action.substringAfterLast('.')
 
     private val pending = ConcurrentHashMap.newKeySet<CancellableContinuation<*>>()
 
@@ -156,10 +150,11 @@ internal class ServiceConnector<S : Any>(
 
     private suspend fun awaitService(): S {
         service?.let { return it }
+        val host = HostResolver.requireHost(appContext, resolveHost)
         val span = Telemetry.startSpan("ass_ipc_bind")
         span.putAttribute("service", serviceLabel)
         try {
-            if (!bound) bind()
+            if (!bound) bind(host)
             withTimeoutOrNull(CONNECT_TIMEOUT_MS) { connectionState.first { it } }
             val connected = service
             if (connected == null) {
@@ -180,11 +175,14 @@ internal class ServiceConnector<S : Any>(
     }
 
     private fun bind() {
+        bind(resolveHost(appContext) ?: return)
+    }
+
+    private fun bind(host: HostTarget) {
         if (bound) return
-        val intent = Intent().setClassName(servicePackageName, serviceClassName)
         bound = runCatching {
             appContext.bindService(
-                intent,
+                host.serviceIntent(action),
                 connection,
                 Context.BIND_AUTO_CREATE or Context.BIND_IMPORTANT,
             )

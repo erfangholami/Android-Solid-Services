@@ -36,7 +36,7 @@ class StreamingIpcTest {
     val sdk = FakeSdk()
 
     private val client: SolidResourceClient
-        get() = SolidResourceClient.getInstance(sdk.context) { true }
+        get() = SolidResourceClient.getInstance(sdk.context)
 
     @Test
     fun readStream_delivers_the_body_and_its_metadata(): Unit = runBlocking {

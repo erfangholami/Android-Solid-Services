@@ -16,7 +16,7 @@ import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResou
 import com.erfangholami.androidsolidservices.shared.result.ExceptionsErrorCode
 
 /**
- * Stands in for the ASS app's resource service, hosted in `:fakeass`.
+ * Stands in for the host app's resource service, hosted in `:fakeass`.
  *
  * It carries the **production fully-qualified name** on purpose: `ServiceConnector` builds its
  * Intent from a fixed class name and only the package is redirectable, so a fake is reachable

@@ -1,34 +1,36 @@
 package com.erfangholami.androidsolidservices.shared.model.auth
 
 /**
- * The Intent protocol between the client SDK's authorization contract and the Android Solid
- * Services authorize activity.
+ * The Intent protocol between the client SDK's authorization contract and the host's consent
+ * activity, which the SDK reaches through
+ * [com.erfangholami.androidsolidservices.shared.host.SolidHostContract.ACTION_AUTHORIZE].
  *
  * The activity is launched **for result** from the calling app's own foreground — that is the
  * point of the flow: no UI is ever drawn from a background service, so no overlay permission is
- * involved, and `getCallingPackage()` gives the authorize screen a caller identity it can trust.
+ * involved, and `getCallingPackage()` gives the consent screen a caller identity it can trust.
+ *
+ * In: [EXTRA_ACCESS_REQUEST], an
+ * [com.erfangholami.androidsolidservices.shared.model.grant.AccessRequest]; when absent the host
+ * starts from `AccessRequest.DEFAULT`.
  *
  * Results:
- *  - `RESULT_OK` with [EXTRA_WEB_ID] — the user picked an account and the grant was recorded.
+ *  - `RESULT_OK` with [EXTRA_WEB_ID] — the account the user picked — and [EXTRA_GRANT], the
+ *    [com.erfangholami.androidsolidservices.shared.model.grant.AppGrant] the user approved, which
+ *    may be narrower or wider than the request.
  *  - `RESULT_CANCELED` — the user dismissed without granting.
  *  - [RESULT_ERROR] with [EXTRA_ERROR_CODE] / [EXTRA_ERROR_MESSAGE] — the flow could not run;
  *    the code is an `ExceptionsErrorCode` value the SDK maps to its typed exceptions.
  */
 public object SolidAuthorization {
 
-    /**
-     * The `android.accounts` account type under which Android Solid Services registers every
-     * signed-in Solid profile (account name = WebID). Third-party apps can offer the **system**
-     * account chooser over it — `AccountManager.newChooseAccountIntent` filtered to this type,
-     * or the SDK's `ChooseSolidAccount` contract. Picking an account there makes it visible to
-     * the picking app, mediated by the OS; it does not by itself grant pod access, which is what
-     * the authorize flow is for. Accounts of this type carry no tokens: DPoP tokens are bound to
-     * keys that never leave Android Solid Services.
-     */
-    public const val ACCOUNT_TYPE: String = "com.erfangholami.androidsolidservices"
-
     public const val EXTRA_WEB_ID: String =
         "com.erfangholami.androidsolidservices.extra.WEB_ID"
+
+    public const val EXTRA_ACCESS_REQUEST: String =
+        "com.erfangholami.androidsolidservices.extra.ACCESS_REQUEST"
+
+    public const val EXTRA_GRANT: String =
+        "com.erfangholami.androidsolidservices.extra.GRANT"
 
     public const val EXTRA_ERROR_CODE: String =
         "com.erfangholami.androidsolidservices.extra.ERROR_CODE"

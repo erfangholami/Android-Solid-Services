@@ -5,11 +5,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
-import com.erfangholami.androidsolidservices.shared.model.auth.SolidAuthorization
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 
 /**
- * Opens the **system** account chooser over Android Solid Services' accounts — every signed-in
- * WebID appears there, with "Add account" routing into Android Solid Services' own sign-in.
+ * Opens the **system** account chooser over the host app's accounts — every signed-in WebID
+ * appears there, with "Add account" routing into the host app's own sign-in.
  *
  * Returns the chosen WebID, or `null` when the user backs out. Two properties come from the OS
  * itself:
@@ -35,7 +35,7 @@ public class ChooseSolidAccount : ActivityResultContract<Unit, String?>() {
         AccountManager.newChooseAccountIntent(
             null,
             null,
-            arrayOf(SolidAuthorization.ACCOUNT_TYPE),
+            arrayOf(SolidHostContract.ACCOUNT_TYPE),
             null,
             null,
             null,

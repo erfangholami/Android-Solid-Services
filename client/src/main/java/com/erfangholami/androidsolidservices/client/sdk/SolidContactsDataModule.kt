@@ -1,10 +1,10 @@
 package com.erfangholami.androidsolidservices.client.sdk
 
 import android.content.Context
-import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_DATA_MODULES_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBook
 import com.erfangholami.androidsolidservices.shared.model.contacts.AddressBookList
 import com.erfangholami.androidsolidservices.shared.model.contacts.ContactData
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.Flow
  * [groups] — and speaks the same write model, the immutable [ContactData] (full vCard 4.0
  * coverage), so the same code shape works against either SDK.
  *
- * Calls are delegated over IPC to the Android Solid Services app, which owns the login and
+ * Calls are delegated over IPC to the host app, Solid Share, which owns the login and
  * the tokens. Obtain an instance via [Solid.getContactsDataModule]. Collect
  * [contactsDataModuleServiceConnectionState] and wait for `true` before issuing calls. All
  * operations are `suspend` functions, return `null` when the service yields no result, and
@@ -55,8 +55,9 @@ public class SolidContactsDataModule private constructor(context: Context) {
 
     private val connector = ServiceConnector(
         context,
-        ANDROID_SOLID_SERVICES_DATA_MODULES_SERVICE,
-    ) { binder -> IASSDataModulesService.Stub.asInterface(binder).contactsDataModuleInterface }
+        SolidHostContract.ACTION_DATA_MODULES_SERVICE,
+        asInterface = { binder -> IASSDataModulesService.Stub.asInterface(binder).contactsDataModuleInterface },
+    )
 
     /** Hot [Flow] of the IPC service connection state; emits `true` once connected. */
     public fun contactsDataModuleServiceConnectionState(): Flow<Boolean> = connector.connectionState

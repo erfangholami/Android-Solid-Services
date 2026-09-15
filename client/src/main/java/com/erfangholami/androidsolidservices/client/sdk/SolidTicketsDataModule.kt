@@ -1,10 +1,10 @@
 package com.erfangholami.androidsolidservices.client.sdk
 
 import android.content.Context
-import com.erfangholami.androidsolidservices.client.internal.ANDROID_SOLID_SERVICES_DATA_MODULES_SERVICE
 import com.erfangholami.androidsolidservices.client.internal.ServiceConnector
 import com.erfangholami.androidsolidservices.shared.IASSDataModulesService
 import com.erfangholami.androidsolidservices.shared.IASSParcelableCallback
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 import com.erfangholami.androidsolidservices.shared.model.tickets.IASSTicketsModuleInterface
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicket
 import com.erfangholami.androidsolidservices.shared.model.tickets.NewTicketImages
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.Flow
  * Client SDK for the Solid Tickets data module — the user's wallet: `schema:Ticket`
  * resources stored on their pod and registered in the Solid type index.
  *
- * Calls are delegated over IPC to the Android Solid Services app, which owns the login and
+ * Calls are delegated over IPC to the host app, Solid Share, which owns the login and
  * the tokens. Obtain an instance via [Solid.getTicketsDataModule]. Collect
  * [ticketsDataModuleServiceConnectionState] and wait for `true` before issuing calls. All
  * operations are `suspend` functions, return `null` when the service yields no result, and
@@ -48,8 +48,9 @@ public class SolidTicketsDataModule private constructor(context: Context) {
 
     private val connector = ServiceConnector(
         context,
-        ANDROID_SOLID_SERVICES_DATA_MODULES_SERVICE,
-    ) { binder -> IASSDataModulesService.Stub.asInterface(binder).ticketsDataModuleInterface }
+        SolidHostContract.ACTION_DATA_MODULES_SERVICE,
+        asInterface = { binder -> IASSDataModulesService.Stub.asInterface(binder).ticketsDataModuleInterface },
+    )
 
     /** Hot [Flow] of the IPC service connection state; emits `true` once connected. */
     public fun ticketsDataModuleServiceConnectionState(): Flow<Boolean> = connector.connectionState

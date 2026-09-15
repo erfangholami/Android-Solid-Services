@@ -2,6 +2,11 @@ package com.erfangholami.androidsolidservices.shared.ipc
 
 import android.os.Bundle
 import android.os.Parcel
+import com.erfangholami.androidsolidservices.shared.model.datamodule.DataModuleId
+import com.erfangholami.androidsolidservices.shared.model.grant.AccessLevel
+import com.erfangholami.androidsolidservices.shared.model.grant.AppGrant
+import com.erfangholami.androidsolidservices.shared.model.grant.GrantEntry
+import com.erfangholami.androidsolidservices.shared.model.grant.GrantTarget
 import com.erfangholami.androidsolidservices.shared.model.resource.AccessProbe
 import com.erfangholami.androidsolidservices.shared.model.resource.SolidRDFResource
 import com.erfangholami.androidsolidservices.shared.model.sharing.ShareMode
@@ -104,11 +109,20 @@ class IpcEnvelopeTest {
     }
 
     @Test
-    fun `a login outcome carries both the flag and the selected WebID`() {
-        val envelope = marshalled(IpcEnvelope.ofLogin(granted = true, selectedWebId = "https://alice.pod/#me"))
+    fun `an app grant survives the envelope with every kind of target`() {
+        val grant = AppGrant(
+            packageName = "com.example.notes",
+            webId = "https://alice.pod/profile/card#me",
+            appLabel = "Notes",
+            entries = listOf(
+                GrantEntry(GrantTarget.Pod, AccessLevel.VIEW),
+                GrantEntry(GrantTarget.Resource("https://alice.pod/notes/"), AccessLevel.EDIT),
+                GrantEntry(GrantTarget.Module(DataModuleId.CONTACTS), AccessLevel.FULL),
+            ),
+            grantedAt = "2026-09-14T10:00:00Z",
+        )
 
-        assertTrue(envelope.loginGranted())
-        assertEquals("https://alice.pod/#me", envelope.stringValue())
+        assertEquals(grant, marshalled(IpcEnvelope.of(grant)).parcelable(AppGrant::class.java))
     }
 
     @Test

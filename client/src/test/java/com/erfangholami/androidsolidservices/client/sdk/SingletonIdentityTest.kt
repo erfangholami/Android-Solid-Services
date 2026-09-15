@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Each client owns a bound-service connection, so a second instance means a second binding to the
- * ASS app that nothing will ever release. The double-checked locking that prevents it is
+ * host app that nothing will ever release. The double-checked locking that prevents it is
  * hand-written in six places.
  */
 @RunWith(RobolectricTestRunner::class)

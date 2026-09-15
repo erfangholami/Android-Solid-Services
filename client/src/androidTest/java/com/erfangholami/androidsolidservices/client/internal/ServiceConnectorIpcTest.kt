@@ -8,6 +8,7 @@ import com.erfangholami.androidsolidservices.client.sdk.SolidException
 import com.erfangholami.androidsolidservices.client.sdk.booleanBridge
 import com.erfangholami.androidsolidservices.services.ASSAuthenticatorService
 import com.erfangholami.androidsolidservices.shared.IASSAuthenticatorService
+import com.erfangholami.androidsolidservices.shared.host.SolidHostContract
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -22,7 +23,7 @@ import org.junit.runner.RunWith
 /**
  * Drives [ServiceConnector] against [ASSAuthenticatorService], which the instrumentation manifest
  * hosts in a separate process. Every call here therefore crosses a real binder boundary and is
- * really marshalled — the behaviour unit tests cannot reach and the ASS app is not needed for.
+ * really marshalled — the behaviour unit tests cannot reach and the host app is not needed for.
  */
 @RunWith(AndroidJUnit4::class)
 class ServiceConnectorIpcTest {
@@ -35,10 +36,9 @@ class ServiceConnectorIpcTest {
     fun bind() {
         connector = ServiceConnector(
             context,
-            ASSAuthenticatorService::class.java.name,
-            context.packageName,
+            SolidHostContract.ACTION_AUTHENTICATOR_SERVICE,
             IASSAuthenticatorService.Stub::asInterface,
-        )
+        ) { HostTarget(it.packageName) }
     }
 
     @After
