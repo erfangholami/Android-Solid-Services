@@ -205,3 +205,16 @@ Either side can end it.
 
 Revocation takes effect on the next call. Nothing is cached in your process, so there is no window
 in which a revoked app still works.
+
+## Where a grant lives
+
+On the device, in the host app, and nowhere else. A grant is not written to the pod.
+
+That has one consequence you must design for: a grant does not follow the user to a second device.
+The same person, with the same WebID, on a tablet as well as a phone, approves your app on each of
+them. Treat "no grant yet" as a normal first-run state on every device, not as an error — check
+with `signIn.getAccount(webId)?.grant` and launch `AuthorizeWithSolid` when it is `null`.
+
+Keeping grants off the pod is deliberate. A grant describes one app on one device, it is worth
+nothing to another device, and writing it to the pod would publish the list of apps a person uses
+to anyone who can read that container.

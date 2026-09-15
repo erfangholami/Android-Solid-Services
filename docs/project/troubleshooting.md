@@ -22,6 +22,21 @@ if (!Solid.isHostInstalled(context)) {
 
 ---
 
+### The host is installed, but the SDK says it is not the real one
+
+**Cause:** An app holds Solid Share's package name but is not signed with Solid Share's key. The
+SDK compares the SHA-256 of the installed host's signing certificate against the digest it ships,
+and refuses a mismatch. You see this most often after you replace the store copy with a build of
+Solid Share you made yourself: your build carries your own key. (Android will not install one over
+the other, so this follows an uninstall.)
+
+**Fix:** Install Solid Share from Google Play, F-Droid or the project's GitHub Releases. To keep
+working against a host you built, build **your own app** as a debug build — the SDK skips the check
+for a debuggable caller, and reads that flag from the caller, never from the host. A release build
+of your app always checks.
+
+---
+
 ### `SolidServiceConnectionException`
 
 **Cause:** The binding to Solid Share dropped and did not come back within the bind timeout — the
@@ -234,6 +249,32 @@ These now arrive as `SolidResult.Failure` with a typed `SolidError`, rather than
 ---
 
 ## Build & Gradle
+
+### The build fails with "requires ... to compile against version 37 or later"
+
+**Cause:** Your `compileSdk` is lower than the libraries'. Every artifact here is built against
+SDK 37 and its AAR metadata demands the same of anything that depends on it.
+
+**Fix:** Set `compileSdk = 37`. This changes which APIs you may call, not which devices you reach:
+leave `minSdk` at 26 and set `targetSdk` to whatever you already target.
+
+```kotlin title="build.gradle.kts"
+android {
+    compileSdk = 37
+}
+```
+
+---
+
+### KSP fails with "Provided Metadata instance has version 2.4.0, while maximum supported version is 2.3.0"
+
+**Cause:** Your annotation processor reads Kotlin metadata with a `kotlin-metadata-jvm` older than
+the Kotlin that built these libraries. Hilt below 2.60 does this, and the message names Hilt.
+
+**Fix:** Update the processor. For Hilt, use 2.60.1 or newer, and `androidx.hilt` 1.4.0 or newer.
+The same applies to any other KSP or kapt processor that reads metadata.
+
+---
 
 ### `NullPointerException` during Gradle configuration for `api`
 

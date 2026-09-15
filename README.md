@@ -69,7 +69,11 @@ For your own app, one dependency:
 implementation("com.erfangholami.androidsolidservices:client:0.8.0")
 ```
 
+The libraries need `compileSdk = 37` and `minSdk = 26`.
+
 Then follow the **[Quickstart](https://androidsolidservices.erfangholami.com/start/quickstart/)**.
+Upgrading from an older version? Read the
+**[upgrade guide](https://androidsolidservices.erfangholami.com/project/upgrading/)** first.
 There is also a [sample app](https://github.com/erfangholami/Android-Solid-Service_client-sample)
 that runs every SDK call against a live pod, shown next to the code that makes it.
 

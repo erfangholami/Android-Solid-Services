@@ -43,7 +43,9 @@ minute and decides which tab you follow below. The choice sticks across every pa
     }
     ```
 
-Minimum SDK 26.
+The libraries need `compileSdk = 37` and `minSdk = 26`. `compileSdk` is not a suggestion: the
+AAR metadata refuses a lower value, and the build stops with *"requires libraries and applications
+that depend on it to compile against version 37 or later"*. Your `targetSdk` stays your own choice.
 
 ## 3. Sign in
 
