@@ -11,7 +11,9 @@ every other app on the device reaches those pods through it, within a scope the 
 without ever handling a credential.
 
 📖 **[Full documentation](https://androidsolidservices.erfangholami.com)** — guides, API reference
-and troubleshooting.
+and troubleshooting. The site is versioned: it opens on the newest release, and the selector in the
+header switches to the docs for an older one. Before 1.0 the IPC contract changes between minors,
+so read the version that matches the SDK you depend on.
 
 ## The problem
 
@@ -55,9 +57,13 @@ private val authorize = registerForActivityResult(
 
 ## Install
 
-Users install **[Solid Share](https://solidshare.app)**, the host app, from
-[Google Play](https://play.google.com/store/apps/details?id=com.erfangholami.solidshare) or
-[F-Droid](https://f-droid.org/packages/com.erfangholami.solidshare/).
+Users install **[Solid Share](https://solidshare.app)**, the host app:
+
+<p>
+  <a href="https://play.google.com/store/apps/details?id=com.erfangholami.solidshare"><img src="docs/assets/badges/google-play.png" alt="Get it on Google Play" height="60"></a>
+  &nbsp;
+  <a href="https://f-droid.org/packages/com.erfangholami.solidshare/"><img src="docs/assets/badges/f-droid.png" alt="Get it on F-Droid" height="60"></a>
+</p>
 
 > **The Android Solid Services app is discontinued.** 0.7.2 was its last release and it works
 > with the 0.7.2 libraries only. From 0.8.0 the host is Solid Share, and `client` does not bind
