@@ -25,7 +25,12 @@ contact apps, and theirs show up in yours.
 
 ## Setup
 
-=== "Client (via Android Solid Services)"
+!!! info "Needs the Contacts module"
+    These verbs need a grant on the **Contacts** data module (`RequestedTarget.Module(DataModuleId.CONTACTS)`)
+    or on the whole pod: View to read, Add to create, Edit to change or delete. See
+    [App access](app-access.md).
+
+=== "Client (via Solid Share)"
 
     --8<-- "dependency-client.md"
 
@@ -65,7 +70,7 @@ differ only in how a result is unwrapped.
 Most apps want "the user's address book, whatever it is", not a new one every launch.
 `ensureDefault` returns the existing one or creates it:
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     val book = contacts.books.ensureDefault(webId)
@@ -83,7 +88,7 @@ Most apps want "the user's address book, whatever it is", not a new one every la
 
 To create a named one explicitly:
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```{ .kotlin .annotate }
     val book = contacts.books.create(
@@ -113,7 +118,7 @@ To create a named one explicitly:
 
 ### List the books a user already has
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     val books = contacts.books.list(webId)
@@ -171,7 +176,7 @@ val jane = contactData {
 
 Then write it:
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     val created = contacts.contacts.create(
@@ -201,7 +206,7 @@ are empty.
 
 ### List and read contacts
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     // Lightweight summaries, straight from the book's cached index — one request.
@@ -231,7 +236,7 @@ index, so rendering a list is one request no matter how many contacts there are.
     new snapshot from the stored one with `buildUpon { }` rather than constructing a fresh
     `contactData { }`, or you will silently delete the fields you did not mention.
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     import com.erfangholami.androidsolidservices.shared.model.contacts.buildUpon
@@ -267,7 +272,7 @@ every group the contact belongs to.
 
 ### Attach a photo
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     contacts.contacts.setPhoto(
@@ -317,7 +322,7 @@ deletes its groups.
 
 The duplicate check before adding a scanned profile:
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     val match = contacts.contacts.findByWebId(webId, "https://jane.example/profile/card#me")
@@ -340,7 +345,7 @@ The duplicate check before adding a scanned profile:
 
 ### Delete a contact
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     contacts.contacts.delete(webId, bookUri, contactUri)
@@ -368,7 +373,7 @@ sequenceDiagram
     autonumber
     participant App as Your app
     participant SDK as client SDK
-    participant ASS as Android Solid Services
+    participant ASS as Solid Share
     participant Pod as Solid pod
 
     App->>SDK: contacts.create(webId, bookUri, data)
@@ -390,8 +395,8 @@ The pod-side sequence is identical, which is why the same code shape works again
 | What you see | Why | What to do |
 |---|---|---|
 | `SolidNotLoggedInException` | no account signed in for that WebID | send the user back through sign-in |
-| `SolidAppNotFoundException` | Android Solid Services is not installed | prompt to [install it](../start/install-app.md), or use `api` |
-| `NotPermissionException` | the user has not granted your app access | the grant dialog was declined; ask again |
+| `SolidAppNotFoundException` | Solid Share is not installed | prompt to [install it](../start/install-app.md), or use `api` |
+| `NotPermissionException` | no grant on the Contacts module, or not at the level this verb needs | ask again with an `AccessRequest` for the module — see [App access](app-access.md) |
 | `403` on a write | signed in, but no write access to that container | the pod owner has to grant it — see [Sharing](sharing.md) |
 | Empty list where you expected contacts | the book or its index does not exist yet | this is normal on a fresh pod; call `books.ensureDefault` |
 | Fields silently disappearing after `update` | replace semantics | derive from the stored snapshot with `buildUpon { }` |

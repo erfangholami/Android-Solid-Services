@@ -1,6 +1,6 @@
 site_name: Android Solid Services
 site_url: https://androidsolidservices.erfangholami.com
-site_description: Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.
+site_description: The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.
 site_author: Erfan Gholami
 repo_name: Android-Solid-Services
 repo_url: https://github.com/erfangholami/Android-Solid-Services
@@ -70,8 +70,8 @@ extra:
       link: https://github.com/erfangholami/Android-Solid-Services
       name: Android Solid Services on GitHub
     - icon: fontawesome/brands/android
-      link: https://github.com/erfangholami/Android-Solid-Services/releases
-      name: Download the app
+      link: https://solidshare.app
+      name: Solid Share, the host app
 
 nav:
   - Home: index.md
@@ -79,10 +79,11 @@ nav:
       - Quickstart: start/quickstart.md
       - Client or API?: start/client-or-api.md
       - How it works: start/how-it-works.md
-      - Install the app: start/install-app.md
+      - Install Solid Share: start/install-app.md
   - Build with it:
       - build/index.md
       - Sign in & accounts: build/auth.md
+      - App access: build/app-access.md
       - Resources & containers: build/resources.md
       - Contacts: build/contacts.md
       - Tickets: build/tickets.md
@@ -91,6 +92,7 @@ nav:
       - Access control: build/access-control.md
       - Type index: build/type-index.md
       - Telemetry: build/telemetry.md
+      - Hosting the services: build/hosting.md
   - Reference:
       - Error codes: reference/errors.md
       - Solid-OIDC Client ID Document: reference/client-id-document.md
@@ -104,7 +106,7 @@ nav:
       - Troubleshooting: project/troubleshooting.md
       - Releases: project/releases.md
       - Contributing: project/contributing.md
-      - Privacy Policy: project/privacy.md
+      - Privacy: project/privacy.md
 
 plugins:
   - search
@@ -124,9 +126,9 @@ plugins:
       enable_git_follow: false
   - llmstxt:
       markdown_description: >-
-        Android Solid Services gives Android apps a single Solid sign-in. One app holds the
-        user's pod accounts; every other app reaches those pods through it over AIDL, with the
-        user's permission and without handling a credential.
+        Android Solid Services is the Solid SDK for Android. Solid Share holds the user's pod
+        accounts; every other app reaches those pods through it over AIDL, with a grant the
+        user scoped and without handling a credential.
       sections:
         Start here:
           - start/quickstart.md

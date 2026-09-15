@@ -24,7 +24,12 @@ vocabulary rather than only by your app.
 
 ## Setup
 
-=== "Client (via Android Solid Services)"
+!!! info "Needs the Tickets module"
+    These verbs need a grant on the **Tickets** data module (`RequestedTarget.Module(DataModuleId.TICKETS)`)
+    or on the whole pod: View to read, Add to create, Edit to change or delete. See
+    [App access](app-access.md).
+
+=== "Client (via Solid Share)"
 
     --8<-- "dependency-client.md"
 
@@ -69,7 +74,7 @@ val pass = NewTicket(
 )
 ```
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```{ .kotlin .annotate }
     val ticket = tickets.createTicket(
@@ -102,7 +107,7 @@ val pass = NewTicket(
 
 ### List the wallet
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     val wallet = tickets.listTickets(webId)?.tickets.orEmpty()

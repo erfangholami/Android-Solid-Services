@@ -22,18 +22,18 @@ cd Android-Solid-Services
 ```
 
 ```sh
-./gradlew assembleFossDebug    # the app, without Google services
-./gradlew assembleGmsDebug     # the app, with Firebase
+./gradlew assembleDebug        # the four libraries
 ```
 
-The APK lands in `app/build/outputs/apk/foss/debug`. Versions are derived from the git tag, so a
-working copy needs no version edits — `-PassVersion=X.Y.Z` overrides for a build without git.
+Versions are derived from the git tag, so a working copy needs no version edits —
+`-PassVersion=X.Y.Z` overrides for a build without git, and is how an unreleased version is
+published to mavenLocal. The host app, Solid Share, lives in its own repository.
 
 ## Run the tests
 
 ```sh
 ./gradlew test                                   # unit tests, all modules
-./gradlew :app:testDebugUnitTest                 # one module
+./gradlew :host:testDebugUnitTest                # one module
 ./gradlew connectedAndroidTest                   # instrumented — needs a device or emulator
 ```
 
@@ -101,6 +101,5 @@ above it is not much use to someone who pasted it — or to an agent that lifted
 
 ## Releasing
 
-Releasing is tagging: `versionName`, `versionCode` and all three Maven coordinates derive from
-`vX.Y.Z`. The only file edited by hand is `CHANGELOG.md`, which the release workflow's `versions`
+Releasing is tagging: the four Maven coordinates derive from `vX.Y.Z`. The only file edited by hand is `CHANGELOG.md`, which the release workflow's `versions`
 gate requires. Full detail in [Releases](releases.md).

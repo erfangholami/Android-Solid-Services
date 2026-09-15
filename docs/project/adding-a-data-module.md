@@ -189,12 +189,12 @@ What still has to be edited, honestly:
 - **Module registration** — the facade has to be constructible, so the `getInstance(...)` factory
   and the app's DI module gain a line.
 - **The IPC layer** — a cross-process consumer needs one typed AIDL interface for the module's
-  verbs, an `:app` service stub and a `:client` SDK class. The per-return-type cost is gone:
+  verbs, a `:host` binder branch and a `:client` SDK class. The per-return-type cost is gone:
   every verb takes one of the two generic callbacks (`IASSParcelableCallback` /
   `IASSParcelableListCallback`), results travel in the Bundle envelope owned by
   `Shared/src/main/java/com/erfangholami/androidsolidservices/shared/ipc/IpcEnvelope.kt` (which
   also owns setting the Bundle class loader — no call site does), stubs answer through the
-  `dispatch*` helpers in `app/.../services/AidlDispatch.kt`, and the SDK suspends through the
+  `dispatch*` helpers in `host/.../dispatch/AidlDispatch.kt`, and the SDK suspends through the
   bridges in `client/.../sdk/CallbackBridges.kt` (`suspendParcelable`, `suspendParcelableList`,
   `suspendUnit`, …). A new module writes no callback types and no `Stub()` bridges.
 

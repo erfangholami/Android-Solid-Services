@@ -25,7 +25,12 @@ withdrawals, rejections and requests — and how it delivers those to someone el
 
 ## Setup
 
-=== "Client (via Android Solid Services)"
+!!! info "Needs a whole-pod grant"
+    The inbox belongs to the account, so these verbs need a grant on the **whole pod**: View to
+    read it, Edit to delete from it, and **Full access** to send anything as the user. See
+    [App access](app-access.md).
+
+=== "Client (via Solid Share)"
 
     --8<-- "dependency-client.md"
 

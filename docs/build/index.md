@@ -19,6 +19,12 @@ see [Client or API?](../start/client-or-api.md) if you have not chosen yet.
 
     Getting a WebID to call with, staying signed in, and handling several accounts on one device.
 
+-   :material-shield-key-outline: **[App access](app-access.md)**
+
+    ---
+
+    What your app asks the user for — a level on the whole pod, on folders, or on a data module — and what each verb needs.
+
 -   :material-file-document-outline: **[Resources & containers](resources.md)**
 
     ---
@@ -74,15 +80,19 @@ see [Client or API?](../start/client-or-api.md) if you have not chosen yet.
 **Every call takes a `webId` first.** A device can hold several signed-in Solid identities at
 once, so the WebID chooses which session signs the request. Keep the one you got at sign-in.
 
-**Wait for the connection on the `client` path.** Each client exposes a `Flow<Boolean>` that
-emits `true` once its bound service is connected. Collect it before your first call, or you will
-race the binding.
+**Every `client` call needs a grant.** The user approves what your app may do on Solid Share's
+consent screen, and a call outside that scope fails with `NotPermissionException`. Ask for the
+least you need; [App access](app-access.md) has the verb table.
+
+**The `client` path waits for its binding by itself.** Every call is a `suspend` function that
+waits for the bound service, so nothing has to be collected first. Each client still exposes a
+`Flow<Boolean>` of its connection for UI that wants to show it:
 
 ```kotlin
-resources.resourceServiceConnectionState().first { connected -> connected }
+resources.resourceServiceConnectionState().collect { connected -> render(connected) }
 ```
 
-The `api` path has no such step — there is no service to bind to.
+The `api` path has no binding at all — there is no service between your app and the pod.
 
 ## Not finding it here?
 

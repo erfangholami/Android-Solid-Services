@@ -25,7 +25,7 @@ these verbs. Learning them once covers the rest.
 
 ## Setup
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     --8<-- "dependency-client.md"
 
@@ -234,8 +234,8 @@ resources.delete(webId, resource)                     // one resource
 resources.deleteContainer(webId, "${storage}notes/")  // container and everything under it
 ```
 
-`deleteContainer` recurses inside Android Solid Services, so a deep tree costs one IPC round trip
-rather than one per resource.
+`deleteContainer` recurses inside the host app, so a deep tree costs one IPC round trip rather
+than one per resource.
 
 ### Does it exist?
 
@@ -255,7 +255,7 @@ sequenceDiagram
     autonumber
     participant App as Your app
     participant SDK as client SDK
-    participant ASS as Android Solid Services
+    participant ASS as Solid Share
     participant Pod as Solid pod
 
     App->>SDK: head(webId, uri)

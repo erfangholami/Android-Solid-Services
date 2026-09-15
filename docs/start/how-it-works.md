@@ -1,6 +1,6 @@
 # How It Works
 
-This page walks through how Android Solid Services works at runtime — from a user logging in to a third-party app reading a pod resource. Understanding this helps you build apps that integrate correctly and handle edge cases gracefully.
+This page walks through how the SDK works at runtime — from a user signing in to a third-party app reading a pod resource. Understanding this helps you build apps that integrate correctly and handle edge cases gracefully.
 
 ---
 
@@ -10,7 +10,7 @@ This page walks through how Android Solid Services works at runtime — from a u
 graph TD
     subgraph "Your device"
         A["Third-party app<br/>(uses client)"]
-        B["Android Solid Services<br/>(host app)"]
+        B["Solid Share<br/>(host app)"]
     end
     C["Solid Pod Server<br/>(CSS, ESS, etc.)"]
     D["OpenID Provider<br/>(identity server)"]
@@ -20,31 +20,32 @@ graph TD
     B -- "OIDC auth flow\n(login / token refresh)" --> D
 ```
 
-Your app **never talks directly to the pod**. It calls the ASS host app over Android IPC (AIDL), which holds the tokens and makes all authenticated HTTP requests on its behalf.
+Your app **never talks directly to the pod**. It calls the host app, Solid Share, over Android IPC (AIDL), which holds the tokens and makes all authenticated HTTP requests on its behalf.
 
-This design has two benefits:
+This design has three benefits:
 
-- **Single sign-in** — the user logs in once; every app on the device reuses the same session.
-- **Credential isolation** — access tokens never leave the ASS process; third-party apps cannot exfiltrate them.
+- **Single sign-in** — the user signs in once; every app on the device reuses the same session.
+- **Credential isolation** — access tokens never leave the host process; third-party apps cannot exfiltrate them.
+- **Scoped access** — the host checks every verb against what the user granted that app, so an app that asked for one folder cannot read the rest of the pod.
 
 ---
 
 ## Authentication Flow
 
-The login flow runs once per Solid account. ASS orchestrates the full OpenID Connect exchange, adding DPoP token binding when the provider supports it:
+The login flow runs once per Solid account, inside Solid Share. It orchestrates the full OpenID Connect exchange, adding DPoP token binding when the provider supports it:
 
 ```mermaid
 sequenceDiagram
     actor User
     participant App as Your App
-    participant ASS as Android Solid Services
+    participant ASS as Solid Share
     participant Browser
     participant IDP as OpenID Provider
     participant Pod as Solid Pod
 
-    App->>ASS: launch AuthorizeWithSolid
-    ASS->>User: Show account picker
-    User->>ASS: Approve
+    App->>ASS: launch AuthorizeWithSolid(request)
+    ASS->>User: Show the account list and what the app asks for
+    User->>ASS: Approve, or narrow it first
     ASS->>IDP: Fetch OIDC discovery doc<br/>(from WebID → issuer)
     ASS->>Browser: Open authorization URL
     Browser->>User: Show IDP login page
@@ -54,19 +55,19 @@ sequenceDiagram
     IDP-->>ASS: Tokens (DPoP-bound when supported, else Bearer)
     ASS->>Pod: First pod request (HEAD /profile)
     Pod-->>ASS: 200 OK
-    ASS-->>App: Authorized(webId)
+    ASS-->>App: Authorized(webId, grant)
 ```
 
-After login, ASS stores the tokens (access + refresh) in an **encrypted-at-rest** DataStore — AES-256-GCM under an Android Keystore key — so the persisted session is unreadable off-device. When DPoP is in use, each account also has **its own DPoP key pair** held by ASS, so a stolen token is useless without the private key.
+After login, the host stores the tokens (access + refresh) in an **encrypted-at-rest** DataStore — AES-256-GCM under an Android Keystore key — so the persisted session is unreadable off-device. When DPoP is in use, each account also has **its own DPoP key pair** held by the host, so a stolen token is useless without the private key.
 
 !!! tip "Stable client identity (0.5.0)"
-    By default ASS registers a client dynamically with each OpenID Provider. You can instead point the login at a hosted **Solid-OIDC Client ID Document** (a stable `client_id` URL) so registration never expires and the consent screen shows your app's real name. See [Using a Client ID Document](../reference/client-id-document.md).
+    By default the host registers a client dynamically with each OpenID Provider. You can instead point the login at a hosted **Solid-OIDC Client ID Document** (a stable `client_id` URL) so registration never expires and the consent screen shows your app's real name. See [Using a Client ID Document](../reference/client-id-document.md).
 
 ---
 
 ## DPoP or Bearer: How Requests Are Authenticated
 
-ASS does not force DPoP. It **negotiates** the token-binding scheme from the OpenID Provider's
+The SDK does not force DPoP. It **negotiates** the token-binding scheme from the OpenID Provider's
 discovery document and uses whichever the server supports:
 
 - **DPoP ([Demonstration of Proof-of-Possession](https://datatracker.ietf.org/doc/html/rfc9449))** —
@@ -76,9 +77,9 @@ discovery document and uses whichever the server supports:
     | Header | Content |
     |--------|---------|
     | `Authorization: DPoP <token>` | The access token issued by the IDP |
-    | `DPoP: <proof>` | A short-lived JWT, signed with a private key ASS generated at first launch, binding the token to this specific request (method + URI + timestamp) |
+    | `DPoP: <proof>` | A short-lived JWT, signed with a private key generated at first launch, binding the token to this specific request (method + URI + timestamp) |
 
-    If the server returns a `DPoP-Nonce` header, ASS incorporates it into the next proof — preventing
+    If the server returns a `DPoP-Nonce` header, the next proof carries it — preventing
     replay attacks.
 
 - **Bearer tokens** — the fallback when the provider does not advertise DPoP. Requests carry a plain
@@ -88,25 +89,24 @@ This negotiation happens automatically; your app doesn't need to know which sche
 
 ---
 
-## IPC: How Your App Calls ASS
+## IPC: How Your App Calls the Host
 
-The `client` library binds to the Android services inside the ASS app — sign-in, resources, contacts, and (since 0.5.0) sharing and notifications:
+The `client` library binds to five Android services inside Solid Share — sign-in, resources, data modules, sharing and notifications. It binds them **by intent action** inside the host's package, so the host is free to name and move its own classes:
 
 ```mermaid
 sequenceDiagram
     participant App as Your App
     participant Client as client
-    participant Binder as ASS AIDL Service
+    participant Binder as Solid Share binder
     participant RM as SolidResourceManager
     participant Pod as Solid Pod
 
     App->>Client: Solid.getResourceClient(context)
-    Client->>Binder: bindService(ASSResourceService)
-    Binder-->>Client: onServiceConnected
-    Client-->>App: resourceServiceConnectionState emits true
-
     App->>Client: resourceClient.read(url, MyNote::class.java)
+    Client->>Binder: bindService(ACTION_RESOURCES)
+    Binder-->>Client: onServiceConnected
     Client->>Binder: AIDL call: read(url, className)
+    Note over Binder: checks the app's grant:<br/>a read needs View on that resource
     Binder->>RM: resourceManager.read(webId, uri, clazz)
     RM->>Pod: GET /data/note.ttl<br/>Authorization: DPoP …<br/>DPoP: <proof>
     Pod-->>RM: 200 OK  (Turtle body)
@@ -115,18 +115,18 @@ sequenceDiagram
     Client-->>App: returns MyNote
 ```
 
-The `Flow<Boolean>` connection state is essential: AIDL binding is asynchronous. Always collect it before calling methods — or you'll get a `SolidServiceConnectionException`.
+Binding is asynchronous, but every call waits for it, so there is nothing to collect first. The `Flow<Boolean>` connection state is there for UI that wants to show it. A call that the grant does not cover fails with `NotPermissionException` before any HTTP request is made — see [App access](../build/app-access.md).
 
 ---
 
 ## Multi-Account Routing
 
-Since v0.3.0, ASS manages multiple logged-in Solid accounts. Since v0.4.0, the client library passes the target WebID on every call so ASS can route the request to the correct token set.
+The host manages several signed-in Solid accounts at once, and the client library passes the target WebID on every call so the host can route the request to the correct token set.
 
 ```mermaid
 sequenceDiagram
     participant App as Your App
-    participant ASS
+    participant ASS as Solid Share
     participant Pod1 as pod.example.org
     participant Pod2 as another.pod.net
 
@@ -144,13 +144,14 @@ Persist the WebID after login: `signInClient.getAccount(webId)?.webId`, or take 
 
 ## Resource Operations: What Happens Under the Hood
 
-When your app calls `resourceClient.read(url, clazz)`, ASS:
+When your app calls `resourceClient.read(url, clazz)`, the host:
 
-1. Looks up the access token for the given WebID.
-2. Refreshes it if expired (using the stored refresh token, plus a fresh DPoP proof when DPoP is in use).
-3. Issues a `GET` with the negotiated auth headers — `Authorization: DPoP` + a `DPoP` proof, or a plain `Authorization: Bearer`.
-4. Parses the response body (Turtle, JSON-LD, or raw bytes) into your data class.
-5. Returns `SolidResult.Success(value)` or `SolidResult.Failure(error)` — never throws.
+1. Checks the calling app's grant covers a read of that resource, and refuses with `NotPermissionException` if not.
+2. Looks up the access token for the given WebID.
+3. Refreshes it if expired (using the stored refresh token, plus a fresh DPoP proof when DPoP is in use).
+4. Issues a `GET` with the negotiated auth headers — `Authorization: DPoP` + a `DPoP` proof, or a plain `Authorization: Bearer`.
+5. Parses the response body (Turtle, JSON-LD, or raw bytes) into your data class.
+6. Returns `SolidResult.Success(value)` or `SolidResult.Failure(error)` — never throws.
 
 For `update()` and `patch()`, passing an `ifMatch` ETag from a prior `head()` or `read()` adds conditional write protection: the server rejects the write with `412 Precondition Failed` if someone else changed the resource since you last read it.
 
@@ -158,7 +159,7 @@ For `update()` and `patch()`, passing an `ifMatch` ETag from a prior `head()` or
 
 ## Direct API Mode (no host app)
 
-If you use `api` directly (no ASS host app), the flow is the same — but your app owns the auth state:
+If you use `api` directly (no host app), the flow is the same — but your app owns the auth state, and nothing scopes what it may do:
 
 ```mermaid
 graph LR
@@ -166,50 +167,50 @@ graph LR
     A -- "OIDC" --> C["OpenID Provider"]
 ```
 
-You call `Authenticator.getInstance(context)` and manage the token lifecycle yourself. Use this when you want a fully self-contained app or when ASS is unavailable.
+You call `Authenticator.getInstance(context)` and manage the token lifecycle yourself. Use this when you want a fully self-contained app, or when Solid Share cannot be a prerequisite.
 
 ---
 
 ## Access Grant Flow
 
-Before a third-party app can read any resource, ASS requires an explicit grant from the user:
+Before a third-party app can touch a pod, the host requires an explicit grant from the user — and the grant says *what* and *where*, not just *yes*:
 
 ```mermaid
 sequenceDiagram
     participant App as Third-party App
-    participant ASS
+    participant ASS as Solid Share
     actor User
 
-    App->>ASS: launch AuthorizeWithSolid
-    ASS->>User: "App X wants access to your Solid pod"
+    App->>ASS: launch AuthorizeWithSolid(AccessRequest)
+    ASS->>User: "App X wants Edit on notes/ in your pod"
     alt User approves
-        User->>ASS: Pick an account
-        ASS->>ASS: Persist grant in DataStore
-        ASS-->>App: Authorized(webId)
+        User->>ASS: Pick an account, narrow the scope if they like
+        ASS->>ASS: Persist the AppGrant in DataStore
+        ASS-->>App: Authorized(webId, grant)
     else User dismisses
         User->>ASS: Tap outside / back
         ASS-->>App: Dismissed
     end
 ```
 
-Grants are stored per-app in DataStore and shown in the ASS Settings page. The user can revoke them at any time. Your app can also revoke its own grant by calling `disconnectFromSolid()`.
+Grants are stored per app and shown in Solid Share's Apps tab, where the user can narrow or revoke them at any time. Your app can revoke its own with `disconnectFromSolid()`. Every subsequent IPC call is checked against the stored grant; see [App access](../build/app-access.md) for what each verb needs.
 
 ---
 
 ## Sharing & Access Control
 
-Since v0.5.0, ASS can share pod resources with **other people** (distinct from the app access grants
-above, which are about which apps may act for you). A share writes an authorization onto the
-resource's access control so the receiver's own credentials let them reach it:
+The SDK can also share pod resources with **other people** — distinct from the app grants above,
+which are about which apps may act for you. A share writes an authorization onto the resource's
+access control so the receiver's own credentials let them reach it:
 
-- **Backend** — Web Access Control (WAC, `.acl`) or Access Control Policy (ACP, `.acr`). ASS detects
+- **Backend** — Web Access Control (WAC, `.acl`) or Access Control Policy (ACP, `.acr`). The SDK detects
   which the pod uses from the resource's advertised authorization links and writes the right one.
 - **Modes** — **View** (`acl:Read`), **Add** (`acl:Read` + `acl:Append`), or **Edit** (`acl:Read` +
   `acl:Write`). WAC has no mode subsumption, so the implied modes are written explicitly and folded
   back into one logical level per receiver when listed.
 - **Receivers** — a single WebID, a `vcard:Group` (members inherit), or the public.
 - **Containers** — sharing a container uses `acl:default` so its members inherit the access.
-- **Index** — ASS keeps a private `given_shares.ttl` / `received_shares.ttl` pair under
+- **Index** — the SDK keeps a private `given_shares.ttl` / `received_shares.ttl` pair under
   `/solidshare/` so a user can list what they've shared and received without re-walking the pod; it
   can be rebuilt from the pod's own ACLs.
 - **Links** — a share can be handed off out-of-band as an `https://solidshare.app/s…` App Link or QR

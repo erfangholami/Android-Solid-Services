@@ -12,10 +12,10 @@ minute and decides which tab you follow below. The choice sticks across every pa
 
 ## 1. Before you start
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
-    Install [Android Solid Services](install-app.md) on your device or emulator and sign in to a
-    pod. Your app talks to it, so it has to be there.
+    Install [Solid Share](install-app.md) on your device or emulator and sign in to a pod. Your
+    app talks to it, so it has to be there.
 
     No pod? [solidcommunity.net](https://solidcommunity.net) gives you one free.
 
@@ -26,7 +26,7 @@ minute and decides which tab you follow below. The choice sticks across every pa
 
 ## 2. Add the dependency
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     --8<-- "dependency-client.md"
 
@@ -47,10 +47,11 @@ Minimum SDK 26.
 
 ## 3. Sign in
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
-    Sign-in is an activity result. Your app launches the account picker from its own foreground,
-    which is why no special permission is involved.
+    Sign-in is an activity result. Your app launches Solid Share's consent screen from its own
+    foreground, which is why no special permission is involved, and it says what it needs. This
+    quickstart writes into one folder, so it asks for that folder at Edit.
 
     ```{ .kotlin .annotate title="MainActivity.kt" }
     import androidx.activity.ComponentActivity
@@ -58,11 +59,22 @@ Minimum SDK 26.
     import com.erfangholami.androidsolidservices.client.sdk.AuthorizeWithSolid
     import com.erfangholami.androidsolidservices.client.sdk.Solid
     import com.erfangholami.androidsolidservices.client.sdk.SolidSignInResult
+    import com.erfangholami.androidsolidservices.shared.model.grant.AccessLevel
+    import com.erfangholami.androidsolidservices.shared.model.grant.AccessRequest
+    import com.erfangholami.androidsolidservices.shared.model.grant.RequestedTarget
 
     class MainActivity : ComponentActivity() {
 
         // Register the contract while the activity is being created — not in a click handler. (1)!
-        private val authorize = registerForActivityResult(AuthorizeWithSolid()) { result ->
+        private val authorize = registerForActivityResult(
+            AuthorizeWithSolid(
+                AccessRequest(   // (3)!
+                    level = AccessLevel.EDIT,
+                    targets = listOf(RequestedTarget.Path("notes/")),
+                    reason = "Your notes are kept in your pod under notes/.",
+                ),
+            ),
+        ) { result ->
             when (result) {
                 is SolidSignInResult.Authorized -> onSignedIn(result.webId)   // (2)!
                 SolidSignInResult.Dismissed     -> showMessage("Sign-in cancelled")
@@ -77,7 +89,11 @@ Minimum SDK 26.
     1. Android requires result contracts to be registered before the activity reaches `STARTED`.
        Registering later throws.
     2. Keep this WebID. Every pod call takes it as its first argument, which is how a device with
-       several signed-in accounts routes your call to the right one.
+       several signed-in accounts routes your call to the right one. `result.grant` is what the user
+       approved, which may be narrower than what you asked for.
+    3. What the app needs: a level, and the whole pod, storage-relative paths or data modules. The
+       user can narrow or widen it. Leave it out and the app asks for the whole pod at Edit. See
+       [App access](../build/app-access.md).
 
 === "API (direct to the pod)"
 
@@ -120,7 +136,7 @@ Minimum SDK 26.
 
 A WebID document says where that person's storage lives, so you rarely hard-code a pod URL.
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     val resources = Solid.getResourceClient(context)
@@ -148,7 +164,7 @@ A WebID document says where that person's storage lives, so you rarely hard-code
 
 ## 5. Write something
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```{ .kotlin .annotate }
     val noteUri = "${storage}notes/hello.txt"
@@ -181,7 +197,7 @@ A WebID document says where that person's storage lives, so you rarely hard-code
 
 ## 6. Read it back
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```kotlin
     val text = resources.readStream(webId, noteUri).use { stream ->

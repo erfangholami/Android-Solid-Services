@@ -1,15 +1,16 @@
 ---
 title: Android Solid Services
-description: Single Solid sign-in for Android. One app holds the user's pod accounts; every other app reaches those pods through it, with permission and without handling a credential.
+description: The Solid SDK for Android. Solid Share holds the user's pod accounts; every other app reaches those pods through it, with a grant the user scoped and without handling a credential.
 hide:
   - navigation
 ---
 
 # Android Solid Services
 
-**Single sign-in to [Solid](https://solidproject.org/) for Android.** One app holds the user's pod
-accounts. Every other app on the device reaches those pods through it — with the user's
-permission, and without ever handling a credential.
+**Single sign-in to [Solid](https://solidproject.org/) for Android.**
+[Solid Share](https://solidshare.app) holds the user's pod accounts. Every other app on the
+device reaches those pods through it — with a grant the user scoped, and without ever handling a
+credential.
 
 For your app, that is one dependency and no authentication code at all.
 
@@ -33,11 +34,11 @@ For your app, that is one dependency and no authentication code at all.
 
     Contacts, sharing, resources, notifications — one page each.
 
--   :material-cellphone-arrow-down: **[Install the app](start/install-app.md)**
+-   :material-cellphone-arrow-down: **[Install Solid Share](start/install-app.md)**
 
     ---
 
-    For people who just want Solid on their phone.
+    The host app. For people who just want Solid on their phone.
 
 </div>
 
@@ -52,16 +53,22 @@ to make.
 
 ## How this solves it
 
-Android Solid Services owns the login. Tokens are DPoP-bound to keys generated in the Android
-Keystore, encrypted at rest, and they never leave the app. Other apps talk to it over AIDL and get
+Solid Share owns the login. Tokens are DPoP-bound to keys generated in the Android Keystore,
+encrypted at rest, and they never leave that app. Other apps talk to it over AIDL and get
 **results**, never credentials.
 
-The user signs in once, grants each app access explicitly, and can revoke it at any time.
+The user signs in once, and decides for each app what it may do and where — the whole pod, a few
+folders, or one data module — at View, Add, Edit or Full access. They can narrow or revoke it at
+any time.
 
 ```kotlin
 // The whole of your authentication code.
-val authorize = registerForActivityResult(AuthorizeWithSolid()) { result ->
-    if (result is SolidSignInResult.Authorized) onSignedIn(result.webId)
+val authorize = registerForActivityResult(
+    AuthorizeWithSolid(
+        AccessRequest(level = AccessLevel.EDIT, targets = listOf(RequestedTarget.Path("notes/"))),
+    ),
+) { result ->
+    if (result is SolidSignInResult.Authorized) onSignedIn(result.webId, result.grant)
 }
 ```
 
@@ -75,11 +82,11 @@ val authorize = registerForActivityResult(AuthorizeWithSolid()) { result ->
 Accounts from different pod providers, all signed in, all usable. Every call names the WebID it is
 for, so routing is explicit.
 
-:material-shield-check-outline: **No dangerous permissions**
+:material-shield-key-outline: **Access the user scopes**
 { .card }
 
-Sign-in launches from your own activity, so nothing needs overlay or contacts permissions. Solid
-accounts appear in Android Settings like any other.
+Ask for a level on the whole pod, on folders, or on a data module. Every verb is checked against
+what the user approved, and they can narrow it later.
 
 :material-share-variant-outline: **Sharing that pods understand**
 { .card }
@@ -94,22 +101,14 @@ Contacts and tickets as standard RDF, laid out so other Solid apps read the same
 
 </div>
 
-## See it in action
-
-Tap any screen to enlarge it.
-
-| Sign in | Signed in | Accounts | Granted apps |
-|---|---|---|---|
-| ![Choosing a pod provider, or entering a custom pod server URL](assets/screenshots/sign-in.png) | ![The signed-in WebID and the storages it advertises](assets/screenshots/signed-in.png) | ![Two Solid accounts signed in at once, one marked active](assets/screenshots/accounts.png) | ![An app's grant, with a button to revoke it](assets/screenshots/granted-apps.png) |
-| Any Solid provider, or your own server | The WebID and its storages | Several accounts, all live at once | Every grant, revocable |
-
 ## The pieces
 
 | Component | Role | Published |
 |---|---|---|
-| Android Solid Services | The app that holds the accounts and exposes the IPC services | [GitHub Releases](https://github.com/erfangholami/Android-Solid-Services/releases) |
-| [`client`](start/client-or-api.md) | For apps that go through Android Solid Services | [Maven Central](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/client) |
+| [Solid Share](https://solidshare.app) | The app that holds the accounts and hosts the IPC services | [Google Play](https://play.google.com/store/apps/details?id=com.erfangholami.solidshare) · [F-Droid](https://f-droid.org/packages/com.erfangholami.solidshare/) |
+| [`client`](start/client-or-api.md) | For apps that go through Solid Share | [Maven Central](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/client) |
 | [`api`](start/client-or-api.md) | For apps that talk to pods directly | [Maven Central](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/api) |
+| `host` | For apps that host the services themselves, as Solid Share does | [Maven Central](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/host) |
 
 There is also a [sample app](https://github.com/erfangholami/Android-Solid-Service_client-sample)
 that runs every SDK call against a live pod, each shown beside the code that made it — the fastest

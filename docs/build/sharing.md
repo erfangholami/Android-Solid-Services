@@ -26,7 +26,12 @@ shared does not mean crawling the whole pod.
 
 ## Setup
 
-=== "Client (via Android Solid Services)"
+!!! info "Needs Full access"
+    Every sharing verb needs a grant at **Full access**: on the resource it names, or on the whole
+    pod for the share indexes and the received-shares list. Ask for it in your `AccessRequest`;
+    see [App access](app-access.md).
+
+=== "Client (via Solid Share)"
 
     --8<-- "dependency-client.md"
 
@@ -67,7 +72,7 @@ Read + Write — and the index collapses them back to one mode per receiver when
 
 ### Share something with someone
 
-=== "Client (via Android Solid Services)"
+=== "Client (via Solid Share)"
 
     ```{ .kotlin .annotate }
     sharing.createShare(

@@ -1,85 +1,63 @@
-# Privacy Policy
+# Privacy
 
-_Last updated: 30th July 2026_
+_Last updated: 14th September 2026_
 
-Android Solid Services (ASS) signs you in to [Solid](https://solidproject.org/) pods and lets other
-apps on your device reach them on your behalf. This policy explains what the app does with your
-data.
+This page is about the **libraries** in this repository — `client`, `api`, `host` and `shared`.
+They are compiled into other people's applications and are not an app you can install.
 
-The short version: **your pod data never reaches us.** It travels between your device and the pod
-provider you chose. We operate no servers and hold no copy of it.
+The short version: **the libraries collect nothing and transmit nothing on their own.** Pod data
+travels between the device and the pod provider the user chose. This project operates no servers
+and holds no copy of it.
 
-## What we never collect
+!!! info "Looking for the app's privacy policy?"
+    The host app is [Solid Share](https://solidshare.app), and it has its own policy at
+    [solidshare.app/privacy](https://solidshare.app/privacy). The Android Solid Services app, which
+    this page used to cover, was discontinued at 0.7.2.
 
-- **Pod contents** — contacts, resources, tickets, files or anything else stored in your pod.
-- **Your WebID or pod address.**
-- **Credentials.** Sign-in happens through your pod provider using Solid-OIDC. Your password is
-  entered on their site, never in this app.
-- **Contacts, location, photos, or files** from your device.
+## What the libraries never collect
 
-Access tokens are stored on your device only, encrypted with AES-256-GCM using a key held in the
-Android Keystore. They are sent to your pod provider to authorise requests, and to no one else.
+- **Pod contents** — contacts, resources, tickets, files or anything else stored in a pod.
+- **WebIDs or pod addresses.**
+- **Credentials.** Sign-in happens through the user's pod provider using Solid-OIDC. The password
+  is entered on the provider's site.
+- **Contacts, location, photos, or files** from the device.
 
-## What we do collect
+Access tokens stay on the device, encrypted with AES-256-GCM under a key held in the Android
+Keystore. They are sent to the pod provider to authorise requests, and to no one else.
 
-Only in the **Google Play build**, and only in release form. See
-[Builds that collect nothing](#builds-that-collect-nothing) below.
+## Diagnostics are the host's decision
 
-**Crash reports** — via Firebase Crashlytics, when the app crashes or handles an unexpected error:
+The libraries emit through `Telemetry`, a small interface in `shared.telemetry`. Until a host
+application calls `Telemetry.install(...)`, the sink is a no-op and nothing is gathered, recorded
+or sent. The libraries carry no monitoring dependency of any kind — no Crashlytics, no Analytics,
+no third-party SDK.
 
-- the stack trace and exception type
-- device model, Android version, and app version
-- a Firebase installation identifier
-- the package name of the app whose request was being serviced, so a fault can be traced to the
-  integration that triggered it
+If you are building an app on these libraries, whatever you install is yours: reports go to your
+backend, under your privacy policy, and nothing reaches this project. [Telemetry](../build/telemetry.md)
+covers what is emitted and how to install a sink.
 
-**Performance data** — via Firebase Performance Monitoring:
+Where a host does collect, two rules are built into what the libraries emit:
 
-- app start-up and screen rendering times
-- timings for network requests
+- **Network spans report the origin only** — `scheme://host[:port]`. A pod URL's path names the
+  user's containers and resources, so paths and query strings never leave the process.
+- **No WebIDs, tokens or refresh-token fingerprints** are ever attached as attributes.
 
-Network timings record the **origin only** — `scheme://host[:port]`, for example
-`https://pod.example`. A pod URL's path names your containers and resources, so paths and query
-strings are removed before anything is reported, and Firebase's automatic network instrumentation
-is switched off because it would capture complete URLs.
+## What an app grant means for privacy
 
-We use this to find crashes and slow paths. It is not used to profile you, and there is no
-advertising or analytics SDK in the app — **Firebase Analytics is not included**.
+On the `client` path, an app reaches the pod only within the grant its user approved: a level on
+the whole pod, on named folders, or on a data module. The host checks every call against it, and
+the user can narrow or revoke it at any time. See [App access](../build/app-access.md).
 
-## Builds that collect nothing
-
-- **The F-Droid build** contains no Firebase or Google Play Services code at all. Nothing is
-  collected, and there is nothing to switch off.
-- **Debug builds** collect nothing.
-
-If you would rather no diagnostics were sent, install the F-Droid build.
+On the `api` path there is no such boundary — the app holds the credentials itself, and can do
+whatever the account can do.
 
 ## Who else is involved
 
-- **Your pod provider**, whom you choose. Your data lives with them, under their privacy policy.
-- **Google**, as the processor for Crashlytics and Performance Monitoring in the Play build, under
-  the [Firebase data processing terms](https://firebase.google.com/support/privacy). Retention of
-  crash and performance data follows Firebase's own schedule.
+- **The user's pod provider**, whom they choose. Their data lives there, under that provider's
+  privacy policy.
+- **The host application**, whoever publishes it, for anything it collects.
 
-We do not sell data, and we share none of it with anyone else.
-
-## Your choices
-
-- Uninstalling the app ends all collection.
-- Signing out removes the stored tokens for that account.
-- Installing the F-Droid build avoids diagnostics entirely.
-- To ask what diagnostic data is associated with your installation, or to have it deleted, contact
-  us below. Because reports carry no account identifier, we may need the Firebase installation ID
-  from your device to locate them.
-
-## Children
-
-The app is not directed at children and we do not knowingly collect data from them.
-
-## Changes
-
-Material changes will be published on this page with a new date above, and noted in the release
-notes.
+This project sells no data and shares none.
 
 ## Contact
 

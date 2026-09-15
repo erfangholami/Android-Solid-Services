@@ -38,7 +38,7 @@ class YourApplication : Application() {
 }
 ```
 
-1. Gate it on a build flag. Android Solid Services itself installs its sink in release builds only
+1. Gate it on a build flag. Solid Share, the host app, installs its sink in release builds only
    and leaves the no-op in place for debug, so development never ships noise to a dashboard.
 
 `Telemetry.uninstall()` puts the no-op back — useful when a user withdraws consent at runtime.
@@ -206,20 +206,13 @@ tests so a sink must implement them.
 
 #### Installing a sink
 
-The host calls `Telemetry.install(sink)` from `Application.onCreate`. This repository's own
-`:app` host is the reference in both directions:
-
-- The `gms` flavor installs `FirebaseTelemetrySink`
-  (`app/src/gms/java/com/erfangholami/androidsolidservices/telemetry/FirebaseTelemetrySink.kt:11`),
-  which maps spans to Firebase Performance `Trace`s, network spans to `HttpMetric`s, and
-  exceptions, breadcrumbs and keys to Crashlytics. Installation is gated on
-  `BuildConfig.TELEMETRY_ENABLED` and skipped entirely when Firebase fails to initialise
-  (`app/src/gms/java/com/erfangholami/androidsolidservices/telemetry/TelemetryInstaller.kt:13`).
-- The `foss` flavor installs nothing, so the no-op sink stays and the libraries emit nothing
-  (`app/src/foss/java/com/erfangholami/androidsolidservices/telemetry/TelemetryInstaller.kt:13`).
-  That absence is a decision with a stated reason: F-Droid rejects proprietary analytics, and
-  its Tracking anti-feature covers any reporting that is not opt-in and off by default, so a
-  future FOSS sink has to be consent-gated.
+The host calls `Telemetry.install(sink)` from `Application.onCreate`. Solid Share, the host app,
+is the reference in both directions: its `gms` flavour installs a Firebase sink in release builds,
+mapping spans to Performance traces and exceptions, breadcrumbs and keys to Crashlytics; its
+`foss` flavour installs nothing, so the no-op sink stays and the libraries emit nothing. That
+absence is a decision with a stated reason: F-Droid rejects proprietary analytics, and its
+Tracking anti-feature covers any reporting that is not opt-in and off by default, so a future FOSS
+sink has to be consent-gated.
 
 #### What a consumer then sees
 
@@ -231,7 +224,7 @@ Logins and token refreshes arrive as the `solid_auth_login` and `solid_auth_refr
 Handled failures arrive through `recordException` with `operation` attributes; breadcrumbs
 arrive through `log` and attach to whatever report comes next. In the IPC host, every AIDL call
 stamps `calling_app` with the caller's package name before doing anything else
-(`app/src/main/java/com/erfangholami/androidsolidservices/services/dispatch/AidlDispatch.kt:40`),
+(`host/src/main/java/com/erfangholami/androidsolidservices/host/dispatch/AidlDispatch.kt`),
 so a report can be traced to the integrating app that triggered it.
 
 </details>
@@ -257,7 +250,8 @@ The `recordException` inventory:
 | `solid.auth.expiry` | `auth_error`, `reason=no_refresh_token`, issuer host | the access token is spent and there is no refresh token (`TokenRefreshCoordinator.kt:372`) |
 | `solid.auth.profile_store` | `auth_error` ∈ `store_init_failed`, `store_decrypt_failed` (+ `strikes`), `store_corrupt`, `store_wiped`, `store_key_unrecoverable` | the encrypted profile store misbehaves (`ProfileManager.kt:124`, `UserRepositoryImplementation.kt:69`, `:100`, `:160`, `KeystoreCipher.kt:70`) |
 | `solid.auth.dpop_key` | `auth_error=dpop_key_unrecoverable` | a DPoP key exists in the Keystore but cannot be loaded (`DPoPGenerator.kt:202`) |
-| `aidl.dispatch` / `aidl.dataModule` | `error_type`, `calling_app` | an uncaught throwable in the IPC service host (`AidlDispatch.kt:55`, `:98`) |
+| `aidl.dispatch` / `aidl.callback` | `error_type`, `calling_app` / `callback_method` | an uncaught throwable in a host binder, or a callback the calling app can no longer receive (`host/.../dispatch/AidlDispatch.kt`) |
+| `host.grants.decode` | — | the host's grant store holds a value that no longer parses; it reads as no grants (`host/.../grant/DataStoreAppGrantStore.kt`) |
 
 Breadcrumbs (`Telemetry.log`) narrate the decisions between those events: whether a 401 was kept
 as an authorization outcome or converted into a forced token refresh, with the request origin
@@ -313,9 +307,8 @@ One boundary is stated honestly rather than papered over: `recordException` hand
 `Throwable` itself to the sink, message included, and the `solid.http` transport breadcrumb
 carries the `IOException`'s own message — which, coming from OkHttp, can name the host it could
 not reach. The invariants above are enforced on everything the library composes: every span
-name, attribute, key and breadcrumb string. The reference Firebase sink additionally clamps
-attribute values to 100 characters and sanitises names on its side of the seam
-(`FirebaseTelemetrySink.kt:121`, `:107`).
+name, attribute, key and breadcrumb string. Solid Share's Firebase sink additionally clamps
+attribute values to 100 characters and sanitises names on its side of the seam.
 
 </details>
 
@@ -324,7 +317,7 @@ attribute values to 100 characters and sanitises names on its side of the seam
 
 
 - **Any backend is one class.** Implement `TelemetrySink` — five methods — and install it from
-  `Application.onCreate`. `FirebaseTelemetrySink` is the worked example of sink-side duties:
+  `Application.onCreate`. Solid Share's Firebase sink is the worked example of sink-side duties:
   mapping the span contracts onto the backend's types, sanitising names to the backend's
   charset and length limits, clamping values, and guarding against use-after-stop.
 - **Consent is the host's job, and the seam has no opinion.** Nothing reports until `install`,

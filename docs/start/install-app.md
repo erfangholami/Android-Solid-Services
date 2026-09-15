@@ -1,39 +1,45 @@
 ---
-title: Install the app
-description: Install Android Solid Services on your phone and sign in to your Solid pod.
+title: Install Solid Share
+description: Install Solid Share on your phone and sign in to your Solid pod, so every Solid-aware app can use it.
 ---
 
-# Install the app
+# Install Solid Share
 
-Android Solid Services holds your Solid accounts so every Solid-aware app on your phone can use
-them. You install it once.
+[Solid Share](https://solidshare.app) holds your Solid accounts so every Solid-aware app on your
+phone can use them. You install it once.
 
 !!! info "For app developers"
-    You need this installed to develop against the `client` library, because that library talks
-    to it. If you are building with `api` instead, you do not — see
+    You need this installed to develop against the `client` library, because that library talks to
+    it. If you are building with `api` instead, you do not — see
     [Client or API?](client-or-api.md).
+
+!!! warning "Not the Android Solid Services app"
+    The Android Solid Services app was the host until 0.7.2 and is discontinued. The 0.8.0 SDK
+    never binds to it, because it cannot scope what an app may do. Install Solid Share instead; a
+    device that carries only the old app fails every call with `SolidAppNotFoundException`.
 
 ## Get it
 
-Download the latest APK from the
-[GitHub Releases page](https://github.com/erfangholami/Android-Solid-Services/releases).
-Google Play and F-Droid are in progress.
-
-1. On your Android device, allow **Install from unknown sources** if prompted.
-2. Open the downloaded `.apk` and tap **Install**.
-3. Launch **Android Solid Services**.
+Solid Share is on
+[Google Play](https://play.google.com/store/apps/details?id=com.erfangholami.solidshare) and
+[F-Droid](https://f-droid.org/packages/com.erfangholami.solidshare/), and its APKs are on
+[GitHub Releases](https://github.com/erfangholami/SolidShare/releases).
 
 Android 8.0 (API 26) or newer.
 
+In your own app, check before you launch sign-in:
+
+```kotlin
+if (!Solid.isHostInstalled(context)) {
+    startActivity(Solid.hostInstallIntent(context))   // the store, or solidshare.app
+}
+```
+
 ## Sign in
 
-Tap **Add account** and pick your pod provider, or type its URL if it is not listed. You are
-taken to your provider's own sign-in page — your password is entered there, never in this app.
-
-<figure markdown>
-![Choosing a pod provider, or entering a custom pod server URL](../assets/screenshots/sign-in.png){ width="300" }
-<figcaption>Any Solid provider works — the listed ones are shortcuts.</figcaption>
-</figure>
+Open Solid Share, tap **Add account** and pick your pod provider, or type its URL if it is not
+listed. You are taken to your provider's own sign-in page — your password is entered there, never
+in Solid Share.
 
 You can add several accounts from different providers and keep them all signed in. Apps ask for a
 specific one by WebID.
@@ -46,16 +52,15 @@ specific one by WebID.
 
 ## Granting apps access
 
-When another app first asks for your pod, Android Solid Services shows you what it wants and
-which account it wants it for. Nothing reaches your pod until you allow it.
+When another app first asks for your pod, Solid Share shows you which account it wants, what it
+wants to do, and where. Nothing reaches your pod until you allow it.
 
-Review and revoke those grants at any time from **Granted apps** in the app. Revoking is
-immediate: the app keeps running, but its calls start failing.
+An app asks for a **level** — View, Add, Edit or Full access — on the **whole pod**, on **specific
+folders**, or on a **data module** such as your contacts. You can narrow what it asked for before
+you approve it.
 
-<figure markdown>
-![An app's grant, with a button to revoke it](../assets/screenshots/granted-apps.png){ width="300" }
-<figcaption>Each grant names the app and the account it holds access to.</figcaption>
-</figure>
+Review, narrow and revoke those grants at any time from the **Apps** tab on Solid Share's Share
+page. Revoking is immediate: the app keeps running, but its calls start failing.
 
 Your accounts also appear in Android's **Settings → Accounts**, alongside every other account on
 the device. Removing one there signs it out here.
@@ -66,5 +71,5 @@ Your tokens and signing keys never do. They are generated in the Android Keystor
 device, and encrypted at rest. Other apps receive the *results* of pod calls, never a credential
 they could reuse.
 
-See the [Privacy Policy](../project/privacy.md) for the full account, and
+See Solid Share's [privacy policy](https://solidshare.app/privacy) for the full account, and
 [Troubleshooting](../project/troubleshooting.md) if sign-in misbehaves.
