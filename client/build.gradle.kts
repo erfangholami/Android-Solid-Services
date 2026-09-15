@@ -91,6 +91,9 @@ kotlin {
 dependencies {
 
     //Testing
+    // The instrumented suite stands the real host binders up in :fakeass, so the guard the
+    // SDK meets there is the one Solid Share runs, not a hand-written approximation.
+    androidTestImplementation(project(":host"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.jetbrains.kotlinx.coroutines.test)

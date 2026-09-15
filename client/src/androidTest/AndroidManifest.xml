@@ -65,6 +65,21 @@
                 <action android:name="com.erfangholami.androidsolidservices.action.NOTIFICATIONS" />
             </intent-filter>
         </service>
+        <!--
+            The real ResourceBinder behind the real guard. Three actions, one service: the action
+            the test binds with chooses the grant it is answered under, which is the only way to
+            configure a service in another process without a channel of its own.
+        -->
+        <service
+            android:name="com.erfangholami.androidsolidservices.services.RealHostResourceService"
+            android:exported="false"
+            android:process=":fakeass">
+            <intent-filter>
+                <action android:name="com.erfangholami.androidsolidservices.client.test.GUARD_VIEW" />
+                <action android:name="com.erfangholami.androidsolidservices.client.test.GUARD_EDIT" />
+                <action android:name="com.erfangholami.androidsolidservices.client.test.GUARD_NONE" />
+            </intent-filter>
+        </service>
         <service
             android:name="com.erfangholami.androidsolidservices.client.internal.NullBindingService"
             android:exported="false"
