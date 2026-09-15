@@ -17,8 +17,10 @@ internal class HostTarget(val packageName: String) {
 /**
  * Finds the host app on the device.
  *
- * Only Solid Share is a host. The retired Android Solid Services app is looked for as well, but
- * only so a device that still carries it gets a message naming it rather than a bare "not
+ * Only Solid Share is a host, and only when it carries one of the signing keys
+ * [HostSignatures] accepts: the package name says which app to look for, the key says whether
+ * it is the right one. The retired Android Solid Services app is looked for as well, but only
+ * so a device that still carries it gets a message naming it rather than a bare "not
  * installed". The two hooks exist for the instrumented suite, which hosts fakes in its own APK,
  * and for the one test that needs the host to be absent whatever the device has.
  */
@@ -34,8 +36,16 @@ internal object HostResolver {
         if (forceAbsent) return null
         overrideHostPackage?.let { return HostTarget(it) }
         val host = HostTarget(SolidHostContract.HOST_PACKAGE_NAME)
-        return host.takeIf { isInstalled(context, it.packageName) }
+        if (!isInstalled(context, host.packageName)) return null
+        return host.takeIf { HostSignatures.isTrusted(context, it.packageName) }
     }
+
+    /** An app holds the host's package name but not its signing key. */
+    fun impostorPresent(context: Context): Boolean =
+        !forceAbsent &&
+            overrideHostPackage == null &&
+            isInstalled(context, SolidHostContract.HOST_PACKAGE_NAME) &&
+            !HostSignatures.isTrusted(context, SolidHostContract.HOST_PACKAGE_NAME)
 
     fun deprecatedHostPresent(context: Context): Boolean =
         !forceAbsent && isInstalled(context, LEGACY_HOST_PACKAGE_NAME)
@@ -45,8 +55,11 @@ internal object HostResolver {
         resolve: (Context) -> HostTarget? = ::installedHost,
     ): HostTarget = resolve(context) ?: throw SolidException.SolidAppNotFoundException(missingHostMessage(context))
 
-    fun missingHostMessage(context: Context): String =
-        if (deprecatedHostPresent(context)) MESSAGE_DEPRECATED_HOST else MESSAGE_NO_HOST
+    fun missingHostMessage(context: Context): String = when {
+        impostorPresent(context) -> MESSAGE_UNTRUSTED_HOST
+        deprecatedHostPresent(context) -> MESSAGE_DEPRECATED_HOST
+        else -> MESSAGE_NO_HOST
+    }
 
     private fun isInstalled(context: Context, packageName: String): Boolean = try {
         context.packageManager.getPackageInfo(packageName, 0)
@@ -61,4 +74,8 @@ internal object HostResolver {
     const val MESSAGE_DEPRECATED_HOST: String =
         "Android Solid Services is no longer supported by this version of the SDK. " +
             "Install Solid Share, which hosts Solid for other apps from 0.8.0 on."
+
+    const val MESSAGE_UNTRUSTED_HOST: String =
+        "An app on this device uses Solid Share's name but not its signing key, so it was " +
+            "not trusted with your pod. Install Solid Share from Google Play or F-Droid."
 }
