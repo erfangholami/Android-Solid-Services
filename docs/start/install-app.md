@@ -20,10 +20,14 @@ phone can use them. You install it once.
 
 ## Get it
 
-Solid Share is on
-[Google Play](https://play.google.com/store/apps/details?id=com.erfangholami.solidshare) and
-[F-Droid](https://f-droid.org/packages/com.erfangholami.solidshare/), and its APKs are on
-[GitHub Releases](https://github.com/erfangholami/SolidShare/releases).
+<div class="store-badges" markdown>
+[![Get it on Google Play](../assets/badges/google-play.png)](https://play.google.com/store/apps/details?id=com.erfangholami.solidshare)
+[![Get it on F-Droid](../assets/badges/f-droid.png)](https://f-droid.org/packages/com.erfangholami.solidshare/)
+</div>
+
+The APKs are also on
+[GitHub Releases](https://github.com/erfangholami/SolidShare/releases), if you install them
+yourself.
 
 Android 8.0 (API 26) or newer.
 
