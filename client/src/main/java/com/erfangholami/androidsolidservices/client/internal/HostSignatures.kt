@@ -21,6 +21,8 @@ import java.security.MessageDigest
  * F-Droid, and both carry the publisher's own key: F-Droid ships the reproducible build rather
  * than re-signing it, and Play App Signing holds that same key rather than one Google generated.
  * A set is kept rather than a single value so a key rotation, or a third channel, is one line.
+ * A rotation also leaves the old certificate in the package's signing history, and an app
+ * installed before it still presents that one, so the whole history counts as the same publisher.
  */
 internal object HostSignatures {
 
@@ -69,8 +71,6 @@ internal object HostSignatures {
             val signing = packageManager
                 .getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
                 .signingInfo ?: return emptyList()
-            // A rotated key leaves the old certificate in the history, and an app installed before
-            // the rotation still presents that one, so both count as the same publisher.
             if (signing.hasMultipleSigners()) {
                 signing.apkContentsSigners.orEmpty().toList()
             } else {
