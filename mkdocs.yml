@@ -103,6 +103,7 @@ nav:
   - Project:
       - Architecture: project/architecture.md
       - Adding a data module: project/adding-a-data-module.md
+      - Upgrade guide: project/upgrading.md
       - Troubleshooting: project/troubleshooting.md
       - Releases: project/releases.md
       - Contributing: project/contributing.md

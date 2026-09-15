@@ -40,6 +40,12 @@ For your app, that is one dependency and no authentication code at all.
 
     The host app. For people who just want Solid on their phone.
 
+-   :material-arrow-up-bold-circle-outline: **[Upgrade guide](project/upgrading.md)**
+
+    ---
+
+    Already using an older version? The route to 0.8.0, from wherever you are.
+
 </div>
 
 ## The problem
