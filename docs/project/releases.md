@@ -11,6 +11,15 @@ Library versions are published to Maven Central:
 
 ---
 
+## Unreleased
+
+- **The host's signing key is checked, not only its package name.** A package name is not an
+  identity: on a device without Solid Share, an app sideloaded under its name would have been
+  trusted with the user's pod. The SDK now compares the installed host's signing certificate
+  against the digest it ships and refuses a mismatch, saying so rather than reporting the host
+  as missing. A debug build of the calling app skips the check, so a locally built host still
+  works. See [Hosting the services](../build/hosting.md).
+
 ## v0.8.0 — 15th September 2026
 
 Solid Share becomes the host app, app grants gain a scope, and the Android Solid Services app is

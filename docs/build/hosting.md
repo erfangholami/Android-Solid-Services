@@ -166,10 +166,20 @@ reasoning, and why this is not Web Access Control or Access Control Policy, is i
 
 ## The client's side
 
-A caller reaches you only if the SDK resolves your package as the host. `HostResolver` in `client`
-holds that list, and today it holds one entry. Adding a second is a change to the SDK, not
-something a host can arrange for itself — which is the point: binding by action alone would let any
-app declare the action and receive the user's data.
+A caller reaches you only if the SDK resolves your package as the host **and** your build carries
+a signing key it accepts. `HostResolver` holds that list, and today it holds one entry. Adding a
+second is a change to the SDK, not something a host can arrange for itself — which is the point:
+binding by action alone would let any app declare the action and receive the user's data.
+
+The key check matters because a package name is not an identity. Android will not let a second
+app claim the host's name while the real one is installed, but on a device where it is absent, an
+app sideloaded under that name would otherwise be bound to. The SDK compares the SHA-256 of the
+installed host's signing certificate against the digests it ships, and refuses a mismatch with a
+message that says so rather than a bare "not installed".
+
+Verification is skipped when the **calling** app is a debug build, so you can run against a host
+you built locally. The flag is read from the caller, which an attacker cannot set on somebody
+else's release build, rather than from the host, which they could.
 
 See [App access](app-access.md) for what each verb requires, and
 [Architecture](../project/architecture.md) for how the four libraries fit together.

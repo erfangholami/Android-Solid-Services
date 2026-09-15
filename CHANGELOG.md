@@ -2,6 +2,28 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Security
+
+- **The SDK checks the host's signing key, not only its package name.** Android will not let a
+  second app claim `com.erfangholami.solidshare` while the real one is installed, but on a
+  device where it is absent an app sideloaded under that name would have been bound to and
+  handed the user's pod calls. `client` now compares the SHA-256 of the installed host's
+  signing certificate against the digest it ships, and refuses a mismatch with a message that
+  names the problem instead of reporting the host as missing. Verification is skipped when the
+  calling app is itself a debug build, so a locally built host still works; that flag is read
+  from the caller, which an attacker cannot set on somebody else's release build.
+
+### Tests
+
+- **The instrumented suite exercises the real guard.** A service in the test APK's second
+  process now hosts the production `ResourceBinder` behind the production `ScopedAccessPolicy`,
+  so a refusal observed across the binder is the one Solid Share would give: a read passes
+  under View, the same write is refused with a message naming both levels, and it passes once
+  the grant reaches Edit. The hand-written fakes stay, because they record the arguments that
+  crossed the wire and production code cannot.
+
 ## [0.8.0] — 15th September 2026
 
 Solid Share becomes the host app, app grants gain a scope, and the Android Solid Services app is
