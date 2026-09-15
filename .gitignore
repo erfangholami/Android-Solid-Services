@@ -10,22 +10,12 @@
 .cxx
 local.properties
 .
-/app/release
-/app/build
 # Generated API reference (./gradlew dokkaToDocs) — built in CI, never committed
 /docs/api/
-
-# Firebase CLI working files. firebase.json exists only so `firebase login:use` binds an
-# account to this directory instead of globally; .firebaserc pins the default project.
-/.firebaserc
-/firebase.json
-
-# Android developer verification token — account-bound, and only needed transiently to
-# register a signing key. Never commit it.
-/app/src/main/assets/adi-registration.properties
 
 # The built docs site (mkdocs build). CI deploys through mike, which builds its own copy.
 /site/
 
 # The local Python environment for the docs site. CI installs from docs-requirements.txt.
 /.venv/
+

@@ -140,8 +140,7 @@ jobs:
           :Shared:testDebugUnitTest
           :api:testDebugUnitTest
           :client:testDebugUnitTest
-          :app:testFossDebugUnitTest
-          :app:testGmsDebugUnitTest
+          :host:testDebugUnitTest
           $GRADLE_ARGS
 
       - name: Upload test reports
@@ -183,8 +182,7 @@ jobs:
           :Shared:lintDebug
           :api:lintDebug
           :client:lintDebug
-          :app:lintFossDebug
-          :app:lintGmsDebug
+          :host:lintDebug
           $GRADLE_ARGS
 
       - name: Collect Lint SARIF
@@ -233,31 +231,23 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # The release workflow assembles :app, so without this a compile break in the
-      # app module would only surface at publish time.
+      # The release workflow assembles the AARs, so without this a packaging break would
+      # only surface at publish time.
       - name: Assemble
         run: >-
           ./gradlew
-          :app:assembleFossDebug
-          :app:assembleGmsDebug
           :Shared:assembleDebug
           :api:assembleDebug
           :client:assembleDebug
+          :host:assembleDebug
           $GRADLE_ARGS
-
-      - name: Upload debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-apk
-          path: app/build/outputs/apk/*/debug/*.apk
-          if-no-files-found: ignore
 
       # Catches broken KDoc here rather than when Deploy Docs runs on main.
       - name: Build API reference
         run: ./gradlew dokkaGeneratePublicationHtml $GRADLE_ARGS
 
   # The client suite drives every SDK call across a real binder into fakes hosted in the test
-  # APK's own :fakeass process, so it needs no ASS app, pod or network — just an emulator. It is
+  # APK's own :fakeass process, so it needs no host app, pod or network — just an emulator. It is
   # the only CI coverage of the IPC layer: parcel marshalling, argument order, service-death
   # recovery. ~30 s of test time once the emulator is up.
   instrumented:

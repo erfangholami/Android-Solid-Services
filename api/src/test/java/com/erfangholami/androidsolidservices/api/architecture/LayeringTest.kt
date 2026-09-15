@@ -53,7 +53,7 @@ class LayeringTest {
 
     @Test
     fun `library code carries no comments except KDoc`() {
-        val violations = (apiSources() + sharedSources() + clientSources())
+        val violations = (apiSources() + sharedSources() + clientSources() + hostSources())
             .flatMap { file ->
                 file.readLines().mapIndexedNotNull { index, line ->
                     val trimmed = line.trimStart()
@@ -78,6 +78,8 @@ class LayeringTest {
 
     private fun clientSources(): List<File> = sourcesUnder(CLIENT_ROOT)
 
+    private fun hostSources(): List<File> = sourcesUnder(HOST_ROOT)
+
     private fun sourcesUnder(root: File): List<File> =
         if (!root.isDirectory) emptyList()
         else root.walkTopDown().filter { it.isFile && it.extension == "kt" }.toList()
@@ -91,6 +93,7 @@ class LayeringTest {
             .removePrefix("api/src/main/java/com/erfangholami/androidsolidservices/")
             .removePrefix("Shared/src/main/java/com/erfangholami/androidsolidservices/")
             .removePrefix("client/src/main/java/com/erfangholami/androidsolidservices/")
+            .removePrefix("host/src/main/java/com/erfangholami/androidsolidservices/")
 
     private companion object {
         const val API = "com.erfangholami.androidsolidservices.api"
@@ -106,5 +109,6 @@ class LayeringTest {
         val API_ROOT = File(REPO, "api/src/main/java")
         val SHARED_ROOT = File(REPO, "Shared/src/main/java")
         val CLIENT_ROOT = File(REPO, "client/src/main/java")
+        val HOST_ROOT = File(REPO, "host/src/main/java")
     }
 }

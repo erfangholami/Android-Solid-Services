@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag (e.g. v0.3.0)'
+        required: true
+
+concurrency:
+  # One release at a time, and never cancel one mid-publish.
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  # Nothing is published unless the full CI suite passes on the exact ref being released.
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ github.event.inputs.tag || github.ref }}
+
+  # The Maven coordinates derive from the tag (root build.gradle.kts), so they cannot disagree
+  # with it. What remains human is the CHANGELOG, and the ordering guarantee: the tag must sort
+  # above the previous release, so Maven Central never sees a version go backwards.
+  versions:
+    name: Version consistency
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.check.outputs.tag }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Check the tag against every declared version
+        id: check
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="$INPUT_TAG"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          if ! echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::'$TAG' is not a release tag — expected vX.Y.Z, e.g. v0.6.1."
+            exit 1
+          fi
+          V="${TAG#v}"
+          FAIL=0
+
+          if ! grep -Fq "## [$V]" CHANGELOG.md; then
+            echo "::error file=CHANGELOG.md::no '## [$V]' entry — write the changelog before tagging."
+            FAIL=1
+          fi
+
+          PREV=$(git tag -l 'v[0-9]*' --sort=-v:refname | grep -vx "$TAG" | head -1)
+          if [ -n "$PREV" ]; then
+            HIGHEST=$(printf '%s\n%s\n' "$PREV" "$TAG" | sort -V | tail -1)
+            if [ "$HIGHEST" != "$TAG" ]; then
+              echo "::error::$TAG does not sort above the previous release $PREV."
+              FAIL=1
+            fi
+          fi
+
+          # Git accepts a tag on any commit, including one on no branch at all — this refuses to
+          # release anything main has not actually integrated.
+          if ! git merge-base --is-ancestor "$TAG" origin/main; then
+            echo "::error::$TAG does not point at a commit on main — release what main has integrated, or push main first."
+            FAIL=1
+          fi
+
+          [ "$FAIL" = "0" ] || exit 1
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: Publish libraries
+    needs: [ci, versions]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          # The build derives its version from `git describe`, which needs the tags.
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build the library AARs
+        run: ./gradlew :Shared:assembleRelease :api:assembleRelease :client:assembleRelease :host:assembleRelease -Dorg.gradle.java.installations.auto-detect=false -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
+
+      - name: Collect release artifacts
+        run: |
+          mkdir -p release-artifacts
+          cp Shared/build/outputs/aar/Shared-release.aar \
+             release-artifacts/Shared-${{ needs.versions.outputs.version }}.aar
+          cp api/build/outputs/aar/api-release.aar \
+             release-artifacts/api-${{ needs.versions.outputs.version }}.aar
+          cp client/build/outputs/aar/client-release.aar \
+             release-artifacts/client-${{ needs.versions.outputs.version }}.aar
+          cp host/build/outputs/aar/host-release.aar \
+             release-artifacts/host-${{ needs.versions.outputs.version }}.aar
+
+      - name: Publish libraries to Maven Central
+        run: ./gradlew :Shared:publishAndReleaseToMavenCentral :api:publishAndReleaseToMavenCentral :client:publishAndReleaseToMavenCentral :host:publishAndReleaseToMavenCentral --no-configuration-cache -Dorg.gradle.java.installations.auto-detect=false -Dorg.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SIGNING_PASSWORD }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.versions.outputs.tag }}
+          name: ${{ needs.versions.outputs.tag }}
+          draft: false
+          prerelease: false
+          files: release-artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

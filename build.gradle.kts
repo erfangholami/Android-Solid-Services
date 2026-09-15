@@ -13,26 +13,19 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.parcelize) apply false
     alias(libs.plugins.jetbrains.kotlin.serialization) apply false
     alias(libs.plugins.jetbrains.kotlin.compose.compiler) apply false
-    alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.google.devtools.ksp)
-    alias(libs.plugins.google.hilt.android) apply false
     alias(libs.plugins.vanniktech.maven.publish) apply false
-    alias(libs.plugins.google.services) apply false
-    alias(libs.plugins.firebase.crashlytics) apply false
     alias(libs.plugins.diffplug.spotless) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.jetbrains.dokka)
 }
 
 // The version is derived from git, so releasing is tagging — nothing is edited by hand.
-// On the exact tag `v0.6.1` this yields versionName 0.6.1 and versionCode 601
-// (MAJOR·10000 + MINOR·100 + PATCH — monotonic as long as versions ascend, which the release
-// workflow enforces); between tags the name carries the distance and commit
-// (`0.6.1-3-g1a2b3c4`, `-dirty` when the tree is), while the code stays at the base tag's.
-// The Maven coordinates in Shared/api/client read the same values, so all five version sites
-// that used to be hand-written now agree by construction. `-PassVersion=X.Y.Z` overrides the
-// derivation for builders without a git checkout.
+// On the exact tag `v0.8.0` this yields 0.8.0; between tags the name carries the distance and
+// commit (`0.8.0-3-g1a2b3c4`, `-dirty` when the tree is). The Maven coordinates of the four
+// libraries read the same value, so every version site agrees by construction.
+// `-PassVersion=X.Y.Z` overrides the derivation for builders without a git checkout, and is
+// how an unreleased version is published to mavenLocal.
 val describedVersion: String = runCatching {
     providers.gradleProperty("assVersion").orElse(
         providers.exec {
@@ -48,7 +41,7 @@ val describedVersion: String = runCatching {
 
 val assVersionName: String = describedVersion.removePrefix("v").ifEmpty { "0.0.0-unknown" }
 
-// Never below 1: AGP rejects versionCode 0, which is what the fallback name would produce.
+// Kept for the derived code the libraries' AAR metadata carries; never below 1, which AGP rejects.
 val assVersionCode: Int = (
     Regex("""^(\d+)\.(\d+)\.(\d+)""").find(assVersionName)
         ?.destructured
@@ -64,13 +57,13 @@ val assVersionCode: Int = (
 extra["assVersionName"] = assVersionName
 extra["assVersionCode"] = assVersionCode
 
-// API reference for the three published libraries, aggregated into one site.
-// `app` is excluded: it ships no public API.
+// API reference for the four published libraries, aggregated into one site.
 //   ./gradlew dokkaGeneratePublicationHtml   -> build/dokka/html
 dependencies {
     dokka(project(":Shared"))
     dokka(project(":api"))
     dokka(project(":client"))
+    dokka(project(":host"))
 }
 
 dokka {

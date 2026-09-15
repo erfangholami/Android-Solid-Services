@@ -16,7 +16,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Android Solid Services"
-include(":app")
 include(":client")
+include(":host")
 include(":api")
 include(":Shared")
