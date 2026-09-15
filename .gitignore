@@ -23,3 +23,9 @@ local.properties
 # Android developer verification token — account-bound, and only needed transiently to
 # register a signing key. Never commit it.
 /app/src/main/assets/adi-registration.properties
+
+# The built docs site (mkdocs build). CI deploys through mike, which builds its own copy.
+/site/
+
+# The local Python environment for the docs site. CI installs from docs-requirements.txt.
+/.venv/
