@@ -2,28 +2,6 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
-
-### Security
-
-- **The SDK checks the host's signing key, not only its package name.** Android will not let a
-  second app claim `com.erfangholami.solidshare` while the real one is installed, but on a
-  device where it is absent an app sideloaded under that name would have been bound to and
-  handed the user's pod calls. `client` now compares the SHA-256 of the installed host's
-  signing certificate against the digest it ships, and refuses a mismatch with a message that
-  names the problem instead of reporting the host as missing. Verification is skipped when the
-  calling app is itself a debug build, so a locally built host still works; that flag is read
-  from the caller, which an attacker cannot set on somebody else's release build.
-
-### Tests
-
-- **The instrumented suite exercises the real guard.** A service in the test APK's second
-  process now hosts the production `ResourceBinder` behind the production `ScopedAccessPolicy`,
-  so a refusal observed across the binder is the one Solid Share would give: a read passes
-  under View, the same write is refused with a message naming both levels, and it passes once
-  the grant reaches Edit. The hand-written fakes stay, because they record the arguments that
-  crossed the wire and production code cannot.
-
 ## [0.8.0] — 15th September 2026
 
 Solid Share becomes the host app, app grants gain a scope, and the Android Solid Services app is
@@ -40,19 +18,23 @@ signing in.
 ### Migrating from 0.7
 
 1. Bump `client` to 0.8.0 and tell your users to install Solid Share.
-2. Check `Solid.isHostInstalled(context)` before launching sign-in; offer
+2. Raise your `compileSdk` to 37. The libraries are built against SDK 37, and their AAR metadata
+   demands the same of anything that depends on them, so a lower value stops the build with
+   *"requires libraries and applications that depend on it to compile against version 37 or
+   later"*. `minSdk` stays 26, and `targetSdk` remains your own choice.
+3. Check `Solid.isHostInstalled(context)` before launching sign-in; offer
    `Solid.hostInstallIntent(context)` when it is `false`.
-3. Give `AuthorizeWithSolid` an `AccessRequest` naming the least your app needs — a level on the
+4. Give `AuthorizeWithSolid` an `AccessRequest` naming the least your app needs — a level on the
    whole pod, on storage-relative paths, or on a data module. Without one the app asks for the
    whole pod at Edit; sharing and the inbox need Full access. Read what the user approved from
    `SolidSignInResult.Authorized.grant`.
-4. `SolidSignInClient.getAccount` and `disconnectFromSolid` are `suspend` functions;
+5. `SolidSignInClient.getAccount` and `disconnectFromSolid` are `suspend` functions;
    `getAccount` returns the grant in `SolidSignInAccount.grant` (the `fullAccess` flag is gone)
    and `disconnectFromSolid` returns `Boolean`. `getInstance(context, hasInstalled…)` on the
    sign-in and resource clients is now `getInstance(context)`.
-5. Treat `NotPermissionException` as "outside the granted scope": read the grant, explain, and ask
+6. Treat `NotPermissionException` as "outside the granted scope": read the grant, explain, and ask
    again. Its message names what is held and what the call needs.
-6. Nothing has to be collected before a call any more — every `client` call waits for its binding.
+7. Nothing has to be collected before a call any more — every `client` call waits for its binding.
 
 ### Compatibility
 
@@ -124,6 +106,17 @@ signing in.
 - **`SolidResourceManager.writableProfileDocument(webId)`** — the document a profile edit should
   be written to, which on a read-only WebID is not the WebID document.
 
+### Security
+
+- **The SDK checks the host's signing key, not only its package name.** Android will not let a
+  second app claim `com.erfangholami.solidshare` while the real one is installed, but on a
+  device where it is absent an app sideloaded under that name would have been bound to and
+  handed the user's pod calls. `client` now compares the SHA-256 of the installed host's
+  signing certificate against the digest it ships, and refuses a mismatch with a message that
+  names the problem instead of reporting the host as missing. Verification is skipped when the
+  calling app is itself a debug build, so a locally built host still works; that flag is read
+  from the caller, which an attacker cannot set on somebody else's release build.
+
 ### Bug fixes
 
 - **Inbox discovery on Inrupt.** Inrupt serves the WebID document read-only, so the inbox link
@@ -141,6 +134,28 @@ signing in.
   now folds in the documents the WebID links through `foaf:isPrimaryTopicOf` / `rdfs:seeAlso`,
   read with the account's own credentials, so a name kept only there is no longer blank. Identity
   checks at sign-in still trust the WebID document alone.
+
+### Documentation
+
+- **An [upgrade guide](https://androidsolidservices.erfangholami.com/project/upgrading/)** — the
+  route to 0.8.0 from any older version, including the build requirements (`compileSdk` 37,
+  `minSdk` 26) that the AAR metadata enforces, and the order to do the work in. The release notes
+  stay the detail behind it.
+- **Where a grant lives** is written down: on the device, in the host app, never on the pod. A
+  grant therefore does not follow the user to a second device, and "no grant yet" is a normal
+  first-run state on each one.
+- New troubleshooting entries for the three failures a consumer meets first: a `compileSdk` below
+  37, an annotation processor that cannot read Kotlin 2.3 metadata, and a host that holds the
+  right package name but the wrong signing key.
+
+### Tests
+
+- **The instrumented suite exercises the real guard.** A service in the test APK's second
+  process now hosts the production `ResourceBinder` behind the production `ScopedAccessPolicy`,
+  so a refusal observed across the binder is the one Solid Share would give: a read passes
+  under View, the same write is refused with a message naming both levels, and it passes once
+  the grant reaches Edit. The hand-written fakes stay, because they record the arguments that
+  crossed the wire and production code cannot.
 
 ## [0.7.2] — 12th September 2026
 

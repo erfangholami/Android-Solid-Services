@@ -11,14 +11,9 @@ Library versions are published to Maven Central:
 
 ---
 
-## Unreleased
-
-- **The host's signing key is checked, not only its package name.** A package name is not an
-  identity: on a device without Solid Share, an app sideloaded under its name would have been
-  trusted with the user's pod. The SDK now compares the installed host's signing certificate
-  against the digest it ships and refuses a mismatch, saying so rather than reporting the host
-  as missing. A debug build of the calling app skips the check, so a locally built host still
-  works. See [Hosting the services](../build/hosting.md).
+!!! tip "Coming from an older version?"
+    [The upgrade guide](upgrading.md) is the route from any version to 0.8.0, with the build
+    requirements and the order to do things in. This page is the detail behind it.
 
 ## v0.8.0 — 15th September 2026
 
@@ -36,19 +31,23 @@ against 0.7.x cannot talk to a 0.8.0 host.
 ### Migrating from 0.7
 
 1. Bump `client` to 0.8.0 and tell your users to install Solid Share.
-2. Check `Solid.isHostInstalled(context)` before launching sign-in; offer
+2. Raise your `compileSdk` to 37. The libraries are built against SDK 37, and their AAR metadata
+   demands the same of anything that depends on them, so a lower value stops the build with
+   *"requires libraries and applications that depend on it to compile against version 37 or
+   later"*. `minSdk` stays 26, and `targetSdk` remains your own choice.
+3. Check `Solid.isHostInstalled(context)` before launching sign-in; offer
    `Solid.hostInstallIntent(context)` when it is `false`.
-3. Give `AuthorizeWithSolid` an `AccessRequest` naming the least your app needs — a level on the
+4. Give `AuthorizeWithSolid` an `AccessRequest` naming the least your app needs — a level on the
    whole pod, on storage-relative paths, or on a data module. Without one the app asks for the
    whole pod at Edit; sharing and the inbox need Full access. Read the grant from
    `SolidSignInResult.Authorized.grant`.
-4. `SolidSignInClient.getAccount` and `disconnectFromSolid` are `suspend` functions; `getAccount`
+5. `SolidSignInClient.getAccount` and `disconnectFromSolid` are `suspend` functions; `getAccount`
    returns the grant in `SolidSignInAccount.grant` (the `fullAccess` flag is gone) and
    `disconnectFromSolid` returns `Boolean`. `getInstance(context, hasInstalled…)` on the sign-in
    and resource clients is now `getInstance(context)`.
-5. Treat `NotPermissionException` as "outside the granted scope": read the grant, explain, and
+6. Treat `NotPermissionException` as "outside the granted scope": read the grant, explain, and
    ask again. Its message names what is held and what the call needs.
-6. Nothing has to be collected before a call any more: every `client` call waits for its
+7. Nothing has to be collected before a call any more: every `client` call waits for its
    binding. `requestLogin`, `SolidServicesDrawPermissionDeniedException` and
    `ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED` are gone; `SolidAuthorization.ACCOUNT_TYPE`
    is `SolidHostContract.ACCOUNT_TYPE`.
@@ -66,6 +65,15 @@ against 0.7.x cannot talk to a 0.8.0 host.
   package (`SolidHostContract`), so the host is free to name its classes; a missing host fails
   every call at once with `SolidAppNotFoundException`.
 - **`rootContainers(webId)`** on the contacts and tickets modules: where a module lives on a pod.
+
+### Security
+
+- **The host's signing key is checked, not only its package name.** A package name is not an
+  identity: on a device without Solid Share, an app sideloaded under its name would have been
+  trusted with the user's pod. The SDK now compares the installed host's signing certificate
+  against the digest it ships and refuses a mismatch, saying so rather than reporting the host
+  as missing. A debug build of the calling app skips the check, so a locally built host still
+  works. See [Hosting the services](../build/hosting.md).
 
 ### Bug fixes
 
