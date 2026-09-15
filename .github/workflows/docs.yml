@@ -2,15 +2,16 @@ name: Deploy Docs
 
 # Every push to main redeploys the site — main is where releases and documentation land, and
 # both should be reflected at once. The deploy is a few minutes and idempotent, so no paths
-# filter is worth its maintenance. Tag pushes redeploy too, covering a tag pushed on its own.
+# filter is worth its maintenance.
 #
-# main publishes the `dev` version; a `v*` tag publishes `X.Y` and moves the `latest` alias.
-# Readers land on `latest` and can switch — which matters before 1.0, when the IPC wire protocol
-# changes between minors and an app one version behind needs the docs that match it.
+# This workflow publishes the `dev` version of the site, and only that one. Readers land on
+# `latest`, which is a released version: to move it, run mike by hand from a checkout —
+# `mike deploy --push --update-aliases 0.8 latest` then `mike set-default --push latest`.
+#
+# A tag does not deploy the docs. The Release workflow owns the tag, and two workflows rewriting
+# the gh-pages branch at the same time is a race nobody wins.
 on:
   push:
-    tags:
-      - 'v*'
     branches:
       - main
   workflow_dispatch:
@@ -74,14 +75,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # A tag publishes its own minor and becomes what readers land on; main publishes `dev`.
-      - name: Deploy versioned docs
-        run: |
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            version="${GITHUB_REF_NAME#v}"          # v0.7.0 -> 0.7.0
-            minor="${version%.*}"                    # 0.7.0  -> 0.7
-            mike deploy --push --update-aliases "$minor" latest
-            mike set-default --push latest
-          else
-            mike deploy --push dev
-          fi
+      - name: Deploy the dev docs
+        run: mike deploy --push dev
