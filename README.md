@@ -1,13 +1,14 @@
 [![client](https://img.shields.io/maven-central/v/com.erfangholami.androidsolidservices/client.svg?label=client)](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/client)
 [![api](https://img.shields.io/maven-central/v/com.erfangholami.androidsolidservices/api.svg?label=api)](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/api)
+[![host](https://img.shields.io/maven-central/v/com.erfangholami.androidsolidservices/host.svg?label=host)](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/host)
 [![Docs](https://img.shields.io/badge/docs-site-blueviolet)](https://androidsolidservices.erfangholami.com)
 [![License](https://img.shields.io/github/license/erfangholami/Android-Solid-Services)](LICENSE)
 
 # Android Solid Services
 
-Single sign-in to [Solid](https://solidproject.org/) for Android. One app holds the user's pod
-accounts; every other app on the device reaches those pods through it, with the user's permission
-and without ever handling a credential.
+The Solid SDK for Android. [Solid Share](https://solidshare.app) holds the user's pod accounts;
+every other app on the device reaches those pods through it, within a scope the user approved and
+without ever handling a credential.
 
 📖 **[Full documentation](https://androidsolidservices.erfangholami.com)** — guides, API reference
 and troubleshooting.
@@ -21,38 +22,54 @@ alone to make.
 
 ## How this solves it
 
-Android Solid Services owns the login. Tokens are DPoP-bound to keys generated in the Android
-Keystore and never leave the app; other apps talk to it over AIDL and get results, never
-credentials. The user signs in once, grants each app access explicitly, and can revoke it at any
-time — and an app integrates with one dependency and no auth code at all.
+The host app owns the login. Tokens are DPoP-bound to keys generated in the Android Keystore and
+never leave that app; other apps talk to it over AIDL and get results, never credentials. The user
+signs in once and decides, for each app, what it may do and where — the whole pod, a few folders,
+or one data module, at View, Add, Edit or Full access — and can narrow or revoke it at any time.
+An app integrates with one dependency and no auth code at all.
 
-|![Login](https://github.com/user-attachments/assets/9afe2f9d-f4a3-4e05-ae77-ab6e13febf84)|![Accounts](https://github.com/user-attachments/assets/543b2d9e-2f51-481f-b50d-934ece61172f)|![Access grants](https://github.com/user-attachments/assets/3deabd3a-d907-407a-9fbb-b27e26882206)|![Settings](https://github.com/user-attachments/assets/b6df9725-321d-4572-b9fa-07cf28de3e9a)|
-|-|-|-|-|
+```kotlin
+// The whole of your authentication code.
+private val authorize = registerForActivityResult(
+    AuthorizeWithSolid(
+        AccessRequest(level = AccessLevel.EDIT, targets = listOf(RequestedTarget.Path("notes/"))),
+    ),
+) { result ->
+    if (result is SolidSignInResult.Authorized) onSignedIn(result.webId, result.grant)
+}
+```
 
 ## Features
 
 - **One sign-in, many apps** — several accounts from different pod providers, active at once.
-- **Native account picker** — sign-in launches from the calling app's own foreground, so no
+- **Scoped app grants** — a level on the whole pod, on named folders, or on a data module.
+  Every verb of every service is checked against what the user approved.
+- **Native consent screen** — sign-in launches from the calling app's own foreground, so no
   special permissions are involved.
 - **Solid accounts in Android Settings**, alongside every other account on the device.
 - **Full pod access over IPC** — resources (CRUD, containers, patches, streaming), sharing,
   Linked Data Notifications, and data modules for contacts and tickets.
-- **Per-app grants** the user reviews and revokes.
-- **Two libraries** — `client` for apps that go through Android Solid Services, `api` for apps
-  that prefer to speak to pods directly.
+- **Four libraries** — `client` for apps that go through Solid Share, `api` for apps that speak
+  to pods directly, `host` for apps that want to host the services themselves, and `shared`
+  underneath them all.
 
 ## Install
 
-The app is on [GitHub Releases](https://github.com/erfangholami/Android-Solid-Services/releases);
-Google Play and F-Droid are in progress.
+Users install **[Solid Share](https://solidshare.app)**, the host app, from
+[Google Play](https://play.google.com/store/apps/details?id=com.erfangholami.solidshare) or
+[F-Droid](https://f-droid.org/packages/com.erfangholami.solidshare/).
+
+> **The Android Solid Services app is discontinued.** 0.7.2 was its last release and it works
+> with the 0.7.2 libraries only. From 0.8.0 the host is Solid Share, and `client` does not bind
+> to the old app.
 
 For your own app, one dependency:
 
 ```kotlin
-implementation("com.erfangholami.androidsolidservices:client:0.7.2")
+implementation("com.erfangholami.androidsolidservices:client:0.8.0")
 ```
 
-Then follow **[Getting Started](https://androidsolidservices.erfangholami.com/getting-started/)**.
+Then follow the **[Quickstart](https://androidsolidservices.erfangholami.com/start/quickstart/)**.
 There is also a [sample app](https://github.com/erfangholami/Android-Solid-Service_client-sample)
 that runs every SDK call against a live pod, shown next to the code that makes it.
 
@@ -61,15 +78,15 @@ that runs every SDK call against a live pod, shown next to the code that makes i
 Requires **JDK 17** (or JetBrains Runtime 17.0.9); set `JAVA_HOME` if the build complains.
 
 ```sh
-./gradlew assembleFossDebug     # the app, without Google services
+./gradlew assembleDebug         # the four libraries
 ./gradlew test                  # unit tests, all modules
 ./gradlew spotlessApply detekt  # format, then static analysis
+./gradlew publishToMavenLocal -PassVersion=0.8.0   # try an unreleased version in a consumer
 ```
 
-The APK lands in `app/build/outputs/apk/foss/debug`. Versions come from the git tag, so a working
-copy needs no version edits. The
-[Architecture](https://androidsolidservices.erfangholami.com/architecture/) page explains how the
-modules fit together.
+Versions come from the git tag, so a working copy needs no version edits. The
+[Architecture](https://androidsolidservices.erfangholami.com/project/architecture/) page explains
+how the modules fit together, and the host app lives in its own repository.
 
 ## Contributing
 

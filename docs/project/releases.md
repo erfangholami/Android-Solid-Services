@@ -6,14 +6,57 @@ Library versions are published to Maven Central:
 
 - [`client`](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/client)
 - [`api`](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/api)
+- [`host`](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/host) — since 0.8.0
 - [`shared`](https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/shared)
 
 ---
 
-## v0.7.3 — unreleased
+## v0.8.0 — 15th September 2026
 
-Inrupt PodSpaces accounts can now be notified, asked for access, and edited. Nothing changes in
-the public API beyond one new profile helper: pin `0.7.3` and rebuild.
+Solid Share becomes the host app, app grants gain a scope, and the Android Solid Services app is
+retired. Source- and wire-breaking: `client` 0.8.0 talks to Solid Share only, and an app built
+against 0.7.x cannot talk to a 0.8.0 host.
+
+!!! warning "The Android Solid Services app stopped at 0.7.2"
+    0.7.2 is the last release of the app, and it works with the 0.7.2 libraries only. From 0.8.0
+    the app that holds the accounts and hosts the services is [Solid Share](https://solidshare.app).
+    Users install Solid Share, sign in, and approve each app again the first time it asks; grants
+    do not move across, because the old ones had no scope to carry. The Client ID Document at
+    `client.jsonld` stays hosted so installed 0.7.2 apps keep signing in.
+
+### Migrating from 0.7
+
+1. Bump `client` to 0.8.0 and tell your users to install Solid Share.
+2. Check `Solid.isHostInstalled(context)` before launching sign-in; offer
+   `Solid.hostInstallIntent(context)` when it is `false`.
+3. Give `AuthorizeWithSolid` an `AccessRequest` naming the least your app needs — a level on the
+   whole pod, on storage-relative paths, or on a data module. Without one the app asks for the
+   whole pod at Edit; sharing and the inbox need Full access. Read the grant from
+   `SolidSignInResult.Authorized.grant`.
+4. `SolidSignInClient.getAccount` and `disconnectFromSolid` are `suspend` functions; `getAccount`
+   returns the grant in `SolidSignInAccount.grant` (the `fullAccess` flag is gone) and
+   `disconnectFromSolid` returns `Boolean`. `getInstance(context, hasInstalled…)` on the sign-in
+   and resource clients is now `getInstance(context)`.
+5. Treat `NotPermissionException` as "outside the granted scope": read the grant, explain, and
+   ask again. Its message names what is held and what the call needs.
+6. Nothing has to be collected before a call any more: every `client` call waits for its
+   binding. `requestLogin`, `SolidServicesDrawPermissionDeniedException` and
+   `ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED` are gone; `SolidAuthorization.ACCOUNT_TYPE`
+   is `SolidHostContract.ACCOUNT_TYPE`.
+
+### Features
+
+- **Scoped app grants.** A grant is a set of entries, each a target at a level: the whole pod, a
+  resource with its subtree, or a data module, at View, Add, Edit or Full access. Every verb of
+  every service is checked against it; the old host guarded the resource service only. The
+  [App access](../build/app-access.md) page has the verb table.
+- **`host`, a fourth library.** Everything an app needs to host the services other apps reach
+  through `client`: the five AIDL binders, the scoped access policy, the grant store, the consent
+  protocol and a service base. Solid Share is built on it.
+- **Host discovery by intent action.** `client` binds each service by action inside Solid Share's
+  package (`SolidHostContract`), so the host is free to name its classes; a missing host fails
+  every call at once with `SolidAppNotFoundException`.
+- **`rootContainers(webId)`** on the contacts and tickets modules: where a module lives on a pod.
 
 ### Bug fixes
 
