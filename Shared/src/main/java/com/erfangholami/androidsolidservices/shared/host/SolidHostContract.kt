@@ -53,4 +53,22 @@ public object SolidHostContract {
      */
     public const val ACTION_AUTHORIZE: String =
         "com.erfangholami.androidsolidservices.action.AUTHORIZE"
+
+    /**
+     * The inert service the `client` SDK declares in every app that depends on it, so that the
+     * host can see that app at all.
+     *
+     * Android 11 hides packages from one another. The SDK already declares `<queries>` for
+     * [HOST_PACKAGE_NAME], which lets a client find the host; nothing points the other way, so a
+     * host asking `PackageManager` for a client's label and icon is refused and can only show the
+     * package name. Visibility earned by an interaction, such as the consent activity, is not
+     * kept: reinstalling or updating either app drops it, and the host's list of granted apps
+     * degrades to "not installed" while the grant is still live.
+     *
+     * A host therefore declares `<queries>` for this action and reads the label and icon from
+     * `PackageManager` whenever it draws them, so an app that rebrands in an update shows its new
+     * name at once. The service exists only to be found: it binds to nothing and does nothing.
+     */
+    public const val ACTION_CLIENT_MARKER: String =
+        "com.erfangholami.androidsolidservices.action.SOLID_CLIENT"
 }

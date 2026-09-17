@@ -218,3 +218,19 @@ with `signIn.getAccount(webId)?.grant` and launch `AuthorizeWithSolid` when it i
 Keeping grants off the pod is deliberate. A grant describes one app on one device, it is worth
 nothing to another device, and writing it to the pod would publish the list of apps a person uses
 to anyone who can read that container.
+
+## How the host names your app
+
+The Apps tab shows your app's label and icon, and it reads both from `PackageManager` each time it
+draws the row. Nothing is copied at approval time, so an app that changes its name or icon in an
+update shows the new one straight away.
+
+Android 11 hides packages from one another, which would refuse that lookup. The SDK handles both
+halves for you: it declares `<queries>` for the host, so your app can find it, and from 0.8.1 it
+also exports an inert `SolidClientMarkerService` that the host matches in its own `<queries>`, so
+the host can find you. You do not reference the class, and there is nothing to add to your
+manifest.
+
+The service returns a null binder and does nothing. If you build against 0.8.0 or earlier your app
+still works, but the host can only name it by its package and reports it as uninstalled after
+either app is updated. Rebuild against 0.8.1 to fix that.

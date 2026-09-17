@@ -2,6 +2,36 @@
 
 All notable changes to this project are documented here.
 
+## [0.8.1] — unreleased
+
+A one-fix release: a host can finally name and picture the apps it granted. No API or wire change,
+but **client apps must rebuild against it** to become visible.
+
+### Bug fixes
+
+- **A host can read a granted app's label and icon.** Android 11 hides packages from one another,
+  and the SDK pointed one way only: `client` declares `<queries>` for the host, so a client can
+  find it, and nothing let a host see a client. `PackageManager.getApplicationInfo` was therefore
+  refused, so the host could name a granted app by its package alone, drew no icon, and reported a
+  live grant as uninstalled. Visibility earned from an interaction, such as the consent activity,
+  is not kept — updating or reinstalling either app dropped it again, which made the fault look
+  intermittent.
+
+  Every app that depends on `client` now exports an inert `SolidClientMarkerService` carrying the
+  new `SolidHostContract.ACTION_CLIENT_MARKER`, and `host` declares the matching `<queries>`. Both
+  halves merge from the library, so neither a client nor a host adds anything to its manifest. The
+  service returns a null binder and does nothing; it exists only to be found.
+
+### Notes
+
+- Client apps built against 0.8.0 or earlier keep working, but a host can still only name them by
+  package and reports them as uninstalled after an update. Rebuild against 0.8.1 to fix that.
+- Nothing references `SolidClientMarkerService` in code. It is public because the manifest names
+  it.
+- Hosts should read the label and icon from `PackageManager` each time they draw them, rather than
+  copying them when the grant is made, so an app that rebrands in an update shows its new name at
+  once.
+
 ## [0.8.0] — 15th September 2026
 
 Solid Share becomes the host app, app grants gain a scope, and the Android Solid Services app is

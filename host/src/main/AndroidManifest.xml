@@ -1,2 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Android 11+ (API 30) package visibility, the host half. Every app built on the `client`
+      SDK exports an inert service carrying this action, so matching it here is what lets the
+      host read a granted app's label and icon from PackageManager. Read them at draw time
+      rather than storing them, so an app that rebrands in an update shows its new name at once.
+    -->
+    <queries>
+        <intent>
+            <action android:name="com.erfangholami.androidsolidservices.action.SOLID_CLIENT" />
+        </intent>
+    </queries>
+
+</manifest>

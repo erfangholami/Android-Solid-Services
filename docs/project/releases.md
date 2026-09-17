@@ -15,6 +15,26 @@ Library versions are published to Maven Central:
     [The upgrade guide](upgrading.md) is the route from any version to 0.8.0, with the build
     requirements and the order to do things in. This page is the detail behind it.
 
+## v0.8.1 — unreleased
+
+A one-fix release: a host can name and picture the apps it granted. No API or wire change.
+
+!!! warning "Client apps must rebuild to become visible"
+    Android 11 hides packages from one another. `client` has always declared `<queries>` for the
+    host, so your app can find Solid Share; nothing pointed the other way, so Solid Share could
+    not read your app's label or icon. It named your app by its package, drew no icon, and showed
+    a live grant as "not installed". Visibility earned from the consent screen is not kept, so
+    updating or reinstalling either app brought the fault back.
+
+    From 0.8.1 `client` exports an inert `SolidClientMarkerService` that the host matches in its
+    own `<queries>`. Both halves merge from the library — there is nothing to add to your
+    manifest, and no code references the class. Rebuilding against 0.8.1 is all it takes.
+
+### Bug fixes
+
+- A host reads a granted app's label and icon from `PackageManager` again, on every draw, so an
+  app that rebrands in an update shows its new name at once.
+
 ## v0.8.0 — 15th September 2026
 
 Solid Share becomes the host app, app grants gain a scope, and the Android Solid Services app is

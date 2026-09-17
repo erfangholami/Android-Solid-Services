@@ -18,4 +18,24 @@
         </intent>
     </queries>
 
+    <application>
+
+        <!--
+          The other half of that visibility. A host matches this action in its own <queries> so
+          it can read this app's label and icon from PackageManager every time it draws them.
+          Without it the host knows only the package name, and a grant survives an update of
+          either app while its row degrades to "not installed". The service is inert: it returns
+          a null binder, so being exported exposes nothing.
+        -->
+        <service
+            android:name="com.erfangholami.androidsolidservices.client.SolidClientMarkerService"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.erfangholami.androidsolidservices.action.SOLID_CLIENT" />
+            </intent-filter>
+        </service>
+
+    </application>
+
 </manifest>
