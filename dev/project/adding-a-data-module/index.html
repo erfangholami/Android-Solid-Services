@@ -3,7 +3,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+        <meta name="description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
       
       
         <meta name="author" content="Erfan Gholami">
@@ -15,7 +15,7 @@
         <link rel="prev" href="../architecture/">
       
       
-        <link rel="next" href="../troubleshooting/">
+        <link rel="next" href="../upgrading/">
       
       
         
@@ -63,7 +63,7 @@
   
 <meta property="og:type" content="website">
 <meta property="og:title" content="Adding a data module - Android Solid Services">
-<meta property="og:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="og:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/adding-a-data-module.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -71,7 +71,7 @@
 <meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/project/adding-a-data-module/">
 <meta property="twitter:card" content="summary_large_image">
 <meta property="twitter:title" content="Adding a data module - Android Solid Services">
-<meta property="twitter:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="twitter:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/adding-a-data-module.png">
 <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="../releases/">release notes</a> before upgrading.
 
           </div>
@@ -612,7 +612,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -644,6 +644,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -733,6 +737,34 @@
     
   
     Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
   
 
     
@@ -970,6 +1002,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1121,6 +1181,8 @@
   
     
     
+      
+        
       
         
       
@@ -1464,6 +1526,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../troubleshooting/" class="md-nav__link">
         
   
@@ -1555,7 +1645,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -2074,12 +2164,12 @@ storage, tolerant delete, <code>findInContainer</code>, foreign-pod reads, and t
 <li><strong>Module registration</strong> — the facade has to be constructible, so the <code>getInstance(...)</code> factory
   and the app's DI module gain a line.</li>
 <li><strong>The <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> layer</strong> — a cross-process consumer needs one typed <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> interface for the module's
-  verbs, an <code>:app</code> service stub and a <code>:client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> class. The per-return-type cost is gone:
+  verbs, a <code>:host</code> binder branch and a <code>:client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> class. The per-return-type cost is gone:
   every verb takes one of the two generic callbacks (<code>IASSParcelableCallback</code> /
   <code>IASSParcelableListCallback</code>), results travel in the Bundle envelope owned by
   <code>Shared/src/main/java/com/erfangholami/androidsolidservices/shared/ipc/IpcEnvelope.kt</code> (which
   also owns setting the Bundle class loader — no call site does), stubs answer through the
-  <code>dispatch*</code> helpers in <code>app/.../services/AidlDispatch.kt</code>, and the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> suspends through the
+  <code>dispatch*</code> helpers in <code>host/.../dispatch/AidlDispatch.kt</code>, and the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> suspends through the
   bridges in <code>client/.../sdk/CallbackBridges.kt</code> (<code>suspendParcelable</code>, <code>suspendParcelableList</code>,
   <code>suspendUnit</code>, …). A new module writes no callback types and no <code>Stub()</code> bridges.</li>
 </ul>
@@ -2128,7 +2218,7 @@ engine test starts at its first real assertion instead of fifty lines of preambl
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 15, 2026 10:06:09 UTC">September 15, 2026</span>
   </span>
 
     
@@ -2192,13 +2282,13 @@ engine test starts at its first real assertion instead of fifty lines of preambl
         
         
           
-          <a href="../troubleshooting/" class="md-footer__link md-footer__link--next" aria-label="Next: Troubleshooting">
+          <a href="../upgrading/" class="md-footer__link md-footer__link--next" aria-label="Next: Upgrade guide">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Troubleshooting
+                Upgrade guide
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2237,7 +2327,7 @@ engine test starts at its first real assertion instead of fifty lines of preambl
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

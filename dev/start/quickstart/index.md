@@ -6,7 +6,7 @@ If you have not picked a library yet, read [Client or API?](https://androidsolid
 
 ## 1. Before you start
 
-Install [Android Solid Services](https://androidsolidservices.erfangholami.com/dev/start/install-app/index.md) on your device or emulator and sign in to a pod. Your app talks to it, so it has to be there.
+Install [Solid Share](https://androidsolidservices.erfangholami.com/dev/start/install-app/index.md) on your device or emulator and sign in to a pod. Your app talks to it, so it has to be there.
 
 No pod? [solidcommunity.net](https://solidcommunity.net) gives you one free.
 
@@ -18,7 +18,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:client:0.8.1")
 }
 ```
 
@@ -26,7 +26,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:api:0.8.1")
 }
 ```
 
@@ -41,11 +41,11 @@ android {
 }
 ```
 
-Minimum SDK 26.
+The libraries need `compileSdk = 37` and `minSdk = 26`. `compileSdk` is not a suggestion: the AAR metadata refuses a lower value, and the build stops with *"requires libraries and applications that depend on it to compile against version 37 or later"*. Your `targetSdk` stays your own choice.
 
 ## 3. Sign in
 
-Sign-in is an activity result. Your app launches the account picker from its own foreground, which is why no special permission is involved.
+Sign-in is an activity result. Your app launches Solid Share's consent screen from its own foreground, which is why no special permission is involved, and it says what it needs. This quickstart writes into one folder, so it asks for that folder at Edit.
 
 MainActivity.kt
 
@@ -55,11 +55,22 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.erfangholami.androidsolidservices.client.sdk.AuthorizeWithSolid
 import com.erfangholami.androidsolidservices.client.sdk.Solid
 import com.erfangholami.androidsolidservices.client.sdk.SolidSignInResult
+import com.erfangholami.androidsolidservices.shared.model.grant.AccessLevel
+import com.erfangholami.androidsolidservices.shared.model.grant.AccessRequest
+import com.erfangholami.androidsolidservices.shared.model.grant.RequestedTarget
 
 class MainActivity : ComponentActivity() {
 
     // Register the contract while the activity is being created — not in a click handler. (1)!
-    private val authorize = registerForActivityResult(AuthorizeWithSolid()) { result ->
+    private val authorize = registerForActivityResult(
+        AuthorizeWithSolid(
+            AccessRequest(   // (3)!
+                level = AccessLevel.EDIT,
+                targets = listOf(RequestedTarget.Path("notes/")),
+                reason = "Your notes are kept in your pod under notes/.",
+            ),
+        ),
+    ) { result ->
         when (result) {
             is SolidSignInResult.Authorized -> onSignedIn(result.webId)   // (2)!
             SolidSignInResult.Dismissed     -> showMessage("Sign-in cancelled")
@@ -72,7 +83,8 @@ class MainActivity : ComponentActivity() {
 ```
 
 1. Android requires result contracts to be registered before the activity reaches `STARTED`. Registering later throws.
-1. Keep this WebID. Every pod call takes it as its first argument, which is how a device with several signed-in accounts routes your call to the right one.
+1. Keep this WebID. Every pod call takes it as its first argument, which is how a device with several signed-in accounts routes your call to the right one. `result.grant` is what the user approved, which may be narrower than what you asked for.
+1. What the app needs: a level, and the whole pod, storage-relative paths or data modules. The user can narrow or widen it. Leave it out and the app asks for the whole pod at Edit. See [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md).
 
 Your app runs the OIDC flow itself. Two steps: launch the intent, then hand the redirect back.
 

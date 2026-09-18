@@ -3,7 +3,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+        <meta name="description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
       
       
         <meta name="author" content="Erfan Gholami">
@@ -63,7 +63,7 @@
   
 <meta property="og:type" content="website">
 <meta property="og:title" content="How it works - Android Solid Services">
-<meta property="og:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="og:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/start/how-it-works.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -71,7 +71,7 @@
 <meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/start/how-it-works/">
 <meta property="twitter:card" content="summary_large_image">
 <meta property="twitter:title" content="How it works - Android Solid Services">
-<meta property="twitter:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="twitter:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/start/how-it-works.png">
 <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="../../project/releases/">release notes</a> before upgrading.
 
           </div>
@@ -675,10 +675,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ipc-how-your-app-calls-ass" class="md-nav__link">
+  <a href="#ipc-how-your-app-calls-the-host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        IPC: How Your App Calls ASS
+        IPC: How Your App Calls the Host
       
     </span>
   </a>
@@ -774,7 +774,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -806,6 +806,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -895,6 +899,34 @@
     
   
     Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
   
 
     
@@ -1132,6 +1164,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1294,6 +1354,8 @@
       
         
       
+        
+      
     
     
     
@@ -1382,6 +1444,34 @@
     
   
     Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
   
 
     
@@ -1493,7 +1583,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -1574,10 +1664,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ipc-how-your-app-calls-ass" class="md-nav__link">
+  <a href="#ipc-how-your-app-calls-the-host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        IPC: How Your App Calls ASS
+        IPC: How Your App Calls the Host
       
     </span>
   </a>
@@ -1724,13 +1814,13 @@
 
 
 <h1 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">¶</a></h1>
-<p>This page walks through how Android Solid Services works at runtime — from a user logging in to a third-party app reading a pod resource. Understanding this helps you build apps that integrate correctly and handle edge cases gracefully.</p>
+<p>This page walks through how the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> works at runtime — from a user signing in to a third-party app reading a pod resource. Understanding this helps you build apps that integrate correctly and handle edge cases gracefully.</p>
 <hr>
 <h2 id="the-three-layer-model">The Three-Layer Model<a class="headerlink" href="#the-three-layer-model" title="Permanent link">¶</a></h2>
 <pre class="mermaid"><code>graph TD
     subgraph "Your device"
         A["Third-party app&lt;br/&gt;(uses client)"]
-        B["Android Solid Services&lt;br/&gt;(host app)"]
+        B["Solid Share&lt;br/&gt;(host app)"]
     end
     C["Solid Pod Server&lt;br/&gt;(CSS, ESS, etc.)"]
     D["OpenID Provider&lt;br/&gt;(identity server)"]
@@ -1738,26 +1828,27 @@
     A -- "AIDL IPC\n(resource / contacts calls)" --&gt; B
     B -- "HTTPS + DPoP/Bearer\n(authenticated requests)" --&gt; C
     B -- "OIDC auth flow\n(login / token refresh)" --&gt; D</code></pre>
-<p>Your app <strong>never talks directly to the pod</strong>. It calls the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> host app over Android <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> (<abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr>), which holds the tokens and makes all authenticated HTTP requests on its behalf.</p>
-<p>This design has two benefits:</p>
+<p>Your app <strong>never talks directly to the pod</strong>. It calls the host app, Solid Share, over Android <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> (<abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr>), which holds the tokens and makes all authenticated HTTP requests on its behalf.</p>
+<p>This design has three benefits:</p>
 <ul>
-<li><strong>Single sign-in</strong> — the user logs in once; every app on the device reuses the same session.</li>
-<li><strong>Credential isolation</strong> — access tokens never leave the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> process; third-party apps cannot exfiltrate them.</li>
+<li><strong>Single sign-in</strong> — the user signs in once; every app on the device reuses the same session.</li>
+<li><strong>Credential isolation</strong> — access tokens never leave the host process; third-party apps cannot exfiltrate them.</li>
+<li><strong>Scoped access</strong> — the host checks every verb against what the user granted that app, so an app that asked for one folder cannot read the rest of the pod.</li>
 </ul>
 <hr>
 <h2 id="authentication-flow">Authentication Flow<a class="headerlink" href="#authentication-flow" title="Permanent link">¶</a></h2>
-<p>The login flow runs once per Solid account. <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> orchestrates the full OpenID Connect exchange, adding <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> token binding when the provider supports it:</p>
+<p>The login flow runs once per Solid account, inside Solid Share. It orchestrates the full OpenID Connect exchange, adding <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> token binding when the provider supports it:</p>
 <pre class="mermaid"><code>sequenceDiagram
     actor User
     participant App as Your App
-    participant ASS as Android Solid Services
+    participant ASS as Solid Share
     participant Browser
     participant IDP as OpenID Provider
     participant Pod as Solid Pod
 
-    App-&gt;&gt;ASS: launch AuthorizeWithSolid
-    ASS-&gt;&gt;User: Show account picker
-    User-&gt;&gt;ASS: Approve
+    App-&gt;&gt;ASS: launch AuthorizeWithSolid(request)
+    ASS-&gt;&gt;User: Show the account list and what the app asks for
+    User-&gt;&gt;ASS: Approve, or narrow it first
     ASS-&gt;&gt;IDP: Fetch OIDC discovery doc&lt;br/&gt;(from WebID → issuer)
     ASS-&gt;&gt;Browser: Open authorization URL
     Browser-&gt;&gt;User: Show IDP login page
@@ -1767,15 +1858,15 @@
     IDP--&gt;&gt;ASS: Tokens (DPoP-bound when supported, else Bearer)
     ASS-&gt;&gt;Pod: First pod request (HEAD /profile)
     Pod--&gt;&gt;ASS: 200 OK
-    ASS--&gt;&gt;App: Authorized(webId)</code></pre>
-<p>After login, <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> stores the tokens (access + refresh) in an <strong>encrypted-at-rest</strong> DataStore — AES-256-GCM under an Android Keystore key — so the persisted session is unreadable off-device. When <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> is in use, each account also has <strong>its own <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> key pair</strong> held by <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr>, so a stolen token is useless without the private key.</p>
+    ASS--&gt;&gt;App: Authorized(webId, grant)</code></pre>
+<p>After login, the host stores the tokens (access + refresh) in an <strong>encrypted-at-rest</strong> DataStore — AES-256-GCM under an Android Keystore key — so the persisted session is unreadable off-device. When <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> is in use, each account also has <strong>its own <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> key pair</strong> held by the host, so a stolen token is useless without the private key.</p>
 <div class="admonition tip">
 <p class="admonition-title">Stable client identity (0.5.0)</p>
-<p>By default <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> registers a client dynamically with each OpenID Provider. You can instead point the login at a hosted <strong>Solid-<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> Client ID Document</strong> (a stable <code>client_id</code> URL) so registration never expires and the consent screen shows your app's real name. See <a href="../../reference/client-id-document/">Using a Client ID Document</a>.</p>
+<p>By default the host registers a client dynamically with each OpenID Provider. You can instead point the login at a hosted <strong>Solid-<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> Client ID Document</strong> (a stable <code>client_id</code> URL) so registration never expires and the consent screen shows your app's real name. See <a href="../../reference/client-id-document/">Using a Client ID Document</a>.</p>
 </div>
 <hr>
 <h2 id="dpop-or-bearer-how-requests-are-authenticated"><abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> or Bearer: How Requests Are Authenticated<a class="headerlink" href="#dpop-or-bearer-how-requests-are-authenticated" title="Permanent link">¶</a></h2>
-<p><abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> does not force <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>. It <strong>negotiates</strong> the token-binding scheme from the OpenID Provider's
+<p>The <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> does not force <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>. It <strong>negotiates</strong> the token-binding scheme from the OpenID Provider's
 discovery document and uses whichever the server supports:</p>
 <ul>
 <li>
@@ -1796,11 +1887,11 @@ discovery document and uses whichever the server supports:</p>
 </tr>
 <tr>
 <td><code>DPoP: &lt;proof&gt;</code></td>
-<td>A short-lived JWT, signed with a private key <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> generated at first launch, binding the token to this specific request (method + URI + timestamp)</td>
+<td>A short-lived JWT, signed with a private key generated at first launch, binding the token to this specific request (method + URI + timestamp)</td>
 </tr>
 </tbody>
 </table>
-<p>If the server returns a <code>DPoP-Nonce</code> header, <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> incorporates it into the next proof — preventing
+<p>If the server returns a <code>DPoP-Nonce</code> header, the next proof carries it — preventing
 replay attacks.</p>
 </li>
 <li>
@@ -1810,35 +1901,34 @@ replay attacks.</p>
 </ul>
 <p>This negotiation happens automatically; your app doesn't need to know which scheme is in effect.</p>
 <hr>
-<h2 id="ipc-how-your-app-calls-ass"><abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr>: How Your App Calls <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr><a class="headerlink" href="#ipc-how-your-app-calls-ass" title="Permanent link">¶</a></h2>
-<p>The <code>client</code> library binds to the Android services inside the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app — sign-in, resources, contacts, and (since 0.5.0) sharing and notifications:</p>
+<h2 id="ipc-how-your-app-calls-the-host"><abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr>: How Your App Calls the Host<a class="headerlink" href="#ipc-how-your-app-calls-the-host" title="Permanent link">¶</a></h2>
+<p>The <code>client</code> library binds to five Android services inside Solid Share — sign-in, resources, data modules, sharing and notifications. It binds them <strong>by intent action</strong> inside the host's package, so the host is free to name and move its own classes:</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant App as Your App
     participant Client as client
-    participant Binder as ASS AIDL Service
+    participant Binder as Solid Share binder
     participant RM as SolidResourceManager
     participant Pod as Solid Pod
 
     App-&gt;&gt;Client: Solid.getResourceClient(context)
-    Client-&gt;&gt;Binder: bindService(ASSResourceService)
-    Binder--&gt;&gt;Client: onServiceConnected
-    Client--&gt;&gt;App: resourceServiceConnectionState emits true
-
     App-&gt;&gt;Client: resourceClient.read(url, MyNote::class.java)
+    Client-&gt;&gt;Binder: bindService(ACTION_RESOURCES)
+    Binder--&gt;&gt;Client: onServiceConnected
     Client-&gt;&gt;Binder: AIDL call: read(url, className)
+    Note over Binder: checks the app's grant:&lt;br/&gt;a read needs View on that resource
     Binder-&gt;&gt;RM: resourceManager.read(webId, uri, clazz)
     RM-&gt;&gt;Pod: GET /data/note.ttl&lt;br/&gt;Authorization: DPoP …&lt;br/&gt;DPoP: &lt;proof&gt;
     Pod--&gt;&gt;RM: 200 OK  (Turtle body)
     RM--&gt;&gt;Binder: SolidResult.Success(note)
     Binder--&gt;&gt;Client: AIDL callback: onResult(note)
     Client--&gt;&gt;App: returns MyNote</code></pre>
-<p>The <code>Flow&lt;Boolean&gt;</code> connection state is essential: <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> binding is asynchronous. Always collect it before calling methods — or you'll get a <code>SolidServiceConnectionException</code>.</p>
+<p>Binding is asynchronous, but every call waits for it, so there is nothing to collect first. The <code>Flow&lt;Boolean&gt;</code> connection state is there for UI that wants to show it. A call that the grant does not cover fails with <code>NotPermissionException</code> before any HTTP request is made — see <a href="../../build/app-access/">App access</a>.</p>
 <hr>
 <h2 id="multi-account-routing">Multi-Account Routing<a class="headerlink" href="#multi-account-routing" title="Permanent link">¶</a></h2>
-<p>Since v0.3.0, <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> manages multiple logged-in Solid accounts. Since v0.4.0, the client library passes the target <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> on every call so <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> can route the request to the correct token set.</p>
+<p>The host manages several signed-in Solid accounts at once, and the client library passes the target <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> on every call so the host can route the request to the correct token set.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant App as Your App
-    participant ASS
+    participant ASS as Solid Share
     participant Pod1 as pod.example.org
     participant Pod2 as another.pod.net
 
@@ -1851,8 +1941,9 @@ replay attacks.</p>
 <code>SolidSignInResult.Authorized</code>. Pass it on every subsequent call.</p>
 <hr>
 <h2 id="resource-operations-what-happens-under-the-hood">Resource Operations: What Happens Under the Hood<a class="headerlink" href="#resource-operations-what-happens-under-the-hood" title="Permanent link">¶</a></h2>
-<p>When your app calls <code>resourceClient.read(url, clazz)</code>, <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr>:</p>
+<p>When your app calls <code>resourceClient.read(url, clazz)</code>, the host:</p>
 <ol>
+<li>Checks the calling app's grant covers a read of that resource, and refuses with <code>NotPermissionException</code> if not.</li>
 <li>Looks up the access token for the given <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>.</li>
 <li>Refreshes it if expired (using the stored refresh token, plus a fresh <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> proof when <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> is in use).</li>
 <li>Issues a <code>GET</code> with the negotiated auth headers — <code>Authorization: DPoP</code> + a <code>DPoP</code> proof, or a plain <code>Authorization: Bearer</code>.</li>
@@ -1862,44 +1953,44 @@ replay attacks.</p>
 <p>For <code>update()</code> and <code>patch()</code>, passing an <code>ifMatch</code> <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> from a prior <code>head()</code> or <code>read()</code> adds conditional write protection: the server rejects the write with <code>412 Precondition Failed</code> if someone else changed the resource since you last read it.</p>
 <hr>
 <h2 id="direct-api-mode-no-host-app">Direct API Mode (no host app)<a class="headerlink" href="#direct-api-mode-no-host-app" title="Permanent link">¶</a></h2>
-<p>If you use <code>api</code> directly (no <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> host app), the flow is the same — but your app owns the auth state:</p>
+<p>If you use <code>api</code> directly (no host app), the flow is the same — but your app owns the auth state, and nothing scopes what it may do:</p>
 <pre class="mermaid"><code>graph LR
     A["Your App"] -- "direct HTTPS + DPoP/Bearer" --&gt; B["Solid Pod"]
     A -- "OIDC" --&gt; C["OpenID Provider"]</code></pre>
-<p>You call <code>Authenticator.getInstance(context)</code> and manage the token lifecycle yourself. Use this when you want a fully self-contained app or when <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> is unavailable.</p>
+<p>You call <code>Authenticator.getInstance(context)</code> and manage the token lifecycle yourself. Use this when you want a fully self-contained app, or when Solid Share cannot be a prerequisite.</p>
 <hr>
 <h2 id="access-grant-flow">Access Grant Flow<a class="headerlink" href="#access-grant-flow" title="Permanent link">¶</a></h2>
-<p>Before a third-party app can read any resource, <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> requires an explicit grant from the user:</p>
+<p>Before a third-party app can touch a pod, the host requires an explicit grant from the user — and the grant says <em>what</em> and <em>where</em>, not just <em>yes</em>:</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant App as Third-party App
-    participant ASS
+    participant ASS as Solid Share
     actor User
 
-    App-&gt;&gt;ASS: launch AuthorizeWithSolid
-    ASS-&gt;&gt;User: "App X wants access to your Solid pod"
+    App-&gt;&gt;ASS: launch AuthorizeWithSolid(AccessRequest)
+    ASS-&gt;&gt;User: "App X wants Edit on notes/ in your pod"
     alt User approves
-        User-&gt;&gt;ASS: Pick an account
-        ASS-&gt;&gt;ASS: Persist grant in DataStore
-        ASS--&gt;&gt;App: Authorized(webId)
+        User-&gt;&gt;ASS: Pick an account, narrow the scope if they like
+        ASS-&gt;&gt;ASS: Persist the AppGrant in DataStore
+        ASS--&gt;&gt;App: Authorized(webId, grant)
     else User dismisses
         User-&gt;&gt;ASS: Tap outside / back
         ASS--&gt;&gt;App: Dismissed
     end</code></pre>
-<p>Grants are stored per-app in DataStore and shown in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> Settings page. The user can revoke them at any time. Your app can also revoke its own grant by calling <code>disconnectFromSolid()</code>.</p>
+<p>Grants are stored per app and shown in Solid Share's Apps tab, where the user can narrow or revoke them at any time. Your app can revoke its own with <code>disconnectFromSolid()</code>. Every subsequent <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> call is checked against the stored grant; see <a href="../../build/app-access/">App access</a> for what each verb needs.</p>
 <hr>
 <h2 id="sharing-access-control">Sharing &amp; Access Control<a class="headerlink" href="#sharing-access-control" title="Permanent link">¶</a></h2>
-<p>Since v0.5.0, <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> can share pod resources with <strong>other people</strong> (distinct from the app access grants
-above, which are about which apps may act for you). A share writes an authorization onto the
-resource's access control so the receiver's own credentials let them reach it:</p>
+<p>The <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> can also share pod resources with <strong>other people</strong> — distinct from the app grants above,
+which are about which apps may act for you. A share writes an authorization onto the resource's
+access control so the receiver's own credentials let them reach it:</p>
 <ul>
-<li><strong>Backend</strong> — Web Access Control (<abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr>, <code>.acl</code>) or Access Control Policy (<abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr>, <code>.acr</code>). <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> detects
+<li><strong>Backend</strong> — Web Access Control (<abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr>, <code>.acl</code>) or Access Control Policy (<abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr>, <code>.acr</code>). The <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> detects
   which the pod uses from the resource's advertised authorization links and writes the right one.</li>
 <li><strong>Modes</strong> — <strong>View</strong> (<code>acl:Read</code>), <strong>Add</strong> (<code>acl:Read</code> + <code>acl:Append</code>), or <strong>Edit</strong> (<code>acl:Read</code> +
   <code>acl:Write</code>). <abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr> has no mode subsumption, so the implied modes are written explicitly and folded
   back into one logical level per receiver when listed.</li>
 <li><strong>Receivers</strong> — a single <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>, a <code>vcard:Group</code> (members inherit), or the public.</li>
 <li><strong>Containers</strong> — sharing a container uses <code>acl:default</code> so its members inherit the access.</li>
-<li><strong>Index</strong> — <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> keeps a private <code>given_shares.ttl</code> / <code>received_shares.ttl</code> pair under
+<li><strong>Index</strong> — the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> keeps a private <code>given_shares.ttl</code> / <code>received_shares.ttl</code> pair under
   <code>/solidshare/</code> so a user can list what they've shared and received without re-walking the pod; it
   can be rebuilt from the pod's own ACLs.</li>
 <li><strong>Links</strong> — a share can be handed off out-of-band as an <code>https://solidshare.app/s…</code> App Link or QR
@@ -1907,9 +1998,12 @@ resource's access control so the receiver's own credentials let them reach it:</
 </ul>
 <h2 id="notifications-inbox">Notifications Inbox<a class="headerlink" href="#notifications-inbox" title="Permanent link">¶</a></h2>
 <p>Sharing across pods is coordinated through each user's <a href="https://www.w3.org/TR/ldn/">Linked Data Notifications</a>
-(<abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr>) inbox. The inbox is advertised on the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> and granted <strong>public append-but-not-read</strong>: anyone
-can POST a notification, but only the owner can read it. The flow is <strong>pull-only</strong> — apps poll the
-inbox (e.g. a 15-minute background worker) rather than holding a push connection.</p>
+(<abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr>) inbox. The inbox is advertised on the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> — or, where the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document is read-only as
+on Inrupt, in the extended profile, which is then made publicly readable — and granted <strong>public
+append-but-not-read</strong>: anyone can POST a notification, but only the owner can read it. A sender
+that finds no advertised inbox falls back to <code>{storage}inbox/</code>, the container <code>ensureInbox()</code>
+provisions. The flow is <strong>pull-only</strong> — apps poll the inbox (e.g. a 15-minute background worker)
+rather than holding a push connection.</p>
 <pre class="mermaid"><code>sequenceDiagram
     actor Requester
     participant RInbox as Requester inbox
@@ -1950,7 +2044,7 @@ their <abbr title="A URI that identifies a person and dereferences to their publ
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 15, 2026 10:06:09 UTC">September 15, 2026</span>
   </span>
 
     
@@ -2014,13 +2108,13 @@ their <abbr title="A URI that identifies a person and dereferences to their publ
         
         
           
-          <a href="../install-app/" class="md-footer__link md-footer__link--next" aria-label="Next: Install the app">
+          <a href="../install-app/" class="md-footer__link md-footer__link--next" aria-label="Next: Install Solid Share">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Install the app
+                Install Solid Share
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2059,7 +2153,7 @@ their <abbr title="A URI that identifies a person and dereferences to their publ
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

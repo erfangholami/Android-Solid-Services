@@ -93,7 +93,7 @@
   <div class="breadcrumbs"><a href="../../index.html">Shared</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.shared.ipc</a><span class="delimiter">/</span><span class="current">IpcEnvelope</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Ipc</span><wbr><span><span>Envelope</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">IpcEnvelope</a></div><p class="paragraph">The Bundle envelope carried by the two generic AIDL callbacks, <code class="lang-kotlin">IASSParcelableCallback</code> and <code class="lang-kotlin">IASSParcelableListCallback</code>.</p><p class="paragraph">AIDL has no generic <code class="lang-kotlin">Parcelable</code> parameter, so a callback that could return "whatever this verb answers with" used to mean one interface per return type. A Bundle is the one wire type that can hold any of them, so both callbacks take a Bundle and this file owns the keys, the packing (<a href="index.html">IpcEnvelope</a>) and the unpacking (the <code class="lang-kotlin">Bundle?</code> readers below).</p><p class="paragraph">Everything an ASS verb answers with fits: a single Parcelable, a list of them, a String, a boolean, nothing at all, an open stream, or a login outcome.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">IpcEnvelope</a></div><p class="paragraph">The Bundle envelope carried by the two generic AIDL callbacks, <code class="lang-kotlin">IASSParcelableCallback</code> and <code class="lang-kotlin">IASSParcelableListCallback</code>.</p><p class="paragraph">AIDL has no generic <code class="lang-kotlin">Parcelable</code> parameter, so a callback that could return "whatever this verb answers with" used to mean one interface per return type. A Bundle is the one wire type that can hold any of them, so both callbacks take a Bundle and this file owns the keys, the packing (<a href="index.html">IpcEnvelope</a>) and the unpacking (the <code class="lang-kotlin">Bundle?</code> readers below).</p><p class="paragraph">Everything a host verb answers with fits: a single Parcelable, a list of them, a String, a boolean, nothing at all, or an open stream.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
@@ -126,21 +126,6 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-k-e-y_-c-o-n-t-e-n-t_-t-y-p-e.html">KEY_CONTENT_TYPE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">A stream's <code class="lang-kotlin">Content-Type</code>, alongside the <a href="-k-e-y_-v-a-l-u-e.html">KEY_VALUE</a> file descriptor.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-2128779659%2FProperties%2F1769164051" anchor-label="KEY_GRANTED" id="-2128779659%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
-          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="-k-e-y_-g-r-a-n-t-e-d.html"><span>KEY_</span><wbr><span>GRANTED</span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2128779659%2FProperties%2F1769164051"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-k-e-y_-g-r-a-n-t-e-d.html">KEY_GRANTED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Whether a login was granted, alongside the <a href="-k-e-y_-v-a-l-u-e.html">KEY_VALUE</a> WebID the user picked.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -220,21 +205,6 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="of-list.html"><span class="token function">ofList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">values<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a><span class="token operator">&gt;</span><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a></div><div class="brief "><p class="paragraph">Envelopes <a href="of-list.html">values</a> as a ParcelableArrayList. A <code class="lang-kotlin">null</code> list envelopes as an absent value.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1246434523%2FFunctions%2F1769164051" anchor-label="ofLogin" id="1246434523%2FFunctions%2F1769164051" data-filterable-set=":Shared/release"></a>
-          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="of-login.html"><span>of</span><wbr><span><span>Login</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1246434523%2FFunctions%2F1769164051"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="of-login.html"><span class="token function">ofLogin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">granted<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">selectedWebId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a></div><div class="brief "><p class="paragraph">Envelopes a login outcome: whether it was <a href="of-login.html">granted</a> and the WebID the user selected.</p></div></div></div>
                 </div>
               </div>
             </div>

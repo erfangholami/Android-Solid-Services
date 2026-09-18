@@ -3,7 +3,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Install Android Solid Services on your phone and sign in to your Solid pod.">
+        <meta name="description" content="Install Solid Share on your phone and sign in to your Solid pod, so every Solid-aware app can use it.">
       
       
         <meta name="author" content="Erfan Gholami">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Install the app - Android Solid Services</title>
+        <title>Install Solid Share - Android Solid Services</title>
       
     
     
@@ -62,16 +62,16 @@
     
   
 <meta property="og:type" content="website">
-<meta property="og:title" content="Install the app - Android Solid Services">
-<meta property="og:description" content="Install Android Solid Services on your phone and sign in to your Solid pod.">
+<meta property="og:title" content="Install Solid Share - Android Solid Services">
+<meta property="og:description" content="Install Solid Share on your phone and sign in to your Solid pod, so every Solid-aware app can use it.">
 <meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/start/install-app.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/start/install-app/">
 <meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:title" content="Install the app - Android Solid Services">
-<meta property="twitter:description" content="Install Android Solid Services on your phone and sign in to your Solid pod.">
+<meta property="twitter:title" content="Install Solid Share - Android Solid Services">
+<meta property="twitter:description" content="Install Solid Share on your phone and sign in to your Solid pod, so every Solid-aware app can use it.">
 <meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/start/install-app.png">
 <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
@@ -102,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#install-the-app" class="md-skip">
+        <a href="#install-solid-share" class="md-skip">
           Skip to content
         </a>
       
@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="../../project/releases/">release notes</a> before upgrading.
 
           </div>
@@ -160,7 +160,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Install the app
+              Install Solid Share
             
           </span>
         </div>
@@ -626,7 +626,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -644,7 +644,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -760,6 +760,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -829,6 +833,34 @@
     
   
     Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
   
 
     
@@ -1066,6 +1098,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1228,6 +1288,8 @@
       
         
       
+        
+      
     
     
     
@@ -1316,6 +1378,34 @@
     
   
     Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
   
 
     
@@ -1427,7 +1517,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -1591,32 +1681,39 @@
   
 
 
-<h1 id="install-the-app">Install the app<a class="headerlink" href="#install-the-app" title="Permanent link">¶</a></h1>
-<p>Android Solid Services holds your Solid accounts so every Solid-aware app on your phone can use
-them. You install it once.</p>
+<h1 id="install-solid-share">Install Solid Share<a class="headerlink" href="#install-solid-share" title="Permanent link">¶</a></h1>
+<p><a href="https://solidshare.app">Solid Share</a> holds your Solid accounts so every Solid-aware app on your
+phone can use them. You install it once.</p>
 <div class="admonition info">
 <p class="admonition-title">For app developers</p>
-<p>You need this installed to develop against the <code>client</code> library, because that library talks
-to it. If you are building with <code>api</code> instead, you do not — see
+<p>You need this installed to develop against the <code>client</code> library, because that library talks to
+it. If you are building with <code>api</code> instead, you do not — see
 <a href="../client-or-api/">Client or API?</a>.</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Not the Android Solid Services app</p>
+<p>The Android Solid Services app was the host until 0.7.2 and is discontinued. The 0.8.0 <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>
+never binds to it, because it cannot scope what an app may do. Install Solid Share instead; a
+device that carries only the old app fails every call with <code>SolidAppNotFoundException</code>.</p>
+</div>
 <h2 id="get-it">Get it<a class="headerlink" href="#get-it" title="Permanent link">¶</a></h2>
-<p>Download the latest APK from the
-<a href="https://github.com/erfangholami/Android-Solid-Services/releases">GitHub Releases page</a>.
-Google Play and F-Droid are in progress.</p>
-<ol>
-<li>On your Android device, allow <strong>Install from unknown sources</strong> if prompted.</li>
-<li>Open the downloaded <code>.apk</code> and tap <strong>Install</strong>.</li>
-<li>Launch <strong>Android Solid Services</strong>.</li>
-</ol>
+<div class="store-badges">
+<p><a href="https://play.google.com/store/apps/details?id=com.erfangholami.solidshare"><img alt="Get it on Google Play" src="../../assets/badges/google-play.png"></a>
+<a href="https://f-droid.org/packages/com.erfangholami.solidshare/"><img alt="Get it on F-Droid" src="../../assets/badges/f-droid.png"></a></p>
+</div>
+<p>The APKs are also on
+<a href="https://github.com/erfangholami/SolidShare/releases">GitHub Releases</a>, if you install them
+yourself.</p>
 <p>Android 8.0 (API 26) or newer.</p>
+<p>In your own app, check before you launch sign-in:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">Solid</span><span class="p">.</span><span class="na">isHostInstalled</span><span class="p">(</span><span class="n">context</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">startActivity</span><span class="p">(</span><span class="n">Solid</span><span class="p">.</span><span class="na">hostInstallIntent</span><span class="p">(</span><span class="n">context</span><span class="p">))</span><span class="w">   </span><span class="c1">// the store, or solidshare.app</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
+</span></code></pre></div>
 <h2 id="sign-in">Sign in<a class="headerlink" href="#sign-in" title="Permanent link">¶</a></h2>
-<p>Tap <strong>Add account</strong> and pick your pod provider, or type its URL if it is not listed. You are
-taken to your provider's own sign-in page — your password is entered there, never in this app.</p>
-<figure>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../assets/screenshots/sign-in.png" data-desc-position="bottom"><img alt="Choosing a pod provider, or entering a custom pod server URL" src="../../assets/screenshots/sign-in.png" width="300"></a></p>
-<figcaption>Any Solid provider works — the listed ones are shortcuts.</figcaption>
-</figure>
+<p>Open Solid Share, tap <strong>Add account</strong> and pick your pod provider, or type its URL if it is not
+listed. You are taken to your provider's own sign-in page — your password is entered there, never
+in Solid Share.</p>
 <p>You can add several accounts from different providers and keep them all signed in. Apps ask for a
 specific one by <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>.</p>
 <details class="question">
@@ -1627,21 +1724,20 @@ specific one by <abbr title="A URI that identifies a person and dereferences to 
 Solid protocol works.</p>
 </details>
 <h2 id="granting-apps-access">Granting apps access<a class="headerlink" href="#granting-apps-access" title="Permanent link">¶</a></h2>
-<p>When another app first asks for your pod, Android Solid Services shows you what it wants and
-which account it wants it for. Nothing reaches your pod until you allow it.</p>
-<p>Review and revoke those grants at any time from <strong>Granted apps</strong> in the app. Revoking is
-immediate: the app keeps running, but its calls start failing.</p>
-<figure>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../assets/screenshots/granted-apps.png" data-desc-position="bottom"><img alt="An app's grant, with a button to revoke it" src="../../assets/screenshots/granted-apps.png" width="300"></a></p>
-<figcaption>Each grant names the app and the account it holds access to.</figcaption>
-</figure>
+<p>When another app first asks for your pod, Solid Share shows you which account it wants, what it
+wants to do, and where. Nothing reaches your pod until you allow it.</p>
+<p>An app asks for a <strong>level</strong> — View, Add, Edit or Full access — on the <strong>whole pod</strong>, on <strong>specific
+folders</strong>, or on a <strong>data module</strong> such as your contacts. You can narrow what it asked for before
+you approve it.</p>
+<p>Review, narrow and revoke those grants at any time from the <strong>Apps</strong> tab on Solid Share's Share
+page. Revoking is immediate: the app keeps running, but its calls start failing.</p>
 <p>Your accounts also appear in Android's <strong>Settings → Accounts</strong>, alongside every other account on
 the device. Removing one there signs it out here.</p>
 <h2 id="what-leaves-your-device">What leaves your device<a class="headerlink" href="#what-leaves-your-device" title="Permanent link">¶</a></h2>
 <p>Your tokens and signing keys never do. They are generated in the Android Keystore, bound to this
 device, and encrypted at rest. Other apps receive the <em>results</em> of pod calls, never a credential
 they could reuse.</p>
-<p>See the <a href="../../project/privacy/">Privacy Policy</a> for the full account, and
+<p>See Solid Share's <a href="https://solidshare.app/privacy">privacy policy</a> for the full account, and
 <a href="../../project/troubleshooting/">Troubleshooting</a> if sign-in misbehaves.</p>
 
 
@@ -1665,7 +1761,7 @@ they could reuse.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 15, 2026 14:56:41 UTC">September 15, 2026</span>
   </span>
 
     
@@ -1774,7 +1870,7 @@ they could reuse.</p>
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

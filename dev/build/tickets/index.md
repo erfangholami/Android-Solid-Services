@@ -13,11 +13,15 @@ Modelled on schema.org, so a ticket written here is readable by anything that sp
 
 ## Setup
 
+Needs the Tickets module
+
+These verbs need a grant on the **Tickets** data module (`RequestedTarget.Module(DataModuleId.TICKETS)`) or on the whole pod: View to read, Add to create, Edit to change or delete. See [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md).
+
 build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:client:0.8.1")
 }
 ```
 
@@ -33,7 +37,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:api:0.8.1")
 }
 ```
 

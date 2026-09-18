@@ -93,24 +93,24 @@
   <div class="breadcrumbs"><a href="../../index.html">Shared</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.shared.model.auth</a><span class="delimiter">/</span><span class="current">SolidAuthorization</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Solid</span><wbr><span><span>Authorization</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">SolidAuthorization</a></div><p class="paragraph">The Intent protocol between the client SDK's authorization contract and the Android Solid Services authorize activity.</p><p class="paragraph">The activity is launched <strong>for result</strong> from the calling app's own foreground — that is the point of the flow: no UI is ever drawn from a background service, so no overlay permission is involved, and <code class="lang-kotlin">getCallingPackage()</code> gives the authorize screen a caller identity it can trust.</p><p class="paragraph">Results:</p><ul><li><p class="paragraph"><code class="lang-kotlin">RESULT_OK</code> with <a href="-e-x-t-r-a_-w-e-b_-i-d.html">EXTRA_WEB_ID</a> — the user picked an account and the grant was recorded.</p></li><li><p class="paragraph"><code class="lang-kotlin">RESULT_CANCELED</code> — the user dismissed without granting.</p></li><li><p class="paragraph"><a href="-r-e-s-u-l-t_-e-r-r-o-r.html">RESULT_ERROR</a> with <a href="-e-x-t-r-a_-e-r-r-o-r_-c-o-d-e.html">EXTRA_ERROR_CODE</a> / <a href="-e-x-t-r-a_-e-r-r-o-r_-m-e-s-s-a-g-e.html">EXTRA_ERROR_MESSAGE</a> — the flow could not run;     the code is an <code class="lang-kotlin">ExceptionsErrorCode</code> value the SDK maps to its typed exceptions.</p></li></ul></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">SolidAuthorization</a></div><p class="paragraph">The Intent protocol between the client SDK's authorization contract and the host's consent activity, which the SDK reaches through <a href="../../com.erfangholami.androidsolidservices.shared.host/-solid-host-contract/-a-c-t-i-o-n_-a-u-t-h-o-r-i-z-e.html">com.erfangholami.androidsolidservices.shared.host.SolidHostContract.ACTION_AUTHORIZE</a>.</p><p class="paragraph">The activity is launched <strong>for result</strong> from the calling app's own foreground — that is the point of the flow: no UI is ever drawn from a background service, so no overlay permission is involved, and <code class="lang-kotlin">getCallingPackage()</code> gives the consent screen a caller identity it can trust.</p><p class="paragraph">In: <a href="-e-x-t-r-a_-a-c-c-e-s-s_-r-e-q-u-e-s-t.html">EXTRA_ACCESS_REQUEST</a>, an <a href="../../com.erfangholami.androidsolidservices.shared.model.grant/-access-request/index.html">com.erfangholami.androidsolidservices.shared.model.grant.AccessRequest</a>; when absent the host starts from <code class="lang-kotlin">AccessRequest.DEFAULT</code>.</p><p class="paragraph">Results:</p><ul><li><p class="paragraph"><code class="lang-kotlin">RESULT_OK</code> with <a href="-e-x-t-r-a_-w-e-b_-i-d.html">EXTRA_WEB_ID</a> — the account the user picked — and <a href="-e-x-t-r-a_-g-r-a-n-t.html">EXTRA_GRANT</a>, the     <a href="../../com.erfangholami.androidsolidservices.shared.model.grant/-app-grant/index.html">com.erfangholami.androidsolidservices.shared.model.grant.AppGrant</a> the user approved, which     may be narrower or wider than the request.</p></li><li><p class="paragraph"><code class="lang-kotlin">RESULT_CANCELED</code> — the user dismissed without granting.</p></li><li><p class="paragraph"><a href="-r-e-s-u-l-t_-e-r-r-o-r.html">RESULT_ERROR</a> with <a href="-e-x-t-r-a_-e-r-r-o-r_-c-o-d-e.html">EXTRA_ERROR_CODE</a> / <a href="-e-x-t-r-a_-e-r-r-o-r_-m-e-s-s-a-g-e.html">EXTRA_ERROR_MESSAGE</a> — the flow could not run;     the code is an <code class="lang-kotlin">ExceptionsErrorCode</code> value the SDK maps to its typed exceptions.</p></li></ul></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="-82705099%2FProperties%2F1769164051" anchor-label="ACCOUNT_TYPE" id="-82705099%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+        <div class="table"><a data-name="-1467124610%2FProperties%2F1769164051" anchor-label="EXTRA_ACCESS_REQUEST" id="-1467124610%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
           <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-a-c-c-o-u-n-t_-t-y-p-e.html"><span>ACCOUNT_</span><wbr><span>TYPE</span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-82705099%2FProperties%2F1769164051"></span>
+                  <div><a href="-e-x-t-r-a_-a-c-c-e-s-s_-r-e-q-u-e-s-t.html"><span>EXTRA_</span><wbr><span>ACCESS_</span><wbr><span>REQUEST</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1467124610%2FProperties%2F1769164051"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-o-u-n-t_-t-y-p-e.html">ACCOUNT_TYPE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The <code class="lang-kotlin">android.accounts</code> account type under which Android Solid Services registers every signed-in Solid profile (account name = WebID). Third-party apps can offer the <strong>system</strong> account chooser over it — <code class="lang-kotlin">AccountManager.newChooseAccountIntent</code> filtered to this type, or the SDK's <code class="lang-kotlin">ChooseSolidAccount</code> contract. Picking an account there makes it visible to the picking app, mediated by the OS; it does not by itself grant pod access, which is what the authorize flow is for. Accounts of this type carry no tokens: DPoP tokens are bound to keys that never leave Android Solid Services.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-e-x-t-r-a_-a-c-c-e-s-s_-r-e-q-u-e-s-t.html">EXTRA_ACCESS_REQUEST</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -141,6 +141,21 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-e-x-t-r-a_-e-r-r-o-r_-m-e-s-s-a-g-e.html">EXTRA_ERROR_MESSAGE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-147501620%2FProperties%2F1769164051" anchor-label="EXTRA_GRANT" id="-147501620%2FProperties%2F1769164051" data-filterable-set=":Shared/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":Shared/release" data-filterable-set=":Shared/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-e-x-t-r-a_-g-r-a-n-t.html"><span>EXTRA_</span><wbr><span>GRANT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-147501620%2FProperties%2F1769164051"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":Shared/release"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-e-x-t-r-a_-g-r-a-n-t.html">EXTRA_GRANT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
                 </div>
               </div>
             </div>

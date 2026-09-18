@@ -1,1 +1,1 @@
-sourceset_dependencies = '{":client/release":[],":api/release":[],":Shared/release":[]}'
+sourceset_dependencies = '{":host/release":[],":client/release":[],":api/release":[],":Shared/release":[]}'

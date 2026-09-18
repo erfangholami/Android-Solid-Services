@@ -8,49 +8,45 @@ ______________________________________________________________________
 
 ### `SolidAppNotFoundException`
 
-**Cause:** The Android Solid Services host app is not installed on the device.
+**Cause:** Solid Share, the host app, is not installed on the device. The message says so, or says that only the retired Android Solid Services app is installed — that app stopped at 0.7.2 and the 0.8.0 SDK never binds to it.
 
-**Fix:** Have the user install ASS from the [GitHub Releases page](https://github.com/erfangholami/Android-Solid-Services/releases) before your app makes any IPC call.
+**Fix:** Check before you call, and send the user to install it:
 
 ```kotlin
-try {
-    signInClient.getAccount(webId)
-} catch (e: SolidAppNotFoundException) {
-    // redirect user to the ASS install page
+if (!Solid.isHostInstalled(context)) {
+    startActivity(Solid.hostInstallIntent(context))   // the store, or solidshare.app
 }
 ```
+
+______________________________________________________________________
+
+### The host is installed, but the SDK says it is not the real one
+
+**Cause:** An app holds Solid Share's package name but is not signed with Solid Share's key. The SDK compares the SHA-256 of the installed host's signing certificate against the digest it ships, and refuses a mismatch. You see this most often after you replace the store copy with a build of Solid Share you made yourself: your build carries your own key. (Android will not install one over the other, so this follows an uninstall.)
+
+**Fix:** Install Solid Share from Google Play, F-Droid or the project's GitHub Releases. To keep working against a host you built, build **your own app** as a debug build — the SDK skips the check for a debuggable caller, and reads that flag from the caller, never from the host. A release build of your app always checks.
 
 ______________________________________________________________________
 
 ### `SolidServiceConnectionException`
 
-**Cause:** The IPC service bound successfully at the OS level but then disconnected unexpectedly, or you called a method before the `Flow<Boolean>` connection state emitted `true`.
+**Cause:** The binding to Solid Share dropped and did not come back within the bind timeout — the host was being updated, or was stopped mid-call.
 
-**Fix:** Always gate calls behind the connection state flow:
-
-```kotlin
-resourceClient.resourceServiceConnectionState().collect { connected ->
-    if (connected) {
-        // safe to call resource methods here
-    }
-}
-```
-
-Do not call methods immediately after obtaining the client object — binding is asynchronous.
+**Fix:** Retry. Every `client` call waits for the binding by itself and the connector rebinds after a death, so there is nothing to gate; the connection-state flow exists for UI, not for correctness.
 
 ______________________________________________________________________
 
-### `SolidServicesDrawPermissionDeniedException`
+### `NotPermissionException` on a call that used to work
 
-**Cause:** You called the deprecated `SolidSignInClient.requestLogin`. It drew the account picker over your app from a background service, which Android permits only with the `SYSTEM_ALERT_WINDOW` (overlay draw) permission. ASS no longer requests that permission, so the call now always fails with this exception instead of leaving you waiting for a callback that cannot arrive.
+**Cause:** The user narrowed your app's grant in Solid Share's Apps tab, or revoked it. The message names what the app holds and what the call needs, for example `Granted VIEW on https://…/notes/; this call needs EDIT`.
 
-**Fix:** Launch the `AuthorizeWithSolid` contract from your Activity — the picker opens in your own foreground, the chosen WebID comes back as an activity result, and no permission is involved. See [Getting Started](https://androidsolidservices.erfangholami.com/dev/start/quickstart/index.md).
+**Fix:** Read the current grant with `signIn.getAccount(webId)?.grant`, explain what the feature needs, and launch `AuthorizeWithSolid` again with an `AccessRequest` for it. See [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md).
 
 ______________________________________________________________________
 
 ## Authentication
 
-### Login browser opens but redirect never returns to ASS
+### Login browser opens but the redirect never returns to your app (`api`)
 
 **Cause:** The `appAuthRedirectScheme` manifest placeholder is missing or doesn't match your package name.
 
@@ -70,9 +66,9 @@ ______________________________________________________________________
 
 ### `SolidNotLoggedInException`
 
-**Cause:** No user is logged in to ASS, or the stored session has been fully invalidated (refresh token expired or revoked by the pod server).
+**Cause:** No account is signed in to Solid Share, or that account's session has expired (the refresh token ran out or was revoked by the provider).
 
-**Fix:** In your app, check `signInClient.getAccount(webId)` — if it returns `null`, launch the `AuthorizeWithSolid` contract again to start a new auth flow.
+**Fix:** Send the user to sign in again: launch the `AuthorizeWithSolid` contract, whose account list stays live while they sign in inside Solid Share.
 
 ______________________________________________________________________
 
@@ -82,7 +78,7 @@ ______________________________________________________________________
 
 **Fix:** Upgrade to `0.5.0` or later. Nonce handling and token refresh are now fully internal and nonce-aware: the library reads the `DPoP-Nonce`, retries the token request once on a `use_dpop_nonce` challenge ([RFC 9449](https://datatracker.ietf.org/doc/html/rfc9449) §8), tracks nonces **per origin**, and no longer invalidates the session on a *recoverable* failure (nonce/network/5xx).
 
-You no longer call `updateDPoPNonce` or `getLastTokenResponse` — both were **removed** from the public `Authenticator` in 0.5.0. Access tokens and DPoP headers are attached for you; go through the resource / sharing / contacts managers (or the `client` SDK). If the refresh token is genuinely revoked (the session reports unauthorized), re-authenticate with `requestLogin()` / `createAuthenticationIntent()`.
+You no longer call `updateDPoPNonce` or `getLastTokenResponse` — both were **removed** from the public `Authenticator` in 0.5.0. Access tokens and DPoP headers are attached for you; go through the resource / sharing / contacts managers (or the `client` SDK). If the refresh token is genuinely revoked (the session reports unauthorized), re-authenticate through `AuthorizeWithSolid` (client) or `createAuthenticationIntent()` (api).
 
 ______________________________________________________________________
 
@@ -143,6 +139,14 @@ If access should be granted, check the ACL/ACP policy on the pod server side.
 
 ______________________________________________________________________
 
+### Profile edits fail with 401 / 403 / 405 on an Inrupt WebID
+
+**Cause:** `updateProfile()` and `setAvatar()` used to patch the WebID document, which Inrupt serves read-only from `id.inrupt.com`.
+
+**Fix:** Upgrade to `0.8.0`+. `writableProfileDocument(webId)` picks the document to edit — the WebID document when its `WAC-Allow` grants write, otherwise the linked extended profile on the user's storage — and both operations write there. The account's `WebId` also folds the extended profile in at sign-in and on `reloadProfile()`, so a name that lives only in the extended profile is no longer blank.
+
+______________________________________________________________________
+
 ### Resource URI with spaces returns 404 or 400
 
 **Cause:** On versions before `0.4.0`, resource URIs were not percent-encoded, causing requests for URIs with spaces or special characters to fail.
@@ -189,6 +193,14 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+### An Inrupt (PodSpaces) account receives no notifications, and nobody can request access from it
+
+**Cause:** Inrupt serves the WebID document from `id.inrupt.com` read-only, so `ensureInbox()` can only write the `ldp:inbox` link into the extended profile on the pod (`{storage}profile`) — and that document is private by default. A sender reads the public WebID document, finds no inbox, cannot read the extended profile, and reports `NoInbox`. The inbox itself exists and accepts posts; it is simply undiscoverable.
+
+**Fix:** Upgrade to `0.8.0`+. `ensureInbox()` now grants public read on the document that advertises the inbox when that document is not the WebID document itself, and a sender that finds no inbox falls back to the conventional `{storage}inbox/` taken from the public `pim:storage`. The fallback works at once; the public-read repair needs the receiving account to run `ensureInbox()` once more (Solid Share does so on every account activation). Making the extended profile public exposes the fields it holds — name, photo, organisation — which is what a WebID profile is for, but tell your users.
+
+______________________________________________________________________
+
 ### Sharing failures on `createShare` / `revokeShare`
 
 These now arrive as `SolidResult.Failure` with a typed `SolidError`, rather than a thrown `SharingException`. Common cases:
@@ -211,6 +223,30 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 ## Build & Gradle
+
+### The build fails with "requires ... to compile against version 37 or later"
+
+**Cause:** Your `compileSdk` is lower than the libraries'. Every artifact here is built against SDK 37 and its AAR metadata demands the same of anything that depends on it.
+
+**Fix:** Set `compileSdk = 37`. This changes which APIs you may call, not which devices you reach: leave `minSdk` at 26 and set `targetSdk` to whatever you already target.
+
+build.gradle.kts
+
+```kotlin
+android {
+    compileSdk = 37
+}
+```
+
+______________________________________________________________________
+
+### KSP fails with "Provided Metadata instance has version 2.4.0, while maximum supported version is 2.3.0"
+
+**Cause:** Your annotation processor reads Kotlin metadata with a `kotlin-metadata-jvm` older than the Kotlin that built these libraries. Hilt below 2.60 does this, and the message names Hilt.
+
+**Fix:** Update the processor. For Hilt, use 2.60.1 or newer, and `androidx.hilt` 1.4.0 or newer. The same applies to any other KSP or kapt processor that reads metadata.
+
+______________________________________________________________________
 
 ### `NullPointerException` during Gradle configuration for `api`
 

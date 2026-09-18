@@ -15,7 +15,7 @@
         <link rel="prev" href="../">
       
       
-        <link rel="next" href="../resources/">
+        <link rel="next" href="../app-access/">
       
       
         
@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="../../project/releases/">release notes</a> before upgrading.
 
           </div>
@@ -612,7 +612,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -646,6 +646,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -846,10 +850,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#wait-for-the-connection-before-calling" class="md-nav__link">
+  <a href="#show-the-connection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Wait for the connection before calling
+        Show the connection
       
     </span>
   </a>
@@ -931,6 +935,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1160,6 +1192,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1322,6 +1382,8 @@
       
         
       
+        
+      
     
     
     
@@ -1410,6 +1472,34 @@
     
   
     Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
   
 
     
@@ -1521,7 +1611,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -1625,10 +1715,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#wait-for-the-connection-before-calling" class="md-nav__link">
+  <a href="#show-the-connection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Wait for the connection before calling
+        Show the connection
       
     </span>
   </a>
@@ -1807,8 +1897,9 @@
 <h1 id="sign-in-accounts">Sign in &amp; accounts<a class="headerlink" href="#sign-in-accounts" title="Permanent link">¶</a></h1>
 <p>Everything else on a pod needs a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> to act as. This is how you get one, keep it, and deal with
 a device that holds more than one.</p>
-<p>On the <code>client</code> path you write no authentication code at all — the host app owns the login. On the
-<code>api</code> path you run the <abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> flow yourself and the library handles <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>, nonces and refresh.</p>
+<p>On the <code>client</code> path you write no authentication code at all — the host app, Solid Share, owns the
+login and asks the user what your app may do. On the <code>api</code> path you run the <abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> flow yourself and
+the library handles <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>, nonces and refresh.</p>
 <h2 id="what-you-can-build">What you can build<a class="headerlink" href="#what-you-can-build" title="Permanent link">¶</a></h2>
 <ul>
 <li>Sign-in that reuses a session the user already has, with no second password prompt.</li>
@@ -1817,11 +1908,11 @@ a device that holds more than one.</p>
 <li>A sign-out that actually ends the relationship rather than just forgetting locally.</li>
 </ul>
 <h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">¶</a></h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="client-via-android-solid-services" name="__tabbed_1" type="radio"><input id="api-direct-to-the-pod" name="__tabbed_1" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod">API (direct to the pod)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="client-via-solid-share" name="__tabbed_1" type="radio"><input id="api-direct-to-the-pod" name="__tabbed_1" type="radio"><div class="tabbed-labels"><label for="client-via-solid-share">Client (via Solid Share)</label><label for="api-direct-to-the-pod">API (direct to the pod)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:client:0.7.2"</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:client:0.8.1"</span><span class="p">)</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.client.sdk.Solid</span>
@@ -1831,7 +1922,7 @@ a device that holds more than one.</p>
 </div>
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:api:0.7.2"</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"com.erfangholami.androidsolidservices:api:0.8.1"</span><span class="p">)</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.erfangholami.androidsolidservices.api.auth.Authenticator</span>
@@ -1849,29 +1940,34 @@ a device that holds more than one.</p>
 </div>
 <h2 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">¶</a></h2>
 <h3 id="sign-a-user-in">Sign a user in<a class="headerlink" href="#sign-a-user-in" title="Permanent link">¶</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="client-via-android-solid-services_1" name="__tabbed_2" type="radio"><input id="api-direct-to-the-pod_1" name="__tabbed_2" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_1">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_1">API (direct to the pod)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="client-via-solid-share_1" name="__tabbed_2" type="radio"><input id="api-direct-to-the-pod_1" name="__tabbed_2" type="radio"><div class="tabbed-labels"><label for="client-via-solid-share_1">Client (via Solid Share)</label><label for="api-direct-to-the-pod_1">API (direct to the pod)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="language-kotlin annotate highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">MainActivity</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ComponentActivity</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="c1">// Register during creation, not in a click handler. (1)!</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">authorize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">registerForActivityResult</span><span class="p">(</span><span class="n">AuthorizeWithSolid</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">SolidSignInResult</span><span class="p">.</span><span class="na">Authorized</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">onSignedIn</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">webId</span><span class="p">)</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">            </span><span class="n">SolidSignInResult</span><span class="p">.</span><span class="na">Dismissed</span><span class="w">     </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">showMessage</span><span class="p">(</span><span class="s">"Sign-in cancelled"</span><span class="p">)</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">SolidSignInResult</span><span class="p">.</span><span class="na">Failed</span><span class="w">     </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">showError</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">exception</span><span class="p">)</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startSignIn</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">authorize</span><span class="p">.</span><span class="na">launch</span><span class="p">(</span><span class="kt">Unit</span><span class="p">)</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="p">}</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">authorize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">registerForActivityResult</span><span class="p">(</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="n">AuthorizeWithSolid</span><span class="p">(</span><span class="n">AccessRequest</span><span class="p">(</span><span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AccessLevel</span><span class="p">.</span><span class="na">EDIT</span><span class="p">,</span><span class="w"> </span><span class="n">targets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="n">RequestedTarget</span><span class="p">.</span><span class="na">Path</span><span class="p">(</span><span class="s">"notes/"</span><span class="p">)))),</span><span class="w">   </span><span class="c1">// (2)!</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">SolidSignInResult</span><span class="p">.</span><span class="na">Authorized</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">onSignedIn</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">webId</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="na">grant</span><span class="p">)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">            </span><span class="n">SolidSignInResult</span><span class="p">.</span><span class="na">Dismissed</span><span class="w">     </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">showMessage</span><span class="p">(</span><span class="s">"Sign-in cancelled"</span><span class="p">)</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">            </span><span class="k">is</span><span class="w"> </span><span class="n">SolidSignInResult</span><span class="p">.</span><span class="na">Failed</span><span class="w">     </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">showError</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">exception</span><span class="p">)</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startSignIn</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">authorize</span><span class="p">.</span><span class="na">launch</span><span class="p">(</span><span class="kt">Unit</span><span class="p">)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="p">}</span>
 </span></code></pre></div>
 <ol>
 <li>Android requires result contracts to be registered before the activity reaches <code>STARTED</code>.
    Registering later throws.</li>
+<li>What the app asks for. The user sees it on the consent screen and may narrow or widen it;
+   <code>result.grant</code> is what they approved. See <a href="../app-access/">App access</a>.</li>
 </ol>
-<p>Your app launches the picker from its own foreground, which is why sign-in needs no permission
-at all — not even the overlay permission earlier versions asked for.</p>
+<p>Your app launches the consent screen from its own foreground, which is why sign-in needs no
+permission at all. Check <code>Solid.isHostInstalled(context)</code> first and offer
+<code>Solid.hostInstallIntent(context)</code> when it is <code>false</code>.</p>
 </div>
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="p">(</span><span class="nv">intent</span><span class="p">,</span><span class="w"> </span><span class="nv">error</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">authenticator</span><span class="p">.</span><span class="na">createAuthenticationIntent</span><span class="p">(</span>
@@ -1901,12 +1997,14 @@ is the fix.</p>
 </div>
 <h3 id="check-whether-you-are-already-signed-in">Check whether you are already signed in<a class="headerlink" href="#check-whether-you-are-already-signed-in" title="Permanent link">¶</a></h3>
 <p>Do this before showing a sign-in button, or you will prompt someone who is already authorized.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="client-via-android-solid-services_2" name="__tabbed_3" type="radio"><input id="api-direct-to-the-pod_2" name="__tabbed_3" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_2">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_2">API (direct to the pod)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="client-via-solid-share_2" name="__tabbed_3" type="radio"><input id="api-direct-to-the-pod_2" name="__tabbed_3" type="radio"><div class="tabbed-labels"><label for="client-via-solid-share_2">Client (via Solid Share)</label><label for="api-direct-to-the-pod_2">API (direct to the pod)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">signIn</span><span class="p">.</span><span class="na">getAccount</span><span class="p">(</span><span class="n">webId</span><span class="p">)</span><span class="w">      </span><span class="c1">// null when this app is not authorized</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">account</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="n">proceed</span><span class="p">(</span><span class="n">account</span><span class="p">.</span><span class="na">webId</span><span class="p">)</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">startSignIn</span><span class="p">()</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">signIn</span><span class="p">.</span><span class="na">getAccount</span><span class="p">(</span><span class="n">webId</span><span class="p">)</span><span class="w">      </span><span class="c1">// suspend; null when this app holds no grant</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">account</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="n">proceed</span><span class="p">(</span><span class="n">account</span><span class="p">.</span><span class="na">webId</span><span class="p">,</span><span class="w"> </span><span class="n">account</span><span class="p">.</span><span class="na">grant</span><span class="p">)</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">startSignIn</span><span class="p">()</span>
 </span></code></pre></div>
+<p>The grant is live: the user can narrow it in Solid Share at any time, so read it rather than
+remembering what you asked for.</p>
 </div>
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">authenticator</span><span class="p">.</span><span class="na">isUserAuthorized</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
@@ -1918,14 +2016,14 @@ is the fix.</p>
 </div>
 </div>
 </div>
-<h3 id="wait-for-the-connection-before-calling">Wait for the connection before calling<a class="headerlink" href="#wait-for-the-connection-before-calling" title="Permanent link">¶</a></h3>
-<p>On the <code>client</code> path every service is a bound service. Collect its state and wait for <code>true</code>:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">signIn</span><span class="p">.</span><span class="na">authServiceConnectionState</span><span class="p">().</span><span class="na">first</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="p">}</span>
+<h3 id="show-the-connection">Show the connection<a class="headerlink" href="#show-the-connection" title="Permanent link">¶</a></h3>
+<p>On the <code>client</code> path every service is a bound service. The calls wait for the binding themselves,
+so nothing has to be collected first; the state is there for UI that wants to show it:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">signIn</span><span class="p">.</span><span class="na">authServiceConnectionState</span><span class="p">().</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">render</span><span class="p">(</span><span class="n">connected</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<p>Skipping this is the most common cause of a first call failing on a cold start — the binding has
-not finished. The <code>api</code> path has nothing to wait for.</p>
+<p>The <code>api</code> path has no binding at all.</p>
 <h3 id="handle-several-accounts">Handle several accounts<a class="headerlink" href="#handle-several-accounts" title="Permanent link">¶</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="client-via-android-solid-services_3" name="__tabbed_4" type="radio"><input id="api-direct-to-the-pod_3" name="__tabbed_4" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_3">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_3">API (direct to the pod)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="client-via-solid-share_3" name="__tabbed_4" type="radio"><input id="api-direct-to-the-pod_3" name="__tabbed_4" type="radio"><div class="tabbed-labels"><label for="client-via-solid-share_3">Client (via Solid Share)</label><label for="api-direct-to-the-pod_3">API (direct to the pod)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>The host app owns the account list. Your app receives whichever <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> the user picked at
@@ -1956,15 +2054,13 @@ account does not flood a crash reporter.</p>
 </span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="sign-out">Sign out<a class="headerlink" href="#sign-out" title="Permanent link">¶</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="client-via-android-solid-services_4" name="__tabbed_5" type="radio"><input id="api-direct-to-the-pod_4" name="__tabbed_5" type="radio"><div class="tabbed-labels"><label for="client-via-android-solid-services_4">Client (via Android Solid Services)</label><label for="api-direct-to-the-pod_4">API (direct to the pod)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="client-via-solid-share_4" name="__tabbed_5" type="radio"><input id="api-direct-to-the-pod_4" name="__tabbed_5" type="radio"><div class="tabbed-labels"><label for="client-via-solid-share_4">Client (via Solid Share)</label><label for="api-direct-to-the-pod_4">API (direct to the pod)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">signIn</span><span class="p">.</span><span class="na">disconnectFromSolid</span><span class="p">(</span><span class="n">webId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">revoked</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">revoked</span><span class="p">)</span><span class="w"> </span><span class="n">returnToSignIn</span><span class="p">()</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">signIn</span><span class="p">.</span><span class="na">disconnectFromSolid</span><span class="p">(</span><span class="n">webId</span><span class="p">))</span><span class="w"> </span><span class="n">returnToSignIn</span><span class="p">()</span>
 </span></code></pre></div>
-<p>This revokes <strong>your app's</strong> grant. The user stays signed in to Android Solid Services, and
-their other apps are unaffected.</p>
+<p>This revokes <strong>your app's</strong> grant. The user stays signed in to Solid Share, and their other apps
+are unaffected.</p>
 </div>
 <div class="tabbed-block">
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kd">val</span><span class="w"> </span><span class="p">(</span><span class="nv">intent</span><span class="p">,</span><span class="w"> </span><span class="nv">error</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">authenticator</span><span class="p">.</span><span class="na">getTerminationSessionIntent</span><span class="p">(</span>
@@ -1982,20 +2078,22 @@ their other apps are unaffected.</p>
 <pre class="mermaid"><code>sequenceDiagram
     autonumber
     participant App as Your app
-    participant ASS as Android Solid Services
+    participant ASS as Solid Share
     participant IdP as Solid provider
     participant Pod as Solid pod
 
-    App-&gt;&gt;ASS: AuthorizeWithSolid.launch()
-    ASS-&gt;&gt;IdP: authorization request (+ Client ID Document)
+    App-&gt;&gt;ASS: AuthorizeWithSolid.launch(request)
+    Note over ASS: the user picks an account and&lt;br/&gt;approves, narrows or widens the request
+    ASS-&gt;&gt;IdP: authorization request (+ Client ID Document), first sign-in only
     IdP--&gt;&gt;ASS: code, after the user signs in
     Note over ASS: mints a per-account DPoP key&lt;br/&gt;in the Android Keystore
     ASS-&gt;&gt;IdP: token request + DPoP proof
     IdP--&gt;&gt;ASS: DPoP-bound access + refresh token
     Note over ASS: validates the ID token, and the&lt;br/&gt;issuer against the WebID
-    ASS--&gt;&gt;App: Authorized(webId)
+    ASS--&gt;&gt;App: Authorized(webId, grant)
 
     App-&gt;&gt;ASS: any pod call, with that webId
+    Note over ASS: the grant covers the call, or it fails&lt;br/&gt;with NotPermissionException
     ASS-&gt;&gt;Pod: request + fresh DPoP proof
     Pod--&gt;&gt;ASS: 200
     ASS--&gt;&gt;App: result — never a token</code></pre>
@@ -2016,13 +2114,18 @@ their other apps are unaffected.</p>
 </tr>
 <tr>
 <td><code>SolidAppNotFoundException</code></td>
-<td>the host app is not installed</td>
-<td>prompt to <a href="../../start/install-app/">install it</a>, or use <code>api</code></td>
+<td>Solid Share is not installed, or only the retired Android Solid Services app is</td>
+<td>offer <code>Solid.hostInstallIntent(context)</code>, or use <code>api</code></td>
 </tr>
 <tr>
 <td><code>SolidServiceConnectionException</code></td>
-<td>called before the binding completed</td>
-<td>collect the connection-state flow first</td>
+<td>the binding dropped and did not come back within the timeout</td>
+<td>retry; the connector rebinds by itself</td>
+</tr>
+<tr>
+<td><code>NotPermissionException</code></td>
+<td>the call is outside what the user granted</td>
+<td>ask again with an <code>AccessRequest</code> that names what you need — <a href="../app-access/">App access</a></td>
 </tr>
 <tr>
 <td>A session that dies about once a day</td>
@@ -2338,7 +2441,7 @@ before changing refresh behaviour, because it encodes decisions rather than mech
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 11:29:45 UTC">September 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 15, 2026 10:06:09 UTC">September 15, 2026</span>
   </span>
 
     
@@ -2402,13 +2505,13 @@ before changing refresh behaviour, because it encodes decisions rather than mech
         
         
           
-          <a href="../resources/" class="md-footer__link md-footer__link--next" aria-label="Next: Resources &amp; containers">
+          <a href="../app-access/" class="md-footer__link md-footer__link--next" aria-label="Next: App access">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Resources &amp; containers
+                App access
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2447,7 +2550,7 @@ before changing refresh behaviour, because it encodes decisions rather than mech
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

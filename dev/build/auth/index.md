@@ -2,7 +2,7 @@
 
 Everything else on a pod needs a WebID to act as. This is how you get one, keep it, and deal with a device that holds more than one.
 
-On the `client` path you write no authentication code at all — the host app owns the login. On the `api` path you run the OIDC flow yourself and the library handles DPoP, nonces and refresh.
+On the `client` path you write no authentication code at all — the host app, Solid Share, owns the login and asks the user what your app may do. On the `api` path you run the OIDC flow yourself and the library handles DPoP, nonces and refresh.
 
 ## What you can build
 
@@ -17,7 +17,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:client:0.8.1")
 }
 ```
 
@@ -31,7 +31,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:api:0.8.1")
 }
 ```
 
@@ -59,9 +59,11 @@ android {
 class MainActivity : ComponentActivity() {
 
     // Register during creation, not in a click handler. (1)!
-    private val authorize = registerForActivityResult(AuthorizeWithSolid()) { result ->
+    private val authorize = registerForActivityResult(
+        AuthorizeWithSolid(AccessRequest(level = AccessLevel.EDIT, targets = listOf(RequestedTarget.Path("notes/")))),   // (2)!
+    ) { result ->
         when (result) {
-            is SolidSignInResult.Authorized -> onSignedIn(result.webId)
+            is SolidSignInResult.Authorized -> onSignedIn(result.webId, result.grant)
             SolidSignInResult.Dismissed     -> showMessage("Sign-in cancelled")
             is SolidSignInResult.Failed     -> showError(result.exception)
         }
@@ -72,8 +74,9 @@ class MainActivity : ComponentActivity() {
 ```
 
 1. Android requires result contracts to be registered before the activity reaches `STARTED`. Registering later throws.
+1. What the app asks for. The user sees it on the consent screen and may narrow or widen it; `result.grant` is what they approved. See [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md).
 
-Your app launches the picker from its own foreground, which is why sign-in needs no permission at all — not even the overlay permission earlier versions asked for.
+Your app launches the consent screen from its own foreground, which is why sign-in needs no permission at all. Check `Solid.isHostInstalled(context)` first and offer `Solid.hostInstallIntent(context)` when it is `false`.
 
 ```kotlin
 val (intent, error) = authenticator.createAuthenticationIntent(
@@ -99,9 +102,11 @@ Omit `clientId` and the library registers a client dynamically with the provider
 Do this before showing a sign-in button, or you will prompt someone who is already authorized.
 
 ```kotlin
-val account = signIn.getAccount(webId)      // null when this app is not authorized
-if (account != null) proceed(account.webId) else startSignIn()
+val account = signIn.getAccount(webId)      // suspend; null when this app holds no grant
+if (account != null) proceed(account.webId, account.grant) else startSignIn()
 ```
+
+The grant is live: the user can narrow it in Solid Share at any time, so read it rather than remembering what you asked for.
 
 ```kotlin
 if (authenticator.isUserAuthorized()) {
@@ -111,15 +116,15 @@ if (authenticator.isUserAuthorized()) {
 }
 ```
 
-### Wait for the connection before calling
+### Show the connection
 
-On the `client` path every service is a bound service. Collect its state and wait for `true`:
+On the `client` path every service is a bound service. The calls wait for the binding themselves, so nothing has to be collected first; the state is there for UI that wants to show it:
 
 ```kotlin
-signIn.authServiceConnectionState().first { connected -> connected }
+signIn.authServiceConnectionState().collect { connected -> render(connected) }
 ```
 
-Skipping this is the most common cause of a first call failing on a cold start — the binding has not finished. The `api` path has nothing to wait for.
+The `api` path has no binding at all.
 
 ### Handle several accounts
 
@@ -152,12 +157,10 @@ authenticator.expiredProfilesFlow.collect { expired ->
 ### Sign out
 
 ```kotlin
-signIn.disconnectFromSolid(webId) { revoked ->
-    if (revoked) returnToSignIn()
-}
+if (signIn.disconnectFromSolid(webId)) returnToSignIn()
 ```
 
-This revokes **your app's** grant. The user stays signed in to Android Solid Services, and their other apps are unaffected.
+This revokes **your app's** grant. The user stays signed in to Solid Share, and their other apps are unaffected.
 
 ```kotlin
 val (intent, error) = authenticator.getTerminationSessionIntent(
@@ -175,20 +178,22 @@ authenticator.removeProfile(webId)     // drops the local session too
 sequenceDiagram
     autonumber
     participant App as Your app
-    participant ASS as Android Solid Services
+    participant ASS as Solid Share
     participant IdP as Solid provider
     participant Pod as Solid pod
 
-    App->>ASS: AuthorizeWithSolid.launch()
-    ASS->>IdP: authorization request (+ Client ID Document)
+    App->>ASS: AuthorizeWithSolid.launch(request)
+    Note over ASS: the user picks an account and<br/>approves, narrows or widens the request
+    ASS->>IdP: authorization request (+ Client ID Document), first sign-in only
     IdP-->>ASS: code, after the user signs in
     Note over ASS: mints a per-account DPoP key<br/>in the Android Keystore
     ASS->>IdP: token request + DPoP proof
     IdP-->>ASS: DPoP-bound access + refresh token
     Note over ASS: validates the ID token, and the<br/>issuer against the WebID
-    ASS-->>App: Authorized(webId)
+    ASS-->>App: Authorized(webId, grant)
 
     App->>ASS: any pod call, with that webId
+    Note over ASS: the grant covers the call, or it fails<br/>with NotPermissionException
     ASS->>Pod: request + fresh DPoP proof
     Pod-->>ASS: 200
     ASS-->>App: result — never a token
@@ -196,14 +201,15 @@ sequenceDiagram
 
 ## Errors you'll hit
 
-| What you see                              | Why                                                          | What to do                                                                                                                               |
-| ----------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `SolidNotLoggedInException`               | no usable session for that WebID, including one that expired | send the user through sign-in again                                                                                                      |
-| `SolidAppNotFoundException`               | the host app is not installed                                | prompt to [install it](https://androidsolidservices.erfangholami.com/dev/start/install-app/index.md), or use `api`                       |
-| `SolidServiceConnectionException`         | called before the binding completed                          | collect the connection-state flow first                                                                                                  |
-| A session that dies about once a day      | dynamic registration expired — Inrupt drops them after 24h   | host a [Client ID Document](https://androidsolidservices.erfangholami.com/dev/reference/client-id-document/index.md) and pass `clientId` |
-| `401` that re-authenticating does not fix | the pod wants a DPoP nonce, not a new login                  | already handled — the library retries with the nonce                                                                                     |
-| Everything 403s after switching account   | calls are still using the previous WebID                     | pass the new WebID; 403 rather than 401 is the tell                                                                                      |
+| What you see                              | Why                                                                             | What to do                                                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SolidNotLoggedInException`               | no usable session for that WebID, including one that expired                    | send the user through sign-in again                                                                                                                    |
+| `SolidAppNotFoundException`               | Solid Share is not installed, or only the retired Android Solid Services app is | offer `Solid.hostInstallIntent(context)`, or use `api`                                                                                                 |
+| `SolidServiceConnectionException`         | the binding dropped and did not come back within the timeout                    | retry; the connector rebinds by itself                                                                                                                 |
+| `NotPermissionException`                  | the call is outside what the user granted                                       | ask again with an `AccessRequest` that names what you need — [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md) |
+| A session that dies about once a day      | dynamic registration expired — Inrupt drops them after 24h                      | host a [Client ID Document](https://androidsolidservices.erfangholami.com/dev/reference/client-id-document/index.md) and pass `clientId`               |
+| `401` that re-authenticating does not fix | the pod wants a DPoP nonce, not a new login                                     | already handled — the library retries with the nonce                                                                                                   |
+| Everything 403s after switching account   | calls are still using the previous WebID                                        | pass the new WebID; 403 rather than 401 is the tell                                                                                                    |
 
 ## Under the hood
 

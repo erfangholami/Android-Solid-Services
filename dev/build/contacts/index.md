@@ -14,11 +14,15 @@ Because the layout matches the one SolidOS uses, contacts your app writes show u
 
 ## Setup
 
+Needs the Contacts module
+
+These verbs need a grant on the **Contacts** data module (`RequestedTarget.Module(DataModuleId.CONTACTS)`) or on the whole pod: View to read, Add to create, Edit to change or delete. See [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md).
+
 build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:client:0.8.1")
 }
 ```
 
@@ -40,7 +44,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:api:0.8.1")
 }
 ```
 
@@ -308,7 +312,7 @@ sequenceDiagram
     autonumber
     participant App as Your app
     participant SDK as client SDK
-    participant ASS as Android Solid Services
+    participant ASS as Solid Share
     participant Pod as Solid pod
 
     App->>SDK: contacts.create(webId, bookUri, data)
@@ -326,16 +330,16 @@ On the `api` path the two middle participants collapse: your process talks to th
 
 ## Errors you'll hit
 
-| What you see                                | Why                                              | What to do                                                                                                              |
-| ------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `SolidNotLoggedInException`                 | no account signed in for that WebID              | send the user back through sign-in                                                                                      |
-| `SolidAppNotFoundException`                 | Android Solid Services is not installed          | prompt to [install it](https://androidsolidservices.erfangholami.com/dev/start/install-app/index.md), or use `api`      |
-| `NotPermissionException`                    | the user has not granted your app access         | the grant dialog was declined; ask again                                                                                |
-| `403` on a write                            | signed in, but no write access to that container | the pod owner has to grant it — see [Sharing](https://androidsolidservices.erfangholami.com/dev/build/sharing/index.md) |
-| Empty list where you expected contacts      | the book or its index does not exist yet         | this is normal on a fresh pod; call `books.ensureDefault`                                                               |
-| Fields silently disappearing after `update` | replace semantics                                | derive from the stored snapshot with `buildUpon { }`                                                                    |
-| Photo call fails on a large image           | the ~1 MB Binder limit on the `client` path      | downscale first, or use `api`                                                                                           |
-| `findByWebId` is slow                       | it scans every contact                           | use it once, on demand — never in a list or a search box                                                                |
+| What you see                                | Why                                                                  | What to do                                                                                                                                       |
+| ------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SolidNotLoggedInException`                 | no account signed in for that WebID                                  | send the user back through sign-in                                                                                                               |
+| `SolidAppNotFoundException`                 | Solid Share is not installed                                         | prompt to [install it](https://androidsolidservices.erfangholami.com/dev/start/install-app/index.md), or use `api`                               |
+| `NotPermissionException`                    | no grant on the Contacts module, or not at the level this verb needs | ask again with an `AccessRequest` for the module — see [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md) |
+| `403` on a write                            | signed in, but no write access to that container                     | the pod owner has to grant it — see [Sharing](https://androidsolidservices.erfangholami.com/dev/build/sharing/index.md)                          |
+| Empty list where you expected contacts      | the book or its index does not exist yet                             | this is normal on a fresh pod; call `books.ensureDefault`                                                                                        |
+| Fields silently disappearing after `update` | replace semantics                                                    | derive from the stored snapshot with `buildUpon { }`                                                                                             |
+| Photo call fails on a large image           | the ~1 MB Binder limit on the `client` path                          | downscale first, or use `api`                                                                                                                    |
+| `findByWebId` is slow                       | it scans every contact                                               | use it once, on demand — never in a list or a search box                                                                                         |
 
 ## Under the hood
 

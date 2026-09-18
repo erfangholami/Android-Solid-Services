@@ -93,24 +93,24 @@
   <div class="breadcrumbs"><a href="../../index.html">client</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.client.sdk</a><span class="delimiter">/</span><span class="current">SolidSignInAccount</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Solid</span><wbr><span>Sign</span><wbr><span>In</span><wbr><span><span>Account</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">SolidSignInAccount</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fullAccess<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div><p class="paragraph">Represents this app's authorized link to a Solid account.</p><p class="paragraph">Returned by <a href="../-solid-sign-in-client/get-account.html">SolidSignInClient.getAccount</a> once the user has granted the calling app access to a WebID.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">SolidSignInAccount</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>grant<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-app-grant/index.html">AppGrant</a></span></span><span class="token punctuation">)</span></div><p class="paragraph">This app's authorized link to a Solid account, as the host currently records it.</p><p class="paragraph">Returned by <a href="../-solid-sign-in-client/get-account.html">SolidSignInClient.getAccount</a> once the user has granted the calling app access to a WebID. The <a href="../../../client/com.erfangholami.androidsolidservices.client.sdk/-solid-sign-in-account/--root--.html">grant</a> is what the user approved on the consent screen, which may be narrower or wider than what the app asked for, and may have been changed by the user since.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="tableheader">Constructors</h2>
-        <div class="table"><a data-name="1709001429%2FConstructors%2F1285123853" anchor-label="SolidSignInAccount" id="1709001429%2FConstructors%2F1285123853" data-filterable-set=":client/release"></a>
+        <div class="table"><a data-name="1563189475%2FConstructors%2F1285123853" anchor-label="SolidSignInAccount" id="1563189475%2FConstructors%2F1285123853" data-filterable-set=":client/release"></a>
           <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":client/release" data-filterable-set=":client/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-solid-sign-in-account.html"><span>Solid</span><wbr><span>Sign</span><wbr><span>In</span><wbr><span><span>Account</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1709001429%2FConstructors%2F1285123853"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1563189475%2FConstructors%2F1285123853"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fullAccess<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">grant<span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-app-grant/index.html">AppGrant</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -119,17 +119,17 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="1858373799%2FProperties%2F1285123853" anchor-label="fullAccess" id="1858373799%2FProperties%2F1285123853" data-filterable-set=":client/release"></a>
+        <div class="table"><a data-name="1250071972%2FProperties%2F1285123853" anchor-label="grant" id="1250071972%2FProperties%2F1285123853" data-filterable-set=":client/release"></a>
           <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="full-access.html"><span>full</span><wbr><span><span>Access</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1858373799%2FProperties%2F1285123853"></span>
+                  <div><a href="grant.html"><span><span>grant</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1250071972%2FProperties%2F1285123853"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="full-access.html">fullAccess</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the app was granted full access to the account.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="grant.html">grant</a><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-app-grant/index.html">AppGrant</a></div><div class="brief "><p class="paragraph">What the app may do as that WebID: the targets and the level on each.</p></div></div></div>
                 </div>
               </div>
             </div>

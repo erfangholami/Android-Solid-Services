@@ -1,8 +1,8 @@
 # Android Solid Services
 
-> Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.
+> The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.
 
-Android Solid Services gives Android apps a single Solid sign-in. One app holds the user's pod accounts; every other app reaches those pods through it over AIDL, with the user's permission and without handling a credential.
+Android Solid Services is the Solid SDK for Android. Solid Share holds the user's pod accounts; every other app reaches those pods through it over AIDL, with a grant the user scoped and without handling a credential.
 
 ## Start here
 
@@ -14,8 +14,10 @@ Android Solid Services gives Android apps a single Solid sign-in. One app holds 
 
 - [Build with it](https://androidsolidservices.erfangholami.com/dev/build/index.md)
 - [Access control](https://androidsolidservices.erfangholami.com/dev/build/access-control/index.md)
+- [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md)
 - [Sign in & accounts](https://androidsolidservices.erfangholami.com/dev/build/auth/index.md)
 - [Contacts](https://androidsolidservices.erfangholami.com/dev/build/contacts/index.md)
+- [Hosting the services](https://androidsolidservices.erfangholami.com/dev/build/hosting/index.md)
 - [Notifications](https://androidsolidservices.erfangholami.com/dev/build/notifications/index.md)
 - [Resources & containers](https://androidsolidservices.erfangholami.com/dev/build/resources/index.md)
 - [Sharing](https://androidsolidservices.erfangholami.com/dev/build/sharing/index.md)

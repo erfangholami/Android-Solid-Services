@@ -3,7 +3,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+        <meta name="description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
       
       
         <meta name="author" content="Erfan Gholami">
@@ -12,7 +12,7 @@
         <link rel="canonical" href="https://androidsolidservices.erfangholami.com/dev/project/troubleshooting/">
       
       
-        <link rel="prev" href="../adding-a-data-module/">
+        <link rel="prev" href="../upgrading/">
       
       
         <link rel="next" href="../releases/">
@@ -63,7 +63,7 @@
   
 <meta property="og:type" content="website">
 <meta property="og:title" content="Troubleshooting - Android Solid Services">
-<meta property="og:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="og:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/troubleshooting.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -71,7 +71,7 @@
 <meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/project/troubleshooting/">
 <meta property="twitter:card" content="summary_large_image">
 <meta property="twitter:title" content="Troubleshooting - Android Solid Services">
-<meta property="twitter:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="twitter:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/troubleshooting.png">
 <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="../releases/">release notes</a> before upgrading.
 
           </div>
@@ -612,7 +612,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -644,6 +644,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -733,6 +737,34 @@
     
   
     Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
   
 
     
@@ -970,6 +1002,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1134,6 +1194,8 @@
       
         
       
+        
+      
     
     
     
@@ -1242,6 +1304,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1328,6 +1418,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#the-host-is-installed-but-the-sdk-says-it-is-not-the-real-one" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The host is installed, but the SDK says it is not the real one
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#solidserviceconnectionexception" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1339,10 +1440,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#solidservicesdrawpermissiondeniedexception" class="md-nav__link">
+  <a href="#notpermissionexception-on-a-call-that-used-to-work" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SolidServicesDrawPermissionDeniedException
+        NotPermissionException on a call that used to work
       
     </span>
   </a>
@@ -1367,10 +1468,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#login-browser-opens-but-redirect-never-returns-to-ass" class="md-nav__link">
+  <a href="#login-browser-opens-but-the-redirect-never-returns-to-your-app-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Login browser opens but redirect never returns to ASS
+        Login browser opens but the redirect never returns to your app (api)
       
     </span>
   </a>
@@ -1454,6 +1555,17 @@
     <span class="md-ellipsis">
       
         403 Forbidden on resource access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#profile-edits-fail-with-401-403-405-on-an-inrupt-webid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile edits fail with 401 / 403 / 405 on an Inrupt WebID
       
     </span>
   </a>
@@ -1550,6 +1662,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#an-inrupt-podspaces-account-receives-no-notifications-and-nobody-can-request-access-from-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An Inrupt (PodSpaces) account receives no notifications, and nobody can request access from it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sharing-failures-on-createshare-revokeshare" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1587,6 +1710,28 @@
   
     <nav class="md-nav" aria-label="Build &amp; Gradle">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-build-fails-with-requires-to-compile-against-version-37-or-later" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The build fails with "requires ... to compile against version 37 or later"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ksp-fails-with-provided-metadata-instance-has-version-240-while-maximum-supported-version-is-230" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KSP fails with "Provided Metadata instance has version 2.4.0, while maximum supported version is 2.3.0"
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#nullpointerexception-during-gradle-configuration-for-api" class="md-nav__link">
@@ -1694,7 +1839,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -1765,6 +1910,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#the-host-is-installed-but-the-sdk-says-it-is-not-the-real-one" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The host is installed, but the SDK says it is not the real one
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#solidserviceconnectionexception" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1776,10 +1932,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#solidservicesdrawpermissiondeniedexception" class="md-nav__link">
+  <a href="#notpermissionexception-on-a-call-that-used-to-work" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SolidServicesDrawPermissionDeniedException
+        NotPermissionException on a call that used to work
       
     </span>
   </a>
@@ -1804,10 +1960,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#login-browser-opens-but-redirect-never-returns-to-ass" class="md-nav__link">
+  <a href="#login-browser-opens-but-the-redirect-never-returns-to-your-app-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Login browser opens but redirect never returns to ASS
+        Login browser opens but the redirect never returns to your app (api)
       
     </span>
   </a>
@@ -1891,6 +2047,17 @@
     <span class="md-ellipsis">
       
         403 Forbidden on resource access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#profile-edits-fail-with-401-403-405-on-an-inrupt-webid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile edits fail with 401 / 403 / 405 on an Inrupt WebID
       
     </span>
   </a>
@@ -1987,6 +2154,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#an-inrupt-podspaces-account-receives-no-notifications-and-nobody-can-request-access-from-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        An Inrupt (PodSpaces) account receives no notifications, and nobody can request access from it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sharing-failures-on-createshare-revokeshare" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2024,6 +2202,28 @@
   
     <nav class="md-nav" aria-label="Build &amp; Gradle">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-build-fails-with-requires-to-compile-against-version-37-or-later" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The build fails with "requires ... to compile against version 37 or later"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ksp-fails-with-provided-metadata-instance-has-version-240-while-maximum-supported-version-is-230" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KSP fails with "Provided Metadata instance has version 2.4.0, while maximum supported version is 2.3.0"
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#nullpointerexception-during-gradle-configuration-for-api" class="md-nav__link">
@@ -2130,50 +2330,60 @@
 <hr>
 <h2 id="installation-connection">Installation &amp; Connection<a class="headerlink" href="#installation-connection" title="Permanent link">¶</a></h2>
 <h3 id="solidappnotfoundexception"><code>SolidAppNotFoundException</code><a class="headerlink" href="#solidappnotfoundexception" title="Permanent link">¶</a></h3>
-<p><strong>Cause:</strong> The Android Solid Services host app is not installed on the device.</p>
-<p><strong>Fix:</strong> Have the user install <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> from the <a href="https://github.com/erfangholami/Android-Solid-Services/releases">GitHub Releases page</a> before your app makes any <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> call.</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">try</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">signInClient</span><span class="p">.</span><span class="na">getAccount</span><span class="p">(</span><span class="n">webId</span><span class="p">)</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">SolidAppNotFoundException</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="c1">// redirect user to the ASS install page</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
+<p><strong>Cause:</strong> Solid Share, the host app, is not installed on the device. The message says so, or says
+that only the retired Android Solid Services app is installed — that app stopped at 0.7.2 and the
+0.8.0 <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> never binds to it.</p>
+<p><strong>Fix:</strong> Check before you call, and send the user to install it:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">Solid</span><span class="p">.</span><span class="na">isHostInstalled</span><span class="p">(</span><span class="n">context</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">startActivity</span><span class="p">(</span><span class="n">Solid</span><span class="p">.</span><span class="na">hostInstallIntent</span><span class="p">(</span><span class="n">context</span><span class="p">))</span><span class="w">   </span><span class="c1">// the store, or solidshare.app</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
 </span></code></pre></div>
+<hr>
+<h3 id="the-host-is-installed-but-the-sdk-says-it-is-not-the-real-one">The host is installed, but the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> says it is not the real one<a class="headerlink" href="#the-host-is-installed-but-the-sdk-says-it-is-not-the-real-one" title="Permanent link">¶</a></h3>
+<p><strong>Cause:</strong> An app holds Solid Share's package name but is not signed with Solid Share's key. The
+<abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> compares the SHA-256 of the installed host's signing certificate against the digest it ships,
+and refuses a mismatch. You see this most often after you replace the store copy with a build of
+Solid Share you made yourself: your build carries your own key. (Android will not install one over
+the other, so this follows an uninstall.)</p>
+<p><strong>Fix:</strong> Install Solid Share from Google Play, F-Droid or the project's GitHub Releases. To keep
+working against a host you built, build <strong>your own app</strong> as a debug build — the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> skips the check
+for a debuggable caller, and reads that flag from the caller, never from the host. A release build
+of your app always checks.</p>
 <hr>
 <h3 id="solidserviceconnectionexception"><code>SolidServiceConnectionException</code><a class="headerlink" href="#solidserviceconnectionexception" title="Permanent link">¶</a></h3>
-<p><strong>Cause:</strong> The <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> service bound successfully at the OS level but then disconnected unexpectedly, or you called a method before the <code>Flow&lt;Boolean&gt;</code> connection state emitted <code>true</code>.</p>
-<p><strong>Fix:</strong> Always gate calls behind the connection state flow:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">resourceClient</span><span class="p">.</span><span class="na">resourceServiceConnectionState</span><span class="p">().</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">connected</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="c1">// safe to call resource methods here</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>Do not call methods immediately after obtaining the client object — binding is asynchronous.</p>
+<p><strong>Cause:</strong> The binding to Solid Share dropped and did not come back within the bind timeout — the
+host was being updated, or was stopped mid-call.</p>
+<p><strong>Fix:</strong> Retry. Every <code>client</code> call waits for the binding by itself and the connector rebinds after
+a death, so there is nothing to gate; the connection-state flow exists for UI, not for correctness.</p>
 <hr>
-<h3 id="solidservicesdrawpermissiondeniedexception"><code>SolidServicesDrawPermissionDeniedException</code><a class="headerlink" href="#solidservicesdrawpermissiondeniedexception" title="Permanent link">¶</a></h3>
-<p><strong>Cause:</strong> You called the deprecated <code>SolidSignInClient.requestLogin</code>. It drew the account picker over your app from a background service, which Android permits only with the <code>SYSTEM_ALERT_WINDOW</code> (overlay draw) permission. <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> no longer requests that permission, so the call now always fails with this exception instead of leaving you waiting for a callback that cannot arrive.</p>
-<p><strong>Fix:</strong> Launch the <code>AuthorizeWithSolid</code> contract from your Activity — the picker opens in your own foreground, the chosen <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> comes back as an activity result, and no permission is involved. See <a href="../../start/quickstart/">Getting Started</a>.</p>
+<h3 id="notpermissionexception-on-a-call-that-used-to-work"><code>NotPermissionException</code> on a call that used to work<a class="headerlink" href="#notpermissionexception-on-a-call-that-used-to-work" title="Permanent link">¶</a></h3>
+<p><strong>Cause:</strong> The user narrowed your app's grant in Solid Share's Apps tab, or revoked it. The message
+names what the app holds and what the call needs, for example <code>Granted VIEW on https://…/notes/; this
+call needs EDIT</code>.</p>
+<p><strong>Fix:</strong> Read the current grant with <code>signIn.getAccount(webId)?.grant</code>, explain what the feature
+needs, and launch <code>AuthorizeWithSolid</code> again with an <code>AccessRequest</code> for it. See
+<a href="../../build/app-access/">App access</a>.</p>
 <hr>
 <h2 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">¶</a></h2>
-<h3 id="login-browser-opens-but-redirect-never-returns-to-ass">Login browser opens but redirect never returns to <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr><a class="headerlink" href="#login-browser-opens-but-redirect-never-returns-to-ass" title="Permanent link">¶</a></h3>
+<h3 id="login-browser-opens-but-the-redirect-never-returns-to-your-app-api">Login browser opens but the redirect never returns to your app (<code>api</code>)<a class="headerlink" href="#login-browser-opens-but-the-redirect-never-returns-to-your-app-api" title="Permanent link">¶</a></h3>
 <p><strong>Cause:</strong> The <code>appAuthRedirectScheme</code> manifest placeholder is missing or doesn't match your package name.</p>
 <p><strong>Fix:</strong> Add it to your module-level <code>build.gradle.kts</code>:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">android</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">defaultConfig</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="n">manifestPlaceholders</span><span class="o">[</span><span class="s">"appAuthRedirectScheme"</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"YOUR_APP_PACKAGE_NAME"</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">android</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">defaultConfig</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span><span class="n">manifestPlaceholders</span><span class="o">[</span><span class="s">"appAuthRedirectScheme"</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"YOUR_APP_PACKAGE_NAME"</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>The value must exactly match your application ID (e.g. <code>com.example.myapp</code>).</p>
 <hr>
 <h3 id="solidnotloggedinexception"><code>SolidNotLoggedInException</code><a class="headerlink" href="#solidnotloggedinexception" title="Permanent link">¶</a></h3>
-<p><strong>Cause:</strong> No user is logged in to <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr>, or the stored session has been fully invalidated (refresh token expired or revoked by the pod server).</p>
-<p><strong>Fix:</strong> In your app, check <code>signInClient.getAccount(webId)</code> — if it returns <code>null</code>, launch the <code>AuthorizeWithSolid</code> contract again to start a new auth flow.</p>
+<p><strong>Cause:</strong> No account is signed in to Solid Share, or that account's session has expired (the refresh token ran out or was revoked by the provider).</p>
+<p><strong>Fix:</strong> Send the user to sign in again: launch the <code>AuthorizeWithSolid</code> contract, whose account list stays live while they sign in inside Solid Share.</p>
 <hr>
 <h3 id="token-refresh-fails-silently-requests-return-401">Token refresh fails silently / requests return 401<a class="headerlink" href="#token-refresh-fails-silently-requests-return-401" title="Permanent link">¶</a></h3>
 <p><strong>Cause:</strong> The authorization server requires a <code>DPoP-Nonce</code> on the <strong>token endpoint</strong> (e.g. Inrupt <abbr title="Enterprise Solid Server — Inrupt's pod server, behind PodSpaces">ESS</abbr>) and an older client couldn't complete the nonce challenge during refresh — so the access token expired and the user was forced to sign in again. Or the refresh token was revoked.</p>
 <p><strong>Fix:</strong> Upgrade to <code>0.5.0</code> or later. Nonce handling and token refresh are now fully internal and nonce-aware: the library reads the <code>DPoP-Nonce</code>, retries the token request once on a <code>use_dpop_nonce</code> challenge (<a href="https://datatracker.ietf.org/doc/html/rfc9449">RFC 9449</a> §8), tracks nonces <strong>per origin</strong>, and no longer invalidates the session on a <em>recoverable</em> failure (nonce/network/5xx).</p>
-<p>You no longer call <code>updateDPoPNonce</code> or <code>getLastTokenResponse</code> — both were <strong>removed</strong> from the public <code>Authenticator</code> in 0.5.0. Access tokens and <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> headers are attached for you; go through the resource / sharing / contacts managers (or the <code>client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>). If the refresh token is genuinely revoked (the session reports unauthorized), re-authenticate with <code>requestLogin()</code> / <code>createAuthenticationIntent()</code>.</p>
+<p>You no longer call <code>updateDPoPNonce</code> or <code>getLastTokenResponse</code> — both were <strong>removed</strong> from the public <code>Authenticator</code> in 0.5.0. Access tokens and <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> headers are attached for you; go through the resource / sharing / contacts managers (or the <code>client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>). If the refresh token is genuinely revoked (the session reports unauthorized), re-authenticate through <code>AuthorizeWithSolid</code> (client) or <code>createAuthenticationIntent()</code> (api).</p>
 <hr>
 <h3 id="unsupported_algorithm-error-during-login">"unsupported_algorithm" error during login<a class="headerlink" href="#unsupported_algorithm-error-during-login" title="Permanent link">¶</a></h3>
 <p><strong>Cause:</strong> The pod server only supports certain <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> signing algorithms and the client proposed one it doesn't accept.</p>
@@ -2183,12 +2393,12 @@
 <h3 id="412-precondition-failed"><code>412 Precondition Failed</code><a class="headerlink" href="#412-precondition-failed" title="Permanent link">¶</a></h3>
 <p><strong>Cause:</strong> You passed an <code>ifMatch</code> <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> to <code>update()</code> or <code>patch()</code>, but the resource was modified by someone else since you last read it — a lost-update was correctly prevented.</p>
 <p><strong>Fix:</strong> Re-read the resource to get the latest <abbr title="A version marker a server returns, used to make a write conditional on nothing having changed">ETag</abbr> and version, merge your changes, and retry:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">latest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resourceManager</span><span class="p">.</span><span class="na">read</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="n">MyNote</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">java</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">merged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mergeChanges</span><span class="p">(</span><span class="n">latest</span><span class="p">,</span><span class="w"> </span><span class="n">myChanges</span><span class="p">)</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">// The ETag lives on the response metadata, not on the resource — HEAD for the current one.</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">etag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resourceManager</span><span class="p">.</span><span class="na">head</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">().</span><span class="na">etag</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">resourceManager</span><span class="p">.</span><span class="na">update</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">merged</span><span class="p">,</span><span class="w"> </span><span class="n">ifMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">etag</span><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">latest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resourceManager</span><span class="p">.</span><span class="na">read</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="n">MyNote</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">java</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">()</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">merged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mergeChanges</span><span class="p">(</span><span class="n">latest</span><span class="p">,</span><span class="w"> </span><span class="n">myChanges</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">// The ETag lives on the response metadata, not on the resource — HEAD for the current one.</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">etag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resourceManager</span><span class="p">.</span><span class="na">head</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">).</span><span class="na">getOrThrow</span><span class="p">().</span><span class="na">etag</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">resourceManager</span><span class="p">.</span><span class="na">update</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">merged</span><span class="p">,</span><span class="w"> </span><span class="n">ifMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">etag</span><span class="p">)</span>
 </span></code></pre></div>
 <hr>
 <h3 id="409-conflict-on-create"><code>409 Conflict</code> on <code>create()</code><a class="headerlink" href="#409-conflict-on-create" title="Permanent link">¶</a></h3>
@@ -2198,17 +2408,21 @@
 <h3 id="403-forbidden-on-resource-access"><code>403 Forbidden</code> on resource access<a class="headerlink" href="#403-forbidden-on-resource-access" title="Permanent link">¶</a></h3>
 <p><strong>Cause:</strong> The authenticated user does not have the required <abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr>/<abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr> permission on the requested resource.</p>
 <p><strong>Fix:</strong> Use <code>head()</code> to inspect the <code>WAC-Allow</code> header before attempting a write:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">meta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resourceManager</span><span class="p">.</span><span class="na">head</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">).</span><span class="na">getOrNull</span><span class="p">()</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">// WacAllow carries two sets of mode names — what this user may do, and what anyone may do.</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">mine</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">meta</span><span class="o">?.</span><span class="na">wacAllow</span><span class="o">?.</span><span class="na">userModes</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">()</span><span class="w">      </span><span class="c1">// e.g. ["read", "append"]</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">anyones</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">meta</span><span class="o">?.</span><span class="na">wacAllow</span><span class="o">?.</span><span class="na">publicModes</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">()</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="s">"write"</span><span class="w"> </span><span class="k">!in</span><span class="w"> </span><span class="n">mine</span><span class="p">)</span><span class="w"> </span><span class="n">showReadOnly</span><span class="p">()</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">meta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resourceManager</span><span class="p">.</span><span class="na">head</span><span class="p">(</span><span class="n">webId</span><span class="p">,</span><span class="w"> </span><span class="n">uri</span><span class="p">).</span><span class="na">getOrNull</span><span class="p">()</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1">// WacAllow carries two sets of mode names — what this user may do, and what anyone may do.</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">mine</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">meta</span><span class="o">?.</span><span class="na">wacAllow</span><span class="o">?.</span><span class="na">userModes</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">()</span><span class="w">      </span><span class="c1">// e.g. ["read", "append"]</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">anyones</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">meta</span><span class="o">?.</span><span class="na">wacAllow</span><span class="o">?.</span><span class="na">publicModes</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">()</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="s">"write"</span><span class="w"> </span><span class="k">!in</span><span class="w"> </span><span class="n">mine</span><span class="p">)</span><span class="w"> </span><span class="n">showReadOnly</span><span class="p">()</span>
 </span></code></pre></div>
 <p><code>probeAccess</code> wraps this in a typed result if you would rather not read header sets — see
 <a href="../../build/access-control/">Access control</a>.</p>
 <p>If access should be granted, check the <abbr title="Access Control List — the resource that says who may read or write a Solid resource">ACL</abbr>/<abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr> policy on the pod server side.</p>
+<hr>
+<h3 id="profile-edits-fail-with-401-403-405-on-an-inrupt-webid">Profile edits fail with 401 / 403 / 405 on an Inrupt <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr><a class="headerlink" href="#profile-edits-fail-with-401-403-405-on-an-inrupt-webid" title="Permanent link">¶</a></h3>
+<p><strong>Cause:</strong> <code>updateProfile()</code> and <code>setAvatar()</code> used to patch the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document, which Inrupt serves read-only from <code>id.inrupt.com</code>.</p>
+<p><strong>Fix:</strong> Upgrade to <code>0.8.0</code>+. <code>writableProfileDocument(webId)</code> picks the document to edit — the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document when its <code>WAC-Allow</code> grants write, otherwise the linked extended profile on the user's storage — and both operations write there. The account's <code>WebId</code> also folds the extended profile in at sign-in and on <code>reloadProfile()</code>, so a name that lives only in the extended profile is no longer blank.</p>
 <hr>
 <h3 id="resource-uri-with-spaces-returns-404-or-400">Resource URI with spaces returns 404 or 400<a class="headerlink" href="#resource-uri-with-spaces-returns-404-or-400" title="Permanent link">¶</a></h3>
 <p><strong>Cause:</strong> On versions before <code>0.4.0</code>, resource URIs were not percent-encoded, causing requests for URIs with spaces or special characters to fail.</p>
@@ -2242,6 +2456,10 @@ which disables conditional reads at the cost of re-downloading every resource.</
 <p><strong>Cause:</strong> Writing the share onto the resource's access control and notifying the receiver are separate steps — delivery is <strong>best-effort</strong> and never fails the share. The receiver may advertise no <abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> inbox, or their inbox rejected the POST.</p>
 <p><strong>Fix:</strong> The receiver's <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> must advertise a writable, public-append <code>ldp:inbox</code>. Notifications are also <strong>pull-only</strong>: the receiving app polls <code>listNotifications()</code> (e.g. a 15-minute background worker) — there is no push. The share itself still took effect on the resource <abbr title="Access Control List — the resource that says who may read or write a Solid resource">ACL</abbr> regardless of delivery.</p>
 <hr>
+<h3 id="an-inrupt-podspaces-account-receives-no-notifications-and-nobody-can-request-access-from-it">An Inrupt (PodSpaces) account receives no notifications, and nobody can request access from it<a class="headerlink" href="#an-inrupt-podspaces-account-receives-no-notifications-and-nobody-can-request-access-from-it" title="Permanent link">¶</a></h3>
+<p><strong>Cause:</strong> Inrupt serves the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document from <code>id.inrupt.com</code> read-only, so <code>ensureInbox()</code> can only write the <code>ldp:inbox</code> link into the extended profile on the pod (<code>{storage}profile</code>) — and that document is private by default. A sender reads the public <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document, finds no inbox, cannot read the extended profile, and reports <code>NoInbox</code>. The inbox itself exists and accepts posts; it is simply undiscoverable.</p>
+<p><strong>Fix:</strong> Upgrade to <code>0.8.0</code>+. <code>ensureInbox()</code> now grants public read on the document that advertises the inbox when that document is not the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document itself, and a sender that finds no inbox falls back to the conventional <code>{storage}inbox/</code> taken from the public <code>pim:storage</code>. The fallback works at once; the public-read repair needs the receiving account to run <code>ensureInbox()</code> once more (Solid Share does so on every account activation). Making the extended profile public exposes the fields it holds — name, photo, organisation — which is what a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> profile is for, but tell your users.</p>
+<hr>
 <h3 id="sharing-failures-on-createshare-revokeshare">Sharing failures on <code>createShare</code> / <code>revokeShare</code><a class="headerlink" href="#sharing-failures-on-createshare-revokeshare" title="Permanent link">¶</a></h3>
 <p>These now arrive as <code>SolidResult.Failure</code> with a typed <code>SolidError</code>, rather than a thrown
 <code>SharingException</code>. Common cases:</p>
@@ -2259,6 +2477,22 @@ which disables conditional reads at the cost of re-downloading every resource.</
 <p><strong>Fix:</strong> Upgrade to <code>0.5.0</code>+. The library reads actor profiles <strong>anonymously</strong>, resolves profile-document URLs to the real fragment <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> before granting, and trusts the notification's declared mode/owner when a live probe is indeterminate. When adding via QR/link, pass the owner hint the share link carries.</p>
 <hr>
 <h2 id="build-gradle">Build &amp; Gradle<a class="headerlink" href="#build-gradle" title="Permanent link">¶</a></h2>
+<h3 id="the-build-fails-with-requires-to-compile-against-version-37-or-later">The build fails with "requires ... to compile against version 37 or later"<a class="headerlink" href="#the-build-fails-with-requires-to-compile-against-version-37-or-later" title="Permanent link">¶</a></h3>
+<p><strong>Cause:</strong> Your <code>compileSdk</code> is lower than the libraries'. Every artifact here is built against
+<abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> 37 and its AAR metadata demands the same of anything that depends on it.</p>
+<p><strong>Fix:</strong> Set <code>compileSdk = 37</code>. This changes which APIs you may call, not which devices you reach:
+leave <code>minSdk</code> at 26 and set <code>targetSdk</code> to whatever you already target.</p>
+<div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">android</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">compileSdk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">37</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr>
+<h3 id="ksp-fails-with-provided-metadata-instance-has-version-240-while-maximum-supported-version-is-230">KSP fails with "Provided Metadata instance has version 2.4.0, while maximum supported version is 2.3.0"<a class="headerlink" href="#ksp-fails-with-provided-metadata-instance-has-version-240-while-maximum-supported-version-is-230" title="Permanent link">¶</a></h3>
+<p><strong>Cause:</strong> Your annotation processor reads Kotlin metadata with a <code>kotlin-metadata-jvm</code> older than
+the Kotlin that built these libraries. Hilt below 2.60 does this, and the message names Hilt.</p>
+<p><strong>Fix:</strong> Update the processor. For Hilt, use 2.60.1 or newer, and <code>androidx.hilt</code> 1.4.0 or newer.
+The same applies to any other KSP or kapt processor that reads metadata.</p>
+<hr>
 <h3 id="nullpointerexception-during-gradle-configuration-for-api"><code>NullPointerException</code> during Gradle configuration for <code>api</code><a class="headerlink" href="#nullpointerexception-during-gradle-configuration-for-api" title="Permanent link">¶</a></h3>
 <p><strong>Cause:</strong> The <code>key_generator_alias</code> property is missing from <code>gradle.properties</code>.</p>
 <p><strong>Fix:</strong> Add it to your project's <code>gradle.properties</code>:</p>
@@ -2303,7 +2537,7 @@ which disables conditional reads at the cost of re-downloading every resource.</
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 17:35:31 UTC">September 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 15, 2026 14:56:37 UTC">September 15, 2026</span>
   </span>
 
     
@@ -2350,7 +2584,7 @@ which disables conditional reads at the cost of re-downloading every resource.</
       <nav class="md-footer__inner md-grid" aria-label="Footer">
         
           
-          <a href="../adding-a-data-module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Adding a data module">
+          <a href="../upgrading/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Upgrade guide">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
@@ -2360,7 +2594,7 @@ which disables conditional reads at the cost of re-downloading every resource.</
                 Previous
               </span>
               <div class="md-ellipsis">
-                Adding a data module
+                Upgrade guide
               </div>
             </div>
           </a>
@@ -2412,7 +2646,7 @@ which disables conditional reads at the cost of re-downloading every resource.</
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

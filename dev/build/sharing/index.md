@@ -14,11 +14,15 @@ Access is enforced by the pod itself — Web Access Control, or Access Control P
 
 ## Setup
 
+Needs Full access
+
+Every sharing verb needs a grant at **Full access**: on the resource it names, or on the whole pod for the share indexes and the received-shares list. Ask for it in your `AccessRequest`; see [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md).
+
 build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:client:0.8.1")
 }
 ```
 
@@ -33,7 +37,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:api:0.8.1")
 }
 ```
 

@@ -2,60 +2,65 @@
 
 ## Modules and Integration Paths
 
-Four Gradle modules in a layered chain. `Shared` holds the common types; `api` and `client` both build on it; the `app` (the host) bundles both. Three of the four — `Shared`, `api`, and `client` — are published to Maven Central, so a third-party app can integrate along **either of two paths**:
+Four published Gradle modules in a layered chain. `Shared` holds the common types; `api`, `client` and `host` all build on it. All four go to Maven Central, and a third-party app integrates along **one of two paths** — or, if it wants to be a host itself, adds the third.
 
-- **Path 1 — embedded (`api`):** depend on `api` and reach the Solid pod **directly**, performing your own login and signing every request in-process. Self-contained — no ASS app needs to be installed, but your app manages its own credentials and keys.
-- **Path 2 — single sign-in (`client`):** depend on `client` and delegate over **AIDL IPC** to the installed ASS app, which holds the credentials and talks to the pod for you. One shared login across every Solid app on the device, and no token handling in your app.
+- **Path 1 — embedded (`api`):** depend on `api` and reach the Solid pod **directly**, performing your own login and signing every request in-process. Self-contained — no host app needs to be installed, but your app manages its own credentials and keys, and nothing scopes what it may do.
+- **Path 2 — single sign-in (`client`):** depend on `client` and delegate over **AIDL IPC** to the installed host app, [Solid Share](https://solidshare.app), which holds the credentials and talks to the pod for you. One shared login across every Solid app on the device, no token handling in your app, and the user decides what your app may reach.
+- **Hosting (`host`):** depend on `host` to *be* the app on the other end of Path 2 — the five AIDL binders, the access policy, the grant store and the consent protocol. Solid Share is built on it; the library ships no app of its own.
 
 ```
 graph TD
     %% ── Consumers: the two integration paths ──
     TPA1["Third-party app<br/><b>Path 1 · embedded</b><br/>self-hosted auth and keys"]
-    TPA2["Third-party app<br/><b>Path 2 · single sign-in</b><br/>delegates to the ASS app"]
+    TPA2["Third-party app<br/><b>Path 2 · single sign-in</b><br/>delegates to Solid Share"]
 
     subgraph CLIENT["client — IPC SDK (Maven Central)"]
         direction TB
         CL_ENTRY["Solid — get*Client()"]
-        CL_PROXY["SignIn · Resource · Contacts ·<br/>Sharing · Notifications clients"]
-        CL_CONN["ServiceConnector · SolidException"]
+        CL_PROXY["SignIn · Resource · Contacts · Tickets ·<br/>Sharing · Notifications clients"]
+        CL_CONN["HostResolver · ServiceConnector · SolidException"]
+    end
+
+    subgraph HOST["host — host-side SDK (Maven Central)"]
+        direction TB
+        HO_BIND["5 AIDL binders<br/>Authenticator · Resource · DataModules ·<br/>Sharing · Notifications"]
+        HO_POLICY["AccessGuard · ScopedAccessPolicy ·<br/>VerbAccess · ModuleRootResolver"]
+        HO_STORE["AppGrantStore · AuthorizeProtocol ·<br/>CallerIdentity · HostService"]
     end
 
     subgraph API["api — direct Solid access (Maven Central)"]
         direction TB
         AP_AUTH["Authenticator — OIDC,<br/>DPoP or Bearer, multi-account"]
         AP_RES["SolidResourceManager"]
-        AP_SHARE["SharingManager · NotificationsManager ·<br/>SolidContactsDataModule"]
+        AP_SHARE["SharingManager · NotificationsManager ·<br/>contacts and tickets data modules"]
         AP_HTTP["SolidHttpClient + cache ·<br/>WAC / ACP access backends"]
-    end
-
-    subgraph APP["app — Android Solid Services (the host)"]
-        direction TB
-        AP_SVC["5 bound AIDL services<br/>Authenticator · Resource · DataModules ·<br/>Sharing · Notifications"]
-        AP_UI["Compose UI · MVVM · Hilt"]
-        AP_STORE["DataStore · encrypted token store"]
     end
 
     subgraph SHARED["Shared — common types · AIDL · RDF (Maven Central)"]
         direction TB
-        SH_MODEL["model/ — resource · sharing ·<br/>contacts · profile · access"]
+        SH_MODEL["model/ — resource · sharing ·<br/>contacts · profile · access · grant"]
+        SH_HOST["host/ — SolidHostContract"]
         SH_RDF["rdf/ codecs · vocab/ · http/"]
         SH_AIDL["AIDL service + parcelable defs"]
     end
 
+    APP["Solid Share<br/>(its own repository)"]
     POD["Solid Pod"]
 
     %% Path 1 — embed api, talk to the pod directly
     TPA1 -->|depends on| API
     API -->|"HTTPS · DPoP or Bearer"| POD
 
-    %% Path 2 — use client, which IPCs into the ASS app
+    %% Path 2 — use client, which IPCs into the host app
     TPA2 -->|depends on| CLIENT
-    CLIENT -.->|AIDL IPC| AP_SVC
-    AP_SVC --> API
+    CLIENT -.->|"AIDL IPC, bound by action"| HO_BIND
+    APP -->|depends on| HOST
+    HOST --> API
 
-    %% Foundation dependencies (the app depends on both libraries — see prose)
+    %% Foundation dependencies
     API --> SHARED
     CLIENT --> SHARED
+    HOST --> SHARED
 
     %% Outlines only — fills and text follow the page theme, so this reads in light and dark.
     classDef consumer stroke:#4285f4,stroke-width:2px;
@@ -66,28 +71,37 @@ graph TD
     style CLIENT stroke:#34a853,stroke-width:2px
     style API stroke:#34a853,stroke-width:2px
     style SHARED stroke:#34a853,stroke-width:2px
+    style HOST stroke:#34a853,stroke-width:2px
     style APP stroke:#f9ab00,stroke-width:2px
 ```
 
-Both paths run the **same `api` engine** against the pod — the difference is *where* it runs: in the third-party app's own process (Path 1), or inside the ASS app's process behind AIDL (Path 2). `api` and `client` each depend on `Shared`; the `app` depends on both.
+Both paths run the **same `api` engine** against the pod — the difference is *where* it runs: in the third-party app's own process (Path 1), or inside the host app's process behind AIDL (Path 2). `api`, `client` and `host` each depend on `Shared`; `host` also depends on `api`.
 
-Package roots: `app` → `com.erfangholami.androidsolidservices`, with `…api`, `…client`, and `…shared` for the three libraries.
+Package roots: `…api`, `…client`, `…host` and `…shared` under `com.erfangholami.androidsolidservices`.
+
+The Android Solid Services app is discontinued
+
+Until 0.7.2 this repository also built an `app` module — the host app of the same name. It was removed at 0.8.0, when [Solid Share](https://solidshare.app) took over hosting, and the `host` library is what it left behind. A 0.7.2 app and a 0.7.2 `client` still work together; neither talks to 0.8.0.
 
 ______________________________________________________________________
 
 ## IPC: How Apps Communicate
 
-Apps that take the single-sign-in path (`client`) **never talk directly to the Solid pod**. They bind to one of the AIDL services in the ASS app, which uses the `api` module to reach the pod over authenticated HTTPS. (Apps on the embedded path link `api` and make these same calls in-process.)
+Apps that take the single-sign-in path (`client`) **never talk directly to the Solid pod**. They bind to one of the AIDL services in the host app, which uses the `api` module to reach the pod over authenticated HTTPS. (Apps on the embedded path link `api` and make these same calls in-process.)
+
+Binding is **by intent action** — the six actions in `SolidHostContract` — inside the host's package, and the SDK binds only to Solid Share. That keeps the host free to name, move or merge its service classes without breaking installed apps.
 
 ```
 graph LR
     subgraph "Third-party app process"
         C["client SDK<br/>Solid.get*Client()"]
     end
-    subgraph "Android Solid Services app process"
-        SVC["Bound services (AIDL)<br/>Authenticator · Resource · DataModules<br/>Sharing · Notifications"]
+    subgraph "Solid Share process"
+        SVC["host binders (AIDL)<br/>Authenticator · Resource · DataModules<br/>Sharing · Notifications"]
+        GUARD["AccessGuard + ScopedAccessPolicy<br/>over the app's AppGrant"]
         API["api<br/>SolidHttpClient · DPoP/Bearer · response cache"]
-        SVC --> API
+        SVC --> GUARD
+        GUARD --> API
     end
     POD["Solid Pod"]
 
@@ -95,17 +109,19 @@ graph LR
     API -- "HTTPS + DPoP/Bearer" --> POD
 ```
 
-Each `client` entry point binds to its matching bound service:
+Each `client` entry point binds by its own action, and the host answers with the matching binder:
 
-| `client` entry point             | Bound service             | Responsibility                  |
-| -------------------------------- | ------------------------- | ------------------------------- |
-| `Solid.getSignInClient()`        | `ASSAuthenticatorService` | Login, access grants            |
-| `Solid.getResourceClient()`      | `ASSResourceService`      | CRUD on pod resources           |
-| `Solid.getContactsDataModule()`  | `SolidDataModulesService` | Contacts, address books         |
-| `Solid.getSharingClient()`       | `ASSSharingService`       | Shares, access grants *(0.5.0)* |
-| `Solid.getNotificationsClient()` | `ASSNotificationsService` | LDN inbox *(0.5.0)*             |
+| `client` entry point                                       | `SolidHostContract` action | `host` binder         | Responsibility                   |
+| ---------------------------------------------------------- | -------------------------- | --------------------- | -------------------------------- |
+| `Solid.getSignInClient()`                                  | `ACTION_AUTHENTICATOR`     | `AuthenticatorBinder` | Session state, the app's grant   |
+| `Solid.getResourceClient()`                                | `ACTION_RESOURCES`         | `ResourceBinder`      | CRUD on pod resources            |
+| `Solid.getContactsDataModule()` / `getTicketsDataModule()` | `ACTION_DATA_MODULES`      | `DataModulesBinder`   | Contacts, address books, tickets |
+| `Solid.getSharingClient()`                                 | `ACTION_SHARING`           | `SharingBinder`       | Shares, access grants            |
+| `Solid.getNotificationsClient()`                           | `ACTION_NOTIFICATIONS`     | `NotificationsBinder` | LDN inbox                        |
 
-Each service is an Android **bound service**. The client libraries expose `Flow<Boolean>` connection state so apps can react to connect/disconnect events in real time.
+There is a sixth action, `ACTION_AUTHORIZE`, which is an Activity rather than a service: it is what `AuthorizeWithSolid` launches for the consent screen.
+
+Each service is an Android **bound service**. Every call waits for its binding, so nothing has to be collected first; the `Flow<Boolean>` connection state each client exposes is for UI.
 
 AIDL interface definitions (both parcelable types and service contracts) live in `Shared/src/main/aidl/`.
 
@@ -113,13 +129,13 @@ ______________________________________________________________________
 
 ## Authentication: OpenID Connect (DPoP or Bearer)
 
-The auth flow uses the **AppAuth** library (`net.openid:appauth`) for the OpenID Connect code exchange. Token binding is **negotiated** from the provider's discovery document: if it advertises DPoP (Demonstration of Proof-of-Possession) support via `dpop_signing_alg_values_supported`, ASS uses DPoP; otherwise it falls back to standard **Bearer** tokens.
+The auth flow uses the **AppAuth** library (`net.openid:appauth`) for the OpenID Connect code exchange. Token binding is **negotiated** from the provider's discovery document: if it advertises DPoP (Demonstration of Proof-of-Possession) support via `dpop_signing_alg_values_supported`, the SDK uses DPoP; otherwise it falls back to standard **Bearer** tokens.
 
 1. User enters their WebID or selects an OpenID provider.
-1. ASS resolves the OIDC issuer from the WebID document.
+1. The SDK resolves the OIDC issuer from the WebID document.
 1. A browser intent opens the provider's login page.
-1. The provider redirects back to ASS with an authorization code.
-1. ASS exchanges the code for access + refresh tokens.
+1. The provider redirects back with an authorization code.
+1. The SDK exchanges the code for access + refresh tokens.
 1. Every subsequent pod request carries an `Authorization: <DPoP|Bearer> <token>` header; when DPoP was negotiated, a freshly signed DPoP proof is attached as well — binding the token to the request and preventing replay.
 
 When DPoP is in effect, each account has its **own DPoP key pair** in the Android Keystore. Multi-account state (profiles, tokens) is persisted with **DataStore**, **encrypted at rest** (AES-256-GCM via an Android Keystore key). Login can use either dynamic client registration or a hosted **Solid-OIDC Client ID Document** (`clientId`). Token refresh is nonce-aware (per-origin DPoP nonces, retry on `use_dpop_nonce`) and resilient — a recoverable failure no longer forces a re-login.
@@ -138,6 +154,8 @@ Common types shared across all modules. Published implicitly as a transitive dep
 | Result types      | `SolidResult<T>` (sealed: `Success`, `Failure`) with typed `SolidError`, `SolidHeaders`, `HTTPConstants`                                                                           |
 | Data module types | `AddressBook`, `AddressBookList`, `Contact`, `SolidContact`, `SolidContactList`, `ContactData`, `FullGroup`, `NewTicket`, `Ticket`, `TicketList`                                   |
 | Sharing types     | `GivenShare`, `ReceivedShare`, `ShareMode`, `ShareReceiver`, `AccessGrant`, `CatalogEntry`, `ShareNotification`, `ShareRequest` (0.5.0)                                            |
+| App-grant types   | `AccessLevel`, `GrantTarget`, `GrantEntry`, `AppGrant`, `AccessRequest`, `RequestedTarget`, `DataModuleId` (0.8.0)                                                                 |
+| Host contract     | `SolidHostContract` — the host package, the account type and the seven intent actions (0.8.0; the client marker 0.8.1)                                                             |
 | Patch type        | `N3Patch` — type-safe DSL and diff factory for [Solid N3 Patch](https://solidproject.org/TR/protocol#n3-patch) documents                                                           |
 | Vocabulary        | `LDP`, `VCARD`, `ACL`, `ACP`, `OWL`, `DC`, `RDFS`, `Solid` constants                                                                                                               |
 | AIDL parcelables  | Parcelable wrappers for cross-process data transfer (all definitions consolidated here)                                                                                            |
@@ -159,7 +177,7 @@ Direct Solid server communication. Used internally by the ASS app and available 
 
 ### client (`com.erfangholami.androidsolidservices.client`)
 
-IPC client library. No direct pod access — all calls are proxied through the ASS app.
+IPC client library. No direct pod access — all calls are proxied through the host app.
 
 | Class                      | Role                                                                                                                                 |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -170,21 +188,24 @@ IPC client library. No direct pod access — all calls are proxied through the A
 | `SolidSharingClient`       | Resource sharing IPC client (0.5.0)                                                                                                  |
 | `SolidNotificationsClient` | LDN inbox IPC client (0.5.0)                                                                                                         |
 | `ServiceConnector`         | Shared, self-healing AIDL bind/callback plumbing (0.5.0)                                                                             |
+| `HostResolver`             | Finds the host, and fails fast with a typed message when it is missing (0.8.0)                                                       |
+| `SolidClientMarkerService` | An inert exported service the host matches in `<queries>`, so it can read this app's label and icon (0.8.1)                          |
 | `SolidException` hierarchy | Typed exceptions for all failure modes                                                                                               |
 
-### app (`com.erfangholami.androidsolidservices`)
+### host (`com.erfangholami.androidsolidservices.host`)
 
-The host application. Users interact with this; third-party apps bind to its services.
+Host-side library, new in 0.8.0. Everything an app needs to be the other end of `client`. [Solid Share](https://solidshare.app) is the app built on it; this repository ships no app.
 
-| Area           | Technology                                                                                                                 |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| UI             | Jetpack Compose, Navigation Compose                                                                                        |
-| Architecture   | MVVM, ViewModel, Kotlin StateFlow                                                                                          |
-| DI             | Hilt                                                                                                                       |
-| Services       | `ASSAuthenticatorService`, `ASSResourceService`, `SolidDataModulesService`, `ASSSharingService`, `ASSNotificationsService` |
-| Persistence    | DataStore + Protocol Buffers (access grants, profiles); token store encrypted at rest (AES-256-GCM, Android Keystore)      |
-| Auth           | `net.openid:appauth` (OIDC) + DPoP or Bearer tokens                                                                        |
-| Solid protocol | Custom `SolidHttpClient` (OkHttp-based; Inrupt Java Client removed)                                                        |
+| Class                                                                                                | Role                                                               |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `HostService`                                                                                        | `Service` base owning the dispatch scope and caller attribution    |
+| `AuthenticatorBinder`, `ResourceBinder`, `DataModulesBinder`, `SharingBinder`, `NotificationsBinder` | The five AIDL implementations, one per service action              |
+| `AccessGuard` / `AccessPolicy` / `ScopedAccessPolicy`                                                | The check every verb passes through, against the caller's grant    |
+| `VerbAccess`                                                                                         | The verb table in code — which level each operation needs          |
+| `AppGrantStore` / `DataStoreAppGrantStore`                                                           | Grants as JSON under one Preferences key, with revocation          |
+| `ModuleRootResolver` / `DataModuleRootResolver`                                                      | Where a data module lives on a pod, cached                         |
+| `AuthorizeProtocol` / `CallerIdentity`                                                               | The Intent protocol and caller identity a consent screen builds on |
+| `HostSession` / `AuthenticatorHostSession`                                                           | Session state over the `api` `Authenticator`                       |
 
 ______________________________________________________________________
 
@@ -194,12 +215,11 @@ ______________________________________________________________________
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Kotlin                         | Coroutines, Flow, serialization                                                                                                                                                                              |
 | Jetpack Compose                | UI — no XML views                                                                                                                                                                                            |
-| Hilt                           | Dependency injection (app module only)                                                                                                                                                                       |
 | AIDL                           | Cross-process communication                                                                                                                                                                                  |
 | AppAuth (`net.openid:appauth`) | OpenID Connect                                                                                                                                                                                               |
 | `SolidHttpClient`              | Custom OkHttp-based Solid HTTP client (replaces Inrupt Java Client SDK); in-memory response cache since 0.5.0                                                                                                |
 | Titanium JSON-LD               | RDF, JSON-LD parsing (internal `implementation` dependency — off the public API surface since 0.5.0); the Activity Streams 2.0 context ships in `Shared` since 0.7.1, so notifications parse with no network |
-| DataStore                      | Local persistence (Preferences + a kotlinx.serialization JSON `Serializer`); token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0                                                       |
+| DataStore                      | Local persistence (Preferences + a kotlinx.serialization JSON `Serializer`); token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0; `host` keeps app grants here too                     |
 | kotlinx.serialization          | JSON serialization (replaced Gson in v0.3.0)                                                                                                                                                                 |
 | Min SDK                        | 26 (Android 8.0)                                                                                                                                                                                             |
 | Target / Compile SDK           | 36 / 37                                                                                                                                                                                                      |
@@ -207,11 +227,11 @@ ______________________________________________________________________
 
 ## Monitoring
 
-Android Solid Services reports crashes and performance data through Firebase Crashlytics and Firebase Performance Monitoring. The app carries the Firebase dependency; the three published libraries do not.
+The libraries report nothing by themselves. A host application installs a sink and decides where the reports go; Solid Share installs a Firebase one in its Play build and none in its F-Droid build.
 
 ### Why the libraries stay Firebase-free
 
-`api`, `client` and `shared` are published to Maven Central and are compiled into third-party applications. Making them depend on Firebase would force every consumer to add a Firebase project and a `google-services.json`, and would route SDK telemetry into *their* Firebase project — a poor fit for an SDK whose whole purpose is keeping personal data under the user's control.
+All four libraries are published to Maven Central and compiled into third-party applications. Making them depend on Firebase would force every consumer to add a Firebase project and a `google-services.json`, and would route SDK telemetry into *their* Firebase project — a poor fit for an SDK whose whole purpose is keeping personal data under the user's control.
 
 Instead the libraries emit through a small interface in `shared.telemetry`:
 
@@ -219,7 +239,7 @@ Instead the libraries emit through a small interface in `shared.telemetry`:
 libraries  ──emit──▶  Telemetry (facade)  ──▶  TelemetrySink
                                                     │
                           no sink installed ────────┤──▶ no-op, nothing collected
-                          app installs bridge ──────┴──▶ FirebaseTelemetrySink
+                          host installs a bridge ───┴──▶ the host's own backend
 ```
 
 Nothing is collected or transmitted until a host application calls `Telemetry.install(...)`. The libraries add no monitoring dependency of any kind.
@@ -229,7 +249,7 @@ Nothing is collected or transmitted until a host application calls `Telemetry.in
 | Signal                                      | Source                                  | Destination                                          |
 | ------------------------------------------- | --------------------------------------- | ---------------------------------------------------- |
 | Uncaught crashes                            | Whole app process, incl. binder threads | Crashlytics                                          |
-| Swallowed data-module exceptions            | `AidlDispatch.dispatchDataModule`       | Crashlytics (non-fatal)                              |
+| Swallowed data-module exceptions            | `host` `AidlDispatch`                   | Crashlytics (non-fatal)                              |
 | Non-transport request faults                | `SolidHttpClient.solidFailure`          | Crashlytics (non-fatal)                              |
 | Transport failures (offline, reset)         | `SolidHttpClient.solidFailure`          | Crashlytics breadcrumb only                          |
 | Requests for a WebID with no usable session | `SolidHttpClient.solidFailure`          | Crashlytics breadcrumb only                          |
@@ -242,9 +262,9 @@ A dropped connection is a fact of mobile life, not a defect, so `IOException` is
 
 ### Attributing failures to the integrating app
 
-Every report carries a `calling_app` custom key naming the application whose IPC call was being serviced, or `self` when the work started in the ASS UI. `CallerAttribution.currentCaller()` reads `Binder.getCallingUid()` and resolves it through `PackageManager`, caching successful lookups.
+Every report carries a `calling_app` custom key naming the application whose IPC call was being serviced, or `self` when the work started in the host's own UI. `CallerAttribution.currentCaller()` reads `Binder.getCallingUid()` and resolves it through `PackageManager`, caching successful lookups.
 
-The read happens in `beginAttributedCall()` **before** `launch`, because a caller's identity is only visible while the binder transaction is still on the stack — by the time the coroutine runs, `getCallingUid()` reports the ASS process itself. `dispatchDataModule` carries the resolved name into its closure and attaches it to the report directly.
+The read happens in `beginAttributedCall()` **before** `launch`, because a caller's identity is only visible while the binder transaction is still on the stack — by the time the coroutine runs, `getCallingUid()` reports the host process itself. `dispatchDataModule` carries the resolved name into its closure and attaches it to the report directly.
 
 Note that Crashlytics custom keys are process-global, so under genuinely concurrent calls from two different apps the `calling_app` key on a deep `api` non-fatal reflects the most recent caller rather than the one that failed. The per-report attribute on `dispatchDataModule` is exact.
 
@@ -253,50 +273,17 @@ Note that Crashlytics custom keys are process-global, so under genuinely concurr
 A Solid pod URL's path names the user's containers and resources, so no path ever reaches Firebase.
 
 - **Manual network spans report the origin only** — `scheme://host[:port]`, via `URI.telemetryOrigin()` in `api/http/TelemetryOrigin.kt`. This is enough to break latency down per pod provider without describing what the user stores there.
-- **Automatic Performance instrumentation is disabled.** The Firebase Performance Gradle plugin rewrites bytecode to trace every OkHttp call with its complete URL, which would defeat the above. `firebasePerformanceInstrumentationEnabled=false` in `gradle.properties` turns that off. App-start and screen-render traces are SDK-side and unaffected; `@AddTrace` is also disabled by this flag.
+- **Automatic Performance instrumentation is disabled** in the host. The Firebase Performance Gradle plugin rewrites bytecode to trace every OkHttp call with its complete URL, which would defeat the above.
 - **No Firebase Analytics.** Crashlytics breadcrumb-from-Analytics integration is not wired up.
 - WebIDs, pod resource paths, tokens and refresh-token fingerprints are never sent as attributes.
 
 ### Release only
 
-Collection is a **release-build feature**. Debug builds initialise Firebase but gather nothing:
-
-|                                                      | `debug`          | `release`               |
-| ---------------------------------------------------- | ---------------- | ----------------------- |
-| `firebase_crashlytics_collection_enabled` (manifest) | `false`          | `true`                  |
-| `firebase_performance_collection_enabled` (manifest) | `false`          | `true`                  |
-| `BuildConfig.TELEMETRY_ENABLED`                      | `false`          | `true`                  |
-| `Telemetry` sink installed                           | no — stays no-op | `FirebaseTelemetrySink` |
-
-The manifest flags are the Firebase SDKs' own switches, so nothing is gathered in the window before `Application.onCreate` runs. `installFirebaseTelemetry` then re-asserts both settings from `TELEMETRY_ENABLED` — they persist across launches and the two build types share an `applicationId`, so it sets them explicitly rather than trusting what a previous install left behind — and installs the sink only when enabled.
-
-To collect from a debug build temporarily, flip the `debug` block in `app/build.gradle.kts`:
-
-```kotlin
-debug {
-    manifestPlaceholders["crashlyticsEnabled"] = true
-    manifestPlaceholders["performanceEnabled"] = true
-    buildConfigField("boolean", "TELEMETRY_ENABLED", "true")
-}
-```
-
-### Setting up Firebase
-
-`app/google-services.json` must be present and must register an Android app with package name `com.erfangholami.androidsolidservices` — the `google-services`, `crashlytics` and `firebase-perf` plugins are applied unconditionally and the build fails without it. Download it from the [Firebase console](https://console.firebase.google.com/) into `app/`.
-
-#### Release builds upload the R8 mapping
-
-`assembleRelease` runs `uploadCrashlyticsMappingFileRelease`, which sends `mapping.txt` to Firebase so release stack traces deobfuscate. It needs network access. To build a release without uploading:
-
-```sh
-./gradlew :app:assembleRelease -x uploadCrashlyticsMappingFileRelease
-```
-
-`app/proguard-rules.pro` keeps `SourceFile,LineNumberTable`, which Crashlytics needs to symbolicate, and `-keepnames` the SDK's own exception classes, which is how Crashlytics groups non-fatals by type.
+In Solid Share, collection is a **release-build feature**: debug builds initialise Firebase but gather nothing, and the F-Droid flavour carries no Firebase at all. A host that installs a sink should gate it the same way, so development never ships noise to a dashboard.
 
 ### Plugging in your own backend
 
-Third-party apps embedding the `client` SDK can capture the same signals without Firebase by implementing `TelemetrySink`:
+Any host — or any app embedding `api` — can capture the same signals without Firebase by implementing `TelemetrySink`:
 
 ```kotlin
 class SentryTelemetrySink : TelemetrySink {
@@ -321,16 +308,16 @@ class MyApplication : Application() {
 
 #### What the SDK author can and cannot see
 
-| Integration                  | Where the code runs                                                | Visible in the ASS Firebase console                                                            |
-| ---------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `client` + ASS app installed | `client` in the integrator's process; **`api` in the ASS process** | Yes for everything `api` does, tagged with `calling_app`. No for the integrator's own process. |
-| `api` embedded directly      | Entirely in the integrator's process                               | **Nothing.**                                                                                   |
+| Integration                       | Where the code runs                                                 | Visible in the host's console                                                                  |
+| --------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `client` + the host app installed | `client` in the integrator's process; **`api` in the host process** | Yes for everything `api` does, tagged with `calling_app`. No for the integrator's own process. |
+| `api` embedded directly           | Entirely in the integrator's process                                | **Nothing.**                                                                                   |
 
 There is no supported way to change the second row: `FirebaseCrashlytics.getInstance()` takes no `FirebaseApp`, so a library cannot report to a Crashlytics project other than its host app's, and installing an uncaught-exception handler from a library would break the host's own crash reporting. A library embedded in someone else's app can only report where that app tells it to — which is what `TelemetrySink` is for.
 
 ### Making collection user-consented
 
-Collection currently follows the build type. To put it behind a user opt-in instead, replace the `BuildConfig.TELEMETRY_ENABLED` reads in `installFirebaseTelemetry` with the stored preference and re-run it when the preference changes:
+If collection follows the build type, put it behind a user opt-in instead by reading the stored preference where the build flag was, and re-running the installer when the preference changes:
 
 ```kotlin
 crashlytics.setCrashlyticsCollectionEnabled(userOptedIn)

@@ -3,7 +3,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+        <meta name="description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
       
       
         <meta name="author" content="Erfan Gholami">
@@ -63,7 +63,7 @@
   
 <meta property="og:type" content="website">
 <meta property="og:title" content="Architecture - Android Solid Services">
-<meta property="og:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="og:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/architecture.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -71,7 +71,7 @@
 <meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/project/architecture/">
 <meta property="twitter:card" content="summary_large_image">
 <meta property="twitter:title" content="Architecture - Android Solid Services">
-<meta property="twitter:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="twitter:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/architecture.png">
 <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="../releases/">release notes</a> before upgrading.
 
           </div>
@@ -612,7 +612,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -644,6 +644,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -733,6 +737,34 @@
     
   
     Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
   
 
     
@@ -970,6 +1002,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1121,6 +1181,8 @@
   
     
     
+      
+        
       
         
       
@@ -1327,10 +1389,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#app-comerfangholamiandroidsolidservices" class="md-nav__link">
+  <a href="#host-comerfangholamiandroidsolidserviceshost" class="md-nav__link">
     <span class="md-ellipsis">
       
-        app (com.erfangholami.androidsolidservices)
+        host (com.erfangholami.androidsolidservices.host)
       
     </span>
   </a>
@@ -1421,17 +1483,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#setting-up-firebase" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Setting up Firebase
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#plugging-in-your-own-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1482,6 +1533,34 @@
     
   
     Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
   
 
     
@@ -1593,7 +1672,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -1719,10 +1798,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#app-comerfangholamiandroidsolidservices" class="md-nav__link">
+  <a href="#host-comerfangholamiandroidsolidserviceshost" class="md-nav__link">
     <span class="md-ellipsis">
       
-        app (com.erfangholami.androidsolidservices)
+        host (com.erfangholami.androidsolidservices.host)
       
     </span>
   </a>
@@ -1806,17 +1885,6 @@
     <span class="md-ellipsis">
       
         Release only
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#setting-up-firebase" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Setting up Firebase
       
     </span>
   </a>
@@ -1925,65 +1993,73 @@
 
 <h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">¶</a></h1>
 <h2 id="modules-and-integration-paths">Modules and Integration Paths<a class="headerlink" href="#modules-and-integration-paths" title="Permanent link">¶</a></h2>
-<p>Four Gradle modules in a layered chain. <code>Shared</code> holds the common types; <code>api</code> and <code>client</code> both build
-on it; the <code>app</code> (the host) bundles both. Three of the four — <code>Shared</code>, <code>api</code>, and <code>client</code> — are
-published to Maven Central, so a third-party app can integrate along <strong>either of two paths</strong>:</p>
+<p>Four published Gradle modules in a layered chain. <code>Shared</code> holds the common types; <code>api</code>, <code>client</code>
+and <code>host</code> all build on it. All four go to Maven Central, and a third-party app integrates along
+<strong>one of two paths</strong> — or, if it wants to be a host itself, adds the third.</p>
 <ul>
-<li><strong>Path 1 — embedded (<code>api</code>):</strong> depend on <code>api</code> and reach the Solid pod <strong>directly</strong>, performing your
-  own login and signing every request in-process. Self-contained — no <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app needs to be installed,
-  but your app manages its own credentials and keys.</li>
+<li><strong>Path 1 — embedded (<code>api</code>):</strong> depend on <code>api</code> and reach the Solid pod <strong>directly</strong>, performing
+  your own login and signing every request in-process. Self-contained — no host app needs to be
+  installed, but your app manages its own credentials and keys, and nothing scopes what it may do.</li>
 <li><strong>Path 2 — single sign-in (<code>client</code>):</strong> depend on <code>client</code> and delegate over <strong><abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr></strong> to the
-  installed <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app, which holds the credentials and talks to the pod for you. One shared login across
-  every Solid app on the device, and no token handling in your app.</li>
+  installed host app, <a href="https://solidshare.app">Solid Share</a>, which holds the credentials and talks
+  to the pod for you. One shared login across every Solid app on the device, no token handling in
+  your app, and the user decides what your app may reach.</li>
+<li><strong>Hosting (<code>host</code>):</strong> depend on <code>host</code> to <em>be</em> the app on the other end of Path 2 — the five <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr>
+  binders, the access policy, the grant store and the consent protocol. Solid Share is built on it;
+  the library ships no app of its own.</li>
 </ul>
 <pre class="mermaid"><code>graph TD
     %% ── Consumers: the two integration paths ──
     TPA1["Third-party app&lt;br/&gt;&lt;b&gt;Path 1 · embedded&lt;/b&gt;&lt;br/&gt;self-hosted auth and keys"]
-    TPA2["Third-party app&lt;br/&gt;&lt;b&gt;Path 2 · single sign-in&lt;/b&gt;&lt;br/&gt;delegates to the ASS app"]
+    TPA2["Third-party app&lt;br/&gt;&lt;b&gt;Path 2 · single sign-in&lt;/b&gt;&lt;br/&gt;delegates to Solid Share"]
 
     subgraph CLIENT["client — IPC SDK (Maven Central)"]
         direction TB
         CL_ENTRY["Solid — get*Client()"]
-        CL_PROXY["SignIn · Resource · Contacts ·&lt;br/&gt;Sharing · Notifications clients"]
-        CL_CONN["ServiceConnector · SolidException"]
+        CL_PROXY["SignIn · Resource · Contacts · Tickets ·&lt;br/&gt;Sharing · Notifications clients"]
+        CL_CONN["HostResolver · ServiceConnector · SolidException"]
+    end
+
+    subgraph HOST["host — host-side SDK (Maven Central)"]
+        direction TB
+        HO_BIND["5 AIDL binders&lt;br/&gt;Authenticator · Resource · DataModules ·&lt;br/&gt;Sharing · Notifications"]
+        HO_POLICY["AccessGuard · ScopedAccessPolicy ·&lt;br/&gt;VerbAccess · ModuleRootResolver"]
+        HO_STORE["AppGrantStore · AuthorizeProtocol ·&lt;br/&gt;CallerIdentity · HostService"]
     end
 
     subgraph API["api — direct Solid access (Maven Central)"]
         direction TB
         AP_AUTH["Authenticator — OIDC,&lt;br/&gt;DPoP or Bearer, multi-account"]
         AP_RES["SolidResourceManager"]
-        AP_SHARE["SharingManager · NotificationsManager ·&lt;br/&gt;SolidContactsDataModule"]
+        AP_SHARE["SharingManager · NotificationsManager ·&lt;br/&gt;contacts and tickets data modules"]
         AP_HTTP["SolidHttpClient + cache ·&lt;br/&gt;WAC / ACP access backends"]
-    end
-
-    subgraph APP["app — Android Solid Services (the host)"]
-        direction TB
-        AP_SVC["5 bound AIDL services&lt;br/&gt;Authenticator · Resource · DataModules ·&lt;br/&gt;Sharing · Notifications"]
-        AP_UI["Compose UI · MVVM · Hilt"]
-        AP_STORE["DataStore · encrypted token store"]
     end
 
     subgraph SHARED["Shared — common types · AIDL · RDF (Maven Central)"]
         direction TB
-        SH_MODEL["model/ — resource · sharing ·&lt;br/&gt;contacts · profile · access"]
+        SH_MODEL["model/ — resource · sharing ·&lt;br/&gt;contacts · profile · access · grant"]
+        SH_HOST["host/ — SolidHostContract"]
         SH_RDF["rdf/ codecs · vocab/ · http/"]
         SH_AIDL["AIDL service + parcelable defs"]
     end
 
+    APP["Solid Share&lt;br/&gt;(its own repository)"]
     POD["Solid Pod"]
 
     %% Path 1 — embed api, talk to the pod directly
     TPA1 --&gt;|depends on| API
     API --&gt;|"HTTPS · DPoP or Bearer"| POD
 
-    %% Path 2 — use client, which IPCs into the ASS app
+    %% Path 2 — use client, which IPCs into the host app
     TPA2 --&gt;|depends on| CLIENT
-    CLIENT -.-&gt;|AIDL IPC| AP_SVC
-    AP_SVC --&gt; API
+    CLIENT -.-&gt;|"AIDL IPC, bound by action"| HO_BIND
+    APP --&gt;|depends on| HOST
+    HOST --&gt; API
 
-    %% Foundation dependencies (the app depends on both libraries — see prose)
+    %% Foundation dependencies
     API --&gt; SHARED
     CLIENT --&gt; SHARED
+    HOST --&gt; SHARED
 
     %% Outlines only — fills and text follow the page theme, so this reads in light and dark.
     classDef consumer stroke:#4285f4,stroke-width:2px;
@@ -1994,76 +2070,94 @@ published to Maven Central, so a third-party app can integrate along <strong>eit
     style CLIENT stroke:#34a853,stroke-width:2px
     style API stroke:#34a853,stroke-width:2px
     style SHARED stroke:#34a853,stroke-width:2px
+    style HOST stroke:#34a853,stroke-width:2px
     style APP stroke:#f9ab00,stroke-width:2px</code></pre>
 <p>Both paths run the <strong>same <code>api</code> engine</strong> against the pod — the difference is <em>where</em> it runs: in the
-third-party app's own process (Path 1), or inside the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app's process behind <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> (Path 2). <code>api</code>
-and <code>client</code> each depend on <code>Shared</code>; the <code>app</code> depends on both.</p>
-<p>Package roots: <code>app</code> → <code>com.erfangholami.androidsolidservices</code>, with <code>…api</code>, <code>…client</code>, and
-<code>…shared</code> for the three libraries.</p>
+third-party app's own process (Path 1), or inside the host app's process behind <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> (Path 2).
+<code>api</code>, <code>client</code> and <code>host</code> each depend on <code>Shared</code>; <code>host</code> also depends on <code>api</code>.</p>
+<p>Package roots: <code>…api</code>, <code>…client</code>, <code>…host</code> and <code>…shared</code> under
+<code>com.erfangholami.androidsolidservices</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">The Android Solid Services app is discontinued</p>
+<p>Until 0.7.2 this repository also built an <code>app</code> module — the host app of the same name. It was
+removed at 0.8.0, when <a href="https://solidshare.app">Solid Share</a> took over hosting, and the <code>host</code>
+library is what it left behind. A 0.7.2 app and a 0.7.2 <code>client</code> still work together; neither
+talks to 0.8.0.</p>
+</div>
 <hr>
 <h2 id="ipc-how-apps-communicate"><abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr>: How Apps Communicate<a class="headerlink" href="#ipc-how-apps-communicate" title="Permanent link">¶</a></h2>
-<p>Apps that take the single-sign-in path (<code>client</code>) <strong>never talk directly to the Solid pod</strong>. They bind to one of the <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> services in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app, which uses the <code>api</code> module to reach the pod over authenticated HTTPS. (Apps on the embedded path link <code>api</code> and make these same calls in-process.)</p>
+<p>Apps that take the single-sign-in path (<code>client</code>) <strong>never talk directly to the Solid pod</strong>. They bind to one of the <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> services in the host app, which uses the <code>api</code> module to reach the pod over authenticated HTTPS. (Apps on the embedded path link <code>api</code> and make these same calls in-process.)</p>
+<p>Binding is <strong>by intent action</strong> — the six actions in <code>SolidHostContract</code> — inside the host's package, and the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> binds only to Solid Share. That keeps the host free to name, move or merge its service classes without breaking installed apps.</p>
 <pre class="mermaid"><code>graph LR
     subgraph "Third-party app process"
         C["client SDK&lt;br/&gt;Solid.get*Client()"]
     end
-    subgraph "Android Solid Services app process"
-        SVC["Bound services (AIDL)&lt;br/&gt;Authenticator · Resource · DataModules&lt;br/&gt;Sharing · Notifications"]
+    subgraph "Solid Share process"
+        SVC["host binders (AIDL)&lt;br/&gt;Authenticator · Resource · DataModules&lt;br/&gt;Sharing · Notifications"]
+        GUARD["AccessGuard + ScopedAccessPolicy&lt;br/&gt;over the app's AppGrant"]
         API["api&lt;br/&gt;SolidHttpClient · DPoP/Bearer · response cache"]
-        SVC --&gt; API
+        SVC --&gt; GUARD
+        GUARD --&gt; API
     end
     POD["Solid Pod"]
 
     C -- "AIDL IPC" --&gt; SVC
     API -- "HTTPS + DPoP/Bearer" --&gt; POD</code></pre>
-<p>Each <code>client</code> entry point binds to its matching bound service:</p>
+<p>Each <code>client</code> entry point binds by its own action, and the host answers with the matching binder:</p>
 <table>
 <thead>
 <tr>
 <th><code>client</code> entry point</th>
-<th>Bound service</th>
+<th><code>SolidHostContract</code> action</th>
+<th><code>host</code> binder</th>
 <th>Responsibility</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>Solid.getSignInClient()</code></td>
-<td><code>ASSAuthenticatorService</code></td>
-<td>Login, access grants</td>
+<td><code>ACTION_AUTHENTICATOR</code></td>
+<td><code>AuthenticatorBinder</code></td>
+<td>Session state, the app's grant</td>
 </tr>
 <tr>
 <td><code>Solid.getResourceClient()</code></td>
-<td><code>ASSResourceService</code></td>
+<td><code>ACTION_RESOURCES</code></td>
+<td><code>ResourceBinder</code></td>
 <td><abbr title="Create, read, update, delete">CRUD</abbr> on pod resources</td>
 </tr>
 <tr>
-<td><code>Solid.getContactsDataModule()</code></td>
-<td><code>SolidDataModulesService</code></td>
-<td>Contacts, address books</td>
+<td><code>Solid.getContactsDataModule()</code> / <code>getTicketsDataModule()</code></td>
+<td><code>ACTION_DATA_MODULES</code></td>
+<td><code>DataModulesBinder</code></td>
+<td>Contacts, address books, tickets</td>
 </tr>
 <tr>
 <td><code>Solid.getSharingClient()</code></td>
-<td><code>ASSSharingService</code></td>
-<td>Shares, access grants <em>(0.5.0)</em></td>
+<td><code>ACTION_SHARING</code></td>
+<td><code>SharingBinder</code></td>
+<td>Shares, access grants</td>
 </tr>
 <tr>
 <td><code>Solid.getNotificationsClient()</code></td>
-<td><code>ASSNotificationsService</code></td>
-<td><abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> inbox <em>(0.5.0)</em></td>
+<td><code>ACTION_NOTIFICATIONS</code></td>
+<td><code>NotificationsBinder</code></td>
+<td><abbr title="Linked Data Notifications — the W3C protocol behind the pod inbox">LDN</abbr> inbox</td>
 </tr>
 </tbody>
 </table>
-<p>Each service is an Android <strong>bound service</strong>. The client libraries expose <code>Flow&lt;Boolean&gt;</code> connection state so apps can react to connect/disconnect events in real time.</p>
+<p>There is a sixth action, <code>ACTION_AUTHORIZE</code>, which is an Activity rather than a service: it is what <code>AuthorizeWithSolid</code> launches for the consent screen.</p>
+<p>Each service is an Android <strong>bound service</strong>. Every call waits for its binding, so nothing has to be collected first; the <code>Flow&lt;Boolean&gt;</code> connection state each client exposes is for UI.</p>
 <p><abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> interface definitions (both parcelable types and service contracts) live in <code>Shared/src/main/aidl/</code>.</p>
 <hr>
 <h2 id="authentication-openid-connect-dpop-or-bearer">Authentication: OpenID Connect (<abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> or Bearer)<a class="headerlink" href="#authentication-openid-connect-dpop-or-bearer" title="Permanent link">¶</a></h2>
-<p>The auth flow uses the <strong>AppAuth</strong> library (<code>net.openid:appauth</code>) for the OpenID Connect code exchange. Token binding is <strong>negotiated</strong> from the provider's discovery document: if it advertises <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> (Demonstration of Proof-of-Possession) support via <code>dpop_signing_alg_values_supported</code>, <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> uses <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>; otherwise it falls back to standard <strong>Bearer</strong> tokens.</p>
+<p>The auth flow uses the <strong>AppAuth</strong> library (<code>net.openid:appauth</code>) for the OpenID Connect code exchange. Token binding is <strong>negotiated</strong> from the provider's discovery document: if it advertises <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> (Demonstration of Proof-of-Possession) support via <code>dpop_signing_alg_values_supported</code>, the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> uses <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr>; otherwise it falls back to standard <strong>Bearer</strong> tokens.</p>
 <ol>
 <li>User enters their <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> or selects an OpenID provider.</li>
-<li><abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> resolves the <abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> issuer from the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document.</li>
+<li>The <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> resolves the <abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> issuer from the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document.</li>
 <li>A browser intent opens the provider's login page.</li>
-<li>The provider redirects back to <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> with an authorization code.</li>
-<li><abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> exchanges the code for access + refresh tokens.</li>
+<li>The provider redirects back with an authorization code.</li>
+<li>The <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> exchanges the code for access + refresh tokens.</li>
 <li>Every subsequent pod request carries an <code>Authorization: &lt;DPoP|Bearer&gt; &lt;token&gt;</code> header; when <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> was negotiated, a freshly signed <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> proof is attached as well — binding the token to the request and preventing replay.</li>
 </ol>
 <p>When <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> is in effect, each account has its <strong>own <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> key pair</strong> in the Android Keystore. Multi-account state (profiles, tokens) is persisted with <strong>DataStore</strong>, <strong>encrypted at rest</strong> (AES-256-GCM via an Android Keystore key). Login can use either dynamic client registration or a hosted <strong>Solid-<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> Client ID Document</strong> (<code>clientId</code>). Token refresh is nonce-aware (per-origin <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> nonces, retry on <code>use_dpop_nonce</code>) and resilient — a recoverable failure no longer forces a re-login.</p>
@@ -2097,6 +2191,14 @@ value type rather than okhttp / titanium-json-ld types (the <abbr title="A JSON 
 <tr>
 <td>Sharing types</td>
 <td><code>GivenShare</code>, <code>ReceivedShare</code>, <code>ShareMode</code>, <code>ShareReceiver</code>, <code>AccessGrant</code>, <code>CatalogEntry</code>, <code>ShareNotification</code>, <code>ShareRequest</code> (0.5.0)</td>
+</tr>
+<tr>
+<td>App-grant types</td>
+<td><code>AccessLevel</code>, <code>GrantTarget</code>, <code>GrantEntry</code>, <code>AppGrant</code>, <code>AccessRequest</code>, <code>RequestedTarget</code>, <code>DataModuleId</code> (0.8.0)</td>
+</tr>
+<tr>
+<td>Host contract</td>
+<td><code>SolidHostContract</code> — the host package, the account type and the seven intent actions (0.8.0; the client marker 0.8.1)</td>
 </tr>
 <tr>
 <td>Patch type</td>
@@ -2157,7 +2259,7 @@ value type rather than okhttp / titanium-json-ld types (the <abbr title="A JSON 
 </tbody>
 </table>
 <h3 id="client-comerfangholamiandroidsolidservicesclient">client (<code>com.erfangholami.androidsolidservices.client</code>)<a class="headerlink" href="#client-comerfangholamiandroidsolidservicesclient" title="Permanent link">¶</a></h3>
-<p><abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> client library. No direct pod access — all calls are proxied through the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app.</p>
+<p><abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> client library. No direct pod access — all calls are proxied through the host app.</p>
 <table>
 <thead>
 <tr>
@@ -2195,48 +2297,61 @@ value type rather than okhttp / titanium-json-ld types (the <abbr title="A JSON 
 <td>Shared, self-healing <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> bind/callback plumbing (0.5.0)</td>
 </tr>
 <tr>
+<td><code>HostResolver</code></td>
+<td>Finds the host, and fails fast with a typed message when it is missing (0.8.0)</td>
+</tr>
+<tr>
+<td><code>SolidClientMarkerService</code></td>
+<td>An inert exported service the host matches in <code>&lt;queries&gt;</code>, so it can read this app's label and icon (0.8.1)</td>
+</tr>
+<tr>
 <td><code>SolidException</code> hierarchy</td>
 <td>Typed exceptions for all failure modes</td>
 </tr>
 </tbody>
 </table>
-<h3 id="app-comerfangholamiandroidsolidservices">app (<code>com.erfangholami.androidsolidservices</code>)<a class="headerlink" href="#app-comerfangholamiandroidsolidservices" title="Permanent link">¶</a></h3>
-<p>The host application. Users interact with this; third-party apps bind to its services.</p>
+<h3 id="host-comerfangholamiandroidsolidserviceshost">host (<code>com.erfangholami.androidsolidservices.host</code>)<a class="headerlink" href="#host-comerfangholamiandroidsolidserviceshost" title="Permanent link">¶</a></h3>
+<p>Host-side library, new in 0.8.0. Everything an app needs to be the other end of <code>client</code>.
+<a href="https://solidshare.app">Solid Share</a> is the app built on it; this repository ships no app.</p>
 <table>
 <thead>
 <tr>
-<th>Area</th>
-<th>Technology</th>
+<th>Class</th>
+<th>Role</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>UI</td>
-<td>Jetpack Compose, Navigation Compose</td>
+<td><code>HostService</code></td>
+<td><code>Service</code> base owning the dispatch scope and caller attribution</td>
 </tr>
 <tr>
-<td>Architecture</td>
-<td>MVVM, ViewModel, Kotlin StateFlow</td>
+<td><code>AuthenticatorBinder</code>, <code>ResourceBinder</code>, <code>DataModulesBinder</code>, <code>SharingBinder</code>, <code>NotificationsBinder</code></td>
+<td>The five <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> implementations, one per service action</td>
 </tr>
 <tr>
-<td>DI</td>
-<td>Hilt</td>
+<td><code>AccessGuard</code> / <code>AccessPolicy</code> / <code>ScopedAccessPolicy</code></td>
+<td>The check every verb passes through, against the caller's grant</td>
 </tr>
 <tr>
-<td>Services</td>
-<td><code>ASSAuthenticatorService</code>, <code>ASSResourceService</code>, <code>SolidDataModulesService</code>, <code>ASSSharingService</code>, <code>ASSNotificationsService</code></td>
+<td><code>VerbAccess</code></td>
+<td>The verb table in code — which level each operation needs</td>
 </tr>
 <tr>
-<td>Persistence</td>
-<td>DataStore + Protocol Buffers (access grants, profiles); token store encrypted at rest (AES-256-GCM, Android Keystore)</td>
+<td><code>AppGrantStore</code> / <code>DataStoreAppGrantStore</code></td>
+<td>Grants as JSON under one Preferences key, with revocation</td>
 </tr>
 <tr>
-<td>Auth</td>
-<td><code>net.openid:appauth</code> (<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr>) + <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> or Bearer tokens</td>
+<td><code>ModuleRootResolver</code> / <code>DataModuleRootResolver</code></td>
+<td>Where a data module lives on a pod, cached</td>
 </tr>
 <tr>
-<td>Solid protocol</td>
-<td>Custom <code>SolidHttpClient</code> (OkHttp-based; Inrupt Java Client removed)</td>
+<td><code>AuthorizeProtocol</code> / <code>CallerIdentity</code></td>
+<td>The Intent protocol and caller identity a consent screen builds on</td>
+</tr>
+<tr>
+<td><code>HostSession</code> / <code>AuthenticatorHostSession</code></td>
+<td>Session state over the <code>api</code> <code>Authenticator</code></td>
 </tr>
 </tbody>
 </table>
@@ -2259,10 +2374,6 @@ value type rather than okhttp / titanium-json-ld types (the <abbr title="A JSON 
 <td>UI — no XML views</td>
 </tr>
 <tr>
-<td>Hilt</td>
-<td>Dependency injection (app module only)</td>
-</tr>
-<tr>
 <td><abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr></td>
 <td>Cross-process communication</td>
 </tr>
@@ -2280,7 +2391,7 @@ value type rather than okhttp / titanium-json-ld types (the <abbr title="A JSON 
 </tr>
 <tr>
 <td>DataStore</td>
-<td>Local persistence (Preferences + a kotlinx.serialization JSON <code>Serializer</code>); token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0</td>
+<td>Local persistence (Preferences + a kotlinx.serialization JSON <code>Serializer</code>); token store encrypted at rest (AES-256-GCM, Android Keystore) since 0.5.0; <code>host</code> keeps app grants here too</td>
 </tr>
 <tr>
 <td>kotlinx.serialization</td>
@@ -2301,19 +2412,19 @@ value type rather than okhttp / titanium-json-ld types (the <abbr title="A JSON 
 </tbody>
 </table>
 <h2 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">¶</a></h2>
-<p>Android Solid Services reports crashes and performance data through Firebase Crashlytics and
-Firebase Performance Monitoring. The app carries the Firebase dependency; the three published
-libraries do not.</p>
+<p>The libraries report nothing by themselves. A host application installs a sink and decides where
+the reports go; Solid Share installs a Firebase one in its Play build and none in its F-Droid
+build.</p>
 <h3 id="why-the-libraries-stay-firebase-free">Why the libraries stay Firebase-free<a class="headerlink" href="#why-the-libraries-stay-firebase-free" title="Permanent link">¶</a></h3>
-<p><code>api</code>, <code>client</code> and <code>shared</code> are published to Maven Central and are compiled into third-party
-applications. Making them depend on Firebase would force every consumer to add a Firebase project
-and a <code>google-services.json</code>, and would route <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> telemetry into <em>their</em> Firebase project — a poor
-fit for an <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> whose whole purpose is keeping personal data under the user's control.</p>
+<p>All four libraries are published to Maven Central and compiled into third-party applications.
+Making them depend on Firebase would force every consumer to add a Firebase project and a
+<code>google-services.json</code>, and would route <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> telemetry into <em>their</em> Firebase project — a poor fit
+for an <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> whose whole purpose is keeping personal data under the user's control.</p>
 <p>Instead the libraries emit through a small interface in <code>shared.telemetry</code>:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>libraries  ──emit──▶  Telemetry (facade)  ──▶  TelemetrySink
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                                                    │
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                          no sink installed ────────┤──▶ no-op, nothing collected
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                          app installs bridge ──────┴──▶ FirebaseTelemetrySink
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                          host installs a bridge ───┴──▶ the host's own backend
 </span></code></pre></div>
 <p>Nothing is collected or transmitted until a host application calls <code>Telemetry.install(...)</code>. The
 libraries add no monitoring dependency of any kind.</p>
@@ -2334,7 +2445,7 @@ libraries add no monitoring dependency of any kind.</p>
 </tr>
 <tr>
 <td>Swallowed data-module exceptions</td>
-<td><code>AidlDispatch.dispatchDataModule</code></td>
+<td><code>host</code> <code>AidlDispatch</code></td>
 <td>Crashlytics (non-fatal)</td>
 </tr>
 <tr>
@@ -2382,11 +2493,12 @@ fails as <code>SolidError.NotAuthenticated</code> before touching the network an
 the expiry itself was already reported once by the refresh coordinator.</p>
 <h3 id="attributing-failures-to-the-integrating-app">Attributing failures to the integrating app<a class="headerlink" href="#attributing-failures-to-the-integrating-app" title="Permanent link">¶</a></h3>
 <p>Every report carries a <code>calling_app</code> custom key naming the application whose <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> call was being
-serviced, or <code>self</code> when the work started in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> UI. <code>CallerAttribution.currentCaller()</code> reads
-<code>Binder.getCallingUid()</code> and resolves it through <code>PackageManager</code>, caching successful lookups.</p>
+serviced, or <code>self</code> when the work started in the host's own UI.
+<code>CallerAttribution.currentCaller()</code> reads <code>Binder.getCallingUid()</code> and resolves it through
+<code>PackageManager</code>, caching successful lookups.</p>
 <p>The read happens in <code>beginAttributedCall()</code> <strong>before</strong> <code>launch</code>, because a caller's identity is only
 visible while the binder transaction is still on the stack — by the time the coroutine runs,
-<code>getCallingUid()</code> reports the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> process itself. <code>dispatchDataModule</code> carries the resolved name into
+<code>getCallingUid()</code> reports the host process itself. <code>dispatchDataModule</code> carries the resolved name into
 its closure and attaches it to the report directly.</p>
 <p>Note that Crashlytics custom keys are process-global, so under genuinely concurrent calls from two
 different apps the <code>calling_app</code> key on a deep <code>api</code> non-fatal reflects the most recent caller rather
@@ -2397,90 +2509,35 @@ than the one that failed. The per-report attribute on <code>dispatchDataModule</
 <li><strong>Manual network spans report the origin only</strong> — <code>scheme://host[:port]</code>, via
   <code>URI.telemetryOrigin()</code> in <code>api/http/TelemetryOrigin.kt</code>. This is enough to break latency down per
   pod provider without describing what the user stores there.</li>
-<li><strong>Automatic Performance instrumentation is disabled.</strong> The Firebase Performance Gradle plugin
-  rewrites bytecode to trace every OkHttp call with its complete URL, which would defeat the above.
-  <code>firebasePerformanceInstrumentationEnabled=false</code> in <code>gradle.properties</code> turns that off. App-start
-  and screen-render traces are <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>-side and unaffected; <code>@AddTrace</code> is also disabled by this flag.</li>
+<li><strong>Automatic Performance instrumentation is disabled</strong> in the host. The Firebase Performance
+  Gradle plugin rewrites bytecode to trace every OkHttp call with its complete URL, which would
+  defeat the above.</li>
 <li><strong>No Firebase Analytics.</strong> Crashlytics breadcrumb-from-Analytics integration is not wired up.</li>
 <li>WebIDs, pod resource paths, tokens and refresh-token fingerprints are never sent as attributes.</li>
 </ul>
 <h3 id="release-only">Release only<a class="headerlink" href="#release-only" title="Permanent link">¶</a></h3>
-<p>Collection is a <strong>release-build feature</strong>. Debug builds initialise Firebase but gather nothing:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th><code>debug</code></th>
-<th><code>release</code></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>firebase_crashlytics_collection_enabled</code> (manifest)</td>
-<td><code>false</code></td>
-<td><code>true</code></td>
-</tr>
-<tr>
-<td><code>firebase_performance_collection_enabled</code> (manifest)</td>
-<td><code>false</code></td>
-<td><code>true</code></td>
-</tr>
-<tr>
-<td><code>BuildConfig.TELEMETRY_ENABLED</code></td>
-<td><code>false</code></td>
-<td><code>true</code></td>
-</tr>
-<tr>
-<td><code>Telemetry</code> sink installed</td>
-<td>no — stays no-op</td>
-<td><code>FirebaseTelemetrySink</code></td>
-</tr>
-</tbody>
-</table>
-<p>The manifest flags are the Firebase SDKs' own switches, so nothing is gathered in the window before
-<code>Application.onCreate</code> runs. <code>installFirebaseTelemetry</code> then re-asserts both settings from
-<code>TELEMETRY_ENABLED</code> — they persist across launches and the two build types share an <code>applicationId</code>,
-so it sets them explicitly rather than trusting what a previous install left behind — and installs
-the sink only when enabled.</p>
-<p>To collect from a debug build temporarily, flip the <code>debug</code> block in <code>app/build.gradle.kts</code>:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">debug</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">manifestPlaceholders</span><span class="o">[</span><span class="s">"crashlyticsEnabled"</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">manifestPlaceholders</span><span class="o">[</span><span class="s">"performanceEnabled"</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="n">buildConfigField</span><span class="p">(</span><span class="s">"boolean"</span><span class="p">,</span><span class="w"> </span><span class="s">"TELEMETRY_ENABLED"</span><span class="p">,</span><span class="w"> </span><span class="s">"true"</span><span class="p">)</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="setting-up-firebase">Setting up Firebase<a class="headerlink" href="#setting-up-firebase" title="Permanent link">¶</a></h3>
-<p><code>app/google-services.json</code> must be present and must register an Android app with package name
-<code>com.erfangholami.androidsolidservices</code> — the <code>google-services</code>, <code>crashlytics</code> and <code>firebase-perf</code>
-plugins are applied unconditionally and the build fails without it. Download it from the
-<a href="https://console.firebase.google.com/">Firebase console</a> into <code>app/</code>.</p>
-<h4 id="release-builds-upload-the-r8-mapping">Release builds upload the R8 mapping<a class="headerlink" href="#release-builds-upload-the-r8-mapping" title="Permanent link">¶</a></h4>
-<p><code>assembleRelease</code> runs <code>uploadCrashlyticsMappingFileRelease</code>, which sends <code>mapping.txt</code> to Firebase
-so release stack traces deobfuscate. It needs network access. To build a release without uploading:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>./gradlew<span class="w"> </span>:app:assembleRelease<span class="w"> </span>-x<span class="w"> </span>uploadCrashlyticsMappingFileRelease
-</span></code></pre></div>
-<p><code>app/proguard-rules.pro</code> keeps <code>SourceFile,LineNumberTable</code>, which Crashlytics needs to
-symbolicate, and <code>-keepnames</code> the <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr>'s own exception classes, which is how Crashlytics groups
-non-fatals by type.</p>
+<p>In Solid Share, collection is a <strong>release-build feature</strong>: debug builds initialise Firebase but
+gather nothing, and the F-Droid flavour carries no Firebase at all. A host that installs a sink
+should gate it the same way, so development never ships noise to a dashboard.</p>
 <h3 id="plugging-in-your-own-backend">Plugging in your own backend<a class="headerlink" href="#plugging-in-your-own-backend" title="Permanent link">¶</a></h3>
-<p>Third-party apps embedding the <code>client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> can capture the same signals without Firebase by
+<p>Any host — or any app embedding <code>api</code> — can capture the same signals without Firebase by
 implementing <code>TelemetrySink</code>:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">SentryTelemetrySink</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TelemetrySink</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startSpan</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">TelemetrySpan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/* … */</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startNetworkSpan</span><span class="p">(</span><span class="n">url</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">TelemetryNetworkSpan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/* … */</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">recordException</span><span class="p">(</span><span class="n">throwable</span><span class="p">:</span><span class="w"> </span><span class="n">Throwable</span><span class="p">,</span><span class="w"> </span><span class="n">attributes</span><span class="p">:</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="kt">String</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="n">Sentry</span><span class="p">.</span><span class="na">captureException</span><span class="p">(</span><span class="n">throwable</span><span class="p">)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sentry</span><span class="p">.</span><span class="na">addBreadcrumb</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setKey</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sentry</span><span class="p">.</span><span class="na">setTag</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="kd">class</span><span class="w"> </span><span class="nc">MyApplication</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Application</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="k">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">()</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">        </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">install</span><span class="p">(</span><span class="n">SentryTelemetrySink</span><span class="p">())</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">SentryTelemetrySink</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TelemetrySink</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startSpan</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">TelemetrySpan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/* … */</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">startNetworkSpan</span><span class="p">(</span><span class="n">url</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">TelemetryNetworkSpan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/* … */</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">recordException</span><span class="p">(</span><span class="n">throwable</span><span class="p">:</span><span class="w"> </span><span class="n">Throwable</span><span class="p">,</span><span class="w"> </span><span class="n">attributes</span><span class="p">:</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="kt">String</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="n">Sentry</span><span class="p">.</span><span class="na">captureException</span><span class="p">(</span><span class="n">throwable</span><span class="p">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sentry</span><span class="p">.</span><span class="na">addBreadcrumb</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setKey</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Sentry</span><span class="p">.</span><span class="na">setTag</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">}</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="kd">class</span><span class="w"> </span><span class="nc">MyApplication</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Application</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">        </span><span class="k">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">()</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">        </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">install</span><span class="p">(</span><span class="n">SentryTelemetrySink</span><span class="p">())</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><code>Telemetry</code> isolates sink failures: an exception thrown by a sink is swallowed rather than
 propagated into <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> code, so a broken backend can never break a pod operation.</p>
@@ -2490,13 +2547,13 @@ propagated into <abbr title="Software development kit — here, the `client` and
 <tr>
 <th>Integration</th>
 <th>Where the code runs</th>
-<th>Visible in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> Firebase console</th>
+<th>Visible in the host's console</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>client</code> + <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app installed</td>
-<td><code>client</code> in the integrator's process; <strong><code>api</code> in the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> process</strong></td>
+<td><code>client</code> + the host app installed</td>
+<td><code>client</code> in the integrator's process; <strong><code>api</code> in the host process</strong></td>
 <td>Yes for everything <code>api</code> does, tagged with <code>calling_app</code>. No for the integrator's own process.</td>
 </tr>
 <tr>
@@ -2512,13 +2569,12 @@ installing an uncaught-exception handler from a library would break the host's o
 A library embedded in someone else's app can only report where that app tells it to — which is what
 <code>TelemetrySink</code> is for.</p>
 <h3 id="making-collection-user-consented">Making collection user-consented<a class="headerlink" href="#making-collection-user-consented" title="Permanent link">¶</a></h3>
-<p>Collection currently follows the build type. To put it behind a user opt-in instead, replace the
-<code>BuildConfig.TELEMETRY_ENABLED</code> reads in <code>installFirebaseTelemetry</code> with the stored preference and
-re-run it when the preference changes:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">crashlytics</span><span class="p">.</span><span class="na">setCrashlyticsCollectionEnabled</span><span class="p">(</span><span class="n">userOptedIn</span><span class="p">)</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">performance</span><span class="p">.</span><span class="na">isPerformanceCollectionEnabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userOptedIn</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">userOptedIn</span><span class="p">)</span><span class="w"> </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">install</span><span class="p">(</span><span class="n">FirebaseTelemetrySink</span><span class="p">(</span><span class="n">crashlytics</span><span class="p">,</span><span class="w"> </span><span class="n">performance</span><span class="p">))</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">else</span><span class="w"> </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">uninstall</span><span class="p">()</span>
+<p>If collection follows the build type, put it behind a user opt-in instead by reading the stored
+preference where the build flag was, and re-running the installer when the preference changes:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">crashlytics</span><span class="p">.</span><span class="na">setCrashlyticsCollectionEnabled</span><span class="p">(</span><span class="n">userOptedIn</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">performance</span><span class="p">.</span><span class="na">isPerformanceCollectionEnabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userOptedIn</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">userOptedIn</span><span class="p">)</span><span class="w"> </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">install</span><span class="p">(</span><span class="n">FirebaseTelemetrySink</span><span class="p">(</span><span class="n">crashlytics</span><span class="p">,</span><span class="w"> </span><span class="n">performance</span><span class="p">))</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">else</span><span class="w"> </span><span class="n">Telemetry</span><span class="p">.</span><span class="na">uninstall</span><span class="p">()</span>
 </span></code></pre></div>
 <p><code>Telemetry.uninstall()</code> restores the no-op sink, so the libraries go quiet immediately.</p>
 
@@ -2543,7 +2599,7 @@ re-run it when the preference changes:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 11:29:45 UTC">September 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 18, 2026 12:03:12 UTC">September 18, 2026</span>
   </span>
 
     
@@ -2652,7 +2708,7 @@ re-run it when the preference changes:</p>
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

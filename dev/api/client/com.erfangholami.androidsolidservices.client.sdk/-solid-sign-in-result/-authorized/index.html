@@ -93,24 +93,24 @@
   <div class="breadcrumbs"><a href="../../../index.html">client</a><span class="delimiter">/</span><a href="../../index.html">com.erfangholami.androidsolidservices.client.sdk</a><span class="delimiter">/</span><a href="../index.html">SolidSignInResult</a><span class="delimiter">/</span><span class="current">Authorized</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>Authorized</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Authorized</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="../index.html">SolidSignInResult</a></div><p class="paragraph">The user picked an account and granted this app access to it. Use <a href="../../../../client/com.erfangholami.androidsolidservices.client.sdk/-solid-sign-in-result/-authorized/--root--.html">webId</a> for every subsequent SDK call.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Authorized</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>grant<span class="token operator">: </span><a href="../../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-app-grant/index.html">AppGrant</a></span></span><span class="token punctuation">)</span> : <a href="../index.html">SolidSignInResult</a></div><p class="paragraph">The user picked an account and granted this app access to it. Use <a href="../../../../client/com.erfangholami.androidsolidservices.client.sdk/-solid-sign-in-result/-authorized/--root--.html">webId</a> for every subsequent SDK call. <a href="../../../../client/com.erfangholami.androidsolidservices.client.sdk/-solid-sign-in-result/-authorized/--root--.html">grant</a> is what the user approved, which may be narrower or wider than the <a href="../../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-access-request/index.html">AccessRequest</a> that was sent; an app that needs a scope the user withheld can explain why and launch the contract again.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="tableheader">Constructors</h2>
-        <div class="table"><a data-name="-1193041594%2FConstructors%2F1285123853" anchor-label="Authorized" id="-1193041594%2FConstructors%2F1285123853" data-filterable-set=":client/release"></a>
+        <div class="table"><a data-name="329832346%2FConstructors%2F1285123853" anchor-label="Authorized" id="329832346%2FConstructors%2F1285123853" data-filterable-set=":client/release"></a>
           <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":client/release" data-filterable-set=":client/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-authorized.html"><span><span>Authorized</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1193041594%2FConstructors%2F1285123853"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="329832346%2FConstructors%2F1285123853"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">webId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">grant<span class="token operator">: </span><a href="../../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-app-grant/index.html">AppGrant</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -119,7 +119,22 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="129646450%2FProperties%2F1285123853" anchor-label="webId" id="129646450%2FProperties%2F1285123853" data-filterable-set=":client/release"></a>
+        <div class="table"><a data-name="-1954957691%2FProperties%2F1285123853" anchor-label="grant" id="-1954957691%2FProperties%2F1285123853" data-filterable-set=":client/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="grant.html"><span><span>grant</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1954957691%2FProperties%2F1285123853"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="grant.html">grant</a><span class="token operator">: </span><a href="../../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-app-grant/index.html">AppGrant</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="129646450%2FProperties%2F1285123853" anchor-label="webId" id="129646450%2FProperties%2F1285123853" data-filterable-set=":client/release"></a>
           <div class="table-row table-row_content" data-filterable-current=":client/release" data-filterable-set=":client/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">

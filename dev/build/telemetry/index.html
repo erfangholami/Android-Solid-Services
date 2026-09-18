@@ -15,7 +15,7 @@
         <link rel="prev" href="../type-index/">
       
       
-        <link rel="next" href="../../reference/errors/">
+        <link rel="next" href="../hosting/">
       
       
         
@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="../../project/releases/">release notes</a> before upgrading.
 
           </div>
@@ -612,7 +612,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -646,6 +646,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -738,6 +742,34 @@
     
   
     Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
   
 
     
@@ -1127,6 +1159,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1289,6 +1349,8 @@
       
         
       
+        
+      
     
     
     
@@ -1377,6 +1439,34 @@
     
   
     Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
   
 
     
@@ -1488,7 +1578,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -1757,7 +1847,7 @@ it. What you monitor stays your decision.</p>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
 </span></code></pre></div>
 <ol>
-<li>Gate it on a build flag. Android Solid Services itself installs its sink in release builds only
+<li>Gate it on a build flag. Solid Share, the host app, installs its sink in release builds only
    and leaves the no-op in place for debug, so development never ships noise to a dashboard.</li>
 </ol>
 <p><code>Telemetry.uninstall()</code> puts the no-op back — useful when a user withdraws consent at runtime.</p>
@@ -1941,21 +2031,13 @@ tests so a sink must implement them.</p>
 <details class="info" id="how-it-flows">
 <summary>How it flows</summary>
 <h4 id="installing-a-sink">Installing a sink<a class="headerlink" href="#installing-a-sink" title="Permanent link">¶</a></h4>
-<p>The host calls <code>Telemetry.install(sink)</code> from <code>Application.onCreate</code>. This repository's own
-<code>:app</code> host is the reference in both directions:</p>
-<ul>
-<li>The <code>gms</code> flavor installs <code>FirebaseTelemetrySink</code>
-  (<code>app/src/gms/java/com/erfangholami/androidsolidservices/telemetry/FirebaseTelemetrySink.kt:11</code>),
-  which maps spans to Firebase Performance <code>Trace</code>s, network spans to <code>HttpMetric</code>s, and
-  exceptions, breadcrumbs and keys to Crashlytics. Installation is gated on
-  <code>BuildConfig.TELEMETRY_ENABLED</code> and skipped entirely when Firebase fails to initialise
-  (<code>app/src/gms/java/com/erfangholami/androidsolidservices/telemetry/TelemetryInstaller.kt:13</code>).</li>
-<li>The <code>foss</code> flavor installs nothing, so the no-op sink stays and the libraries emit nothing
-  (<code>app/src/foss/java/com/erfangholami/androidsolidservices/telemetry/TelemetryInstaller.kt:13</code>).
-  That absence is a decision with a stated reason: F-Droid rejects proprietary analytics, and
-  its Tracking anti-feature covers any reporting that is not opt-in and off by default, so a
-  future FOSS sink has to be consent-gated.</li>
-</ul>
+<p>The host calls <code>Telemetry.install(sink)</code> from <code>Application.onCreate</code>. Solid Share, the host app,
+is the reference in both directions: its <code>gms</code> flavour installs a Firebase sink in release builds,
+mapping spans to Performance traces and exceptions, breadcrumbs and keys to Crashlytics; its
+<code>foss</code> flavour installs nothing, so the no-op sink stays and the libraries emit nothing. That
+absence is a decision with a stated reason: F-Droid rejects proprietary analytics, and its
+Tracking anti-feature covers any reporting that is not opt-in and off by default, so a future FOSS
+sink has to be consent-gated.</p>
 <h4 id="what-a-consumer-then-sees">What a consumer then sees<a class="headerlink" href="#what-a-consumer-then-sees" title="Permanent link">¶</a></h4>
 <p>Once a sink is in, every pod request arrives as a network span: <code>SolidHttpClient.send</code> opens it
 with origin and method before the call, sets the request body size, then the status code,
@@ -1965,7 +2047,7 @@ Logins and token refreshes arrive as the <code>solid_auth_login</code> and <code
 Handled failures arrive through <code>recordException</code> with <code>operation</code> attributes; breadcrumbs
 arrive through <code>log</code> and attach to whatever report comes next. In the <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> host, every <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> call
 stamps <code>calling_app</code> with the caller's package name before doing anything else
-(<code>app/src/main/java/com/erfangholami/androidsolidservices/services/dispatch/AidlDispatch.kt:40</code>),
+(<code>host/src/main/java/com/erfangholami/androidsolidservices/host/dispatch/AidlDispatch.kt</code>),
 so a report can be traced to the integrating app that triggered it.</p>
 </details>
 <details class="info" id="what-is-reported">
@@ -2033,9 +2115,14 @@ so a report can be traced to the integrating app that triggered it.</p>
 <td>a <abbr title="Demonstration of Proof-of-Possession — binds an access token to a key only the holder has">DPoP</abbr> key exists in the Keystore but cannot be loaded (<code>DPoPGenerator.kt:202</code>)</td>
 </tr>
 <tr>
-<td><code>aidl.dispatch</code> / <code>aidl.dataModule</code></td>
-<td><code>error_type</code>, <code>calling_app</code></td>
-<td>an uncaught throwable in the <abbr title="Inter-process communication — how your app talks to Android Solid Services">IPC</abbr> service host (<code>AidlDispatch.kt:55</code>, <code>:98</code>)</td>
+<td><code>aidl.dispatch</code> / <code>aidl.callback</code></td>
+<td><code>error_type</code>, <code>calling_app</code> / <code>callback_method</code></td>
+<td>an uncaught throwable in a host binder, or a callback the calling app can no longer receive (<code>host/.../dispatch/AidlDispatch.kt</code>)</td>
+</tr>
+<tr>
+<td><code>host.grants.decode</code></td>
+<td>—</td>
+<td>the host's grant store holds a value that no longer parses; it reads as no grants (<code>host/.../grant/DataStoreAppGrantStore.kt</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -2089,15 +2176,14 @@ plus message (<code>SolidHttpClient.kt:666</code>), and a request refused for la
 <code>Throwable</code> itself to the sink, message included, and the <code>solid.http</code> transport breadcrumb
 carries the <code>IOException</code>'s own message — which, coming from OkHttp, can name the host it could
 not reach. The invariants above are enforced on everything the library composes: every span
-name, attribute, key and breadcrumb string. The reference Firebase sink additionally clamps
-attribute values to 100 characters and sanitises names on its side of the seam
-(<code>FirebaseTelemetrySink.kt:121</code>, <code>:107</code>).</p>
+name, attribute, key and breadcrumb string. Solid Share's Firebase sink additionally clamps
+attribute values to 100 characters and sanitises names on its side of the seam.</p>
 </details>
 <details class="info" id="extension-points">
 <summary>Extension points</summary>
 <ul>
 <li><strong>Any backend is one class.</strong> Implement <code>TelemetrySink</code> — five methods — and install it from
-  <code>Application.onCreate</code>. <code>FirebaseTelemetrySink</code> is the worked example of sink-side duties:
+  <code>Application.onCreate</code>. Solid Share's Firebase sink is the worked example of sink-side duties:
   mapping the span contracts onto the backend's types, sanitising names to the backend's
   charset and length limits, clamping values, and guarding against use-after-stop.</li>
 <li><strong>Consent is the host's job, and the seam has no opinion.</strong> Nothing reports until <code>install</code>,
@@ -2164,7 +2250,7 @@ privacy posture rather than protocol:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 11:50:24 UTC">September 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 15, 2026 10:06:09 UTC">September 15, 2026</span>
   </span>
 
     
@@ -2228,13 +2314,13 @@ privacy posture rather than protocol:</p>
         
         
           
-          <a href="../../reference/errors/" class="md-footer__link md-footer__link--next" aria-label="Next: Error codes">
+          <a href="../hosting/" class="md-footer__link md-footer__link--next" aria-label="Next: Hosting the services">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Error codes
+                Hosting the services
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2273,7 +2359,7 @@ privacy posture rather than protocol:</p>
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

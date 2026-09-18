@@ -3,7 +3,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+        <meta name="description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
       
       
         <meta name="author" content="Erfan Gholami">
@@ -63,7 +63,7 @@
   
 <meta property="og:type" content="website">
 <meta property="og:title" content="Releases - Android Solid Services">
-<meta property="og:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="og:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="og:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/releases.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -71,7 +71,7 @@
 <meta property="og:url" content="https://androidsolidservices.erfangholami.com/dev/project/releases/">
 <meta property="twitter:card" content="summary_large_image">
 <meta property="twitter:title" content="Releases - Android Solid Services">
-<meta property="twitter:description" content="Single Solid sign-in for the Android ecosystem — SDK and app for accessing Solid pods.">
+<meta property="twitter:description" content="The Solid SDK for Android — sign in once through Solid Share, and reach the user's pod from any app with a scoped grant.">
 <meta property="twitter:image" content="https://androidsolidservices.erfangholami.com/dev/assets/images/social/project/releases.png">
 <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="./">release notes</a> before upgrading.
 
           </div>
@@ -612,7 +612,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -644,6 +644,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -733,6 +737,34 @@
     
   
     Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
   
 
     
@@ -970,6 +1002,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../build/hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1134,6 +1194,8 @@
       
         
       
+        
+      
     
     
     
@@ -1245,6 +1307,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../troubleshooting/" class="md-nav__link">
         
   
@@ -1333,6 +1423,78 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
+  <a href="#v081-18th-september-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.8.1 — 18th September 2026
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v080-15th-september-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.8.0 — 15th September 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.8.0 — 15th September 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migrating-from-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrating from 0.7
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v072-12th-september-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1345,7 +1507,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#bug-fixes" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -1373,7 +1535,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_1" class="md-nav__link">
+  <a href="#bug-fixes_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -1434,7 +1596,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_2" class="md-nav__link">
+  <a href="#bug-fixes_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -1484,7 +1646,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_3" class="md-nav__link">
+  <a href="#bug-fixes_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -1556,7 +1718,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_4" class="md-nav__link">
+  <a href="#bug-fixes_5" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -1667,7 +1829,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_5" class="md-nav__link">
+  <a href="#bug-fixes_6" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -1811,7 +1973,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_6" class="md-nav__link">
+  <a href="#bug-fixes_7" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug Fixes
@@ -1954,7 +2116,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -2002,6 +2164,78 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
+  <a href="#v081-18th-september-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.8.1 — 18th September 2026
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v080-15th-september-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.8.0 — 15th September 2026
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.8.0 — 15th September 2026">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migrating-from-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrating from 0.7
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v072-12th-september-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2014,7 +2248,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#bug-fixes" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -2042,7 +2276,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_1" class="md-nav__link">
+  <a href="#bug-fixes_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -2103,7 +2337,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_2" class="md-nav__link">
+  <a href="#bug-fixes_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -2153,7 +2387,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_3" class="md-nav__link">
+  <a href="#bug-fixes_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -2225,7 +2459,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_4" class="md-nav__link">
+  <a href="#bug-fixes_5" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -2336,7 +2570,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_5" class="md-nav__link">
+  <a href="#bug-fixes_6" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -2480,7 +2714,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes_6" class="md-nav__link">
+  <a href="#bug-fixes_7" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug Fixes
@@ -2651,12 +2885,117 @@
 <ul>
 <li><a href="https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/client"><code>client</code></a></li>
 <li><a href="https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/api"><code>api</code></a></li>
+<li><a href="https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/host"><code>host</code></a> — since 0.8.0</li>
 <li><a href="https://central.sonatype.com/artifact/com.erfangholami.androidsolidservices/shared"><code>shared</code></a></li>
 </ul>
 <hr>
+<div class="admonition tip">
+<p class="admonition-title">Coming from an older version?</p>
+<p><a href="../upgrading/">The upgrade guide</a> is the route from any version to 0.8.1, with the build
+requirements and the order to do things in. This page is the detail behind it.</p>
+</div>
+<h2 id="v081-18th-september-2026">v0.8.1 — 18th September 2026<a class="headerlink" href="#v081-18th-september-2026" title="Permanent link">¶</a></h2>
+<p>A one-fix release: a host can read a granted app's name and icon again. No API or wire change.</p>
+<ul>
+<li>Narrowed the <code>api</code> consumer R8 rules again: the 19 <code>io.jsonwebtoken.impl</code> class names jjwt-api
+  0.13.0 carries as string literals are kept (17 by constructor, 2 by static method), plus the two
+  compression codecs that arrive through <code>META-INF/services</code>, instead of every class and
+  constructor under <code>io.jsonwebtoken.impl</code> (350 classes in a minified app).</li>
+<li>Dropped the <code>shared</code> CREATOR keep rule; AGP's default ProGuard files already keep <code>CREATOR</code>
+  on every Parcelable.</li>
+<li>Widened the <code>shared</code> name keep from <code>shared.model.**</code> to every Parcelable in the library
+  namespace, because a host's Bundle envelope stamps the runtime class name of whatever it
+  carries. Names only; unused classes still shrink.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Rebuild to become visible to the host</p>
+<p>Android 11 hides packages from one another. <code>client</code> has always declared <code>&lt;queries&gt;</code> for the
+host, so your app can find Solid Share; nothing pointed back, so Solid Share could not read your
+app's label or icon. It named your app by its package and showed a live grant as "not
+installed". <code>client</code> 0.8.1 exports an inert <code>SolidClientMarkerService</code> that the host matches in
+its own <code>&lt;queries&gt;</code>. Both halves merge from the library — nothing to add to your manifest, and
+no code references the class.</p>
+</div>
+<h2 id="v080-15th-september-2026">v0.8.0 — 15th September 2026<a class="headerlink" href="#v080-15th-september-2026" title="Permanent link">¶</a></h2>
+<p>Solid Share becomes the host app, app grants gain a scope, and the Android Solid Services app is
+retired. Source- and wire-breaking: <code>client</code> 0.8.0 talks to Solid Share only, and an app built
+against 0.7.x cannot talk to a 0.8.0 host.</p>
+<div class="admonition warning">
+<p class="admonition-title">The Android Solid Services app stopped at 0.7.2</p>
+<p>0.7.2 is the last release of the app, and it works with the 0.7.2 libraries only. From 0.8.0
+the app that holds the accounts and hosts the services is <a href="https://solidshare.app">Solid Share</a>.
+Users install Solid Share, sign in, and approve each app again the first time it asks; grants
+do not move across, because the old ones had no scope to carry. The Client ID Document at
+<code>client.jsonld</code> stays hosted so installed 0.7.2 apps keep signing in.</p>
+</div>
+<h3 id="migrating-from-07">Migrating from 0.7<a class="headerlink" href="#migrating-from-07" title="Permanent link">¶</a></h3>
+<ol>
+<li>Bump <code>client</code> to 0.8.0 and tell your users to install Solid Share.</li>
+<li>Raise your <code>compileSdk</code> to 37. The libraries are built against <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> 37, and their AAR metadata
+   demands the same of anything that depends on them, so a lower value stops the build with
+   <em>"requires libraries and applications that depend on it to compile against version 37 or
+   later"</em>. <code>minSdk</code> stays 26, and <code>targetSdk</code> remains your own choice.</li>
+<li>Check <code>Solid.isHostInstalled(context)</code> before launching sign-in; offer
+   <code>Solid.hostInstallIntent(context)</code> when it is <code>false</code>.</li>
+<li>Give <code>AuthorizeWithSolid</code> an <code>AccessRequest</code> naming the least your app needs — a level on the
+   whole pod, on storage-relative paths, or on a data module. Without one the app asks for the
+   whole pod at Edit; sharing and the inbox need Full access. Read the grant from
+   <code>SolidSignInResult.Authorized.grant</code>.</li>
+<li><code>SolidSignInClient.getAccount</code> and <code>disconnectFromSolid</code> are <code>suspend</code> functions; <code>getAccount</code>
+   returns the grant in <code>SolidSignInAccount.grant</code> (the <code>fullAccess</code> flag is gone) and
+   <code>disconnectFromSolid</code> returns <code>Boolean</code>. <code>getInstance(context, hasInstalled…)</code> on the sign-in
+   and resource clients is now <code>getInstance(context)</code>.</li>
+<li>Treat <code>NotPermissionException</code> as "outside the granted scope": read the grant, explain, and
+   ask again. Its message names what is held and what the call needs.</li>
+<li>Nothing has to be collected before a call any more: every <code>client</code> call waits for its
+   binding. <code>requestLogin</code>, <code>SolidServicesDrawPermissionDeniedException</code> and
+   <code>ExceptionsErrorCode.DRAW_OVERLAY_NOT_PERMITTED</code> are gone; <code>SolidAuthorization.ACCOUNT_TYPE</code>
+   is <code>SolidHostContract.ACCOUNT_TYPE</code>.</li>
+</ol>
+<h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Scoped app grants.</strong> A grant is a set of entries, each a target at a level: the whole pod, a
+  resource with its subtree, or a data module, at View, Add, Edit or Full access. Every verb of
+  every service is checked against it; the old host guarded the resource service only. The
+  <a href="../../build/app-access/">App access</a> page has the verb table.</li>
+<li><strong><code>host</code>, a fourth library.</strong> Everything an app needs to host the services other apps reach
+  through <code>client</code>: the five <abbr title="Android Interface Definition Language — how Android describes a cross-process interface">AIDL</abbr> binders, the scoped access policy, the grant store, the consent
+  protocol and a service base. Solid Share is built on it.</li>
+<li><strong>Host discovery by intent action.</strong> <code>client</code> binds each service by action inside Solid Share's
+  package (<code>SolidHostContract</code>), so the host is free to name its classes; a missing host fails
+  every call at once with <code>SolidAppNotFoundException</code>.</li>
+<li><strong><code>rootContainers(webId)</code></strong> on the contacts and tickets modules: where a module lives on a pod.</li>
+</ul>
+<h3 id="security">Security<a class="headerlink" href="#security" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>The host's signing key is checked, not only its package name.</strong> A package name is not an
+  identity: on a device without Solid Share, an app sideloaded under its name would have been
+  trusted with the user's pod. The <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> now compares the installed host's signing certificate
+  against the digest it ships and refuses a mismatch, saying so rather than reporting the host
+  as missing. A debug build of the calling app skips the check, so a locally built host still
+  works. See <a href="../../build/hosting/">Hosting the services</a>.</li>
+</ul>
+<h3 id="bug-fixes">Bug fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Inbox discovery on Inrupt.</strong> Inrupt serves the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document read-only, so the inbox link
+  could only live in the extended profile on the pod — a document private by default, which left
+  every PodSpaces inbox undiscoverable: no share notification arrived, and every access request
+  failed with <code>NoInbox</code>. <code>ensureInbox()</code> now makes the advertising document publicly readable
+  (never the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document itself), and a sender that finds no inbox falls back to the
+  conventional <code>{storage}inbox/</code> from the public <code>pim:storage</code>, reporting a refusal there as
+  <code>NoInbox</code>. See <a href="../troubleshooting/">Troubleshooting</a>.</li>
+<li><strong>Profile edits on Inrupt.</strong> <code>updateProfile()</code> and <code>setAvatar()</code> patched the read-only <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>
+  document. The new <code>SolidResourceManager.writableProfileDocument(webId)</code> picks the editable
+  document — by <code>WAC-Allow</code>, else the linked profile on the user's storage — and both write there;
+  an avatar uploaded beside a private profile is granted public read.</li>
+<li><strong>The account profile includes the extended profile.</strong> The <code>WebId</code> held for a signed-in account
+  now folds in the documents the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> links through <code>foaf:isPrimaryTopicOf</code> / <code>rdfs:seeAlso</code>,
+  read with the account's own credentials, so a name kept only there is no longer blank. Identity
+  checks at sign-in still trust the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> document alone.</li>
+</ul>
 <h2 id="v072-12th-september-2026">v0.7.2 — 12th September 2026<a class="headerlink" href="#v072-12th-september-2026" title="Permanent link">¶</a></h2>
 <p>A one-fix release: Community Solid Server pods no longer break every second read.</p>
-<h3 id="bug-fixes">Bug fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">¶</a></h3>
+<h3 id="bug-fixes_1">Bug fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">¶</a></h3>
 <ul>
 <li><strong>A <code>304 Not Modified</code> that carries a <code>Content-Length</code> no longer fails the request.</strong> Community
   Solid Server answers a conditional <code>GET</code> for a resource served in its stored format with a <code>304</code>
@@ -2668,7 +3007,7 @@
 <h2 id="v071-12th-september-2026">v0.7.1 — 12th September 2026<a class="headerlink" href="#v071-12th-september-2026" title="Permanent link">¶</a></h2>
 <p>A maintenance release driven by Solid Share's crash reports. Nothing changes on the wire or in the
 public API: pin <code>0.7.1</code> and rebuild.</p>
-<h3 id="bug-fixes_1">Bug fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">¶</a></h3>
+<h3 id="bug-fixes_2">Bug fixes<a class="headerlink" href="#bug-fixes_2" title="Permanent link">¶</a></h3>
 <ul>
 <li><strong>A signed-out account no longer floods telemetry.</strong> A request for a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> with no usable
   session — never signed in, signed out, or expired — used to trip the transport's auth-header
@@ -2722,7 +3061,7 @@ be updated together.</p>
 <li>The Firebase Performance Gradle plugin is gone, its <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> kept.</li>
 <li>The documentation site is organised by capability, with a published <code>llms.txt</code>.</li>
 </ul>
-<h3 id="bug-fixes_2">Bug fixes<a class="headerlink" href="#bug-fixes_2" title="Permanent link">¶</a></h3>
+<h3 id="bug-fixes_3">Bug fixes<a class="headerlink" href="#bug-fixes_3" title="Permanent link">¶</a></h3>
 <ul>
 <li>Sessions survive a JWKS outage, a pruned keystore, and having no refresh token.</li>
 <li>A refresh that finishes inline no longer corrupts the in-flight map.</li>
@@ -2764,7 +3103,7 @@ sessions stop expiring after a day. Several release-only defects are fixed.</p>
 <li><strong>The <code>client</code> <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> gained a test suite</strong> — 36 unit and 152 instrumented tests driving every call
   across a real binder, running on an emulator in CI.</li>
 </ul>
-<h3 id="bug-fixes_3">Bug fixes<a class="headerlink" href="#bug-fixes_3" title="Permanent link">¶</a></h3>
+<h3 id="bug-fixes_4">Bug fixes<a class="headerlink" href="#bug-fixes_4" title="Permanent link">¶</a></h3>
 <ul>
 <li><strong>Metadata calls failed in release builds.</strong> R8 renamed the parcelable models, and their names
   travel inside the parcel, so <code>head</code>, <code>headPublic</code>, <code>readContainer</code> and enriched <code>listContainer</code>
@@ -2838,7 +3177,7 @@ consumers (the project is pre-1.0 and unstable).</p>
 <li>Build and tooling: ktlint and detekt in CI on every PR, a published
   <a href="../../api/">API reference</a>, <code>targetSdk</code> 36, AGP and <abbr title="Software development kit — here, the `client` and `api` libraries">SDK</abbr> 37.</li>
 </ul>
-<h3 id="bug-fixes_4">Bug fixes<a class="headerlink" href="#bug-fixes_4" title="Permanent link">¶</a></h3>
+<h3 id="bug-fixes_5">Bug fixes<a class="headerlink" href="#bug-fixes_5" title="Permanent link">¶</a></h3>
 <ul>
 <li><strong>Login</strong>: restored the lowercase Solid-<abbr title="OpenID Connect — the authentication layer Solid sign-in is built on">OIDC</abbr> <code>webid</code> scope and ID-token claim, and 303 redirects
   are now followed when resolving a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr>.</li>
@@ -2913,7 +3252,7 @@ security-focused overhaul of authentication and a clean-architecture refactor of
   self-healing <code>ServiceConnector</code> and <strong>unified its error contract</strong> so every method throws
   <code>SolidException</code> (<strong>source-breaking</strong> for resource calls).</li>
 </ul>
-<h3 id="bug-fixes_5">Bug fixes<a class="headerlink" href="#bug-fixes_5" title="Permanent link">¶</a></h3>
+<h3 id="bug-fixes_6">Bug fixes<a class="headerlink" href="#bug-fixes_6" title="Permanent link">¶</a></h3>
 <ul>
 <li>Fixed adding received shares from notifications when a cross-pod access probe fails.</li>
 <li>Fixed <abbr title="Access Control Policy — the policy-based authorization framework, used by Inrupt ESS">ACP</abbr> grants to write the implied <abbr title="Access Control List — the resource that says who may read or write a Solid resource">ACL</abbr> modes, matching <abbr title="Web Access Control — the ACL-based authorization system most pod servers use">WAC</abbr> behaviour.</li>
@@ -3001,7 +3340,7 @@ security-focused overhaul of authentication and a clean-architecture refactor of
 <li><strong>ProGuard + minification</strong> — release builds of the <abbr title="Android Solid Services — the host app that holds the accounts">ASS</abbr> app are now minified.</li>
 <li><strong>Extended vocabulary</strong> — new <abbr title="Resource Description Framework — the data model pods store">RDF</abbr> vocabulary constants added to the <code>Shared</code> module for broader developer use.</li>
 </ul>
-<h3 id="bug-fixes_6">Bug Fixes<a class="headerlink" href="#bug-fixes_6" title="Permanent link">¶</a></h3>
+<h3 id="bug-fixes_7">Bug Fixes<a class="headerlink" href="#bug-fixes_7" title="Permanent link">¶</a></h3>
 <ul>
 <li>Fixed wrong Dublin Core namespace in the Contacts data module; old data using the incorrect namespace is still readable.</li>
 <li>Fixed <code>ETag</code> header name casing.</li>
@@ -3095,7 +3434,7 @@ security-focused overhaul of authentication and a clean-architecture refactor of
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 17:45:25 UTC">September 12, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 18, 2026 13:58:48 UTC">September 18, 2026</span>
   </span>
 
     
@@ -3204,7 +3543,7 @@ security-focused overhaul of authentication and a clean-architecture refactor of
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

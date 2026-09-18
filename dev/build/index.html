@@ -118,8 +118,8 @@
               </button>
             
             
-  Android Solid Services is pre-1.0 — the SDK and the IPC contract can change between minor
-  versions. Pin a version, and read the
+  From 0.8.0 the host app is <a href="https://solidshare.app">Solid Share</a>; the Android Solid
+  Services app stopped at 0.7.2. The SDK is pre-1.0, so pin a version and read the
   <a href="../project/releases/">release notes</a> before upgrading.
 
           </div>
@@ -612,7 +612,7 @@
   <span class="md-ellipsis">
     
   
-    Install the app
+    Install Solid Share
   
 
     
@@ -646,6 +646,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -738,6 +742,34 @@
     
   
     Sign in &amp; accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="app-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App access
   
 
     
@@ -975,6 +1007,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="hosting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosting the services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1137,6 +1197,8 @@
       
         
       
+        
+      
     
     
     
@@ -1225,6 +1287,34 @@
     
   
     Adding a data module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade guide
   
 
     
@@ -1336,7 +1426,7 @@
   <span class="md-ellipsis">
     
   
-    Privacy Policy
+    Privacy
   
 
     
@@ -1491,6 +1581,11 @@ see <a href="../start/client-or-api/">Client or API?</a> if you have not chosen 
 <p>Getting a <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> to call with, staying signed in, and handling several accounts on one device.</p>
 </li>
 <li>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 11c0 5.55-3.84 10.74-9 12-5.16-1.26-9-6.45-9-12V5l9-4 9 4zm-9 10c3.75-1 7-5.46 7-9.78V6.3l-7-3.12L5 6.3v4.92C5 15.54 8.25 20 12 21m0-15a3 3 0 0 1 3 3c0 1.31-.83 2.42-2 2.83V14h2v2h-2v2h-2v-6.17A2.99 2.99 0 0 1 9 9a3 3 0 0 1 3-3m0 2a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1"></path></svg></span> <strong><a href="app-access/">App access</a></strong></p>
+<hr>
+<p>What your app asks the user for — a level on the whole pod, on folders, or on a data module — and what each verb needs.</p>
+</li>
+<li>
 <p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm0 2h7v5h5v11H6zm2 8v2h8v-2zm0 4v2h5v-2z"></path></svg></span> <strong><a href="resources/">Resources &amp; containers</a></strong></p>
 <hr>
 <p>Read, write, patch, list, copy and stream. The verbs everything else is built on.</p>
@@ -1535,12 +1630,15 @@ see <a href="../start/client-or-api/">Client or API?</a> if you have not chosen 
 <h2 id="two-things-that-apply-everywhere">Two things that apply everywhere<a class="headerlink" href="#two-things-that-apply-everywhere" title="Permanent link">¶</a></h2>
 <p><strong>Every call takes a <code>webId</code> first.</strong> A device can hold several signed-in Solid identities at
 once, so the <abbr title="A URI that identifies a person and dereferences to their public profile">WebID</abbr> chooses which session signs the request. Keep the one you got at sign-in.</p>
-<p><strong>Wait for the connection on the <code>client</code> path.</strong> Each client exposes a <code>Flow&lt;Boolean&gt;</code> that
-emits <code>true</code> once its bound service is connected. Collect it before your first call, or you will
-race the binding.</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">resources</span><span class="p">.</span><span class="na">resourceServiceConnectionState</span><span class="p">().</span><span class="na">first</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="p">}</span>
+<p><strong>Every <code>client</code> call needs a grant.</strong> The user approves what your app may do on Solid Share's
+consent screen, and a call outside that scope fails with <code>NotPermissionException</code>. Ask for the
+least you need; <a href="app-access/">App access</a> has the verb table.</p>
+<p><strong>The <code>client</code> path waits for its binding by itself.</strong> Every call is a <code>suspend</code> function that
+waits for the bound service, so nothing has to be collected first. Each client still exposes a
+<code>Flow&lt;Boolean&gt;</code> of its connection for UI that wants to show it:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">resources</span><span class="p">.</span><span class="na">resourceServiceConnectionState</span><span class="p">().</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">connected</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">render</span><span class="p">(</span><span class="n">connected</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<p>The <code>api</code> path has no such step — there is no service to bind to.</p>
+<p>The <code>api</code> path has no binding at all — there is no service between your app and the pod.</p>
 <h2 id="not-finding-it-here">Not finding it here?<a class="headerlink" href="#not-finding-it-here" title="Permanent link">¶</a></h2>
 <ul>
 <li>The generated <a href="../api/">API reference</a> has every signature.</li>
@@ -1571,7 +1669,7 @@ race the binding.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 5, 2026 18:04:21 UTC">August 5, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 15, 2026 10:06:09 UTC">September 15, 2026</span>
   </span>
 
     
@@ -1618,7 +1716,7 @@ race the binding.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer">
         
           
-          <a href="../start/install-app/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Install the app">
+          <a href="../start/install-app/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Install Solid Share">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
@@ -1628,7 +1726,7 @@ race the binding.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Install the app
+                Install Solid Share
               </div>
             </div>
           </a>
@@ -1680,7 +1778,7 @@ race the binding.</p>
     
     
     
-    <a href="https://github.com/erfangholami/Android-Solid-Services/releases" target="_blank" rel="noopener" title="Download the app" class="md-social__link">
+    <a href="https://solidshare.app" target="_blank" rel="noopener" title="Solid Share, the host app" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M420.5 253.9a24 24 0 1 1 0 48 24 24 0 1 1 0-48m-265.1 0a24 24 0 1 1 0 48 24 24 0 1 1 0-48m273.7-96.5 47.9-83c.8-1.1 1.3-2.4 1.5-3.8s.2-2.7-.1-4.1-.9-2.6-1.7-3.7-1.8-2-3-2.7-2.5-1.1-3.9-1.3-2.7 0-4 .4-2.5 1.1-3.6 1.9-1.9 2-2.5 3.2l-48.5 84.1C372.4 131 330.4 122 287.9 122s-84.5 9-123.3 26.4l-48.4-84c-.6-1.2-1.5-2.3-2.5-3.2s-2.3-1.5-3.6-1.9-2.7-.5-4-.4-2.7.6-3.9 1.3-2.2 1.6-3 2.7-1.4 2.4-1.7 3.7-.3 2.7-.1 4.1.8 2.6 1.5 3.8l47.9 83C64.5 202.2 8.2 285.5 0 384h576c-8.2-98.5-64.5-181.8-146.9-226.6"></path></svg>
     </a>
   

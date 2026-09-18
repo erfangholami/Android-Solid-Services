@@ -10,13 +10,12 @@ Calls return `SolidResult<T>`. Unwrap with `getOrThrow()` to get the same except
 
 ```text
 SolidException
-├── SolidAppNotFoundException                    — Android Solid Services is not installed
+├── SolidAppNotFoundException                    — Solid Share is not installed
 ├── SolidServiceConnectionException              — the IPC binding failed or dropped
 ├── SolidNotLoggedInException                    — no usable session for that WebID
-├── SolidServicesDrawPermissionDeniedException   — legacy; only the removed requestLogin path
 ├── SolidResourceException
 │   ├── NotSupportedClassException               — class does not extend RDFResource/NonRDFResource
-│   ├── NotPermissionException                   — your app has no grant for this account
+│   ├── NotPermissionException                   — no grant for this account, or the call is outside its scope
 │   ├── NullWebIdException                       — no WebID supplied for the call
 │   └── UnknownException                         — unexpected server or protocol error
 └── SolidSharingException
@@ -34,20 +33,20 @@ SolidException
 
 ### Setup and connection
 
-| Exception                         | Cause                                                                                                                                                                              | Fix                                                                                                                                  |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `SolidAppNotFoundException`       | the host app is not on the device                                                                                                                                                  | prompt to [install it](https://androidsolidservices.erfangholami.com/dev/start/install-app/index.md), or switch to the `api` library |
-| `SolidServiceConnectionException` | the binding failed, or the host app was stopped or updated                                                                                                                         | the connector rebinds itself; collect the connection-state flow and retry once it emits `true`                                       |
-| `SolidNotLoggedInException`       | no usable session for that WebID — signed out, removed in Settings, or expired; the request is refused before it reaches the network (`api` returns `SolidError.NotAuthenticated`) | send the user back through sign-in                                                                                                   |
-| `NullWebIdException`              | a call was made with no WebID                                                                                                                                                      | keep the WebID you got at sign-in and pass it to every call                                                                          |
+| Exception                         | Cause                                                                                                                                                                              | Fix                                                                      |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `SolidAppNotFoundException`       | Solid Share is not on the device, or only the retired Android Solid Services app is; the message says which                                                                        | offer `Solid.hostInstallIntent(context)`, or switch to the `api` library |
+| `SolidServiceConnectionException` | the binding dropped and did not come back within the timeout, or the host was stopped or updated                                                                                   | the connector rebinds itself; retry the call                             |
+| `SolidNotLoggedInException`       | no usable session for that WebID — signed out, removed in Settings, or expired; the request is refused before it reaches the network (`api` returns `SolidError.NotAuthenticated`) | send the user back through sign-in                                       |
+| `NullWebIdException`              | a call was made with no WebID                                                                                                                                                      | keep the WebID you got at sign-in and pass it to every call              |
 
 ### Permission
 
-| Exception                 | Cause                                                    | Fix                                                                                                                 |
-| ------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `NotPermissionException`  | the user has not granted your app access to this account | ask again; the grant dialog is shown by the host app, and the user can revoke at any time                           |
-| `AccessDeniedException`   | the pod refused the access change you asked for          | usually you are not the owner, or the server enforces a policy you cannot override                                  |
-| A bare `403` from a write | signed in, but without write access there                | see [Sharing](https://androidsolidservices.erfangholami.com/dev/build/sharing/index.md) — the owner has to grant it |
+| Exception                 | Cause                                                                                                                                                                  | Fix                                                                                                                                                                                                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NotPermissionException`  | the user has not granted your app this account, or the call needs a level or a target the grant does not cover; the message names what is held and what the call needs | launch `AuthorizeWithSolid` with an `AccessRequest` that names what you need — the consent screen is Solid Share's, and the user can narrow or revoke at any time; see [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md) |
+| `AccessDeniedException`   | the pod refused the access change you asked for                                                                                                                        | usually you are not the owner, or the server enforces a policy you cannot override                                                                                                                                                                               |
+| A bare `403` from a write | signed in, but without write access there                                                                                                                              | see [Sharing](https://androidsolidservices.erfangholami.com/dev/build/sharing/index.md) — the owner has to grant it                                                                                                                                              |
 
 A failure is not a denial
 

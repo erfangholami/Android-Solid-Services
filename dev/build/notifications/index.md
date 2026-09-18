@@ -15,11 +15,15 @@ There is no push subscription. Poll from a background worker (Android's floor is
 
 ## Setup
 
+Needs a whole-pod grant
+
+The inbox belongs to the account, so these verbs need a grant on the **whole pod**: View to read it, Edit to delete from it, and **Full access** to send anything as the user. See [App access](https://androidsolidservices.erfangholami.com/dev/build/app-access/index.md).
+
 build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:client:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:client:0.8.1")
 }
 ```
 
@@ -34,7 +38,7 @@ build.gradle.kts
 
 ```kotlin
 dependencies {
-    implementation("com.erfangholami.androidsolidservices:api:0.7.2")
+    implementation("com.erfangholami.androidsolidservices:api:0.8.1")
 }
 ```
 

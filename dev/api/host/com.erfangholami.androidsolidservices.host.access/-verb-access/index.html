@@ -1,0 +1,231 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>VerbAccess</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Android Solid Services
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":host/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":host/release" data-filter=":host/release">
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Android Solid Services
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="host::com.erfangholami.androidsolidservices.host.access/VerbAccess///PointingToDeclaration//332510288">
+  <div class="breadcrumbs"><a href="../../index.html">host</a><span class="delimiter">/</span><a href="../index.html">com.erfangholami.androidsolidservices.host.access</a><span class="delimiter">/</span><span class="current">VerbAccess</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Verb</span><wbr><span><span>Access</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":host/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">VerbAccess</a></div><p class="paragraph">The minimum level each group of verbs needs, in one place so the binders and the developer docs read the same table.</p><p class="paragraph">Resource verbs are checked on the resource they name. Data-module verbs are checked on the module, or on the container a verb takes explicitly. Sharing verbs that name a resource are checked on it; sharing and inbox verbs that touch the account as a whole are checked on the whole pod.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="1774584424%2FProperties%2F332510288" anchor-label="APPEND" id="1774584424%2FProperties%2F332510288" data-filterable-set=":host/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":host/release" data-filterable-set=":host/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-p-p-e-n-d.html"><span><span>APPEND</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1774584424%2FProperties%2F332510288"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":host/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-a-p-p-e-n-d.html">APPEND</a><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-access-level/index.html">AccessLevel</a></div><div class="brief "><p class="paragraph"><code class="lang-kotlin">createInContainer</code>, <code class="lang-kotlin">createInContainerRdf</code>, <code class="lang-kotlin">post</code>; a module's <code class="lang-kotlin">create</code> verbs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="939053267%2FProperties%2F332510288" anchor-label="INBOX_READ" id="939053267%2FProperties%2F332510288" data-filterable-set=":host/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":host/release" data-filterable-set=":host/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-b-o-x_-r-e-a-d.html"><span>INBOX_</span><wbr><span>READ</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="939053267%2FProperties%2F332510288"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":host/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-i-n-b-o-x_-r-e-a-d.html">INBOX_READ</a><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-access-level/index.html">AccessLevel</a></div><div class="brief "><p class="paragraph"><code class="lang-kotlin">listNotifications</code>, <code class="lang-kotlin">listRequests</code>, <code class="lang-kotlin">ensureInbox</code>, on the whole pod.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1248235297%2FProperties%2F332510288" anchor-label="INBOX_SEND" id="1248235297%2FProperties%2F332510288" data-filterable-set=":host/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":host/release" data-filterable-set=":host/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-b-o-x_-s-e-n-d.html"><span>INBOX_</span><wbr><span>SEND</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1248235297%2FProperties%2F332510288"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":host/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-i-n-b-o-x_-s-e-n-d.html">INBOX_SEND</a><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-access-level/index.html">AccessLevel</a></div><div class="brief "><p class="paragraph">Every <code class="lang-kotlin">send*</code> and <code class="lang-kotlin">recordDecision*</code> verb, on the whole pod.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="125222002%2FProperties%2F332510288" anchor-label="INBOX_WRITE" id="125222002%2FProperties%2F332510288" data-filterable-set=":host/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":host/release" data-filterable-set=":host/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-n-b-o-x_-w-r-i-t-e.html"><span>INBOX_</span><wbr><span>WRITE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="125222002%2FProperties%2F332510288"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":host/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-i-n-b-o-x_-w-r-i-t-e.html">INBOX_WRITE</a><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-access-level/index.html">AccessLevel</a></div><div class="brief "><p class="paragraph"><code class="lang-kotlin">deleteNotification</code>, <code class="lang-kotlin">compactInbox</code>, on the whole pod.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-114568020%2FProperties%2F332510288" anchor-label="READ" id="-114568020%2FProperties%2F332510288" data-filterable-set=":host/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":host/release" data-filterable-set=":host/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-a-d.html"><span><span>READ</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-114568020%2FProperties%2F332510288"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":host/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-r-e-a-d.html">READ</a><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-access-level/index.html">AccessLevel</a></div><div class="brief "><p class="paragraph"><code class="lang-kotlin">head</code>, <code class="lang-kotlin">read</code>, <code class="lang-kotlin">readRdf</code>, <code class="lang-kotlin">readContainer</code>, <code class="lang-kotlin">listContainer</code>, <code class="lang-kotlin">exists</code>, <code class="lang-kotlin">probeAccess</code>, <code class="lang-kotlin">readStream</code>; a module's <code class="lang-kotlin">get</code>, <code class="lang-kotlin">list</code>, photo and artifact reads; the source of a <code class="lang-kotlin">copy</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-743949383%2FProperties%2F332510288" anchor-label="SHARE" id="-743949383%2FProperties%2F332510288" data-filterable-set=":host/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":host/release" data-filterable-set=":host/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-h-a-r-e.html"><span><span>SHARE</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-743949383%2FProperties%2F332510288"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":host/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-s-h-a-r-e.html">SHARE</a><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-access-level/index.html">AccessLevel</a></div><div class="brief "><p class="paragraph">Every sharing verb, on the resource it names or on the whole pod.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1822700473%2FProperties%2F332510288" anchor-label="WRITE" id="1822700473%2FProperties%2F332510288" data-filterable-set=":host/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":host/release" data-filterable-set=":host/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-w-r-i-t-e.html"><span><span>WRITE</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1822700473%2FProperties%2F332510288"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":host/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="-w-r-i-t-e.html">WRITE</a><span class="token operator">: </span><a href="../../../Shared/com.erfangholami.androidsolidservices.shared.model.grant/-access-level/index.html">AccessLevel</a></div><div class="brief "><p class="paragraph"><code class="lang-kotlin">create</code>, <code class="lang-kotlin">createRdf</code>, <code class="lang-kotlin">update</code>, <code class="lang-kotlin">updateRdf</code>, <code class="lang-kotlin">patch</code>, <code class="lang-kotlin">delete</code>, <code class="lang-kotlin">deleteRdf</code>, <code class="lang-kotlin">deleteContainer</code>, <code class="lang-kotlin">ensureContainer</code>, <code class="lang-kotlin">putRaw</code>, <code class="lang-kotlin">writeStream</code>, <code class="lang-kotlin">rename</code>, the source of a <code class="lang-kotlin">move</code> and the destination of a <code class="lang-kotlin">copy</code> or <code class="lang-kotlin">move</code>; a module's <code class="lang-kotlin">update</code>, <code class="lang-kotlin">delete</code>, <code class="lang-kotlin">rename</code>, photo and artifact writes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

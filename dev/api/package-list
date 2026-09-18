@@ -2,12 +2,14 @@ $dokka.format:html-v1
 $dokka.linkExtension:html
 
 module:Shared
+com.erfangholami.androidsolidservices.shared.host
 com.erfangholami.androidsolidservices.shared.http
 com.erfangholami.androidsolidservices.shared.ipc
 com.erfangholami.androidsolidservices.shared.model.access
 com.erfangholami.androidsolidservices.shared.model.auth
 com.erfangholami.androidsolidservices.shared.model.contacts
 com.erfangholami.androidsolidservices.shared.model.datamodule
+com.erfangholami.androidsolidservices.shared.model.grant
 com.erfangholami.androidsolidservices.shared.model.profile
 com.erfangholami.androidsolidservices.shared.model.resource
 com.erfangholami.androidsolidservices.shared.model.sharing
@@ -31,5 +33,13 @@ com.erfangholami.androidsolidservices.api.notifications
 com.erfangholami.androidsolidservices.api.resource
 com.erfangholami.androidsolidservices.api.sharing
 module:client
+com.erfangholami.androidsolidservices.client
 com.erfangholami.androidsolidservices.client.sdk
 com.erfangholami.androidsolidservices.client.ui
+module:host
+com.erfangholami.androidsolidservices.host
+com.erfangholami.androidsolidservices.host.access
+com.erfangholami.androidsolidservices.host.authorize
+com.erfangholami.androidsolidservices.host.binder
+com.erfangholami.androidsolidservices.host.dispatch
+com.erfangholami.androidsolidservices.host.grant
