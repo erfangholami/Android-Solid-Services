@@ -44,7 +44,7 @@ For your app, that is one dependency and no authentication code at all.
 
     ---
 
-    Already using an older version? The route to 0.8.0, from wherever you are.
+    Already using an older version? The route to 0.8.1, from wherever you are.
 
 </div>
 

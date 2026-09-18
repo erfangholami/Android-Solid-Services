@@ -172,7 +172,7 @@ value type rather than okhttp / titanium-json-ld types (the JSON-LD codec is an 
 | Data module types | `AddressBook`, `AddressBookList`, `Contact`, `SolidContact`, `SolidContactList`, `ContactData`, `FullGroup`, `NewTicket`, `Ticket`, `TicketList` |
 | Sharing types     | `GivenShare`, `ReceivedShare`, `ShareMode`, `ShareReceiver`, `AccessGrant`, `CatalogEntry`, `ShareNotification`, `ShareRequest` (0.5.0) |
 | App-grant types   | `AccessLevel`, `GrantTarget`, `GrantEntry`, `AppGrant`, `AccessRequest`, `RequestedTarget`, `DataModuleId` (0.8.0) |
-| Host contract     | `SolidHostContract` — the host package, the account type and the six intent actions (0.8.0) |
+| Host contract     | `SolidHostContract` — the host package, the account type and the seven intent actions (0.8.0; the client marker 0.8.1) |
 | Patch type        | `N3Patch` — type-safe DSL and diff factory for [Solid N3 Patch](https://solidproject.org/TR/protocol#n3-patch) documents |
 | Vocabulary        | `LDP`, `VCARD`, `ACL`, `ACP`, `OWL`, `DC`, `RDFS`, `Solid` constants                                  |
 | AIDL parcelables  | Parcelable wrappers for cross-process data transfer (all definitions consolidated here)               |
@@ -206,6 +206,7 @@ IPC client library. No direct pod access — all calls are proxied through the h
 | `SolidNotificationsClient` | LDN inbox IPC client (0.5.0)                                                       |
 | `ServiceConnector`         | Shared, self-healing AIDL bind/callback plumbing (0.5.0)                           |
 | `HostResolver`             | Finds the host, and fails fast with a typed message when it is missing (0.8.0)     |
+| `SolidClientMarkerService` | An inert exported service the host matches in `<queries>`, so it can read this app's label and icon (0.8.1) |
 | `SolidException` hierarchy | Typed exceptions for all failure modes                                             |
 
 ### host (`com.erfangholami.androidsolidservices.host`)

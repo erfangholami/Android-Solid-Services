@@ -1,6 +1,6 @@
 ---
 title: Upgrade guide
-description: The route from any older version to 0.8.0, for both the client and the api library.
+description: The route from any older version to 0.8.1, for both the client and the api library.
 ---
 
 # Upgrade guide
@@ -20,7 +20,7 @@ the release that replaces it, and consumers update. See the
 
 ## Build requirements
 
-Every jump to 0.8.0 needs these, whichever library you use.
+Every jump to 0.8.1 needs these, whichever library you use.
 
 | Setting | Value | If you get it wrong |
 |---|---|---|
@@ -46,13 +46,20 @@ and the host it talks to must be a matched pair.
 |---|---|---|
 | ≤ 0.7.2 | Android Solid Services 0.7.2 | yes |
 | ≤ 0.7.2 | Solid Share | no |
-| 0.8.0 | Solid Share ≥ 0.5.0 | yes |
-| 0.8.0 | Android Solid Services 0.7.2 | no — `SolidAppNotFoundException` |
+| ≥ 0.8.0 | Solid Share ≥ 0.5.0 | yes |
+| ≥ 0.8.0 | Android Solid Services 0.7.2 | no — `SolidAppNotFoundException` |
 
 !!! warning "The Android Solid Services app stopped at 0.7.2"
     That is its last release. From 0.8.0 the app that holds the accounts and hosts the services is
     [Solid Share](https://solidshare.app). Tell your users to install it. See
     [Install Solid Share](../start/install-app.md).
+
+## From 0.8.0
+
+A version bump, and nothing else. The only reason to make it is that a host cannot read your app's
+name or icon until you do: it lists your app by its package and shows a live grant as "not
+installed". `client` 0.8.1 exports an inert marker service the host matches in its own `<queries>`,
+which restores the lookup. You add nothing to your manifest and reference nothing in code.
 
 ## From 0.7.x
 
@@ -141,7 +148,7 @@ until its users move.
 
 - [ ] `compileSdk = 37`, `minSdk = 26`
 - [ ] Annotation processors updated (Hilt 2.60.1+)
-- [ ] Coordinate is `com.erfangholami.androidsolidservices:client` (or `api`, or `host`) at `0.8.0`
+- [ ] Coordinate is `com.erfangholami.androidsolidservices:client` (or `api`, or `host`) at `0.8.1`
 - [ ] `Solid.isHostInstalled` checked before sign-in
 - [ ] `AuthorizeWithSolid` carries an `AccessRequest` for the least you need
 - [ ] `NotPermissionException` handled as a scope refusal, not as a failure

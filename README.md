@@ -72,7 +72,7 @@ Users install **[Solid Share](https://solidshare.app)**, the host app:
 For your own app, one dependency:
 
 ```kotlin
-implementation("com.erfangholami.androidsolidservices:client:0.8.0")
+implementation("com.erfangholami.androidsolidservices:client:0.8.1")
 ```
 
 The libraries need `compileSdk = 37` and `minSdk = 26`.
