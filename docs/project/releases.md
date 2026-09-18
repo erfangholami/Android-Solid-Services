@@ -19,6 +19,16 @@ Library versions are published to Maven Central:
 
 A one-fix release: a host can read a granted app's name and icon again. No API or wire change.
 
+- Narrowed the `api` consumer R8 rules again: the 19 `io.jsonwebtoken.impl` class names jjwt-api
+  0.13.0 carries as string literals are kept (17 by constructor, 2 by static method), plus the two
+  compression codecs that arrive through `META-INF/services`, instead of every class and
+  constructor under `io.jsonwebtoken.impl` (350 classes in a minified app).
+- Dropped the `shared` CREATOR keep rule; AGP's default ProGuard files already keep `CREATOR`
+  on every Parcelable.
+- Widened the `shared` name keep from `shared.model.**` to every Parcelable in the library
+  namespace, because a host's Bundle envelope stamps the runtime class name of whatever it
+  carries. Names only; unused classes still shrink.
+
 !!! warning "Rebuild to become visible to the host"
     Android 11 hides packages from one another. `client` has always declared `<queries>` for the
     host, so your app can find Solid Share; nothing pointed back, so Solid Share could not read your

@@ -4,8 +4,9 @@ All notable changes to this project are documented here.
 
 ## [0.8.1] — 18th September 2026
 
-A one-fix release: a host can read a granted app's name and icon again. No API or wire change, but
-**client apps must rebuild** to become visible to the host.
+A one-fix release: a host can read a granted app's name and icon again. The `api` consumer R8
+rules also get narrower. No API or wire change, but **client apps must rebuild** to become
+visible to the host.
 
 ### Bug fixes
 
@@ -17,6 +18,21 @@ A one-fix release: a host can read a granted app's name and icon again. No API o
   `SolidClientMarkerService` carrying the new `SolidHostContract.ACTION_CLIENT_MARKER`, and `host`
   declares the matching `<queries>`. Both halves merge from the library; neither side edits its own
   manifest.
+
+### Improvements
+
+- Narrowed the `api` consumer R8 rules again: instead of pinning every `io.jsonwebtoken.impl`
+  class and constructor (350 classes in a minified app), the rules now name only what jjwt
+  resolves reflectively — the 19 `io.jsonwebtoken.impl` class names jjwt-api 0.13.0 carries as
+  string literals (17 instantiated through `Classes.newInstance`, 2 invoked through
+  `Classes.invokeStatic`), plus the two compression codecs that arrive through
+  `META-INF/services`. Verified with an R8 full-mode build that signs and verifies
+  ES256/RS256/PS256 tokens and round-trips a JWK. Revisit the list when jjwt is bumped.
+- Dropped the `shared` CREATOR keep rule: AGP's default ProGuard files already keep `CREATOR` on
+  every Parcelable, so the package-scoped copy was subsumed and changed nothing.
+- Widened the `shared` name keep from `shared.model.**` to every Parcelable in the library
+  namespace. A host envelopes each answer in a Bundle, which stamps the runtime class name, and the
+  RDF codec types are Parcelable too; the rule keeps names only, so unused classes still shrink.
 
 ### Notes
 

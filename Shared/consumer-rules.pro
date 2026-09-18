@@ -3,14 +3,12 @@
 # The library is not minified itself, so anything a consumer needs must live here, not in
 # proguard-rules.pro.
 
-# @Parcelize IPC models cross the process boundary; AIDL marshalling resolves the generated
-# CREATOR field, so it must survive minification. Scoped to Shared's model package rather than
-# every Parcelable in the consumer app.
--keepclassmembers class com.erfangholami.androidsolidservices.shared.model.** implements android.os.Parcelable {
-    public static final ** CREATOR;
-}
-
-# ...and their NAMES have to survive too, which keeping CREATOR alone does not achieve.
+# @Parcelize IPC models cross the process boundary. AIDL marshalling resolves the generated
+# CREATOR field, and AGP's default ProGuard files — which every AGP release build lists — keep
+# `public static final ** CREATOR` on every Parcelable, so the field needs no rule here (a
+# package-scoped copy was subsumed by that default and added nothing).
+#
+# The models' NAMES have to survive too, which keeping CREATOR does not achieve.
 #
 # A nested Parcelable is written with Parcel.writeParcelable, which stamps getClass().getName()
 # into the parcel for the reader to resolve. Minified, that name is the obfuscated one: the ASS app
@@ -19,8 +17,19 @@
 # BadParcelableException — meaning every release build broke `head`, `headPublic`, `readContainer`
 # and enriched `listContainer` for every consumer, while debug builds worked perfectly.
 #
-# -keepnames (keep, but still allow shrinking) so unused models can still be removed.
--keepnames class com.erfangholami.androidsolidservices.shared.model.** implements android.os.Parcelable
+# The same stamping happens for every answer a host sends back: the binders envelope each result
+# in a Bundle (IpcEnvelope, putParcelable / putParcelableArrayList), and a Bundle writes the
+# RUNTIME class name of whatever it holds — in the writer's process, so the host's build decides
+# the name a third-party app has to resolve. Today every enveloped runtime type lives under
+# shared.model.**, but the RDF codec types under shared.rdf.** are Parcelable too (they extend
+# SolidRDFResource), and a future verb could hand one of those, or any other library Parcelable,
+# to the envelope. The rule therefore spans the whole library namespace rather than one package:
+# a wider match costs nothing but the names themselves, while a missed class fails only in
+# minified builds, as above.
+#
+# -keepnames (keep, but still allow shrinking) so unused models can still be removed. Measured in
+# a minified host app this pins class names only — no fields, no methods.
+-keepnames class com.erfangholami.androidsolidservices.** implements android.os.Parcelable
 
 # Resource types are reconstructed reflectively via Class.getConstructor(...).newInstance(...) by
 # api's SolidResourceParser (in the ASS app process) and by client's SolidResourceClient
